@@ -1,0 +1,37 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# SQLite (runtime data — never commit)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Dashboard (build output — not committed)
+/dashboard/dist/
+/dashboard/node_modules/
+/dashboard/storybook-static/
+/dashboard/tsconfig.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/debug/
+/release/
+.notes/

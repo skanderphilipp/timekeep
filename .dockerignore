@@ -1,0 +1,10 @@
+target/
+.git/
+.github/
+/reference/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/storybook-static/
+*.db
+*.md
+!README.md
