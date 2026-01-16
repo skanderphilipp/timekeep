@@ -1,0 +1,12 @@
+[package]
+name = "timekeep-sim"
+edition = { workspace = true }
+version = { workspace = true }
+license = { workspace = true }
+publish = false
+
+[dependencies]
+timekeep-core = { workspace = true }
+timekeep-zkteco = { workspace = true }
+tokio = { workspace = true }
+jiff = { workspace = true }

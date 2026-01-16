@@ -1,0 +1,113 @@
+[workspace]
+resolver = "3"
+	members = [
+	    "crates/timekeep-circuit",
+	    "crates/timekeep-core",
+	    "crates/timekeep-engine",
+	    "crates/timekeep-zkteco",
+	    "crates/timekeep-storage-sqlite",
+	    "crates/timekeep-storage-postgres",
+	    "crates/timekeep-dist-webhook",
+	    "crates/timekeep-dist-odoo",
+	    "crates/timekeep-api",
+	"crates/timekeep-app",
+	"crates/timekeep-sim",
+	]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "AGPL-3.0"
+repository = "https://github.com/skanderphilipp/timekeep"
+authors = ["Skander Ben Abdelmalak <skander@bentech.app>"]
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Time
+jiff = { version = "0.2", features = ["default", "serde"] }
+
+# Error handling
+thiserror = "2"
+
+# Logging / tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = "0.29"
+opentelemetry = { version = "0.28", features = ["metrics"] }
+opentelemetry_sdk = { version = "0.28", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.28", features = ["http-proto", "reqwest-client"] }
+
+# Domain events
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+
+# Configuration
+toml = "0.8"
+serde_with = "3"
+
+# Hash for deduplication
+sha2 = "0.10"
+
+# Async traits (for trait objects with Send bound)
+async-trait = "0.1"
+
+# Base64 encoding (cursor pagination)
+		base64 = "0.22"
+
+		# Network interface detection (local IP / subnet auto-detection)
+		local-ip-address = "0.6"
+
+	# Bitflags for permissions
+	bitflags = { version = "2", features = ["serde"] }
+
+	# OpenAPI documentation
+	utoipa = { version = "5", features = ["axum_extras"] }
+	utoipa-swagger-ui = { version = "9", features = ["axum"] }
+
+# Prometheus metrics
+axum-prometheus = "0.8"
+
+# JWT authentication
+jsonwebtoken = "9"
+
+# Timekeep-circuit (internal)
+	timekeep-circuit = { path = "crates/timekeep-circuit" }
+
+	# Timekeep-core (internal)
+	timekeep-core = { path = "crates/timekeep-core" }
+timekeep-engine = { path = "crates/timekeep-engine" }
+timekeep-zkteco = { path = "crates/timekeep-zkteco" }
+timekeep-storage-sqlite = { path = "crates/timekeep-storage-sqlite" }
+timekeep-storage-postgres = { path = "crates/timekeep-storage-postgres" }
+timekeep-dist-webhook = { path = "crates/timekeep-dist-webhook" }
+timekeep-dist-odoo = { path = "crates/timekeep-dist-odoo" }
+timekeep-api = { path = "crates/timekeep-api" }
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_docs = "warn"
+unreachable_pub = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tokio_unstable)'] }
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+todo = "warn"
+unimplemented = "deny"
+implicit_clone = "warn"
+large_enum_variant = "allow"
+module_inception = "allow"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+opt-level = "z"
