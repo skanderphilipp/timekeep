@@ -1,0 +1,11 @@
+doc-valid-idents = [
+    "ZKTeco",
+    "ZKTeco's",
+    "Odoo",
+    "SQLite",
+    "PostgreSQL",
+    "Webhook",
+    "ADMS",
+    "NaN",
+    "..",
+]
