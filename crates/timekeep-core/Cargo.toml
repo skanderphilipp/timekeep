@@ -1,0 +1,27 @@
+[package]
+name = "timekeep-core"
+edition = { workspace = true }
+version = { workspace = true }
+license = { workspace = true }
+
+[dependencies]
+bitflags = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+jiff = { workspace = true }
+thiserror = { workspace = true }
+async-trait = { workspace = true }
+uuid = { workspace = true }
+sha2 = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+utoipa = { workspace = true }
+local-ip-address = { workspace = true }
+
+# Optional: sqlx for shared row types (PunchRow, TimestampRow)
+# Only needed by storage crates and tests — not pulled into production builds
+# unless a downstream crate depends on timekeep-core with features = ["test-utils"]
+sqlx = { version = "0.8", optional = true }
+
+[features]
+test-utils = ["sqlx"]
