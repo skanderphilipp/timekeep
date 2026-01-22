@@ -1,0 +1,428 @@
+use async_trait::async_trait;
+
+use crate::Error;
+use crate::facet::{FacetGroup, FacetQuery};
+use crate::model::device_event::{DeviceEvent, DeviceEventType};
+use crate::model::{AttendancePunch, Device, DeviceConfig, ProviderInfo};
+use crate::query::ListResult;
+
+/// Persistence layer for attendance data.
+///
+/// Implementations decide *where* data lives:
+/// - SQLite (embedded, single-file, zero config)
+/// - PostgreSQL (server-grade, Odoo-compatible)
+#[async_trait]
+pub trait Storage: Send + Sync {
+    /// Store a single attendance punch. Idempotent — if a punch with
+    /// the same deduplication ID already exists, it must not create a duplicate.
+    async fn store_punch(&self, punch: &AttendancePunch) -> Result<(), Error>;
+
+    /// Store multiple punches in a batch. Default implementation loops;
+    /// override for bulk-insert efficiency.
+    async fn store_punches(&self, punches: &[AttendancePunch]) -> Result<u64, Error> {
+        let mut count = 0;
+        for punch in punches {
+            self.store_punch(punch).await?;
+            count += 1;
+        }
+        Ok(count)
+    }
+
+    /// Query punches matching the given filter.
+    async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error>;
+
+    /// Return faceted filter metadata for punches.
+    ///
+    /// Called by `GET /api/punches/filters` to populate the filter bar.
+    /// When `query.context` carries date/device/status filters, facet
+    /// counts are restricted to matching records (contextual faceting).
+    ///
+    /// Default implementation returns an error — override in storage
+    /// backends to enable the feature.
+    async fn punch_facets(&self, _query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
+        Err(Error::storage("punch facets not implemented for this backend"))
+    }
+
+    /// Store or update device information.
+    async fn upsert_device(&self, device: &Device) -> Result<(), Error>;
+
+    /// Store or update device connection configuration.
+    /// Called when an admin adds or updates a scanner from the dashboard.
+    async fn upsert_device_config(&self, config: &DeviceConfig) -> Result<(), Error>;
+
+    /// List all registered devices with their connection configs.
+    ///
+    /// Prefer [`list_device_configs_filtered`] for paginated, searchable listing.
+    /// This method remains for backward compatibility.
+    async fn list_device_configs(&self) -> Result<Vec<DeviceConfig>, Error>;
+
+    /// List devices with search, sort, and pagination.
+    async fn list_device_configs_filtered(
+        &self,
+        _filter: &DeviceFilter,
+    ) -> Result<ListResult<DeviceConfig>, Error> {
+        // Default: fall back to list_device_configs and wrap in ListResult
+        let all = self.list_device_configs().await?;
+        Ok(ListResult::single_page(all))
+    }
+
+    /// Remove a device from the registry (does not delete attendance data).
+    async fn delete_device_config(&self, serial_number: &str) -> Result<(), Error>;
+
+    /// Get the latest punch timestamp for a device.
+    /// Used for resumable sync: "give me everything since this timestamp."
+    async fn latest_punch_for_device(
+        &self,
+        device_sn: &str,
+    ) -> Result<Option<jiff::Timestamp>, Error>;
+
+    /// Check if a punch with the given deduplication ID already exists.
+    async fn punch_exists(&self, dedup_id: &str) -> Result<bool, Error>;
+
+    /// Sync a user from the device into the local user table.
+    /// PIN is the device's user ID, name is the display name on the device.
+    /// privilege is optional (0=normal user, 14=admin, etc.)
+    async fn upsert_user(
+        &self,
+        device_sn: &str,
+        pin: &str,
+        name: &str,
+        privilege: Option<i32>,
+    ) -> Result<(), Error> {
+        let _ = (device_sn, pin, name, privilege);
+        Ok(())
+    }
+
+    /// Look up a user's display name by their device PIN.
+    /// Returns None if the user is not in the local table.
+    async fn get_user_name(&self, pin: &str) -> Result<Option<String>, Error> {
+        let _ = pin;
+        Ok(None)
+    }
+
+    /// Health check — ping the database to verify connectivity.
+    ///
+    /// Implementations should run a lightweight query (e.g. `SELECT 1`)
+    /// and return `Ok(())` if the database responds. Returns an error
+    /// if the database is unreachable or unhealthy.
+    ///
+    /// The default implementation returns `Ok(())` — override for
+    /// real database backends.
+    async fn health_check(&self) -> Result<(), Error> {
+        Ok(())
+    }
+
+    // ── API Key management (for integration partners) ───────────────
+
+    /// Create a new API key for integration partners.
+    /// Returns the full key string (only shown once at creation time).
+    async fn create_api_key(&self, _key: &crate::model::iam::ApiKey) -> Result<(), Error> {
+        Err(Error::storage("API key storage not implemented for this backend"))
+    }
+
+    /// Look up an API key by its SHA-256 hash.
+    /// Returns `None` if the key doesn't exist or has been revoked.
+    async fn find_api_key_by_hash(
+        &self,
+        _key_hash: &str,
+    ) -> Result<Option<crate::model::iam::ApiKey>, Error> {
+        Ok(None)
+    }
+
+    /// List all API keys (metadata only — no key hashes returned).
+    async fn list_api_keys(&self) -> Result<Vec<crate::model::iam::ApiKey>, Error> {
+        Ok(vec![])
+    }
+
+    /// Revoke an API key by its ID.
+    async fn revoke_api_key(&self, _key_id: &str) -> Result<(), Error> {
+        Err(Error::storage("API key storage not implemented for this backend"))
+    }
+
+    /// Update the `last_used_at` timestamp on an API key.
+    async fn touch_api_key(&self, _key_id: &str) -> Result<(), Error> {
+        Ok(())
+    }
+
+    // ── Settings (integration configuration) ────────────────────────
+
+    // ── Integration Endpoints (tenant-configurable destinations) ────
+
+    /// List all integration endpoints.
+    async fn list_endpoints(
+        &self,
+    ) -> Result<Vec<crate::model::settings::IntegrationEndpoint>, Error> {
+        Ok(vec![])
+    }
+
+    /// List integration endpoints with search, sort, and pagination.
+    async fn list_endpoints_filtered(
+        &self,
+        _filter: &EndpointFilter,
+    ) -> Result<ListResult<crate::model::settings::IntegrationEndpoint>, Error> {
+        let all = self.list_endpoints().await?;
+        Ok(ListResult::single_page(all))
+    }
+
+    /// Create a new integration endpoint.
+    async fn create_endpoint(
+        &self,
+        _endpoint: &crate::model::settings::IntegrationEndpoint,
+    ) -> Result<(), Error> {
+        Err(Error::storage("endpoint storage not implemented for this backend"))
+    }
+
+    /// Update an existing integration endpoint (full replace).
+    async fn update_endpoint(
+        &self,
+        _endpoint: &crate::model::settings::IntegrationEndpoint,
+    ) -> Result<(), Error> {
+        Err(Error::storage("endpoint storage not implemented for this backend"))
+    }
+
+    /// Delete an integration endpoint by ID.
+    async fn delete_endpoint(&self, _id: &str) -> Result<(), Error> {
+        Err(Error::storage("endpoint storage not implemented for this backend"))
+    }
+
+    // ── System Settings (engine-wide) ──────────────────────────────
+
+    /// Load system settings. Returns defaults if none persisted.
+    async fn get_system_settings(&self) -> Result<crate::model::settings::SystemSettings, Error> {
+        Ok(crate::model::settings::SystemSettings::default())
+    }
+
+    /// Persist system settings.
+    async fn upsert_system_settings(
+        &self,
+        _settings: &crate::model::settings::SystemSettings,
+    ) -> Result<(), Error> {
+        Err(Error::storage("system settings storage not implemented for this backend"))
+    }
+
+    // ── Audit Log ────────────────────────────────────────────────
+
+    /// Record an audit event.
+    async fn record_audit(&self, _event: &crate::model::audit::AuditEvent) -> Result<(), Error> {
+        Ok(()) // default: silently drop (non-critical path)
+    }
+
+    /// Query audit logs with filter, sort, and pagination.
+    async fn query_audit_logs(
+        &self,
+        _filter: &crate::model::audit::AuditFilter,
+    ) -> Result<crate::query::ListResult<crate::model::audit::AuditEvent>, Error> {
+        Ok(crate::query::ListResult::single_page(vec![]))
+    }
+
+    // ── Dashboard User Management ──────────────────────────────
+
+    /// Create a new dashboard user. Returns an error if the username already exists.
+    async fn create_dashboard_user(
+        &self,
+        _user: &crate::model::DashboardUser,
+    ) -> Result<(), Error> {
+        Err(Error::storage("dashboard user storage not implemented for this backend"))
+    }
+
+    /// Find a dashboard user by username. Returns None if not found or inactive.
+    async fn find_dashboard_user_by_username(
+        &self,
+        _username: &str,
+    ) -> Result<Option<crate::model::DashboardUser>, Error> {
+        Ok(None)
+    }
+
+    /// List all dashboard users with optional search, sort, and pagination.
+    async fn list_dashboard_users(
+        &self,
+        _params: &crate::query::ListParams,
+    ) -> Result<crate::query::ListResult<crate::model::DashboardUser>, Error> {
+        Ok(crate::query::ListResult::single_page(vec![]))
+    }
+
+    /// Update a dashboard user's role, display name, or active status.
+    /// Returns an error if the user doesn't exist.
+    async fn update_dashboard_user(
+        &self,
+        _user: &crate::model::DashboardUser,
+    ) -> Result<(), Error> {
+        Err(Error::storage("dashboard user storage not implemented for this backend"))
+    }
+
+    /// Delete a dashboard user by ID. Returns an error if not found.
+    async fn delete_dashboard_user(&self, _id: &str) -> Result<(), Error> {
+        Err(Error::storage("dashboard user storage not implemented for this backend"))
+    }
+
+    /// Update a dashboard user's password (hash + salt).
+    async fn update_dashboard_user_password(
+        &self,
+        _id: &str,
+        _password_hash: &str,
+        _salt: &str,
+    ) -> Result<(), Error> {
+        Err(Error::storage("dashboard user storage not implemented for this backend"))
+    }
+
+    // ── Device Events (activity timeline) ─────────────────────────────
+
+    /// Record a device lifecycle event for the activity timeline.
+    ///
+    /// Unlike `DomainEvent` (ephemeral on the event bus), these events are
+    /// persisted in the database and queried to build device timelines.
+    async fn record_device_event(&self, _event: &DeviceEvent) -> Result<(), Error> {
+        Ok(()) // default: silently drop
+    }
+
+    /// Query device events with filter, sort, and pagination.
+    async fn query_device_events(
+        &self,
+        _filter: &DeviceEventFilter,
+    ) -> Result<ListResult<DeviceEvent>, Error> {
+        Ok(ListResult::single_page(vec![]))
+    }
+
+    /// Count device events matching a filter (for pagination totals).
+    async fn count_device_events(&self, _filter: &DeviceEventFilter) -> Result<u64, Error> {
+        Ok(0)
+    }
+
+    // ── Device Info (enriched device metadata) ────────────────────────
+
+    /// Upsert the full device info (from get_device_info()).
+    /// This stores the richer Device model fields separate from DeviceConfig.
+    async fn upsert_device_info(&self, _device: &Device) -> Result<(), Error> {
+        Ok(()) // default: silently accept
+    }
+
+    /// Get full device info by serial number.
+    async fn get_device_info(&self, _serial_number: &str) -> Result<Option<Device>, Error> {
+        Ok(None)
+    }
+
+    // ── Provider Registry ─────────────────────────────────────────────
+
+    /// Persist a provider registration (so it survives restarts).
+    async fn register_provider(&self, _provider: &ProviderInfo) -> Result<(), Error> {
+        Err(Error::storage("provider storage not implemented for this backend"))
+    }
+
+    /// List all persisted providers.
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>, Error> {
+        Ok(vec![])
+    }
+}
+
+/// Filters for querying attendance punches.
+#[derive(Debug, Clone)]
+pub struct PunchFilter {
+    /// Shared search/sort/page params.
+    pub params: crate::query::ListParams,
+    /// Filter by device serial number (single, for backward compat).
+    /// Prefer `device_sns` for multi-select.
+    pub device_sn: Option<String>,
+    /// Filter by multiple device serial numbers (OR logic).
+    pub device_sns: Option<Vec<String>>,
+    /// Filter by user PIN (exact match).
+    pub user_pin: Option<String>,
+    /// Only punches after this timestamp (inclusive).
+    pub since: Option<jiff::Timestamp>,
+    /// Only punches before this timestamp (inclusive).
+    pub until: Option<jiff::Timestamp>,
+    /// Filter by punch status (check_in, check_out, …).
+    pub status: Option<crate::model::punch::PunchStatus>,
+    /// Filter by verification method (fingerprint, face, …).
+    pub verify_mode: Option<crate::model::punch::VerifyMode>,
+    /// When `true`, return only punches flagged as anomalous.
+    pub anomalies_only: Option<bool>,
+}
+
+impl Default for PunchFilter {
+    fn default() -> Self {
+        Self {
+            params: crate::query::ListParams {
+                sort_by: Some("timestamp".into()),
+                limit: 10_000,
+                ..Default::default()
+            },
+            device_sn: None,
+            device_sns: None,
+            user_pin: None,
+            since: None,
+            until: None,
+            status: None,
+            verify_mode: None,
+            anomalies_only: None,
+        }
+    }
+}
+
+/// Filters for listing devices.
+#[derive(Debug, Clone)]
+pub struct DeviceFilter {
+    /// Shared search/sort/page params.
+    pub params: crate::query::ListParams,
+}
+
+impl Default for DeviceFilter {
+    fn default() -> Self {
+        Self {
+            params: crate::query::ListParams {
+                sort_by: Some("label".into()),
+                sort_order: crate::query::SortOrder::Asc,
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Filters for listing integration endpoints.
+#[derive(Debug, Clone)]
+pub struct EndpointFilter {
+    /// Shared search/sort/page params.
+    pub params: crate::query::ListParams,
+}
+
+impl Default for EndpointFilter {
+    fn default() -> Self {
+        Self {
+            params: crate::query::ListParams {
+                sort_by: Some("created_at".into()),
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Filters for querying device lifecycle events (activity timeline).
+#[derive(Debug, Clone)]
+pub struct DeviceEventFilter {
+    /// Shared search/sort/page params.
+    pub params: crate::query::ListParams,
+    /// Filter by device serial number.
+    pub device_sn: Option<String>,
+    /// Filter by event type(s). If empty, all types are returned.
+    pub event_types: Option<Vec<DeviceEventType>>,
+    /// Only events after this timestamp (inclusive).
+    pub since: Option<jiff::Timestamp>,
+    /// Only events before this timestamp (inclusive).
+    pub until: Option<jiff::Timestamp>,
+}
+
+impl Default for DeviceEventFilter {
+    fn default() -> Self {
+        Self {
+            params: crate::query::ListParams {
+                sort_by: Some("timestamp".into()),
+                sort_order: crate::query::SortOrder::Desc,
+                limit: 50,
+                ..Default::default()
+            },
+            device_sn: None,
+            event_types: None,
+            since: None,
+            until: None,
+        }
+    }
+}
