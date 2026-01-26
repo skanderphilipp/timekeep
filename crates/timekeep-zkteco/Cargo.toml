@@ -1,0 +1,31 @@
+[package]
+name = "timekeep-zkteco"
+edition = { workspace = true }
+version = { workspace = true }
+license = { workspace = true }
+
+[dependencies]
+timekeep-circuit = { workspace = true }
+timekeep-core = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+jiff = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+# HTTP server for ADMS push protocol
+axum = { version = "0.8", features = ["macros"] }
+
+# Binary protocol parsing (fixed-layout structs)
+binrw = "0.14"
+
+# TCP connection management
+tokio-util = { version = "0.7", features = ["codec"] }
+bytes = "1"
+
+[dev-dependencies]
+tower = "0.5"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
