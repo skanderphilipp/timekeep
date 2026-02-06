@@ -1,0 +1,23 @@
+{
+  "threshold": 25,
+  "format": ["typescript", "scss"],
+  "ignore": [
+    "node_modules",
+    "dist",
+    "packages",
+    "**/*.d.ts",
+    "**/*.d.scss.ts",
+    "**/generated-tokens.css",
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/__snapshots__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*.stories.*"
+  ],
+  "reporters": ["consoleFull"],
+  "mode": "strict",
+  "minLines": 5,
+  "minTokens": 70,
+  "output": "./reports"
+}
