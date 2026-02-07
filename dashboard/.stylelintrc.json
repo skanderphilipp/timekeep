@@ -1,0 +1,56 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "declaration-no-important": true,
+    "selector-no-empty": true,
+    "declaration-block-no-duplicate-properties": true,
+    "declaration-block-no-duplicate-custom-properties": true,
+    "scss/no-duplicate-mixins": true,
+    "scss/no-duplicate-dollar-variables": true,
+    "scss/dollar-variable-pattern": null,
+    "scss/at-mixin-pattern": null,
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "alpha-value-notation": null,
+    "color-function-notation": null,
+
+    "scale-unlimited/declaration-strict-value": [
+      ["/color/", "fill", "stroke", "background", "background-color", "border-color", "box-shadow"],
+      {
+        "ignoreKeywords": ["transparent", "inherit", "currentColor", "none", "unset"],
+        "ignoreFunctions": false,
+        "expandShorthand": true,
+        "disableFix": true
+      }
+    ],
+
+    "declaration-property-value-disallowed-list": [
+      {
+        "/^border-radius$/": ["/\\d+px/"],
+        "/^font-size$/": ["/\\d+px/"],
+        "/^padding$/": ["/\\d+px/"],
+        "/^padding-top$/": ["/\\d+px/"],
+        "/^padding-right$/": ["/\\d+px/"],
+        "/^padding-bottom$/": ["/\\d+px/"],
+        "/^padding-left$/": ["/\\d+px/"],
+        "/^margin$/": ["/\\d+px/"],
+        "/^margin-top$/": ["/\\d+px/"],
+        "/^margin-right$/": ["/\\d+px/"],
+        "/^margin-bottom$/": ["/\\d+px/"],
+        "/^margin-left$/": ["/\\d+px/"],
+        "/^gap$/": ["/\\d+px/"]
+      },
+      {
+        "message": "Hardcoded pixel value. Use var(--ao-spacing-*) or var(--ao-radius-*) or var(--ao-font-size-*) tokens instead."
+      }
+    ]
+  },
+  "ignoreFiles": [
+    "node_modules/**",
+    "dist/**",
+    "**/generated-tokens.css",
+    "**/*.module.d.scss.ts",
+    "src/styles/tokens/**"
+  ]
+}
