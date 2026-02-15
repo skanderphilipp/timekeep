@@ -1,0 +1,20 @@
+declare const classNames: {
+  readonly container: "container";
+  readonly event: "event";
+  readonly problem: "problem";
+  readonly icon: "icon";
+  readonly label: "label";
+  readonly time: "time";
+  readonly online: "online";
+  readonly offline: "offline";
+  readonly sync: "sync";
+  readonly warning: "warning";
+  readonly config: "config";
+  readonly provision: "provision";
+  readonly more: "more";
+  readonly empty: "empty";
+  readonly skeleton: "skeleton";
+  readonly skeletonDot: "skeletonDot";
+  readonly skeletonLine: "skeletonLine";
+};
+export = classNames;
