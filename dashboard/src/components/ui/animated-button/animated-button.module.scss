@@ -1,0 +1,37 @@
+.wrapper {
+  display: inline-flex;
+  position: relative;
+}
+
+.button {
+  /* Ensure the base Button fills the motion wrapper */
+  width: 100%;
+}
+
+.animatedSvg {
+  align-items: center;
+  display: inline-flex;
+
+  /* Subtle rotation on hover — the motion.div wrapper handles scale */
+  transition: transform 0.3s ease;
+
+  .wrapper:hover & {
+    transform: rotate(-3deg);
+  }
+}
+
+.soonBadge {
+  background-color: var(--ao-color-amber3);
+  border-radius: var(--ao-border-radius-pill);
+  color: var(--ao-color-amber11);
+  font-size: var(--ao-font-size-xxs);
+  font-weight: var(--ao-font-weight-semibold);
+  inset-inline-end: -6px;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  padding: 2px var(--ao-spacing-1);
+  position: absolute;
+  text-transform: uppercase;
+  top: -8px;
+  white-space: nowrap;
+}
