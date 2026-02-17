@@ -1,0 +1,42 @@
+.avatar {
+  align-items: center;
+  background: var(--ao-accent-accent3);
+  border-radius: var(--ao-border-radius-full);
+  color: var(--ao-accent-accent11);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-weight: var(--ao-font-weight-semibold);
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+.image {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.initials {
+  line-height: 1;
+}
+
+// ── Sizes ──────────────────────────────────────────────────────────────────────
+
+.sm {
+  font-size: 10px;
+  height: 24px;
+  width: 24px;
+}
+
+.md {
+  font-size: var(--ao-font-size-xs);
+  height: 32px;
+  width: 32px;
+}
+
+.lg {
+  font-size: var(--ao-font-size-md);
+  height: 40px;
+  width: 40px;
+}
