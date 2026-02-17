@@ -1,0 +1,14 @@
+/* 1:1 port of Reaktly's AvatarGroup.module.scss */
+
+.container {
+  align-items: center;
+  display: flex;
+}
+
+.itemContainer {
+  margin-inline-end: -3px;
+
+  &:last-child {
+    margin-inline-end: 0;
+  }
+}
