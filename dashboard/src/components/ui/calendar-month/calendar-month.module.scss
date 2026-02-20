@@ -1,0 +1,112 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  min-width: 1000px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  height: 24px;
+  width: 100%;
+}
+
+.headerDay {
+  color: var(--ao-font-color-light);
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  height: 24px;
+  justify-content: flex-end;
+  padding: 0 var(--ao-spacing-1);
+  width: calc(100% / 7);
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────────── */
+
+.body {
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-sm);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.week {
+  align-items: stretch;
+  display: flex;
+  flex: 1;
+
+  &:not(:last-of-type) {
+    border-bottom: 1px solid var(--ao-border-color-light);
+  }
+}
+
+/* ── Day Cell ────────────────────────────────────────────────────────────────── */
+
+.bodyDay {
+  display: flex;
+  flex-direction: column;
+  min-height: 122px;
+  min-width: 0;
+  padding: var(--ao-spacing-1);
+  width: calc(100% / 7);
+
+  &:not(:last-child) {
+    border-right: 1px solid var(--ao-border-color-light);
+  }
+}
+
+.otherMonth {
+  background: var(--ao-background-secondary);
+  color: var(--ao-font-color-light);
+}
+
+.weekend {
+  background: var(--ao-background-secondary);
+}
+
+/* ── Day Header ──────────────────────────────────────────────────────────────── */
+
+.dayHeader {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 24px;
+  justify-content: space-between;
+  margin-left: auto;
+  width: 100%;
+}
+
+.dayNumber {
+  align-items: center;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-regular);
+  justify-content: center;
+  line-height: 140%;
+  margin-inline-start: auto;
+  padding: var(--ao-spacing-0_5);
+  width: 20px;
+}
+
+.today {
+  background: var(--ao-color-blue9);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-inverted);
+  font-weight: var(--ao-font-weight-medium);
+}
+
+/* ── Day Content ─────────────────────────────────────────────────────────────── */
+
+.dayContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ao-spacing-0_5);
+  min-height: 60px;
+}
