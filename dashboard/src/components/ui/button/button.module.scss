@@ -1,0 +1,123 @@
+@use "@/styles/mixins" as *;
+
+.button {
+  align-items: center;
+  background: var(--btn-bg, transparent);
+  border: 1px solid var(--btn-border-color, transparent);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--btn-color, var(--ao-font-color-primary));
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--ao-font-family);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-2);
+  justify-content: center;
+  line-height: 1;
+  padding: 0 var(--ao-spacing-4);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+
+  @include focus-ring;
+}
+
+// ── Sizes ────────────────────────────────────────────────────────────────────
+
+.sm {
+  font-size: var(--ao-font-size-sm);
+  height: 32px;
+  padding: 0 var(--ao-spacing-3);
+}
+
+.md {
+  font-size: var(--ao-font-size-md);
+  height: 40px;
+}
+
+// ── Variants ─────────────────────────────────────────────────────────────────
+
+.primary {
+  --btn-bg: var(--ao-accent-accent9);
+  --btn-color: var(--ao-font-color-inverted);
+  --btn-border-color: var(--ao-accent-accent9);
+
+  &:hover {
+    --btn-bg: var(--ao-accent-accent10);
+  }
+
+  &:active {
+    --btn-bg: var(--ao-accent-accent11);
+  }
+}
+
+.secondary {
+  --btn-border-color: var(--ao-border-color-medium);
+
+  &:hover {
+    --btn-bg: var(--ao-background-secondary);
+  }
+
+  &:active {
+    --btn-bg: var(--ao-background-tertiary);
+  }
+}
+
+.ghost {
+  &:hover {
+    --btn-bg: var(--ao-background-secondary);
+  }
+
+  &:active {
+    --btn-bg: var(--ao-background-tertiary);
+  }
+}
+
+.danger {
+  --btn-bg: var(--ao-color-red9);
+  --btn-color: var(--ao-font-color-inverted);
+  --btn-border-color: var(--ao-color-red9);
+
+  &:hover {
+    --btn-bg: var(--ao-color-red10);
+  }
+
+  &:active {
+    --btn-bg: var(--ao-color-red11);
+  }
+}
+
+// ── States ───────────────────────────────────────────────────────────────────
+
+.disabled,
+.loading {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+// ── Children ─────────────────────────────────────────────────────────────────
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  border-right-color: transparent;
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+}
+
+.icon {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
