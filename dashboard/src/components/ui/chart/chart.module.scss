@@ -1,0 +1,36 @@
+.chart {
+  background: transparent;
+  overflow: hidden;
+}
+
+.header {
+  background: var(--ao-background-secondary);
+  padding: var(--ao-spacing-2) var(--ao-spacing-4) 0;
+}
+
+.title {
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-semibold);
+  margin: 0;
+}
+
+.description {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  margin-block-start: var(--ao-spacing-1);
+}
+
+.body {
+  background: var(--ao-background-secondary);
+  min-height: 200px;
+  padding: var(--ao-spacing-4);
+  position: relative;
+}
+
+.stateOverlay {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  min-height: 200px;
+}
