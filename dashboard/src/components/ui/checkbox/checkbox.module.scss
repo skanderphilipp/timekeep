@@ -1,0 +1,59 @@
+@use "@/styles/mixins" as *;
+
+.label {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--ao-spacing-2);
+  user-select: none;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input {
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+
+  &:focus-visible + .indicator {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: 2px;
+  }
+}
+
+.indicator {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-xs);
+  display: flex;
+  flex-shrink: 0;
+  height: 16px;
+  justify-content: center;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+  width: 16px;
+
+  .input:checked + & {
+    background: var(--ao-accent-accent9);
+    border-color: var(--ao-accent-accent9);
+  }
+}
+
+.check {
+  color: var(--ao-font-color-inverted);
+  display: none;
+
+  .input:checked + .indicator & {
+    display: block;
+  }
+}
+
+.labelText {
+  font-size: var(--ao-font-size-sm);
+}
