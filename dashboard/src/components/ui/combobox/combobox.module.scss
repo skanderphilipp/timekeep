@@ -1,0 +1,114 @@
+@use "@/styles/dropdown-base" as *;
+
+.trigger {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+  height: 36px;
+  justify-content: space-between;
+  outline: none;
+  padding: 0 var(--ao-spacing-3);
+  transition: border-color 0.15s ease;
+  user-select: none;
+  width: 100%;
+
+  &:focus-visible {
+    border-color: var(--ao-accent-accent9);
+    box-shadow: 0 0 0 2px var(--ao-accent-accent8);
+  }
+
+  &[data-popup-open] {
+    border-color: var(--ao-accent-accent9);
+  }
+
+  &:disabled {
+    background-color: var(--ao-background-secondary);
+    color: var(--ao-font-color-disabled);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &::after {
+    color: var(--ao-font-color-tertiary);
+    content: "▾";
+    flex-shrink: 0;
+    font-size: 12px;
+    transition: transform 0.15s ease;
+  }
+
+  &[data-popup-open]::after {
+    transform: rotate(180deg);
+  }
+}
+
+.placeholder {
+  color: var(--ao-font-color-tertiary);
+}
+
+.value {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerPrefix {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* ── Rich option rendering ── */
+
+.itemPrefix {
+  align-items: center;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.itemSuffix {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+  font-size: var(--ao-font-size-xs);
+  font-variant-numeric: tabular-nums;
+  margin-inline-start: auto;
+}
+
+/* ── Search ── */
+
+.searchWrapper {
+  border-bottom: 1px solid var(--ao-border-color-light);
+  padding: var(--ao-spacing-1);
+}
+
+.input {
+  background: transparent;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  outline: none;
+  padding: var(--ao-spacing-1_5) var(--ao-spacing-2);
+  width: 100%;
+
+  &::placeholder {
+    color: var(--ao-font-color-tertiary);
+  }
+}
+
+/* ── List (max-height override) ── */
+
+.list {
+  max-height: 220px;
+}
