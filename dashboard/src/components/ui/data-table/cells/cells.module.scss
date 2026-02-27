@@ -1,0 +1,55 @@
+/* ── Text cell ── */
+
+.text {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-sm);
+}
+
+.clickableText {
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-accent-accent11);
+  cursor: pointer;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  padding: 2px var(--ao-spacing-1);
+  text-align: inherit;
+
+  &:hover {
+    background: var(--ao-accent-accent3);
+    text-decoration: underline;
+  }
+}
+
+/* ── Timestamp cell ── */
+
+.timestamp {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Duration cell ── */
+
+.duration {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ao-font-weight-medium);
+  white-space: nowrap;
+}
+
+/* ── Status cell ── */
+
+.status {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--ao-spacing-2);
+}
+
+.statusLabel {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-sm);
+}
