@@ -1,0 +1,50 @@
+.card {
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-3) var(--ao-spacing-4);
+  position: relative;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-border-color-medium);
+  }
+}
+
+.icon {
+  color: var(--ao-font-color-tertiary);
+  margin-bottom: var(--ao-spacing-1);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.value {
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-xl);
+  font-weight: var(--ao-font-weight-bold);
+}
+
+.label {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+}
+
+.subtitle {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  margin-top: var(--ao-spacing-1);
+}
+
+.bar {
+  width: 100%;
+}
