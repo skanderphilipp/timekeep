@@ -1,0 +1,66 @@
+.badge {
+  align-items: center;
+  border-radius: var(--ao-border-radius-full);
+  display: inline-flex;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-1);
+  padding: 2px 10px;
+}
+
+/* Variant colors */
+.success {
+  background: color-mix(in srgb, var(--ao-color-green9) 12%, transparent);
+  color: var(--ao-color-green11);
+}
+
+.warning {
+  background: color-mix(in srgb, var(--ao-color-amber9) 12%, transparent);
+  color: var(--ao-color-amber11);
+}
+
+.danger {
+  background: color-mix(in srgb, var(--ao-color-red9) 12%, transparent);
+  color: var(--ao-color-red11);
+}
+
+.info {
+  background: color-mix(in srgb, var(--ao-color-blue9) 12%, transparent);
+  color: var(--ao-color-blue11);
+}
+
+.neutral {
+  background: var(--ao-background-tertiary);
+  color: var(--ao-font-color-secondary);
+}
+
+/* Status dot */
+.dot {
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  height: 6px;
+  width: 6px;
+}
+
+.dot-online {
+  background: var(--ao-color-green9);
+}
+
+.dot-offline {
+  background: var(--ao-font-color-disabled);
+}
+
+.dot-warning {
+  background: var(--ao-color-amber9);
+}
+
+.pulsing {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ao-color-green9) 40%, transparent); }
+  70% { box-shadow: 0 0 0 4px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
