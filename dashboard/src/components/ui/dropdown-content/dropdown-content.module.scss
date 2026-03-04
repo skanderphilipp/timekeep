@@ -1,0 +1,15 @@
+@use "@/styles/mixins" as *;
+
+.content {
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-md);
+  box-shadow: var(--ao-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  max-height: min(480px, calc(100vh - 32px));
+  min-width: 180px;
+  overflow-y: auto;
+  padding: var(--ao-spacing-1);
+}
