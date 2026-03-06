@@ -1,0 +1,29 @@
+.container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-4);
+  padding: var(--ao-spacing-12) var(--ao-spacing-6);
+  text-align: center;
+}
+
+.icon {
+  color: var(--ao-font-color-tertiary);
+  opacity: 0.5;
+}
+
+.title {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-semibold);
+}
+
+.description {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-sm);
+  max-width: 360px;
+}
+
+.action {
+  margin-top: var(--ao-spacing-2);
+}
