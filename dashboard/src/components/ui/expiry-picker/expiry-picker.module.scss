@@ -1,0 +1,74 @@
+@use "@/styles/mixins" as *;
+@use "@/styles/form-control-base" as *;
+@use "@/styles/input-base" as *;
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+}
+
+.presetChip {
+  align-items: center;
+  background-color: var(--ao-background-secondary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  height: 32px;
+  padding: 0 var(--ao-spacing-3);
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: var(--ao-background-tertiary);
+    border-color: var(--ao-border-color-medium);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.presetChipActive {
+  background-color: var(--ao-accent-accent4);
+  border-color: var(--ao-accent-accent9);
+  color: var(--ao-accent-accent11);
+}
+
+.customDateWrapper {
+  display: flex;
+  gap: var(--ao-spacing-2);
+  margin-top: var(--ao-spacing-1);
+}
+
+.customDateInput {
+  @include input-base;
+  width: auto;
+}
+
+.display {
+  align-items: center;
+  color: var(--ao-font-color-primary);
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+}
+
+.clearButton {
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: flex;
+  padding: 2px;
+
+  &:hover {
+    color: var(--ao-font-color-primary);
+  }
+}
