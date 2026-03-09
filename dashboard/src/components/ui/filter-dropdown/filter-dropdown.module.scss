@@ -1,0 +1,253 @@
+@use "@/styles/mixins" as *;
+
+// ── Root ─────────────────────────────────────────────────────────────────────
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+}
+
+// ── Toolbar row ──────────────────────────────────────────────────────────────
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+  justify-content: space-between;
+}
+
+.filterArea {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+  flex-shrink: 0;
+}
+
+// ── Filter button ────────────────────────────────────────────────────────────
+
+.filterButton {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-1_5);
+  height: 36px;
+  padding: 0 var(--ao-spacing-3);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-border-color-strong);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.filterButtonOpen {
+  background: var(--ao-background-tertiary);
+  border-color: var(--ao-border-color-strong);
+  color: var(--ao-font-color-primary);
+}
+
+// ── Reset button ─────────────────────────────────────────────────────────────
+
+.resetButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-xs);
+  gap: var(--ao-spacing-1);
+  height: 28px;
+  padding: 0 var(--ao-spacing-2);
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Count ────────────────────────────────────────────────────────────────────
+
+.count {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// ── Backdrop ─────────────────────────────────────────────────────────────────
+
+.backdrop {
+  background: transparent;
+  inset: 0;
+  position: fixed;
+  z-index: 40;
+}
+
+// ── Popover ──────────────────────────────────────────────────────────────────
+
+.popover {
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-md);
+  box-shadow: var(--ao-shadow-lg);
+  left: 0;
+  min-width: 220px;
+  overflow: hidden;
+  position: absolute;
+  top: calc(100% + 4px);
+  z-index: 50;
+}
+
+// ── Field list (Step 1) ──────────────────────────────────────────────────────
+
+.fieldList {
+  display: flex;
+  flex-direction: column;
+  padding: var(--ao-spacing-1);
+}
+
+.fieldListHeader {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-semibold);
+  letter-spacing: 0.05em;
+  padding: var(--ao-spacing-1_5) var(--ao-spacing-2) var(--ao-spacing-1);
+  text-transform: uppercase;
+}
+
+.fieldItem {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-1_5) var(--ao-spacing-2);
+  text-align: left;
+  transition: background 0.1s ease;
+  width: 100%;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+  }
+
+  &::after {
+    color: var(--ao-font-color-tertiary);
+    content: "▸";
+    font-size: 10px;
+    margin-inline-start: auto;
+  }
+}
+
+.fieldIcon {
+  align-items: center;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.fieldLabel {
+  min-width: 0;
+}
+
+// ── Value panel (Step 2) ─────────────────────────────────────────────────────
+
+.valuePanel {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.backButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--ao-border-color-light);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-2) var(--ao-spacing-3);
+  text-align: left;
+  transition: color 0.15s ease;
+  width: 100%;
+
+  &:hover {
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.valueContent {
+  padding: var(--ao-spacing-2);
+}
+
+// ── Active filter chips ──────────────────────────────────────────────────────
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+}
+
+.chip {
+  align-items: center;
+  background: var(--ao-background-secondary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-secondary);
+  display: inline-flex;
+  font-size: var(--ao-font-size-xs);
+  gap: var(--ao-spacing-1);
+  height: 24px;
+  padding: 0 var(--ao-spacing-1) 0 var(--ao-spacing-2);
+  transition: background 0.1s ease, border-color 0.1s ease;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+    border-color: var(--ao-border-color-medium);
+  }
+}
+
+.chipLabel {
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.chipRemove {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-xs);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: flex;
+  padding: 1px;
+
+  &:hover {
+    background: var(--ao-background-primary);
+    color: var(--ao-font-color-primary);
+  }
+}
