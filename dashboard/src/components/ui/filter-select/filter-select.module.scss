@@ -1,0 +1,38 @@
+.trigger {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+  height: 32px;
+  justify-content: space-between;
+  min-width: 130px;
+  padding: 0 var(--ao-spacing-2);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-border-color-strong);
+  }
+
+  &:focus-visible {
+    border-color: var(--ao-accent-accent8);
+    outline: none;
+  }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+}
