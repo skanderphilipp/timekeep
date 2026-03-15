@@ -1,0 +1,79 @@
+@use "@/styles/mixins" as *;
+
+.button {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  transition: background 0.1s ease, color 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--ao-background-tertiary);
+    color: var(--ao-font-color-primary);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ao-accent-accent8);
+    outline-offset: 2px;
+  }
+}
+
+// ── Sizes ──────────────────────────────────────────────────────────────────────
+
+.sm {
+  height: 28px;
+  width: 28px;
+
+  svg {
+    height: 16px;
+    width: 16px;
+  }
+}
+
+.md {
+  height: 32px;
+  width: 32px;
+
+  svg {
+    height: 18px;
+    width: 18px;
+  }
+}
+
+// ── Accents ────────────────────────────────────────────────────────────────────
+
+.primary {
+  background: var(--ao-accent-accent9);
+  color: var(--ao-font-color-inverted);
+
+  &:hover:not(:disabled) {
+    background: var(--ao-accent-accent10);
+    color: var(--ao-font-color-inverted);
+  }
+}
+
+.secondary {
+  // default — see .button above
+}
+
+.tertiary {
+  color: var(--ao-font-color-tertiary);
+
+  &:hover:not(:disabled) {
+    color: var(--ao-font-color-primary);
+  }
+}
