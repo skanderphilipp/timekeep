@@ -1,0 +1,23 @@
+.info {
+  align-items: center;
+  cursor: help;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.defaultAccent {
+  color: var(--ao-font-color-tertiary);
+
+  &:hover {
+    color: var(--ao-font-color-secondary);
+  }
+}
+
+.danger {
+  color: var(--ao-color-red9);
+
+  &:hover {
+    color: var(--ao-color-red10);
+  }
+}
