@@ -1,0 +1,20 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  margin-bottom: var(--ao-spacing-2);
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--ao-font-color-secondary);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+.children {
+  flex-shrink: 0;
+}
