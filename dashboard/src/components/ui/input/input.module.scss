@@ -1,0 +1,34 @@
+@use "@/styles/mixins" as *;
+@use "@/styles/form-control-base" as *;
+@use "@/styles/input-base" as *;
+
+.inputWrapper {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.hasLeftAdornment {
+  padding-inline-start: var(--ao-spacing-8);
+}
+
+.hasRightAdornment {
+  padding-inline-end: var(--ao-spacing-8);
+}
+
+.adornment {
+  align-items: center;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  height: 100%;
+  position: absolute;
+  top: 0;
+
+  &:first-child {
+    inset-inline-start: var(--ao-spacing-3);
+  }
+
+  &:last-child {
+    inset-inline-end: var(--ao-spacing-3);
+  }
+}
