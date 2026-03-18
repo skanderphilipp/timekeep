@@ -1,0 +1,16 @@
+@use "@/styles/mixins" as *;
+@use "@/styles/form-control-base" as *;
+@use "@/styles/input-base" as *;
+
+.inputWrapper {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+/* Hide IMask's default browser validation popup */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
