@@ -1,0 +1,68 @@
+@use "@/styles/mixins" as *;
+@use "@/styles/form-control-base" as *;
+@use "@/styles/input-base" as *;
+
+.row {
+  align-items: center;
+  display: flex;
+  gap: 0;
+}
+
+.ipField {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  flex: 1;
+}
+
+.separator {
+  align-items: center;
+  background-color: var(--ao-background-secondary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-left: none;
+  border-right: none;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-md);
+  font-weight: var(--ao-font-weight-bold);
+  height: 40px;
+  justify-content: center;
+  min-width: 20px;
+  padding: 0 4px;
+  user-select: none;
+}
+
+.portField {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  max-width: 100px;
+}
+
+.ipInput {
+  @include input-base;
+  border-bottom-right-radius: 0;
+  border-right: none;
+  border-top-right-radius: 0;
+}
+
+.portInput {
+  @include input-base;
+  border-bottom-left-radius: 0;
+  border-left: none;
+  border-top-left-radius: 0;
+}
+
+.ipInputError,
+.portInputError {
+  border-color: var(--ao-color-red9);
+
+  &:focus {
+    border-color: var(--ao-color-red9);
+  }
+}
+
+.hint {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  margin-top: var(--ao-spacing-0_5);
+}

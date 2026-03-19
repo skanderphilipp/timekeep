@@ -1,0 +1,20 @@
+declare const classNames: {
+  readonly container: "container";
+  readonly fullWidth: "fullWidth";
+  readonly label: "label";
+  readonly required: "required";
+  readonly error: "error";
+  readonly helper: "helper";
+  readonly input: "input";
+  readonly inputError: "inputError";
+  readonly row: "row";
+  readonly ipField: "ipField";
+  readonly separator: "separator";
+  readonly portField: "portField";
+  readonly ipInput: "ipInput";
+  readonly portInput: "portInput";
+  readonly ipInputError: "ipInputError";
+  readonly portInputError: "portInputError";
+  readonly hint: "hint";
+};
+export = classNames;
