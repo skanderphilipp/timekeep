@@ -1,0 +1,21 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ao-spacing-2) 0;
+  border-bottom: 1px solid var(--ao-border-color-light);
+}
+
+.leading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trailing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: var(--ao-spacing-4);
+}
