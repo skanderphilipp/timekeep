@@ -1,0 +1,67 @@
+@use "@/styles/mixins" as *;
+
+.item {
+  align-items: center;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-primary);
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-2);
+  min-height: 32px;
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  text-decoration: none;
+  transition: background 0.08s ease;
+  width: 100%;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+  }
+
+  &:focus-visible {
+    background: var(--ao-background-tertiary);
+    outline: none;
+  }
+
+  &:active {
+    background: var(--ao-accent-accent3);
+  }
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+
+  &:hover {
+    background: none;
+  }
+}
+
+// ── Sub-elements ───────────────────────────────────────────────────────────────
+
+.leftIcon {
+  align-items: center;
+  color: var(--ao-font-color-secondary);
+  display: flex;
+  flex-shrink: 0;
+
+  svg {
+    height: 16px;
+    width: 16px;
+  }
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rightSlot {
+  align-items: center;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
