@@ -1,0 +1,11 @@
+.separator {
+  border: none;
+  border-block-start: 1px solid var(--ao-border-color-light);
+  margin: var(--ao-spacing-1) 0;
+}
+
+// Auto-hide if first or last child (clean edges)
+.separator:first-child,
+.separator:last-child {
+  display: none;
+}
