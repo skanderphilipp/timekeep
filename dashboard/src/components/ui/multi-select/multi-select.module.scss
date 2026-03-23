@@ -1,0 +1,105 @@
+@use "@/styles/dropdown-base" as *;
+
+.trigger {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+  cursor: text;
+  display: flex;
+  min-height: 40px;
+  outline: none;
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  transition: border-color 0.15s ease;
+  width: 100%;
+
+  &:focus-within {
+    border-color: var(--ao-accent-accent9);
+    box-shadow: 0 0 0 2px var(--ao-accent-accent8);
+  }
+
+  &[data-popup-open] {
+    border-color: var(--ao-accent-accent9);
+  }
+
+  &:disabled {
+    background-color: var(--ao-background-secondary);
+    color: var(--ao-font-color-disabled);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+/* ── Chips ── */
+
+.chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.chip {
+  align-items: center;
+  background: var(--ao-accent-accent5);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-accent-accent11);
+  display: inline-flex;
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  gap: 2px;
+  padding: 1px var(--ao-spacing-1);
+  white-space: nowrap;
+
+  &:has([data-disabled]) {
+    opacity: 0.5;
+  }
+}
+
+.chipLabel {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chipRemove {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 2px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  opacity: 0.6;
+  padding: 0;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* ── Input ── */
+
+.input {
+  background: transparent;
+  border: none;
+  color: var(--ao-font-color-primary);
+  flex: 1;
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  min-width: 80px;
+  outline: none;
+  padding: 0;
+
+  &::placeholder {
+    color: var(--ao-font-color-tertiary);
+  }
+}
+
+/* ── List (max-height override) ── */
+
+.list {
+  max-height: 250px;
+}
