@@ -1,0 +1,69 @@
+/* 1:1 port of Reaktly's OverflowingTextWithTooltip.module.scss */
+
+.trigger {
+  /* base-ui trigger — remove default button styling */
+  background: none;
+  border: none;
+  cursor: inherit;
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  text-align: inherit;
+}
+
+/* ── Multi-line clamped text ── */
+
+.overflowingMultilineText {
+  cursor: inherit;
+  display: -webkit-box;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  height: auto;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-decoration: inherit;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--displayed-max-rows, 1);
+  white-space: pre-wrap;
+
+  &[data-overflowing] {
+    cursor: pointer;
+  }
+}
+
+/* ── Single-line ellipsis text ── */
+
+.overflowingText {
+  cursor: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  height: auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-decoration: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &[data-overflowing] {
+    cursor: pointer;
+  }
+}
+
+/* ── Tooltip popup ── */
+
+.tooltip {
+  background: var(--ao-font-color-primary);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-background-primary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  line-height: 1.4;
+  max-width: 280px;
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
