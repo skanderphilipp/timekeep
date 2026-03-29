@@ -1,0 +1,21 @@
+@use "@/styles/mixins" as *;
+@use "@/styles/form-control-base" as *;
+@use "@/styles/input-base" as *;
+
+.inputWrapper {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+/* Firefox number input spinner */
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Chrome/Safari/Edge number input spinner */
+.input[type="number"]::-webkit-outer-spin-button,
+.input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
