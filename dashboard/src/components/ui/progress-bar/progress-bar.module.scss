@@ -1,0 +1,49 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  width: 100%;
+}
+
+.track {
+  background: var(--ao-background-secondary);
+  border-radius: var(--ao-border-radius-full);
+  overflow: hidden;
+}
+
+.fill {
+  background: var(--ao-accent-accent9);
+  border-radius: var(--ao-border-radius-full);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.label {
+  font-size: var(--ao-font-size-xs);
+  color: var(--ao-font-color-tertiary);
+  text-align: end;
+}
+
+// ── Sizes ──────────────────────────────────────────────────────────────────────
+
+.sm .track {
+  height: 4px;
+}
+
+.md .track {
+  height: 8px;
+}
+
+// ── Variants ───────────────────────────────────────────────────────────────────
+
+.success .fill {
+  background: var(--ao-color-green9);
+}
+
+.warning .fill {
+  background: var(--ao-color-amber9);
+}
+
+.danger .fill {
+  background: var(--ao-color-red9);
+}
