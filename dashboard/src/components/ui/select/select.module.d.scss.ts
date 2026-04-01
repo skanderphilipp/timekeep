@@ -1,0 +1,21 @@
+declare const classNames: {
+  readonly container: "container";
+  readonly fullWidth: "fullWidth";
+  readonly label: "label";
+  readonly required: "required";
+  readonly error: "error";
+  readonly helper: "helper";
+  readonly positioner: "positioner";
+  readonly popup: "popup";
+  readonly list: "list";
+  readonly item: "item";
+  readonly itemText: "itemText";
+  readonly itemIndicator: "itemIndicator";
+  readonly stateRow: "stateRow";
+  readonly emptyText: "emptyText";
+  readonly trigger: "trigger";
+  readonly triggerError: "triggerError";
+  readonly value: "value";
+  readonly icon: "icon";
+};
+export = classNames;
