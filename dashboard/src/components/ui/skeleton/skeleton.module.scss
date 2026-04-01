@@ -1,0 +1,31 @@
+@use "@/styles/mixins" as *;
+
+.skeleton {
+  @include skeleton-loading;
+  border-radius: var(--ao-border-radius-sm);
+  display: block;
+}
+
+.text {
+  border-radius: var(--ao-border-radius-sm);
+  height: 1em;
+  width: 100%;
+}
+
+.circle {
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+}
+
+.rect {
+  border-radius: var(--ao-border-radius-md);
+  height: 100px;
+  width: 100%;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-3);
+}
