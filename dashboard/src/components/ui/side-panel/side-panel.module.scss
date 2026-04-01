@@ -1,0 +1,143 @@
+@use "@/styles/mixins" as *;
+
+// ── Panel Wrapper ──────────────────────────────────────────────────────────────
+
+.panel {
+  border-inline-start: 1px solid var(--ao-border-color-light);
+  flex-shrink: 0;
+  height: 100vh;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  transition: width 0.2s ease;
+  width: 0;
+
+  &[data-open="true"] {
+    width: var(--ao-side-panel-width);
+  }
+}
+
+// ── Inner (scrollable container) ────────────────────────────────────────────────
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 320px;
+  width: var(--ao-side-panel-width);
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+
+.header {
+  align-items: center;
+  border-block-end: 1px solid var(--ao-border-color-light);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--ao-spacing-2);
+  height: 48px;
+  padding: 0 var(--ao-spacing-4);
+}
+
+.title {
+  color: var(--ao-font-color-primary);
+  flex: 1;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-semibold);
+  line-height: var(--ao-line-height-heading);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.closeButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+
+  &:hover {
+    background: var(--ao-background-secondary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Content ────────────────────────────────────────────────────────────────────
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+
+  // Subtle fade-in when content appears
+  animation: sidePanelFadeIn 0.15s ease;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@keyframes sidePanelFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ── Resize Gap (invisible drag zone) ────────────────────────────────────────────
+
+.gap {
+  box-sizing: content-box;
+  cursor: col-resize;
+  flex-shrink: 0;
+  height: 100%;
+  margin: 0 -4px;
+  padding: 0 4px;
+  position: relative;
+  width: 0;
+  z-index: 10;
+
+  // RTL: flip cursor direction
+  [dir="rtl"] & {
+    cursor: col-resize;
+  }
+}
+
+// ── Resize Handle (visual indicator) ────────────────────────────────────────────
+
+.handle {
+  background: var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-pill);
+  height: 48px;
+  left: 50%;
+  margin-inline-start: -2px;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition:
+    background-color 0.15s ease,
+    height 0.15s ease;
+  width: 4px;
+
+  [data-hovered="true"] &,
+  &:hover {
+    background: var(--ao-font-color-tertiary);
+    height: 64px;
+  }
+
+  [data-resizing="true"] &,
+  [data-active="true"] & {
+    background: var(--ao-accent-accent9);
+    height: 64px;
+  }
+}
