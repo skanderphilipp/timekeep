@@ -1,0 +1,66 @@
+.container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+}
+
+.donut {
+  height: 128px;
+  position: relative;
+  width: 128px;
+}
+
+/* Override Recharts container to fit the donut */
+.donut > * {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.overlay {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+}
+
+.percentage {
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-bold);
+}
+
+.overlayLabel {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+}
+
+.success { color: var(--ao-color-green9); }
+.warning { color: var(--ao-color-amber9); }
+.danger { color: var(--ao-color-red9); }
+
+.label {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+}
+
+.countRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.bar {
+  width: 100%;
+}
+
+.count {
+  color: var(--ao-font-color-tertiary);
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-xs);
+  text-align: center;
+}
