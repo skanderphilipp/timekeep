@@ -1,0 +1,46 @@
+.text {
+  line-height: 1.5;
+  margin: 0;
+}
+
+// ── Sizes ─────────────────────────────────────────────────────────────────────
+
+.sizeBody {
+  font-size: var(--ao-font-size-md);
+}
+
+.sizeCaption {
+  font-size: var(--ao-font-size-sm);
+}
+
+.sizeLabel {
+  font-size: var(--ao-font-size-sm);
+}
+
+// ── Weights ───────────────────────────────────────────────────────────────────
+
+.weightRegular {
+  font-weight: var(--ao-font-weight-regular);
+}
+
+.weightMedium {
+  font-weight: var(--ao-font-weight-medium);
+}
+
+// ── Colors ────────────────────────────────────────────────────────────────────
+
+.primary {
+  color: var(--ao-font-color-primary);
+}
+
+.secondary {
+  color: var(--ao-font-color-secondary);
+}
+
+.tertiary {
+  color: var(--ao-font-color-tertiary);
+}
+
+.danger {
+  color: var(--ao-color-red11);
+}
