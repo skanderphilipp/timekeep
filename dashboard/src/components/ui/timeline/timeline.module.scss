@@ -1,0 +1,158 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.header {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-3);
+  padding: 0 var(--ao-spacing-3) var(--ao-spacing-2);
+}
+
+.headerLabel {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  min-width: 140px;
+}
+
+.hourMarkers {
+  display: flex;
+  flex: 1;
+}
+
+.hourMarker {
+  color: var(--ao-font-color-tertiary);
+  flex: 1;
+  font-size: var(--ao-font-size-xxs);
+  text-align: center;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.empty {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-sm);
+  padding: var(--ao-spacing-4);
+  text-align: center;
+}
+
+/* ── Row ────────────────────────────────────────────────────────────────── */
+
+.row {
+  align-items: center;
+  border-bottom: 1px solid var(--ao-border-color-light);
+  display: flex;
+  gap: var(--ao-spacing-3);
+  min-height: 40px;
+  padding: 0 var(--ao-spacing-3);
+  transition: background 0.1s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.clickableRow {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--ao-background-tertiary);
+    }
+  }
+}
+
+.employeeLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.employeeName {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.employeePin {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+}
+
+/* ── Bar Track + Blocks ─────────────────────────────────────────────────── */
+
+.barTrack {
+  flex: 1;
+  height: 20px;
+  position: relative;
+}
+
+.block {
+  border-radius: 3px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  transition: opacity 0.1s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.blockDefault {
+  background: var(--ao-border-color-medium);
+}
+
+.blockPresent {
+  background: var(--ao-color-green9);
+}
+
+.blockWarning {
+  background: var(--ao-color-amber9);
+}
+
+.blockOvertime {
+  background: var(--ao-color-blue9);
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────────── */
+
+.legend {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-2) var(--ao-spacing-3) 0;
+}
+
+.legendDot {
+  border-radius: var(--ao-border-radius-full);
+  display: inline-block;
+  height: 8px;
+  width: 8px;
+}
+
+.legendLabel {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-xs);
+  margin-left: var(--ao-spacing-1);
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.skeleton {
+  height: 200px;
+}

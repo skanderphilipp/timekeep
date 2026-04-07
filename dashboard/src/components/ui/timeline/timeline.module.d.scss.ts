@@ -1,0 +1,25 @@
+declare const classNames: {
+  readonly root: "root";
+  readonly header: "header";
+  readonly headerLabel: "headerLabel";
+  readonly hourMarkers: "hourMarkers";
+  readonly hourMarker: "hourMarker";
+  readonly body: "body";
+  readonly empty: "empty";
+  readonly row: "row";
+  readonly clickableRow: "clickableRow";
+  readonly employeeLabel: "employeeLabel";
+  readonly employeeName: "employeeName";
+  readonly employeePin: "employeePin";
+  readonly barTrack: "barTrack";
+  readonly block: "block";
+  readonly blockDefault: "blockDefault";
+  readonly blockPresent: "blockPresent";
+  readonly blockWarning: "blockWarning";
+  readonly blockOvertime: "blockOvertime";
+  readonly legend: "legend";
+  readonly legendDot: "legendDot";
+  readonly legendLabel: "legendLabel";
+  readonly skeleton: "skeleton";
+};
+export = classNames;
