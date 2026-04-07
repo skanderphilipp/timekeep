@@ -1,0 +1,48 @@
+.tile {
+  align-items: center;
+  border: 1px solid;
+  border-radius: var(--ao-border-radius-md);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+/* ── Color variants ── */
+
+.accent {
+  background-color: var(--ao-accent-accent1);
+  border-color: var(--ao-accent-accent5);
+  color: var(--ao-accent-accent9);
+}
+
+.red {
+  background-color: var(--ao-color-red1);
+  border-color: var(--ao-color-red5);
+  color: var(--ao-color-red9);
+}
+
+.green {
+  background-color: var(--ao-color-green1);
+  border-color: var(--ao-color-green5);
+  color: var(--ao-color-green9);
+}
+
+.amber {
+  background-color: var(--ao-color-amber1);
+  border-color: var(--ao-color-amber5);
+  color: var(--ao-color-amber9);
+}
+
+.blue {
+  background-color: var(--ao-color-blue1);
+  border-color: var(--ao-color-blue5);
+  color: var(--ao-color-blue9);
+}
+
+.neutral {
+  background-color: var(--ao-background-secondary);
+  border-color: var(--ao-border-color-medium);
+  color: var(--ao-font-color-tertiary);
+}
