@@ -1,0 +1,62 @@
+.label {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--ao-spacing-2);
+  user-select: none;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input {
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+
+  &:focus-visible + .track {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: 2px;
+  }
+}
+
+.track {
+  background: var(--ao-background-tertiary);
+  border-radius: var(--ao-border-radius-pill, 999px);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 20px;
+  padding: 2px;
+  transition: background-color 0.15s ease;
+  width: 36px;
+
+  .input:checked + & {
+    background: var(--ao-accent-accent9);
+  }
+}
+
+.thumb {
+  background: var(--ao-font-color-inverted);
+  border-radius: 50%;
+  box-shadow: var(--ao-shadow-sm);
+  height: 16px;
+  transition: transform 0.15s ease;
+  width: 16px;
+
+  .input:checked + .track & {
+    transform: translateX(16px);
+  }
+}
+
+[dir="rtl"] .input:checked + .track .thumb {
+  transform: translateX(-16px);
+}
+
+.labelText {
+  font-size: var(--ao-font-size-sm);
+}
