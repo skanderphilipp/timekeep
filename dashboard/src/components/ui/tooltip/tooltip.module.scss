@@ -1,0 +1,19 @@
+.trigger {
+  display: inline-flex;
+}
+
+.popup {
+  background: var(--ao-font-color-primary);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-background-primary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  line-height: 1.4;
+  max-width: 240px;
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  z-index: 50;
+}
+
+.arrow {
+  fill: var(--ao-font-color-primary);
+}
