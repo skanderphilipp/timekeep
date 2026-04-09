@@ -1,0 +1,21 @@
+declare const classNames: {
+  readonly root: "root";
+  readonly topBar: "topBar";
+  readonly topLeft: "topLeft";
+  readonly switcher: "switcher";
+  readonly switcherButton: "switcherButton";
+  readonly switcherActive: "switcherActive";
+  readonly count: "count";
+  readonly chipRow: "chipRow";
+  readonly chipContainer: "chipContainer";
+  readonly chip: "chip";
+  readonly sortChip: "sortChip";
+  readonly filterChip: "filterChip";
+  readonly chipLabel: "chipLabel";
+  readonly chipValue: "chipValue";
+  readonly chipRemove: "chipRemove";
+  readonly separator: "separator";
+  readonly chipActions: "chipActions";
+  readonly addButton: "addButton";
+};
+export = classNames;

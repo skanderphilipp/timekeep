@@ -1,0 +1,172 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Top Bar ─────────────────────────────────────────────────────────────────── */
+
+.topBar {
+  align-items: center;
+  display: flex;
+  height: 40px;
+  justify-content: space-between;
+  padding: 0 var(--ao-spacing-2);
+}
+
+.topLeft {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-3);
+}
+
+/* ── View Type Switcher ──────────────────────────────────────────────────────── */
+
+.switcher {
+  background: var(--ao-background-secondary);
+  border-radius: var(--ao-border-radius-sm);
+  display: flex;
+  padding: 2px;
+}
+
+.switcherButton {
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  padding: 4px var(--ao-spacing-2);
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.switcherActive {
+  background: var(--ao-background-primary);
+  box-shadow: var(--ao-shadow-sm);
+  color: var(--ao-font-color-primary);
+}
+
+/* ── Count ───────────────────────────────────────────────────────────────────── */
+
+.count {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+}
+
+/* ── Chip Row ────────────────────────────────────────────────────────────────── */
+
+.chipRow {
+  align-items: center;
+  border-top: 1px solid var(--ao-border-color-light);
+  display: flex;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+}
+
+.chipContainer {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+  overflow-x: hidden;
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────────── */
+
+.chip {
+  align-items: center;
+  border: 1px solid var(--ao-accent-accent5);
+  border-radius: var(--ao-border-radius-sm);
+  box-sizing: border-box;
+  color: var(--ao-color-blue11);
+  column-gap: 0;
+  cursor: default;
+  display: inline-flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-1);
+  height: 24px;
+  padding: var(--ao-spacing-0_5);
+  padding-inline-start: var(--ao-spacing-1);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sortChip {
+  background: var(--ao-accent-accent3);
+}
+
+.filterChip {
+  background: var(--ao-color-amber3);
+  border-color: var(--ao-color-amber5);
+  color: var(--ao-color-amber11);
+}
+
+.chipLabel {
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.chipValue {
+  font-weight: var(--ao-font-weight-regular);
+}
+
+.chipRemove {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-border-radius-sm);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  height: 18px;
+  justify-content: center;
+  margin: 0;
+  opacity: 0.7;
+  padding: 0;
+  width: 18px;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* ── Separator ───────────────────────────────────────────────────────────────── */
+
+.separator {
+  align-self: stretch;
+  background: var(--ao-border-color-light);
+  margin: 0 var(--ao-spacing-1);
+  width: 1px;
+}
+
+/* ── Action Buttons ──────────────────────────────────────────────────────────── */
+
+.chipActions {
+  display: flex;
+  gap: var(--ao-spacing-1);
+  flex-shrink: 0;
+}
+
+.addButton {
+  background: none;
+  border: 1px dashed var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  font-size: var(--ao-font-size-xs);
+  padding: 2px var(--ao-spacing-1);
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-accent-accent7);
+    color: var(--ao-font-color-primary);
+  }
+}
