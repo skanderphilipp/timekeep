@@ -1,0 +1,35 @@
+.picker {
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--ao-border-primary);
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-text-secondary);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 4px 24px 4px 8px;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  min-width: 52px;
+  text-align: center;
+
+  &:hover {
+    border-color: var(--ao-border-secondary);
+    color: var(--ao-text-primary);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--ao-accent-ring);
+  }
+
+  option {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+}
