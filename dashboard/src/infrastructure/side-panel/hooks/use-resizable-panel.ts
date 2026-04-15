@@ -1,0 +1,167 @@
+import { useCallback, useState } from "react";
+
+import { useTrackPointer, type PointerEventListener } from "@/infrastructure/pointer-event/use-track-pointer";
+
+// ── Constants ───────────────────────────────────────────────────────────────────
+
+/** Pixels of drag before the resize is considered "real" (prevents accidental clicks). */
+const RESIZE_DRAG_THRESHOLD_PX = 5;
+
+// ── Types ───────────────────────────────────────────────────────────────────────
+
+export interface ResizablePanelConstraints {
+  min: number;
+  max: number;
+  default: number;
+}
+
+export type ResizablePanelSide = "left" | "right";
+
+interface UseResizablePanelOptions {
+  side: ResizablePanelSide;
+  constraints: ResizablePanelConstraints;
+  currentWidth: number;
+  onWidthChange: (width: number) => void;
+  onCollapse: () => void;
+  /** CSS variable name to set during drag (for live preview). */
+  cssVariableName?: string;
+  /** Called when actual resize begins (after threshold). */
+  onResizeStart?: () => void;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────────
+
+function clampWidth(width: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, width));
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────────────
+
+/**
+ * Mouse-driven panel resize hook.
+ *
+ * Tracks pointer movement during a drag interaction on a resize handle,
+ * updating a CSS custom property in real time for smooth visual feedback.
+ * On release, calls `onWidthChange` with the final clamped width, or
+ * `onCollapse` if the drag was too short (a click).
+ *
+ * Ported from Twenty's `useResizablePanel` pattern.
+ */
+export function useResizablePanel({
+  side,
+  constraints,
+  currentWidth,
+  onWidthChange,
+  onCollapse,
+  cssVariableName,
+  onResizeStart,
+}: UseResizablePanelOptions) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [startWidth, setStartWidth] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
+
+  const handleResizeMove = useCallback<PointerEventListener>(
+    ({ x }) => {
+      if (startX === null) return;
+
+      const deltaX = x - startX;
+
+      if (!hasDragged && Math.abs(deltaX) > RESIZE_DRAG_THRESHOLD_PX) {
+        setHasDragged(true);
+        onResizeStart?.();
+      }
+
+      if (Math.abs(deltaX) > RESIZE_DRAG_THRESHOLD_PX) {
+        const widthDelta = side === "right" ? deltaX : -deltaX;
+        const clamped = clampWidth(
+          startWidth + widthDelta,
+          constraints.min,
+          constraints.max,
+        );
+
+        if (cssVariableName !== undefined) {
+          document.documentElement.style.setProperty(
+            cssVariableName,
+            `${clamped}px`,
+          );
+        }
+      }
+    },
+    [
+      startX,
+      startWidth,
+      hasDragged,
+      side,
+      constraints.min,
+      constraints.max,
+      cssVariableName,
+      onResizeStart,
+    ],
+  );
+
+  const handleResizeEnd = useCallback<PointerEventListener>(
+    ({ x }) => {
+      if (startX === null) {
+        setIsResizing(false);
+        return;
+      }
+
+      const deltaX = x - startX;
+
+      if (!hasDragged) {
+        onCollapse();
+      } else {
+        const widthDelta = side === "right" ? deltaX : -deltaX;
+        const finalWidth = clampWidth(
+          startWidth + widthDelta,
+          constraints.min,
+          constraints.max,
+        );
+        onWidthChange(finalWidth);
+      }
+
+      setStartX(null);
+      setIsResizing(false);
+    },
+    [
+      startX,
+      startWidth,
+      hasDragged,
+      side,
+      constraints.min,
+      constraints.max,
+      onCollapse,
+      onWidthChange,
+    ],
+  );
+
+  useTrackPointer({
+    shouldTrackPointer: isResizing,
+    onMouseMove: handleResizeMove,
+    onMouseUp: handleResizeEnd,
+  });
+
+  const handleMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      setStartX(event.clientX);
+      setStartWidth(currentWidth);
+      setHasDragged(false);
+      setIsResizing(true);
+    },
+    [currentWidth],
+  );
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+
+  return {
+    isHovered,
+    isResizing,
+    handleMouseDown,
+    handleMouseEnter,
+    handleMouseLeave,
+  } as const;
+}
