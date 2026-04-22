@@ -1,0 +1,2141 @@
+# Arabic translations for Attendance OS
+msgid ""
+msgstr ""
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:81
+#~ msgid "nav.integrations.apiKeys"
+#~ msgstr "مفاتيح API"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:82
+#~ msgid "nav.auditLog"
+#~ msgstr "سجل التدقيق"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:80
+#~ msgid "nav.integrations.endpoints"
+#~ msgstr "نقاط النهاية"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:45
+#~ msgid "breadcrumb.integrations"
+#~ msgstr "التكاملات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:79
+#~ msgid "nav.integrations"
+#~ msgstr "التكاملات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:41
+#~ msgid "breadcrumb.polling"
+#~ msgstr "الاستعلام"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:76
+#~ msgid "nav.devices.polling"
+#~ msgstr "الاستعلام"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:84
+#~ msgid "nav.users"
+#~ msgstr "المستخدمون"
+
+#. placeholder {0}: entry.entityType
+#. placeholder {1}: entry.entityId
+#: src/infrastructure/side-panel/side-panel-router.tsx:52
+msgid "{0} detail: {1}"
+msgstr "{0} تفاصيل: {1}"
+
+#. placeholder {0}: Math.floor(diff / 86400)
+#: src/components/ui/activity-timeline/activity-timeline.tsx:134
+msgid "{0}d ago"
+msgstr "قبل {0} يوم"
+
+#. placeholder {0}: Math.floor(diff / 3600)
+#: src/components/ui/activity-timeline/activity-timeline.tsx:133
+#: src/modules/dashboard/pages/dashboard-page.tsx:17
+msgid "{0}h ago"
+msgstr "قبل {0} ساعة"
+
+#. placeholder {0}: Math.floor(diff / 60)
+#: src/components/ui/activity-timeline/activity-timeline.tsx:132
+#: src/modules/dashboard/pages/dashboard-page.tsx:16
+msgid "{0}m ago"
+msgstr "قبل {0} دقيقة"
+
+#: src/modules/data-renderer/components/data-table-footer.tsx:41
+msgid "{selectedCount} of {totalRows} selected"
+msgstr "{selectedCount} من {totalRows} محدد"
+
+#: src/modules/data-renderer/components/data-table-footer.tsx:42
+msgid "{totalRows} rows"
+msgstr "{totalRows} صف"
+
+#: src/components/ui/view-bar/view-bar.tsx:171
+msgid "+ Filter"
+msgstr "+ تصفية"
+
+#: src/components/ui/view-bar/view-bar.tsx:166
+msgid "+ Sort"
+msgstr "+ ترتيب"
+
+#: src/modules/devices/components/device-form.tsx:66
+msgid "0"
+msgstr "٠"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:80
+msgid "180 days"
+msgstr "١٨٠ يوم"
+
+#: src/modules/devices/components/device-form.tsx:59
+msgid "192.168.1.100:4370"
+msgstr "192.168.1.100:4370"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:77
+msgid "30 days"
+msgstr "٣٠ يوم"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:81
+msgid "365 days"
+msgstr "٣٦٥ يوم"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:78
+msgid "60 days"
+msgstr "٦٠ يوم"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:79
+msgid "90 days"
+msgstr "٩٠ يوم"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:63
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:286
+#: src/modules/punches/components/attendance-table.tsx:61
+msgid "Absent"
+msgstr "غائب"
+
+#: src/modules/users/components/user-form.tsx:112
+msgid "Access"
+msgstr "الصلاحيات"
+
+#: src/modules/settings/pages/settings-page.tsx:58
+msgid "Account"
+msgstr "الحساب"
+
+#: src/modules/settings/pages/settings-page.tsx:17
+#~ msgid "Account preferences and system information."
+#~ msgstr "تفضيلات الحساب ومعلومات النظام."
+
+#: src/modules/audit/pages/audit-log-page.tsx:70
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:42
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:44
+msgid "Action"
+msgstr "الإجراء"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:51
+#: src/modules/users/pages/users-page.tsx:111
+msgid "Actions"
+msgstr "إجراءات"
+
+#: src/modules/apikeys/components/api-key-card.tsx:37
+#: src/modules/devices/components/device-card.tsx:36
+#: src/modules/integrations/pages/endpoints-page.tsx:49
+#: src/modules/users/components/user-form.tsx:95
+#: src/modules/users/pages/users-page.tsx:105
+msgid "Active"
+msgstr "نشط"
+
+#: src/modules/audit/pages/audit-log-page.tsx:64
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:29
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:31
+msgid "Actor"
+msgstr "الفاعل"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:81
+msgid "Add an endpoint to start sending attendance events."
+msgstr "أضف نقطة نهاية لبدء إرسال أحداث الحضور."
+
+#: src/modules/settings/pages/settings-page.tsx:139
+#~ msgid "Add an integration endpoint to start sending attendance events."
+#~ msgstr "أضف نقطة تكامل لبدء إرسال أحداث الحضور."
+
+# Devices
+#: src/infrastructure/command-palette/command-palette.tsx:112
+#: src/modules/devices/components/device-form.tsx:111
+#: src/modules/devices/pages/device-form-page.tsx:23
+#: src/modules/devices/pages/device-list-page.tsx:28
+#: src/modules/devices/pages/device-list-page.tsx:73
+msgid "Add Device"
+msgstr "إضافة جهاز"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:74
+#: src/modules/integrations/pages/endpoints-page.tsx:81
+msgid "Add Endpoint"
+msgstr "إضافة نقطة نهاية"
+
+#: src/modules/users/pages/users-page.tsx:167
+#: src/modules/users/pages/users-page.tsx:184
+msgid "Add User"
+msgstr "إضافة مستخدم"
+
+#: src/modules/devices/pages/device-list-page.tsx:68
+msgid "Add your first biometric scanner to start collecting attendance data."
+msgstr "أضف أول ماسح بيومتري لبدء جمع بيانات الحضور."
+
+#: src/modules/auth/components/login-form.tsx:103
+msgid "admin"
+msgstr "مدير"
+
+#: src/infrastructure/role-badge/role-badge.tsx:20
+#: src/modules/users/components/user-form.tsx:39
+msgid "Admin"
+msgstr "مدير"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:95
+msgid "ADMS active"
+msgstr "ADMS نشط"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:95
+msgid "ADMS inactive"
+msgstr "ADMS غير نشط"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:67
+msgid "nav.devices.list"
+msgstr "قائمة الأجهزة"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:163
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:277
+msgid "All Employees"
+msgstr "جميع الموظفين"
+
+#: src/modules/data-renderer/components/data-table-container.tsx:180
+msgid "All records loaded"
+msgstr "تم تحميل جميع السجلات"
+
+#: src/infrastructure/error-boundary/error-boundary.tsx:75
+msgid "An unexpected error occurred. Please try refreshing the page."
+msgstr "حدث خطأ غير متوقع. يرجى تحديث الصفحة."
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:38
+msgid "API Key {entityId}"
+msgstr "مفتاح API {entityId}"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:102
+msgid "API Key Created"
+msgstr "تم إنشاء مفتاح API"
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:36
+msgid "API key revoked."
+msgstr "تم إبطال مفتاح API."
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:48
+#: src/modules/apikeys/pages/api-keys-page.tsx:63
+msgid "API Keys"
+msgstr "مفاتيح API"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:46
+msgid "breadcrumb.apiKeys"
+msgstr "مفاتيح API"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:73
+msgid "nav.settings.apiKeys"
+msgstr "مفاتيح API"
+
+#: src/infrastructure/command-palette/command-palette.tsx:137
+msgid "Application configuration"
+msgstr "إعدادات التطبيق"
+
+#: src/infrastructure/locale/locale-switcher.tsx:17
+#~ msgid "Arabic"
+#~ msgstr "العربية"
+
+#. placeholder {0}: deletingUser?.username ?? ""
+#: src/modules/users/pages/users-page.tsx:210
+msgid "Are you sure you want to delete {0}? This action cannot be undone."
+msgstr "هل أنت متأكد من حذف {0}؟ لا يمكن التراجع عن هذا الإجراء."
+
+#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:55
+msgid "Attendance Activity (24h)"
+msgstr "نشاط الحضور (24 ساعة)"
+
+#: src/modules/punches/pages/punch-query-page.tsx:81
+msgid "Attendance data will appear here once devices start recording punches."
+msgstr "ستظهر بيانات الحضور هنا بمجرد بدء الأجهزة في تسجيل البصمات."
+
+#: src/modules/auth/pages/login-page.tsx:77
+#~ msgid "Attendance OS"
+#~ msgstr "Attendance OS"
+
+#: src/modules/exports/components/export-bar.tsx:70
+msgid "Attendance OS — Confidential"
+msgstr "Attendance OS — سري"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:41
+msgid "Attendance overview and device status."
+msgstr "نظرة عامة على الحضور وحالة الأجهزة."
+
+#: src/modules/exports/components/export-bar.tsx:55
+msgid "Attendance Punch Report"
+msgstr "تقرير بصمات الحضور"
+
+#: src/infrastructure/command-palette/command-palette.tsx:129
+msgid "Attendance reports and exports"
+msgstr "تقارير وتصدير الحضور"
+
+#: src/modules/reports/pages/reports-page.tsx:45
+#~ msgid "Attendance reports with date range selection and data visualization."
+#~ msgstr "تقارير الحضور مع اختيار النطاق الزمني وعرض البيانات."
+
+#: src/features/reports/pages/reports-page.tsx:21
+#~ msgid "Attendance reports with date range selection, employee summaries, and CSV export will be available in the next update."
+#~ msgstr "ستتوفر تقارير الحضور مع اختيار النطاق الزمني وملخصات الموظفين وتصدير CSV في التحديث القادم."
+
+#: src/features/reports/pages/reports-page.tsx:15
+#~ msgid "Attendance reports with date range selection, employee summaries, and CSV export."
+#~ msgstr "تقارير الحضور مع اختيار النطاق الزمني وملخصات الموظفين وتصدير CSV."
+
+#: src/modules/reports/pages/reports-page.tsx:133
+msgid "Attendance statistics, punch distribution, and exports."
+msgstr "إحصائيات الحضور وتوزيع البصمات والتصدير."
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:41
+msgid "Audit Event {entityId}"
+msgstr "حدث تدقيق {entityId}"
+
+#: src/modules/audit/pages/audit-log-page.tsx:136
+msgid "Audit events will appear here as users perform actions."
+msgstr "ستظهر أحداث التدقيق هنا عند قيام المستخدمين بالإجراءات."
+
+#: src/modules/audit/pages/audit-log-page.tsx:100
+#: src/modules/audit/pages/audit-log-page.tsx:113
+msgid "Audit Log"
+msgstr "سجل التدقيق"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:47
+msgid "breadcrumb.audit"
+msgstr "التدقيق"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:75
+msgid "nav.settings.audit"
+msgstr "التدقيق"
+
+#: src/modules/settings/pages/settings-page.tsx:28
+msgid "Auto-discover devices"
+msgstr "اكتشاف تلقائي للأجهزة"
+
+#: src/app-shell.tsx:245
+#: src/components/ui/page-bar/page-bar.tsx:39
+msgid "Breadcrumb"
+msgstr "مسار التنقل"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:284
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:332
+msgid "Break"
+msgstr "استراحة"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:59
+#: src/modules/dashboard/pages/dashboard-page.tsx:26
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:21
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:48
+#: src/modules/reports/pages/reports-page.tsx:68
+msgid "Break In"
+msgstr "دخول الاستراحة"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:60
+#: src/modules/dashboard/pages/dashboard-page.tsx:25
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:20
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:49
+#: src/modules/reports/pages/reports-page.tsx:67
+msgid "Break Out"
+msgstr "خروج الاستراحة"
+
+#: src/modules/reports/pages/reports-page.tsx:162
+msgid "Breakdown of attendance events by type."
+msgstr "توزيع أحداث الحضور حسب النوع."
+
+#: src/components/ui/view-bar/view-bar.tsx:199
+msgid "Calendar"
+msgstr "التقويم"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:151
+#: src/modules/devices/components/device-form.tsx:108
+#: src/modules/integrations/components/endpoint-form.tsx:35
+#: src/modules/integrations/pages/endpoints-page.tsx:91
+#: src/modules/users/components/change-password-dialog.tsx:84
+#: src/modules/users/components/user-form.tsx:122
+#: src/modules/users/pages/users-page.tsx:219
+msgid "Cancel"
+msgstr "إلغاء"
+
+#: src/modules/punches/hooks/use-punch-query.ts:21
+#~ msgid "Card"
+#~ msgstr "بطاقة"
+
+#: src/modules/users/pages/users-page.tsx:124
+msgid "Change password"
+msgstr "تغيير كلمة المرور"
+
+#: src/modules/users/components/change-password-dialog.tsx:57
+#: src/modules/users/components/change-password-dialog.tsx:87
+msgid "Change Password"
+msgstr "تغيير كلمة المرور"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:57
+#: src/modules/dashboard/pages/dashboard-page.tsx:23
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:18
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:46
+#: src/modules/reports/pages/reports-page.tsx:65
+msgid "Check In"
+msgstr "تسجيل دخول"
+
+#: src/modules/exports/components/export-bar.tsx:61
+msgid "Check Ins"
+msgstr "تسجيلات الدخول"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:58
+#: src/modules/dashboard/pages/dashboard-page.tsx:24
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:19
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:47
+#: src/modules/reports/pages/reports-page.tsx:66
+msgid "Check Out"
+msgstr "تسجيل خروج"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:46
+#~ msgid "Check-Ins"
+#~ msgstr "تسجيلات الدخول"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:64
+msgid "Check-Ins (24h)"
+msgstr "تسجيلات الدخول (24 ساعة)"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:47
+#~ msgid "Check-Outs"
+#~ msgstr "تسجيلات الخروج"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:65
+msgid "Check-Outs (24h)"
+msgstr "تسجيلات الخروج (24 ساعة)"
+
+#: src/components/ui/filter-bar/filter-bar.tsx:39
+#: src/components/ui/filter-input/filter-input.tsx:47
+msgid "Clear"
+msgstr "مسح"
+
+#: src/components/ui/date-picker/date-picker.tsx:130
+msgid "Clear date"
+msgstr "مسح التاريخ"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:187
+msgid "Clear expiry date"
+msgstr "مسح تاريخ الانتهاء"
+
+#: src/modules/devices/pages/device-list-page.tsx:77
+msgid "Clear Filters"
+msgstr "مسح التصفية"
+
+#: src/components/ui/dropdown-search/dropdown-search.tsx:69
+#: src/components/ui/search-input/search-input.tsx:43
+msgid "Clear search"
+msgstr "مسح البحث"
+
+#: src/components/ui/callout/callout.tsx:82
+#: src/components/ui/dialog/dialog.tsx:44
+msgid "Close"
+msgstr "إغلاق"
+
+#: src/components/ui/side-panel/side-panel.tsx:112
+msgid "Close panel"
+msgstr "إغلاق اللوحة"
+
+#: src/app-shell.tsx:227
+msgid "Collapse"
+msgstr "طي"
+
+#: src/app-shell.tsx:224
+msgid "Collapse sidebar"
+msgstr "طي الشريط الجانبي"
+
+# Reports
+#: src/features/reports/pages/reports-page.tsx:20
+#: src/features/settings/pages/settings-page.tsx:20
+#~ msgid "Coming Soon"
+#~ msgstr "قريباً"
+
+#: src/modules/devices/components/device-form.tsx:64
+msgid "Comm Key"
+msgstr "مفتاح الاتصال"
+
+#: src/modules/devices/schemas/device-form.schema.ts:35
+msgid "Comm key is required"
+msgstr "مفتاح الاتصال مطلوب"
+
+#: src/modules/devices/schemas/device-form.schema.ts:37
+msgid "Comm key must be non-negative"
+msgstr "يجب أن يكون مفتاح الاتصال غير سالب"
+
+#: src/infrastructure/command-palette/command-palette.tsx:199
+msgid "Command palette"
+msgstr "لوحة الأوامر"
+
+#: src/modules/devices/components/device-form.tsx:65
+msgid "Communication key (0 = default)"
+msgstr "مفتاح الاتصال (0 = الافتراضي)"
+
+#: src/modules/integrations/components/endpoint-form.tsx:26
+msgid "Config (JSON)"
+msgstr "الإعدادات (JSON)"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:71
+msgid "Configure where attendance events are delivered — webhooks, Odoo, SAP, Zapier."
+msgstr "حدد وجهة تسليم أحداث الحضور — webhooks و Odoo و SAP و Zapier."
+
+#: src/modules/integrations/components/endpoint-form.tsx:31
+msgid "Configure where attendance events are delivered."
+msgstr "حدد وجهة تسليم أحداث الحضور."
+
+#: src/modules/settings/pages/settings-page.tsx:134
+#~ msgid "Configure where attendance events are delivered. Create endpoints for Odoo, webhooks, SAP, Zapier, or any custom HTTP target."
+#~ msgstr "حدد وجهة تسليم أحداث الحضور. أنشئ نقاط نهاية لـ Odoo أو webhooks أو SAP أو Zapier أو أي هدف HTTP مخصص."
+
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:83
+msgid "Connected"
+msgstr "متصل"
+
+#: src/modules/devices/components/device-form.tsx:89
+msgid "Connection"
+msgstr "الاتصال"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:56
+msgid "Connection Error"
+msgstr "خطأ في الاتصال"
+
+#: src/modules/settings/pages/settings-page.tsx:45
+msgid "Control how the server reads attendance data from connected scanners."
+msgstr "تحكم في كيفية قراءة الخادم لبيانات الحضور من الماسحات المتصلة."
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:107
+msgid "Copy this key now. It will not be shown again."
+msgstr "انسخ هذا المفتاح الآن. لن يتم عرضه مرة أخرى."
+
+#: src/modules/devices/pages/device-list-page.tsx:54
+msgid "Could not connect to the Attendance OS server."
+msgstr "تعذر الاتصال بخادم Attendance OS."
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:118
+msgid "Create a key for an integration partner."
+msgstr "أنشئ مفتاحاً لشريك تكامل."
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:72
+msgid "Create an API key to allow external integrations to query attendance data."
+msgstr "أنشئ مفتاح API للسماح للتكاملات الخارجية بالاستعلام عن بيانات الحضور."
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:65
+msgid "Create API Key"
+msgstr "إنشاء مفتاح API"
+
+#: src/modules/integrations/components/endpoint-form.tsx:36
+#: src/modules/integrations/pages/endpoints-page.tsx:85
+msgid "Create Endpoint"
+msgstr "إنشاء نقطة نهاية"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:157
+msgid "Create Key"
+msgstr "إنشاء مفتاح"
+
+#: src/modules/users/components/user-form.tsx:125
+#: src/modules/users/pages/users-page.tsx:200
+msgid "Create User"
+msgstr "إنشاء مستخدم"
+
+#: src/modules/users/pages/users-page.tsx:181
+msgid "Create your first dashboard user to get started."
+msgstr "أنشئ أول مستخدم للوحة التحكم للبدء."
+
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:29
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:31
+msgid "Created"
+msgstr "تاريخ الإنشاء"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:157
+msgid "Creating…"
+msgstr "جاري الإنشاء…"
+
+#: src/modules/exports/components/export-bar.tsx:139
+msgid "CSV"
+msgstr "CSV"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:82
+msgid "Custom date"
+msgstr "تاريخ مخصص"
+
+#: src/modules/reports/pages/reports-page.tsx:176
+msgid "Daily Punch Volume"
+msgstr "حجم البصمات اليومي"
+
+#: src/app-shell.tsx:272
+msgid "Dark Mode"
+msgstr "الوضع الداكن"
+
+# App Shell
+#: src/infrastructure/command-palette/command-palette.tsx:96
+#: src/modules/dashboard/pages/dashboard-page.tsx:40
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:65
+msgid "nav.dashboard"
+msgstr "لوحة التحكم"
+
+#: src/modules/exports/components/export-bar.tsx:62
+msgid "Date"
+msgstr "التاريخ"
+
+#: src/modules/reports/components/report-summary-cards.tsx:34
+msgid "Date Range"
+msgstr "النطاق الزمني"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:64
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:287
+msgid "Day Off"
+msgstr "يوم عطلة"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:38
+msgid "Decommissioned"
+msgstr "خارج الخدمة"
+
+#: src/modules/devices/pages/device-form-page.tsx:116
+#~ msgid "Default ZKTeco port: 4370"
+#~ msgstr "منفذ ZKTeco الافتراضي: 4370"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:56
+#: src/modules/integrations/pages/endpoints-page.tsx:92
+#: src/modules/users/pages/users-page.tsx:132
+#: src/modules/users/pages/users-page.tsx:226
+msgid "Delete"
+msgstr "حذف"
+
+#. placeholder {0}: deleting?.name ?? ""
+#: src/modules/integrations/pages/endpoints-page.tsx:89
+msgid "Delete {0}? This cannot be undone."
+msgstr "حذف {0}؟ لا يمكن التراجع عن هذا الإجراء."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:89
+msgid "Delete Endpoint"
+msgstr "حذف نقطة النهاية"
+
+#: src/modules/users/pages/users-page.tsx:208
+msgid "Delete User"
+msgstr "حذف مستخدم"
+
+#: src/modules/integrations/components/endpoint-form.tsx:25
+msgid "Destination URL for events"
+msgstr "رابط الوجهة للأحداث"
+
+#: src/modules/users/components/user-form.tsx:75
+msgid "Determines what the user can access"
+msgstr "يحدد ما يمكن للمستخدم الوصول إليه"
+
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:68
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:70
+#: src/modules/punches/components/attendance-table.tsx:113
+msgid "Device"
+msgstr "الجهاز"
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:28
+msgid "Device {entityId}"
+msgstr "جهاز {entityId}"
+
+#: src/modules/navigation/hooks/use-navigate-to-record.ts:37
+msgid "Device {sn}"
+msgstr "جهاز {sn}"
+
+#: src/modules/devices/hooks/use-device-form.ts:73
+msgid "Device added successfully."
+msgstr "تمت إضافة الجهاز بنجاح."
+
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:84
+#: src/modules/devices/components/device-detail-panel.tsx:44
+msgid "Device details will be available when connected to the Attendance OS server."
+msgstr "ستتوفر تفاصيل الجهاز عند الاتصال بخادم Attendance OS."
+
+#: src/modules/devices/components/device-form.tsx:80
+msgid "Device Identity"
+msgstr "هوية الجهاز"
+
+#: src/modules/settings/pages/settings-page.tsx:44
+msgid "Device Polling"
+msgstr "استعلام الأجهزة"
+
+#: src/modules/exports/components/export-bar.tsx:66
+#: src/modules/punches/pages/punch-query-page.tsx:47
+msgid "Device SN"
+msgstr "الرقم التسلسلي للجهاز"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:80
+msgid "Device Status"
+msgstr "حالة الجهاز"
+
+#: src/modules/devices/hooks/use-device-form.ts:72
+msgid "Device updated successfully."
+msgstr "تم تحديث الجهاز بنجاح."
+
+#. placeholder {0}: p.device_sn
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:196
+msgid "Device: {0}"
+msgstr "الجهاز: {0}"
+
+#: src/infrastructure/command-palette/command-palette.tsx:104
+#: src/modules/devices/pages/device-list-page.tsx:24
+msgid "Devices"
+msgstr "الأجهزة"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:40
+msgid "breadcrumb.devices"
+msgstr "الأجهزة"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:66
+msgid "nav.devices"
+msgstr "الأجهزة"
+
+#: src/modules/settings/pages/settings-page.tsx:148
+#~ msgid "Disabled"
+#~ msgstr "معطل"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:53
+#~ msgid "Disconnected"
+#~ msgstr "غير متصل"
+
+#: src/components/ui/banner/banner.tsx:53
+#: src/infrastructure/toast/toast.tsx:107
+msgid "Dismiss"
+msgstr "إغلاق"
+
+#: src/modules/users/components/user-form.tsx:64
+#: src/modules/users/pages/users-page.tsx:89
+msgid "Display Name"
+msgstr "اسم العرض"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:111
+msgid "Done"
+msgstr "تم"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:124
+msgid "e.g. Odoo Production Integration"
+msgstr "مثال: تكامل Odoo للإنتاج"
+
+#: src/modules/punches/components/attendance-table.tsx:63
+msgid "Early"
+msgstr "مبكر"
+
+#: src/modules/devices/pages/device-form-page.tsx:22
+#: src/modules/integrations/pages/endpoints-page.tsx:55
+#: src/modules/users/pages/users-page.tsx:117
+msgid "Edit"
+msgstr "تعديل"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:49
+msgid "breadcrumb.edit"
+msgstr "تعديل"
+
+#: src/modules/integrations/components/endpoint-form.tsx:31
+#: src/modules/integrations/pages/endpoints-page.tsx:85
+msgid "Edit Endpoint"
+msgstr "تعديل نقطة النهاية"
+
+#: src/modules/users/pages/users-page.tsx:200
+msgid "Edit User"
+msgstr "تعديل مستخدم"
+
+#: src/modules/exports/components/export-bar.tsx:65
+#: src/modules/punches/components/attendance-table.tsx:69
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:295
+msgid "Employee"
+msgstr "الموظف"
+
+#: src/modules/devices/components/device-form.tsx:99
+msgid "Enable real-time attendance push from this scanner."
+msgstr "تفعيل إرسال الحضور الفوري من هذا الماسح."
+
+#: src/modules/settings/pages/settings-page.tsx:46
+#~ msgid "Enable Webhook"
+#~ msgstr "تفعيل Webhook"
+
+#: src/modules/integrations/hooks/use-endpoint-form.ts:46
+msgid "Endpoint created."
+msgstr "تم إنشاء نقطة النهاية."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:41
+msgid "Endpoint deleted."
+msgstr "تم حذف نقطة النهاية."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:34
+msgid "Endpoint disabled."
+msgstr "تم تعطيل نقطة النهاية."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:34
+msgid "Endpoint enabled."
+msgstr "تم تفعيل نقطة النهاية."
+
+#: src/modules/integrations/hooks/use-endpoint-form.ts:46
+msgid "Endpoint updated."
+msgstr "تم تحديث نقطة النهاية."
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:45
+msgid "breadcrumb.endpoints"
+msgstr "نقاط النهاية"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:74
+msgid "nav.settings.endpoints"
+msgstr "نقاط النهاية"
+
+#: src/infrastructure/locale/locale-switcher.tsx:15
+#~ msgid "English"
+#~ msgstr "الإنجليزية"
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:81
+msgid "Enrollment"
+msgstr "التسجيل"
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:85
+msgid "Enrollment details will be available when connected to the Attendance OS server."
+msgstr "ستتوفر تفاصيل التسجيل عند الاتصال بخادم Attendance OS."
+
+#: src/modules/auth/components/login-form.tsx:82
+msgid "Enter your credentials to access the dashboard"
+msgstr "أدخل بيانات الاعتماد للوصول إلى لوحة التحكم"
+
+#: src/modules/auth/pages/login-page.tsx:114
+#~ msgid "Enter your password"
+#~ msgstr "أدخل كلمة المرور"
+
+#: src/modules/auth/pages/login-page.tsx:99
+#~ msgid "Enter your username"
+#~ msgstr "أدخل اسم المستخدم"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:36
+#: src/modules/reports/pages/reports-page.tsx:119
+msgid "Error"
+msgstr "خطأ"
+
+#: src/modules/settings/pages/settings-page.tsx:38
+#~ msgid "Events will be POSTed as JSON to this URL."
+#~ msgstr "سيتم إرسال الأحداث بتنسيق JSON إلى هذا الرابط."
+
+#: src/modules/exports/components/export-bar.tsx:149
+msgid "Excel"
+msgstr "Excel"
+
+#: src/app-shell.tsx:224
+msgid "Expand sidebar"
+msgstr "توسيع الشريط الجانبي"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:130
+#: src/modules/apikeys/components/api-key-card.tsx:47
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:43
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:45
+msgid "Expires"
+msgstr "تاريخ الانتهاء"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:139
+msgid "Expiry"
+msgstr "الانتهاء"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:151
+msgid "Expiry duration"
+msgstr "مدة الصلاحية"
+
+#: src/modules/exports/components/export-bar.tsx:129
+msgid "Export"
+msgstr "تصدير"
+
+#: src/modules/reports/pages/reports-page.tsx:80
+#~ msgid "Export and sharing options."
+#~ msgstr "خيارات التصدير والمشاركة."
+
+#: src/modules/reports/pages/reports-page.tsx:85
+#~ msgid "Export CSV"
+#~ msgstr "تصدير CSV"
+
+#: src/modules/exports/components/export-bar.tsx:114
+msgid "Export downloaded."
+msgstr "تم تحميل التصدير."
+
+#: src/modules/exports/components/export-bar.tsx:116
+msgid "Export failed."
+msgstr "فشل التصدير."
+
+#: src/modules/reports/pages/reports-page.tsx:97
+#~ msgid "Export features will be available in the next update."
+#~ msgstr "ستتوفر ميزات التصدير في التحديث القادم."
+
+#: src/modules/reports/pages/reports-page.tsx:88
+#~ msgid "Export PDF"
+#~ msgstr "تصدير PDF"
+
+#: src/modules/punches/hooks/use-punch-query.ts:22
+#~ msgid "Face"
+#~ msgstr "وجه"
+
+#: src/modules/users/components/change-password-dialog.tsx:47
+msgid "Failed to change password."
+msgstr "فشل تغيير كلمة المرور."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:42
+msgid "Failed to delete endpoint."
+msgstr "فشل حذف نقطة النهاية."
+
+#: src/modules/users/pages/users-page.tsx:69
+msgid "Failed to delete user."
+msgstr "فشل حذف المستخدم."
+
+#: src/modules/audit/pages/audit-log-page.tsx:130
+msgid "Failed to load audit log."
+msgstr "فشل تحميل سجل التدقيق."
+
+#: src/components/ui/chart/chart.tsx:64
+msgid "Failed to load chart data"
+msgstr "فشل تحميل بيانات الرسم البياني"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:57
+msgid "Failed to load dashboard data. Is the Attendance OS server running?"
+msgstr "فشل تحميل بيانات لوحة التحكم. هل خادم Attendance OS قيد التشغيل؟"
+
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:38
+msgid "Failed to load device details."
+msgstr "فشل تحميل تفاصيل الجهاز."
+
+#: src/modules/devices/pages/device-list-page.tsx:53
+msgid "Failed to load devices"
+msgstr "فشل تحميل الأجهزة"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:80
+msgid "Failed to load endpoints"
+msgstr "فشل تحميل نقاط النهاية"
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:40
+msgid "Failed to load punch details."
+msgstr "فشل تحميل تفاصيل البصمة."
+
+#: src/modules/punches/pages/punch-query-page.tsx:73
+#~ msgid "Failed to load punch records"
+#~ msgstr "فشل تحميل سجلات البصمات"
+
+#: src/modules/reports/pages/reports-page.tsx:120
+msgid "Failed to load report data. Is the backend running?"
+msgstr "فشل تحميل بيانات التقرير. هل الخادم الخلفي قيد التشغيل؟"
+
+#: src/modules/settings/pages/settings-page.tsx:69
+#~ msgid "Failed to load settings. Is the backend running?"
+#~ msgstr "فشل تحميل الإعدادات. هل الخادم الخلفي قيد التشغيل؟"
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:42
+msgid "Failed to load user details."
+msgstr "فشل تحميل تفاصيل المستخدم."
+
+#: src/modules/users/pages/users-page.tsx:175
+msgid "Failed to load users"
+msgstr "فشل تحميل المستخدمين"
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:38
+msgid "Failed to revoke API key."
+msgstr "فشل إبطال مفتاح API."
+
+#: src/modules/settings/pages/settings-page.tsx:107
+#~ msgid "Failed to save settings."
+#~ msgstr "فشل حفظ الإعدادات."
+
+#: src/modules/integrations/pages/endpoints-page.tsx:36
+msgid "Failed to toggle endpoint."
+msgstr "فشل تبديل حالة نقطة النهاية."
+
+#: src/components/ui/data-table/cells/boolean-cell.tsx:30
+msgid "False"
+msgstr "لا"
+
+#: src/modules/punches/hooks/use-punch-query.ts:20
+#~ msgid "Fingerprint"
+#~ msgstr "بصمة"
+
+#: src/components/ui/storage-gauge/storage-gauge.tsx:53
+msgid "Free"
+msgstr "متاح"
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Fri"
+msgstr "الجمعة"
+
+#: src/modules/punches/pages/punch-query-page.tsx:52
+#: src/modules/reports/pages/reports-page.tsx:145
+msgid "From"
+msgstr "من"
+
+#: src/modules/exports/components/export-bar.tsx:57
+msgid "From: "
+msgstr "من: "
+
+#: src/modules/users/components/user-form.tsx:65
+msgid "Full name shown in the interface"
+msgstr "الاسم الكامل المعروض في الواجهة"
+
+#: src/modules/exports/components/export-bar.tsx:56
+msgid "Generated: "
+msgstr "تاريخ الإنشاء: "
+
+#: src/modules/devices/pages/device-form-page.tsx:103
+#~ msgid "Host"
+#~ msgstr "المضيف"
+
+#: src/modules/devices/components/device-form.tsx:56
+msgid "Host & Port"
+msgstr "المضيف والمنفذ"
+
+#: src/modules/devices/schemas/device-form.schema.ts:25
+#: src/modules/devices/schemas/device-form.schema.ts:26
+msgid "Host is required"
+msgstr "المضيف مطلوب"
+
+#: src/modules/settings/pages/settings-page.tsx:162
+#~ msgid "How often the server checks connected scanners for new attendance records."
+#~ msgstr "عدد مرات فحص الخادم للماسحات المتصلة للبحث عن سجلات حضور جديدة."
+
+#: src/modules/settings/pages/settings-page.tsx:23
+msgid "How often the server checks scanners for new records. Lower = fresher data, more network load."
+msgstr "عدد مرات فحص الخادم للماسحات بحثاً عن سجلات جديدة. الأقل = بيانات أحدث وحمل شبكة أكبر."
+
+#: src/modules/integrations/components/endpoint-form.tsx:23
+msgid "Human-readable label for this integration"
+msgstr "اسم مقروء لهذا التكامل"
+
+#: src/modules/devices/components/device-form.tsx:50
+msgid "Human-readable name for this device"
+msgstr "اسم مقروء لهذا الجهاز"
+
+#: src/modules/users/components/user-form.tsx:103
+msgid "Identity"
+msgstr "الهوية"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:106
+msgid "Important"
+msgstr "هام"
+
+#: src/modules/data-renderer/field-displays/direction-field-display.tsx:23
+#: src/modules/punches/components/attendance-table.tsx:94
+msgid "IN"
+msgstr "دخول"
+
+#: src/modules/devices/components/device-card.tsx:36
+#: src/modules/integrations/pages/endpoints-page.tsx:49
+#: src/modules/users/pages/users-page.tsx:105
+msgid "Inactive"
+msgstr "غير نشط"
+
+#: src/modules/users/components/user-form.tsx:96
+msgid "Inactive users cannot log in"
+msgstr "لا يمكن للمستخدمين غير النشطين تسجيل الدخول"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:62
+#: src/modules/integrations/pages/endpoints-page.tsx:70
+msgid "Integration Endpoints"
+msgstr "نقاط التكامل"
+
+#: src/modules/integrations/components/endpoint-form.tsx:24
+msgid "Integration protocol"
+msgstr "بروتوكول التكامل"
+
+#: src/components/ui/ip-port-input/ip-port-input.tsx:161
+msgid "IP address"
+msgstr "عنوان IP"
+
+#: src/modules/data-renderer/column-definitions/device-columns.ts:51
+#: src/modules/data-renderer/column-definitions/device-columns.ts:53
+msgid "IP Address"
+msgstr "عنوان IP"
+
+#: src/modules/devices/components/device-form.tsx:57
+msgid "IP address and port of the scanner (e.g., 192.168.1.100:4370)"
+msgstr "عنوان IP ومنفذ الماسح (مثال: 192.168.1.100:4370)"
+
+#: src/modules/audit/pages/audit-log-page.tsx:131
+#: src/modules/integrations/pages/endpoints-page.tsx:80
+#: src/modules/users/pages/users-page.tsx:176
+msgid "Is the backend running?"
+msgstr "هل الخادم الخلفي قيد التشغيل؟"
+
+#: src/modules/users/components/user-form.tsx:66
+msgid "John Doe"
+msgstr "فلان الفلاني"
+
+#: src/modules/users/components/user-form.tsx:59
+msgid "john.doe"
+msgstr "اسم.المستخدم"
+
+#: src/components/ui/activity-timeline/activity-timeline.tsx:131
+#: src/modules/dashboard/pages/dashboard-page.tsx:15
+msgid "just now"
+msgstr "الآن"
+
+#: src/modules/devices/components/device-form.tsx:49
+msgid "Label"
+msgstr "الاسم"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:70
+msgid "Last Punch"
+msgstr "آخر بصمة"
+
+#: src/modules/apikeys/components/api-key-card.tsx:41
+msgid "Last used"
+msgstr "آخر استخدام"
+
+#: src/modules/punches/components/attendance-table.tsx:60
+msgid "Late"
+msgstr "متأخر"
+
+#: src/app-shell.tsx:272
+msgid "Light Mode"
+msgstr "الوضع الفاتح"
+
+#: src/components/ui/circular-progress-bar/circular-progress-bar.tsx:34
+#: src/components/ui/spinner/spinner.tsx:19
+msgid "Loading"
+msgstr "جاري التحميل"
+
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:28
+msgid "Loading device {serialNumber}"
+msgstr "جاري تحميل الجهاز {serialNumber}"
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:30
+msgid "Loading punch record…"
+msgstr "جاري تحميل سجل البصمة…"
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:32
+msgid "Loading user details…"
+msgstr "جاري تحميل تفاصيل المستخدم…"
+
+#: src/modules/users/components/user-form.tsx:56
+msgid "Login username (must be unique)"
+msgstr "اسم مستخدم تسجيل الدخول (يجب أن يكون فريداً)"
+
+#: src/modules/settings/pages/settings-page.tsx:68
+#~ msgid "Lower values increase network traffic. Default: 30s"
+#~ msgstr "القيم المنخفضة تزيد من حركة الشبكة. الافتراضي: 30 ثانية"
+
+#: src/modules/settings/pages/settings-page.tsx:166
+#~ msgid "Lower values increase network traffic. Minimum: 5s. Default: 30s."
+#~ msgstr "القيم المنخفضة تزيد من حركة الشبكة. الحد الأدنى: 5 ثوانٍ. الافتراضي: 30 ثانية."
+
+#: src/modules/devices/pages/device-list-page.tsx:18
+#~ msgid "Manage biometric scanner connections."
+#~ msgstr "إدارة اتصالات الماسحات البيومترية."
+
+#: src/infrastructure/command-palette/command-palette.tsx:105
+msgid "Manage biometric scanners"
+msgstr "إدارة الماسحات البيومترية"
+
+#: src/modules/users/pages/users-page.tsx:150
+#: src/modules/users/pages/users-page.tsx:164
+msgid "Manage dashboard users, roles, and passwords."
+msgstr "إدارة مستخدمي لوحة التحكم والأدوار وكلمات المرور."
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:64
+msgid "Manage integration API keys for Odoo, Zapier, and other partners."
+msgstr "إدارة مفاتيح API للتكامل مع Odoo و Zapier وشركاء آخرين."
+
+#: src/modules/devices/pages/device-list-page.tsx:25
+msgid "Manage your biometric attendance scanners."
+msgstr "إدارة ماسحات الحضور البيومترية."
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:79
+msgid "Metadata"
+msgstr "بيانات وصفية"
+
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:97
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:99
+msgid "Method"
+msgstr "الطريقة"
+
+#: src/modules/settings/hooks/use-system-settings.ts:13
+msgid "Minimum 5 seconds"
+msgstr "5 ثوانٍ كحد أدنى"
+
+#: src/modules/users/components/user-form.tsx:87
+msgid "Minimum 6 characters"
+msgstr "6 أحرف كحد أدنى"
+
+#: src/modules/users/components/change-password-dialog.tsx:64
+msgid "Minimum 6 characters."
+msgstr "6 أحرف كحد أدنى."
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Mon"
+msgstr "الاثنين"
+
+#: src/components/ui/activity-timeline/activity-timeline.tsx:89
+msgid "more events"
+msgstr "أحداث أخرى"
+
+#: src/modules/devices/schemas/device-form.schema.ts:27
+msgid "Must be a valid IPv4 address (e.g., 192.168.1.100)"
+msgstr "يجب أن يكون عنوان IPv4 صالحاً (مثال: 192.168.1.100)"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:120
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:15
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:17
+#: src/modules/data-renderer/column-definitions/device-columns.ts:38
+#: src/modules/data-renderer/column-definitions/device-columns.ts:40
+#: src/modules/data-renderer/column-definitions/user-columns.ts:42
+#: src/modules/data-renderer/column-definitions/user-columns.ts:44
+#: src/modules/integrations/components/endpoint-form.tsx:23
+#: src/modules/integrations/pages/endpoints-page.tsx:48
+msgid "Name"
+msgstr "الاسم"
+
+#: src/modules/integrations/schemas/endpoint-form.schema.ts:9
+#: src/modules/integrations/schemas/endpoint-form.schema.ts:9
+msgid "Name is required"
+msgstr "الاسم مطلوب"
+
+#: src/modules/devices/components/device-form.tsx:90
+msgid "Network address and protocol settings for the ZKTeco scanner."
+msgstr "إعدادات عنوان الشبكة والبروتوكول لماسح ZKTeco."
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:48
+msgid "breadcrumb.new"
+msgstr "جديد"
+
+#: src/app-shell.tsx:75
+#: src/modules/devices/pages/device-form-page.tsx:61
+#~ msgid "New"
+#~ msgstr "جديد"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:117
+msgid "New API Key"
+msgstr "مفتاح API جديد"
+
+#: src/modules/integrations/components/endpoint-form.tsx:31
+msgid "New Endpoint"
+msgstr "نقطة نهاية جديدة"
+
+#: src/modules/users/components/change-password-dialog.tsx:70
+msgid "New password"
+msgstr "كلمة مرور جديدة"
+
+#: src/modules/users/components/change-password-dialog.tsx:62
+msgid "New Password"
+msgstr "كلمة مرور جديدة"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:265
+msgid "Next month"
+msgstr "الشهر التالي"
+
+#: src/components/ui/pagination/pagination.tsx:74
+msgid "Next page"
+msgstr "الصفحة التالية"
+
+#: src/components/ui/activity-timeline/activity-timeline.tsx:57
+msgid "No activity yet"
+msgstr "لا يوجد نشاط بعد"
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:71
+msgid "No API keys"
+msgstr "لا توجد مفاتيح API"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:140
+msgid "No attendance records in the last 24 hours. Punches will appear here as employees scan in."
+msgstr "لا توجد سجلات حضور خلال الـ 24 ساعة الماضية. ستظهر البصمات هنا عند تسجيل الموظفين."
+
+#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:60
+msgid "No attendance records in the past 24 hours."
+msgstr "لا توجد سجلات حضور خلال الـ 24 ساعة الماضية."
+
+#: src/modules/audit/pages/audit-log-page.tsx:135
+msgid "No audit events"
+msgstr "لا توجد أحداث تدقيق"
+
+#: src/components/ui/chart/chart.tsx:71
+#: src/modules/reports/pages/reports-page.tsx:169
+msgid "No data"
+msgstr "لا توجد بيانات"
+
+#: src/components/ui/chart/chart.tsx:72
+msgid "No data available"
+msgstr "لا توجد بيانات متاحة"
+
+#: src/modules/exports/components/export-bar.tsx:88
+msgid "No data available for PDF export."
+msgstr "لا توجد بيانات متاحة لتصدير PDF."
+
+#: src/modules/devices/pages/device-list-page.tsx:62
+msgid "No devices match your search"
+msgstr "لا توجد أجهزة تطابق بحثك"
+
+#: src/modules/devices/pages/device-list-page.tsx:63
+msgid "No devices registered"
+msgstr "لا توجد أجهزة مسجلة"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:81
+msgid "No endpoints"
+msgstr "لا توجد نقاط نهاية"
+
+#: src/modules/settings/pages/settings-page.tsx:138
+#~ msgid "No endpoints configured"
+#~ msgstr "لا توجد نقاط نهاية مكونة"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:122
+msgid "No expiration"
+msgstr "بدون انتهاء"
+
+#: src/components/ui/expiry-picker/expiry-picker.tsx:76
+msgid "No expiry"
+msgstr "بدون انتهاء"
+
+#: src/components/ui/permission-multiselect/permission-multiselect.tsx:48
+msgid "No permissions found"
+msgstr "لم يتم العثور على صلاحيات"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:97
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:310
+msgid "No punch records for this day."
+msgstr "لا توجد سجلات بصمات لهذا اليوم."
+
+#: src/modules/punches/pages/punch-query-page.tsx:80
+msgid "No punch records found"
+msgstr "لم يتم العثور على سجلات بصمات"
+
+#: src/modules/reports/pages/reports-page.tsx:170
+msgid "No punch records found for the selected date range."
+msgstr "لم يتم العثور على سجلات بصمات للنطاق الزمني المحدد."
+
+#: src/modules/exports/components/export-bar.tsx:93
+msgid "No punch records to export."
+msgstr "لا توجد سجلات بصمات للتصدير."
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:139
+msgid "No Recent Activity"
+msgstr "لا يوجد نشاط حديث"
+
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:186
+msgid "No records for this day."
+msgstr "لا توجد سجلات لهذا اليوم."
+
+#: src/components/ui/combobox/combobox.tsx:131
+#: src/components/ui/multi-select/multi-select.tsx:157
+msgid "No results found"
+msgstr "لم يتم العثور على نتائج"
+
+#: src/infrastructure/command-palette/command-palette.tsx:221
+msgid "No results found."
+msgstr "لم يتم العثور على نتائج."
+
+#: src/modules/users/pages/users-page.tsx:180
+msgid "No users"
+msgstr "لا يوجد مستخدمون"
+
+#: src/modules/reports/pages/reports-page.tsx:177
+msgid "Number of punches per day in the selected range."
+msgstr "عدد البصمات يومياً في النطاق المحدد."
+
+#: src/modules/integrations/components/endpoint-form.tsx:23
+msgid "Odoo Production"
+msgstr "Odoo للإنتاج"
+
+#: src/modules/exports/components/export-bar.tsx:72
+msgid "of"
+msgstr "من"
+
+#: src/modules/devices/components/device-form.tsx:51
+msgid "Office Scanner"
+msgstr "ماسح المكتب"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:34
+#: src/modules/dashboard/pages/dashboard-page.tsx:90
+msgid "Offline"
+msgstr "غير متصل"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:33
+#: src/modules/dashboard/pages/dashboard-page.tsx:90
+msgid "Online"
+msgstr "متصل"
+
+#: src/infrastructure/command-palette/command-palette-trigger.tsx:25
+msgid "Open command palette"
+msgstr "فتح لوحة الأوامر"
+
+#: src/infrastructure/role-badge/role-badge.tsx:22
+#: src/modules/users/components/user-form.tsx:40
+msgid "Operator"
+msgstr "مشغل"
+
+#: src/modules/integrations/components/endpoint-form.tsx:26
+msgid "Optional JSON configuration object. Merge with URL for webhooks."
+msgstr "كائن إعدادات JSON اختياري. يدمج مع الرابط لـ webhooks."
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:27
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:22
+#: src/modules/reports/pages/reports-page.tsx:69
+msgid "OT In"
+msgstr "دخول إضافي"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:28
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:23
+#: src/modules/reports/pages/reports-page.tsx:70
+msgid "OT Out"
+msgstr "خروج إضافي"
+
+#: src/modules/data-renderer/field-displays/direction-field-display.tsx:24
+#: src/modules/punches/components/attendance-table.tsx:94
+msgid "OUT"
+msgstr "خروج"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:285
+#: src/modules/punches/components/attendance-table.tsx:62
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:334
+msgid "Overtime"
+msgstr "وقت إضافي"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:61
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:50
+msgid "Overtime In"
+msgstr "دخول إضافي"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:62
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:51
+msgid "Overtime Out"
+msgstr "خروج إضافي"
+
+#: src/modules/exports/components/export-bar.tsx:71
+msgid "Page"
+msgstr "صفحة"
+
+#: src/components/ui/pagination/pagination.tsx:35
+msgid "Pagination"
+msgstr "ترقيم الصفحات"
+
+#: src/modules/punches/hooks/use-punch-query.ts:23
+#~ msgid "Palm"
+#~ msgstr "كف"
+
+#: src/modules/auth/components/login-form.tsx:109
+#: src/modules/auth/components/login-form.tsx:118
+#: src/modules/users/components/user-form.tsx:86
+#: src/modules/users/components/user-form.tsx:89
+msgid "Password"
+msgstr "كلمة المرور"
+
+#: src/modules/users/components/change-password-dialog.tsx:43
+msgid "Password changed."
+msgstr "تم تغيير كلمة المرور."
+
+#: src/modules/auth/components/login-form.tsx:115
+msgid "Password is required"
+msgstr "كلمة المرور مطلوبة"
+
+#: src/modules/users/schemas/user-form.schema.ts:21
+msgid "Password must be at least 6 characters"
+msgstr "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل"
+
+#: src/modules/exports/components/export-bar.tsx:162
+msgid "PDF"
+msgstr "PDF"
+
+#: src/modules/settings/pages/settings-page.tsx:29
+msgid "Periodically scan the local network for new ZKTeco scanners."
+msgstr "فحص الشبكة المحلية دورياً للبحث عن ماسحات ZKTeco جديدة."
+
+#: src/modules/settings/pages/settings-page.tsx:179
+#~ msgid "Periodically scan the network for new ZKTeco scanners"
+#~ msgstr "فحص الشبكة دورياً للبحث عن ماسحات ZKTeco جديدة"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:129
+#: src/modules/settings/pages/settings-page.tsx:61
+msgid "Permissions"
+msgstr "الصلاحيات"
+
+#: src/modules/data-renderer/column-definitions/user-columns.ts:28
+#: src/modules/data-renderer/column-definitions/user-columns.ts:30
+msgid "PIN"
+msgstr "رمز"
+
+#: src/modules/settings/pages/settings-page.tsx:22
+msgid "Poll Interval (seconds)"
+msgstr "فترة الاستعلام (بالثواني)"
+
+#: src/modules/settings/pages/settings-page.tsx:92
+#~ msgid "Poll interval must be at least 5 seconds."
+#~ msgstr "يجب أن تكون فترة الاستعلام 5 ثوانٍ على الأقل."
+
+#: src/modules/settings/pages/settings-page.tsx:161
+#~ msgid "Polling"
+#~ msgstr "الاستعلام"
+
+#: src/modules/devices/hooks/use-polling-settings.ts:37
+#~ msgid "Polling settings saved."
+#~ msgstr "تم حفظ إعدادات الاستعلام."
+
+#: src/components/ui/ip-port-input/ip-port-input.tsx:182
+#: src/modules/data-renderer/column-definitions/device-columns.ts:64
+#: src/modules/data-renderer/column-definitions/device-columns.ts:66
+msgid "Port"
+msgstr "المنفذ"
+
+#: src/modules/devices/schemas/device-form.schema.ts:29
+msgid "Port is required"
+msgstr "المنفذ مطلوب"
+
+#: src/modules/devices/schemas/device-form.schema.ts:31
+msgid "Port must be at least 1"
+msgstr "يجب أن يكون المنفذ 1 على الأقل"
+
+#: src/modules/devices/schemas/device-form.schema.ts:32
+msgid "Port must be at most 65535"
+msgstr "يجب أن يكون المنفذ 65535 على الأكثر"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:283
+#: src/modules/punches/components/attendance-table.tsx:59
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:330
+msgid "Present"
+msgstr "حاضر"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:63
+msgid "Present (24h)"
+msgstr "الحاضرون (24 ساعة)"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:45
+#~ msgid "Present Today"
+#~ msgstr "الحاضرون اليوم"
+
+#: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:251
+msgid "Previous month"
+msgstr "الشهر السابق"
+
+#: src/components/ui/pagination/pagination.tsx:42
+msgid "Previous page"
+msgstr "الصفحة السابقة"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:37
+msgid "Provisioning"
+msgstr "جاري التجهيز"
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:35
+msgid "Punch {entityId}"
+msgstr "بصمة {entityId}"
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:83
+msgid "Punch details will be available when the detail API is implemented."
+msgstr "ستتوفر تفاصيل البصمة عند تنفيذ واجهة API التفصيلية."
+
+#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:56
+msgid "Punch events grouped by hour of day."
+msgstr "أحداث البصمات مجمعة حسب ساعة اليوم."
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:65
+msgid "Punch ID"
+msgstr "معرف البصمة"
+
+#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:50
+msgid "Punch Record"
+msgstr "سجل البصمة"
+
+# Punches
+#: src/infrastructure/command-palette/command-palette.tsx:120
+#: src/modules/punches/pages/punch-query-page.tsx:32
+msgid "Punch Records"
+msgstr "سجلات البصمات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:41
+msgid "breadcrumb.punches"
+msgstr "البصمات"
+
+#: src/modules/reports/pages/reports-page.tsx:161
+msgid "Punch Type Distribution"
+msgstr "توزيع أنواع البصمات"
+
+#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:69
+msgid "Punches"
+msgstr "البصمات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:68
+msgid "nav.punches"
+msgstr "البصمات"
+
+#: src/modules/devices/components/device-form.tsx:72
+msgid "Push Enabled"
+msgstr "تفعيل الإرسال"
+
+#: src/modules/devices/components/device-form.tsx:98
+msgid "Push Events"
+msgstr "أحداث الإرسال"
+
+#: src/modules/punches/pages/punch-query-page.tsx:33
+msgid "Query and filter all attendance punch records."
+msgstr "استعلام وتصفية جميع سجلات بصمات الحضور."
+
+#: src/modules/punches/pages/punch-query-page.tsx:29
+#~ msgid "Query and filter attendance punch events from all devices."
+#~ msgstr "استعلام وتصفية أحداث بصمات الحضور من جميع الأجهزة."
+
+#: src/modules/reports/pages/reports-page.tsx:79
+#~ msgid "Quick Actions"
+#~ msgstr "إجراءات سريعة"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:19
+#~ msgid "Real-time overview of attendance activity."
+#~ msgstr "نظرة عامة فورية على نشاط الحضور."
+
+#: src/modules/settings/pages/settings-page.tsx:34
+#~ msgid "Receive HTTP callbacks when attendance events occur. Useful for integrating with HR systems or Slack notifications."
+#~ msgstr "استقبال إشعارات HTTP عند حدوث أحداث الحضور. مفيد للتكامل مع أنظمة الموارد البشرية أو إشعارات Slack."
+
+#: src/modules/devices/components/device-form.tsx:73
+msgid "Receive real-time punch events"
+msgstr "استقبال أحداث البصمات الفورية"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:113
+msgid "Recent Activity"
+msgstr "النشاط الحديث"
+
+#: src/components/ui/view-bar/view-bar.tsx:211
+msgid "records"
+msgstr "سجل"
+
+#: src/infrastructure/error-boundary/error-boundary.tsx:98
+msgid "Refresh Page"
+msgstr "تحديث الصفحة"
+
+#: src/modules/devices/pages/device-form-page.tsx:28
+msgid "Register a new biometric scanner."
+msgstr "تسجيل ماسح بيومتري جديد."
+
+#: src/infrastructure/command-palette/command-palette.tsx:113
+msgid "Register a new scanner"
+msgstr "تسجيل ماسح جديد"
+
+#: src/components/ui/chip/chip.tsx:40
+#~ msgid "Remove {label}"
+#~ msgstr "إزالة {label}"
+
+#: src/components/ui/tag/tag.tsx:100
+msgid "Remove {text}"
+msgstr "إزالة {text}"
+
+#. placeholder {0}: filter.label
+#: src/components/ui/view-bar/view-bar.tsx:154
+msgid "Remove filter {0}"
+msgstr "إزالة تصفية {0}"
+
+#. placeholder {0}: sort.label
+#: src/components/ui/view-bar/view-bar.tsx:125
+msgid "Remove sort {0}"
+msgstr "إزالة ترتيب {0}"
+
+#: src/infrastructure/command-palette/command-palette.tsx:128
+#: src/modules/reports/pages/reports-page.tsx:102
+#: src/modules/reports/pages/reports-page.tsx:115
+#: src/modules/reports/pages/reports-page.tsx:132
+msgid "Reports"
+msgstr "التقارير"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:42
+msgid "breadcrumb.reports"
+msgstr "التقارير"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:69
+msgid "nav.reports"
+msgstr "التقارير"
+
+#: src/modules/audit/pages/audit-log-page.tsx:76
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:55
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:57
+msgid "Resource"
+msgstr "المورد"
+
+#: src/modules/apikeys/components/api-key-card.tsx:53
+msgid "Revoke"
+msgstr "إبطال"
+
+#: src/modules/apikeys/pages/api-keys-page.tsx:30
+msgid "Revoke API key \"{name}\"? This cannot be undone."
+msgstr "إبطال مفتاح API \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء."
+
+#: src/modules/apikeys/components/api-key-card.tsx:37
+msgid "Revoked"
+msgstr "مبطل"
+
+#: src/modules/data-renderer/column-definitions/user-columns.ts:55
+#: src/modules/data-renderer/column-definitions/user-columns.ts:57
+#: src/modules/settings/pages/settings-page.tsx:60
+#: src/modules/users/components/user-form.tsx:74
+#: src/modules/users/pages/users-page.tsx:95
+msgid "Role"
+msgstr "الدور"
+
+#: src/modules/users/components/user-form.tsx:113
+msgid "Role, password, and activation status."
+msgstr "الدور وكلمة المرور وحالة التفعيل."
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Sat"
+msgstr "السبت"
+
+#: src/modules/settings/pages/settings-page.tsx:50
+msgid "Save"
+msgstr "حفظ"
+
+#: src/modules/devices/components/device-form.tsx:111
+#: src/modules/integrations/components/endpoint-form.tsx:36
+#: src/modules/users/components/user-form.tsx:125
+msgid "Save Changes"
+msgstr "حفظ التغييرات"
+
+#: src/modules/settings/pages/settings-page.tsx:189
+#~ msgid "Save Settings"
+#~ msgstr "حفظ الإعدادات"
+
+#: src/modules/settings/pages/settings-page.tsx:189
+#~ msgid "Saving…"
+#~ msgstr "جاري الحفظ…"
+
+#: src/modules/reports/pages/reports-page.tsx:91
+#~ msgid "Schedule Report"
+#~ msgstr "جدولة تقرير"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:130
+msgid "Scoped permissions for this API key."
+msgstr "صلاحيات محددة النطاق لمفتاح API هذا."
+
+#: src/modules/data-renderer/components/data-table-container.tsx:176
+msgid "Scroll for more"
+msgstr "اسحب للمزيد"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:97
+msgid "SDK poll active"
+msgstr "استعلام SDK نشط"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:97
+msgid "SDK poll inactive"
+msgstr "استعلام SDK غير نشط"
+
+#: src/modules/audit/pages/audit-log-page.tsx:120
+msgid "Search actors, actions, resources…"
+msgstr "بحث في الفاعلين والإجراءات والموارد…"
+
+#: src/infrastructure/command-palette/command-palette-trigger.tsx:26
+msgid "Search commands"
+msgstr "البحث في الأوامر"
+
+#: src/infrastructure/command-palette/command-palette.tsx:212
+msgid "Search commands…"
+msgstr "البحث في الأوامر…"
+
+#: src/modules/devices/pages/device-list-page.tsx:39
+msgid "Search devices…"
+msgstr "بحث في الأجهزة…"
+
+#: src/components/ui/permission-multiselect/permission-multiselect.tsx:47
+msgid "Search permissions…"
+msgstr "بحث في الصلاحيات…"
+
+#: src/components/ui/combobox/combobox.tsx:130
+#: src/components/ui/dropdown-search/dropdown-search.tsx:35
+#: src/components/ui/filter-input/filter-input.tsx:25
+#: src/components/ui/multi-select/multi-select.tsx:156
+#: src/components/ui/search-input/search-input.tsx:19
+msgid "Search…"
+msgstr "بحث…"
+
+#: src/modules/settings/pages/settings-page.tsx:51
+#~ msgid "Secret Token"
+#~ msgstr "الرمز السري"
+
+#: src/components/ui/date-picker/date-picker.tsx:121
+msgid "Select date…"
+msgstr "اختر التاريخ…"
+
+#: src/components/ui/permission-multiselect/permission-multiselect.tsx:46
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:135
+msgid "Select permissions…"
+msgstr "اختر الصلاحيات…"
+
+#: src/components/ui/combobox/combobox.tsx:128
+#: src/components/ui/multi-select/multi-select.tsx:154
+msgid "Select…"
+msgstr "اختر…"
+
+#: src/modules/settings/pages/settings-page.tsx:47
+#~ msgid "Send attendance events to the configured URL"
+#~ msgstr "إرسال أحداث الحضور إلى الرابط المحدد"
+
+# Device Form
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:63
+#: src/modules/data-renderer/column-definitions/device-columns.ts:24
+#: src/modules/data-renderer/column-definitions/device-columns.ts:26
+#: src/modules/devices/components/device-detail-panel.tsx:36
+#: src/modules/devices/components/device-form.tsx:41
+msgid "Serial Number"
+msgstr "الرقم التسلسلي"
+
+#: src/modules/devices/schemas/device-form.schema.ts:21
+#: src/modules/devices/schemas/device-form.schema.ts:22
+msgid "Serial number is required"
+msgstr "الرقم التسلسلي مطلوب"
+
+#. placeholder {0}: user.display_name || user.username
+#: src/modules/users/components/change-password-dialog.tsx:58
+msgid "Set a new password for {0}"
+msgstr "تعيين كلمة مرور جديدة لـ {0}"
+
+#: src/infrastructure/command-palette/command-palette.tsx:136
+#: src/modules/settings/pages/settings-page.tsx:37
+msgid "Settings"
+msgstr "الإعدادات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:43
+msgid "breadcrumb.settings"
+msgstr "الإعدادات"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:70
+msgid "nav.settings"
+msgstr "الإعدادات"
+
+#: src/modules/settings/pages/settings-page.tsx:92
+#~ msgid "Settings persistence will be available when the Rust backend is updated."
+#~ msgstr "ستتوفر إمكانية حفظ الإعدادات عند تحديث الخادم الخلفي Rust."
+
+#: src/modules/settings/hooks/use-system-settings.ts:37
+msgid "Settings saved."
+msgstr "تم حفظ الإعدادات."
+
+#: src/modules/auth/components/login-form.tsx:125
+msgid "Sign in"
+msgstr "تسجيل الدخول"
+
+#: src/modules/auth/pages/login-page.tsx:125
+#~ msgid "Sign In"
+#~ msgstr "تسجيل الدخول"
+
+#: src/modules/auth/components/login-form.tsx:78
+msgid "Sign in to Attendance OS"
+msgstr "تسجيل الدخول إلى Attendance OS"
+
+#: src/modules/auth/pages/login-page.tsx:79
+#~ msgid "Sign in to your management dashboard"
+#~ msgstr "تسجيل الدخول إلى لوحة التحكم"
+
+#: src/app-shell.tsx:282
+#: src/app-shell.tsx:283
+msgid "Sign out"
+msgstr "تسجيل الخروج"
+
+#. placeholder {0}: device.serial_number
+#: src/modules/dashboard/pages/dashboard-page.tsx:93
+msgid "SN: {0}"
+msgstr "الرقم التسلسلي: {0}"
+
+#: src/infrastructure/error-boundary/error-boundary.tsx:71
+msgid "Something went wrong"
+msgstr "حدث خطأ ما"
+
+#: src/components/ui/animated-button/animated-button.tsx:57
+msgid "Soon"
+msgstr "قريباً"
+
+#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:77
+#: src/modules/audit/pages/audit-log-page.tsx:82
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:68
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:70
+#: src/modules/devices/components/device-detail-panel.tsx:41
+#: src/modules/exports/components/export-bar.tsx:67
+#: src/modules/integrations/pages/endpoints-page.tsx:49
+#: src/modules/punches/components/attendance-table.tsx:103
+#: src/modules/users/pages/users-page.tsx:101
+msgid "Status"
+msgstr "الحالة"
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Sun"
+msgstr "الأحد"
+
+#: src/infrastructure/locale/locale-switcher.tsx:38
+#: src/infrastructure/locale/locale-switcher.tsx:53
+msgid "Switch language"
+msgstr "تبديل اللغة"
+
+#: src/components/ui/device-status-badge/device-status-badge.tsx:35
+msgid "Syncing"
+msgstr "جاري المزامنة"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:71
+msgid "nav.settings.system"
+msgstr "النظام"
+
+#: src/modules/settings/pages/settings-page.tsx:38
+msgid "System configuration and account information."
+msgstr "إعدادات النظام ومعلومات الحساب."
+
+#: src/components/ui/view-bar/view-bar.tsx:198
+msgid "Table"
+msgstr "جدول"
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Thu"
+msgstr "الخميس"
+
+#: src/modules/audit/pages/audit-log-page.tsx:58
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:15
+#: src/modules/data-renderer/column-definitions/audit-columns.ts:17
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:41
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:43
+#: src/modules/exports/components/export-bar.tsx:63
+#: src/modules/punches/components/attendance-table.tsx:82
+msgid "Time"
+msgstr "الوقت"
+
+#: src/components/ui/view-bar/view-bar.tsx:200
+msgid "Timeline"
+msgstr "مخطط زمني"
+
+#: src/modules/punches/pages/punch-query-page.tsx:57
+#: src/modules/reports/pages/reports-page.tsx:150
+msgid "To"
+msgstr "إلى"
+
+#: src/modules/exports/components/export-bar.tsx:58
+msgid "To: "
+msgstr "إلى: "
+
+# Dashboard
+#: src/modules/dashboard/pages/dashboard-page.tsx:18
+#~ msgid "Today's Attendance"
+#~ msgstr "حضور اليوم"
+
+#: src/infrastructure/command-palette/command-palette.tsx:97
+msgid "Today's attendance overview"
+msgstr "نظرة عامة على حضور اليوم"
+
+#: src/modules/integrations/pages/endpoints-page.tsx:54
+msgid "Toggle"
+msgstr "تبديل"
+
+#: src/app-shell.tsx:239
+msgid "Toggle menu"
+msgstr "تبديل القائمة"
+
+#: src/app-shell.tsx:271
+msgid "Toggle theme"
+msgstr "تبديل المظهر"
+
+#: src/modules/exports/components/export-bar.tsx:59
+#: src/modules/reports/components/report-summary-cards.tsx:18
+msgid "Total Punches"
+msgstr "إجمالي البصمات"
+
+#: src/modules/dashboard/pages/dashboard-page.tsx:66
+msgid "Total Punches (24h)"
+msgstr "إجمالي البصمات (24 ساعة)"
+
+#: src/modules/audit/pages/audit-log-page.tsx:100
+#: src/modules/audit/pages/audit-log-page.tsx:114
+msgid "Track every authenticated write operation across the system."
+msgstr "تتبع كل عملية كتابة مصرح بها عبر النظام."
+
+#: src/components/ui/data-table/cells/boolean-cell.tsx:30
+msgid "True"
+msgstr "نعم"
+
+#: src/modules/devices/pages/device-list-page.tsx:67
+msgid "Try adjusting your search terms."
+msgstr "جرب تعديل مصطلحات البحث."
+
+#: src/infrastructure/error-boundary/error-boundary.tsx:101
+msgid "Try Again"
+msgstr "حاول مرة أخرى"
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Tue"
+msgstr "الثلاثاء"
+
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:82
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:84
+#: src/modules/integrations/components/endpoint-form.tsx:24
+#: src/modules/integrations/pages/endpoints-page.tsx:47
+#: src/modules/punches/components/attendance-table.tsx:89
+msgid "Type"
+msgstr "النوع"
+
+#: src/modules/devices/components/device-form.tsx:81
+msgid "Unique identifier and human-readable name for this scanner."
+msgstr "معرف فريد واسم مقروء لهذا الماسح."
+
+#: src/modules/devices/components/device-form.tsx:42
+msgid "Unique scanner identifier (e.g., CQZ7232960836)"
+msgstr "معرف فريد للماسح (مثال: CQZ7232960836)"
+
+#: src/modules/exports/components/export-bar.tsx:60
+#: src/modules/reports/components/report-summary-cards.tsx:26
+msgid "Unique Users"
+msgstr "مستخدمون فريدون"
+
+#: src/components/ui/chip/chip.tsx:92
+msgid "Untitled"
+msgstr "بدون عنوان"
+
+#: src/modules/devices/pages/device-form-page.tsx:27
+msgid "Update scanner connection details."
+msgstr "تحديث تفاصيل اتصال الماسح."
+
+#: src/modules/integrations/components/endpoint-form.tsx:25
+msgid "URL"
+msgstr "الرابط"
+
+#: src/components/ui/storage-gauge/storage-gauge.tsx:75
+msgid "used"
+msgstr "مستخدم"
+
+#: src/components/ui/storage-gauge/storage-gauge.tsx:52
+msgid "Used"
+msgstr "مستخدم"
+
+#: src/modules/settings/pages/settings-page.tsx:52
+#~ msgid "Used to sign webhook payloads for verification."
+#~ msgstr "يستخدم لتوقيع حمولات webhook للتحقق."
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:31
+msgid "User {entityId}"
+msgstr "مستخدم {entityId}"
+
+#: src/modules/users/hooks/use-user-form.ts:92
+msgid "User created successfully."
+msgstr "تم إنشاء المستخدم بنجاح."
+
+#: src/modules/users/pages/users-page.tsx:66
+msgid "User deleted."
+msgstr "تم حذف المستخدم."
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:67
+msgid "User ID"
+msgstr "معرف المستخدم"
+
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:55
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:57
+#: src/modules/exports/components/export-bar.tsx:64
+#: src/modules/punches/pages/punch-query-page.tsx:42
+msgid "User PIN"
+msgstr "رقم المستخدم"
+
+#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:52
+msgid "User PIN: {userPin}"
+msgstr "الرقم التعريفي: {userPin}"
+
+#: src/modules/users/hooks/use-user-form.ts:91
+msgid "User updated successfully."
+msgstr "تم تحديث المستخدم بنجاح."
+
+#: src/modules/auth/components/login-form.tsx:95
+#: src/modules/settings/pages/settings-page.tsx:59
+#: src/modules/users/components/user-form.tsx:55
+#: src/modules/users/pages/users-page.tsx:83
+msgid "Username"
+msgstr "اسم المستخدم"
+
+#: src/modules/users/components/user-form.tsx:104
+msgid "Username and display name for this dashboard user."
+msgstr "اسم المستخدم واسم العرض لمستخدم لوحة التحكم هذا."
+
+#: src/modules/auth/components/login-form.tsx:101
+#: src/modules/users/schemas/user-form.schema.ts:16
+#: src/modules/users/schemas/user-form.schema.ts:17
+msgid "Username is required"
+msgstr "اسم المستخدم مطلوب"
+
+#: src/modules/users/schemas/user-form.schema.ts:18
+msgid "Username must be at least 3 characters"
+msgstr "يجب أن يتكون اسم المستخدم من 3 أحرف على الأقل"
+
+#: src/modules/users/pages/users-page.tsx:150
+#: src/modules/users/pages/users-page.tsx:163
+msgid "Users"
+msgstr "المستخدمون"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-breadcrumbs.ts:44
+msgid "breadcrumb.users"
+msgstr "المستخدمون"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:72
+msgid "nav.settings.users"
+msgstr "المستخدمون"
+
+#: src/modules/punches/components/attendance-table.tsx:126
+msgid "Verification"
+msgstr "التحقق"
+
+#: src/modules/exports/components/export-bar.tsx:68
+msgid "Verify"
+msgstr "التحقق"
+
+#: src/infrastructure/command-palette/command-palette.tsx:121
+msgid "View and query attendance data"
+msgstr "عرض واستعلام بيانات الحضور"
+
+#: src/infrastructure/role-badge/role-badge.tsx:24
+#: src/modules/users/components/user-form.tsx:41
+msgid "Viewer"
+msgstr "مشاهد"
+
+#: src/modules/settings/pages/settings-page.tsx:33
+#~ msgid "Webhook"
+#~ msgstr "Webhook"
+
+#: src/features/settings/pages/settings-page.tsx:21
+#~ msgid "Webhook configuration, default poll intervals, and other application settings will be available in the next update."
+#~ msgstr "ستتوفر إعدادات webhook وفترات الاستعلام الافتراضية وإعدادات التطبيق الأخرى في التحديث القادم."
+
+#: src/modules/settings/pages/settings-page.tsx:25
+#~ msgid "Webhook configuration, default poll intervals, and other application settings."
+#~ msgstr "إعدادات webhook وفترات الاستعلام الافتراضية وإعدادات التطبيق الأخرى."
+
+#: src/modules/settings/pages/settings-page.tsx:37
+#~ msgid "Webhook URL"
+#~ msgstr "رابط Webhook"
+
+#: src/components/ui/calendar-month/calendar-month.tsx:165
+msgid "Wed"
+msgstr "الأربعاء"
+
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:140
+msgid "When this API key expires. Choose \"No expiry\" for permanent keys."
+msgstr "تاريخ انتهاء صلاحية مفتاح API هذا. اختر \"بدون انتهاء\" للمفاتيح الدائمة."
+
+#: src/modules/exports/components/export-bar.tsx:69
+msgid "Work Code"
+msgstr "رمز العمل"
