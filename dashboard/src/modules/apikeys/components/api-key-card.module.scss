@@ -1,0 +1,28 @@
+.keyCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--ao-spacing-4);
+}
+
+.keyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  min-width: 0;
+}
+
+.permissions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+  margin-block-start: var(--ao-spacing-1);
+}
+
+.keyMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--ao-spacing-1);
+  flex-shrink: 0;
+}
