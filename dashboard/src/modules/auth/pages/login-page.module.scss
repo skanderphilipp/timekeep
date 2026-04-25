@@ -1,0 +1,13 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--ao-spacing-6);
+  background: var(--ao-background-secondary);
+}
+
+.main {
+  width: 100%;
+  max-width: 400px;
+}
