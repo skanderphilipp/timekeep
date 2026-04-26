@@ -1,0 +1,62 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-4);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-4);
+  flex-wrap: wrap;
+}
+
+.employeeSelect {
+  min-width: 200px;
+}
+
+/* ── Calendar ────────────────────────────────────────────────────────────── */
+
+.calendar {
+  flex: 1;
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────────── */
+
+.legend {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-3);
+  margin-inline-start: auto;
+}
+
+/* ── Dots ────────────────────────────────────────────────────────────────── */
+
+.dot {
+  border-radius: var(--ao-border-radius-full);
+  flex-shrink: 0;
+  height: 8px;
+  width: 8px;
+}
+
+.dotPresent {
+  background: var(--ao-color-green9);
+}
+
+.dotWarning {
+  background: var(--ao-color-amber9);
+}
+
+.dotOvertime {
+  background: var(--ao-color-blue9);
+}
+
+.dotAbsent {
+  background: var(--ao-color-red9);
+}
+
+.dotDayOff {
+  background: var(--ao-border-color-medium);
+}
