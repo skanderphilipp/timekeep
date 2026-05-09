@@ -1,0 +1,47 @@
+.link {
+  text-decoration: none;
+}
+
+.card {
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-accent-accent9);
+  }
+}
+
+.header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ao-spacing-4);
+}
+
+.titleRow {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+}
+
+.label {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-md);
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+}
+
+.serial {
+  color: var(--ao-font-color-tertiary);
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-xs);
+}
+
+.host {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+}
