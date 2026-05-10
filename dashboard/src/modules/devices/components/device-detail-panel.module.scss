@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-4);
+}
+
+.headerRow {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+}
+
+/* ── Detail list ── */
+
+.detailList {
+  display: grid;
+  gap: var(--ao-spacing-3) var(--ao-spacing-4);
+  grid-template-columns: 120px 1fr;
+  margin: 0;
+}
+
+.detailTerm {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.detailValue {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-sm);
+  margin: 0;
+}
+
+.code {
+  background: var(--ao-background-secondary);
+  border-radius: var(--ao-border-radius-sm);
+  font-family: var(--ao-font-family-mono);
+  font-size: var(--ao-font-size-xs);
+  padding: 1px var(--ao-spacing-1);
+}
