@@ -1,0 +1,18 @@
+.bar {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+}
+
+.label {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  margin-inline-end: var(--ao-spacing-1);
+}
+
+.spacer {
+  border-inline-start: 1px solid var(--ao-border-color-light);
+  height: 24px;
+  margin: 0 var(--ao-spacing-1);
+}
