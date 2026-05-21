@@ -1,0 +1,179 @@
+// ── SCSS Mixins ────────────────────────────────────────────────────────────
+// Shared mixins used across component .module.scss files.
+
+@use 'sass:map';
+
+// ── Breakpoints ──────────────────────────────────────────────────────────────
+
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+
+$breakpoints: (
+  'mobile': 768px,
+  'sm': $breakpoint-sm,
+  'md': $breakpoint-md,
+  'lg': $breakpoint-lg,
+);
+
+/// Responsive breakpoint mixin. Accepts 'mobile', 'sm', 'md', 'lg', or raw px.
+/// Usage: @include respond-to('mobile') { ... }
+@mixin respond-to($name) {
+  $value: map.get($breakpoints, $name);
+  @if $value {
+    @media (max-width: $value) { @content; }
+  } @else if $name == 'sm' {
+    @media (max-width: $breakpoint-sm) { @content; }
+  } @else if $name == 'md' {
+    @media (max-width: $breakpoint-md) { @content; }
+  } @else if $name == 'lg' {
+    @media (max-width: $breakpoint-lg) { @content; }
+  } @else {
+    @media (max-width: $name) { @content; }
+  }
+}
+
+// ── Focus ────────────────────────────────────────────────────────────────────
+
+/// Standard focus ring using the accent color with smooth animation.
+@mixin focus-ring($size: 2px, $color: var(--ao-accent-accent8)) {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 $size $color;
+    transition: box-shadow 0.15s ease;
+  }
+}
+
+// ── Surfaces ─────────────────────────────────────────────────────────────────
+
+/// Card surface: transparent bg, border, radius.
+@mixin card-surface {
+  background: transparent;
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-border-radius-sm);
+}
+
+/// Subtle card background (secondary surface).
+@mixin card-surface-subtle {
+  background: var(--ao-background-secondary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-border-radius-md);
+}
+
+// ── Typography ───────────────────────────────────────────────────────────────
+
+/// Single-line text truncation with ellipsis.
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/// Multi-line text clamp.
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+
+/// Flexbox row with items centered.
+@mixin flex-center {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+/// Flexbox row with space-between.
+@mixin flex-between {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+/// Auto-fill grid with minimum column width.
+@mixin grid-auto-fill($min: 280px, $gap: var(--ao-spacing-4)) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: repeat(auto-fill, minmax($min, 1fr));
+}
+
+/// Responsive padding that shrinks on mobile.
+@mixin responsive-padding($desktop: var(--ao-spacing-6), $mobile: var(--ao-spacing-3)) {
+  padding: $desktop;
+
+  @include respond-to('mobile') {
+    padding: $mobile;
+  }
+}
+
+// ── Loading ──────────────────────────────────────────────────────────────────
+
+/// Skeleton loading animation.
+@mixin skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    var(--ao-background-secondary) 25%,
+    var(--ao-background-tertiary) 37%,
+    var(--ao-background-secondary) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+// ── Accessibility ─────────────────────────────────────────────────────────────
+
+/// Visually hidden but accessible to screen readers.
+@mixin sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+// ── Scrollbar ────────────────────────────────────────────────────────────────
+
+/// Custom scrollbar styling (Webkit-based browsers).
+@mixin custom-scrollbar($width: 6px, $thumb: var(--ao-border-color-medium), $track: transparent) {
+  scrollbar-width: thin;
+  scrollbar-color: $thumb $track;
+
+  &::-webkit-scrollbar {
+    height: $width;
+    width: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--ao-font-color-disabled);
+  }
+}
+
+// ── Print ────────────────────────────────────────────────────────────────────
+
+/// Hide element during print.
+@mixin print-hidden {
+  @media print {
+    display: none !important;
+  }
+}
