@@ -1,0 +1,64 @@
+[Unit]
+Description=timekeep
+Documentation=https://github.com/skanderphilipp/timekeep
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=timekeep
+Group=timekeep
+ExecStart=/usr/local/bin/timekeep
+Restart=always
+RestartSec=10
+
+# Environment
+Environment=TIMEKEEP_DB_PATH=/var/lib/timekeep/timekeep.db
+Environment=TIMEKEEP_DB_BACKEND=sqlite
+Environment=TIMEKEEP_API_PORT=3000
+Environment=TIMEKEEP_INTEGRATION_PORT=3001
+Environment=RUST_LOG=timekeep=info
+
+# Webhook (optional)
+# Environment=TIMEKEEP_WEBHOOK_URL=http://localhost:9999/webhook
+
+# PostgreSQL (when using postgres backend)
+# Environment=TIMEKEEP_DB_BACKEND=postgres
+# Environment=DATABASE_URL=postgres://timekeep:password@localhost:5432/timekeep
+
+# OpenTelemetry (optional)
+# Environment=OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+# Environment=OTEL_SERVICE_NAME=timekeep
+
+# JWT / Auth
+Environment=TIMEKEEP_JWT_SECRET=change-me-in-production
+Environment=TIMEKEEP_ADMIN_USER=admin
+Environment=TIMEKEEP_ADMIN_PASSWORD=change-me
+
+# Odoo (optional)
+# Environment=ODOO_URL=https://odoo.example.local/json/2
+# Environment=ODOO_API_KEY=your-odoo-api-key
+# Environment=ODOO_DATABASE=example
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/timekeep
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictRealtime=yes
+RestrictNamespaces=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+[Install]
+WantedBy=multi-user.target
