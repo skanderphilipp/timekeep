@@ -1,0 +1,158 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'  # v0.1.0, v0.1.0-alpha, v0.1.0-rc1
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─── Build & Publish Docker Image ──────────────────────────────────
+  docker:
+    name: Docker Image (linux/amd64 + linux/arm64)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (for arm64 cross-build)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=tag
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Build Bare-Metal Binaries ─────────────────────────────────────
+  binaries:
+    name: Bare-Metal Binaries (linux/amd64 + linux/arm64)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu    # amd64 (NAS, servers)
+          - aarch64-unknown-linux-gnu   # arm64 (Raspberry Pi 4/5)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js (for dashboard build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.10.0'
+
+      - name: Build dashboard
+        run: |
+          cd dashboard
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build binary
+        run: |
+          cargo build --release --bin timekeep --target ${{ matrix.target }}
+
+      - name: Strip and rename binary
+        run: |
+          strip target/${{ matrix.target }}/release/timekeep
+          mkdir -p dist
+          ARCH=$(echo ${{ matrix.target }} | sed 's/unknown-linux-gnu//' | sed 's/_/-/')
+          cp target/${{ matrix.target }}/release/timekeep dist/timekeep-${ARCH}
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: dist/timekeep-*
+
+  # ─── Create GitHub Release ─────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [binaries]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh dist/
+
+      - name: Generate changelog from commits
+        run: |
+          # Get the previous tag, if any
+          PREV_TAG=$(git tag --sort=-version:refname | grep -A1 "${{ github.ref_name }}" | tail -1 || true)
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "${{ github.ref_name }}" ]; then
+            echo "## Changes since $PREV_TAG" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git --no-pager log --pretty=format:"- %s (%h)" "$PREV_TAG..HEAD" >> CHANGELOG.md
+          else
+            echo "## Initial Release" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git --no-pager log --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          files: dist/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
