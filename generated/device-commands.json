@@ -1,0 +1,26 @@
+[
+  {
+    "value": "REBOOT",
+    "label": "Reboot",
+    "description": "Restart the device remotely.",
+    "isDestructive": false
+  },
+  {
+    "value": "CLEAR_ATTENDANCE",
+    "label": "Clear Attendance",
+    "description": "Delete all attendance records from the device. Data already synced to the server is preserved.",
+    "isDestructive": true
+  },
+  {
+    "value": "ENABLE",
+    "label": "Enable",
+    "description": "Re-enable a disabled device (resume polling).",
+    "isDestructive": false
+  },
+  {
+    "value": "DISABLE",
+    "label": "Disable",
+    "description": "Temporarily disable the device (pause polling).",
+    "isDestructive": false
+  }
+]

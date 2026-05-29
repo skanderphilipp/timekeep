@@ -1,0 +1,57 @@
+[
+  {
+    "key": "came_online",
+    "label": "Came online",
+    "isProblem": false
+  },
+  {
+    "key": "went_offline",
+    "label": "Went offline",
+    "isProblem": true
+  },
+  {
+    "key": "sync_started",
+    "label": "Sync started",
+    "isProblem": false
+  },
+  {
+    "key": "sync_completed",
+    "label": "Sync completed",
+    "isProblem": false
+  },
+  {
+    "key": "sync_failed",
+    "label": "Sync failed",
+    "isProblem": true
+  },
+  {
+    "key": "storage_warning",
+    "label": "Storage warning",
+    "isProblem": true
+  },
+  {
+    "key": "config_changed",
+    "label": "Config changed",
+    "isProblem": false
+  },
+  {
+    "key": "provisioning_started",
+    "label": "Provisioning started",
+    "isProblem": false
+  },
+  {
+    "key": "provisioning_completed",
+    "label": "Provisioning completed",
+    "isProblem": false
+  },
+  {
+    "key": "decommissioned",
+    "label": "Decommissioned",
+    "isProblem": false
+  },
+  {
+    "key": "firmware_updated",
+    "label": "Firmware updated",
+    "isProblem": false
+  }
+]

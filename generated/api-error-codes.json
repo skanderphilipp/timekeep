@@ -1,0 +1,37 @@
+[
+  {
+    "code": "not_found",
+    "httpStatus": 404,
+    "description": "The requested resource does not exist."
+  },
+  {
+    "code": "validation_error",
+    "httpStatus": 422,
+    "description": "The request payload failed validation."
+  },
+  {
+    "code": "duplicate",
+    "httpStatus": 409,
+    "description": "A resource with the same unique key already exists."
+  },
+  {
+    "code": "unauthorized",
+    "httpStatus": 401,
+    "description": "Authentication is required."
+  },
+  {
+    "code": "forbidden",
+    "httpStatus": 403,
+    "description": "The authenticated user lacks permission."
+  },
+  {
+    "code": "internal_error",
+    "httpStatus": 500,
+    "description": "An unexpected server error occurred."
+  },
+  {
+    "code": "auth_error",
+    "httpStatus": 422,
+    "description": "Authentication failed (bad credentials)."
+  }
+]
