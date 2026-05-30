@@ -1,0 +1,63 @@
+[
+  {
+    "value": "webhook",
+    "label": "Webhook",
+    "configFields": [
+      {
+        "key": "url",
+        "label": "URL",
+        "placeholder": "https://hooks.example.com/attendance"
+      },
+      {
+        "key": "secret",
+        "label": "Secret",
+        "placeholder": "Optional shared secret for HMAC",
+        "isSecret": true
+      }
+    ]
+  },
+  {
+    "value": "odoo",
+    "label": "Odoo",
+    "configFields": [
+      {
+        "key": "url",
+        "label": "URL",
+        "placeholder": "https://odoo.example.com"
+      },
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "placeholder": "Odoo API key",
+        "isSecret": true
+      },
+      {
+        "key": "database",
+        "label": "Database",
+        "placeholder": "odoo_production"
+      }
+    ]
+  },
+  {
+    "value": "sap",
+    "label": "SAP",
+    "configFields": []
+  },
+  {
+    "value": "zapier",
+    "label": "Zapier",
+    "configFields": [
+      {
+        "key": "url",
+        "label": "Webhook URL",
+        "placeholder": "https://hooks.zapier.com/..."
+      },
+      {
+        "key": "secret",
+        "label": "Secret",
+        "placeholder": "Optional shared secret",
+        "isSecret": true
+      }
+    ]
+  }
+]

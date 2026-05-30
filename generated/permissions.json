@@ -1,0 +1,74 @@
+[
+  {
+    "value": "read:punches",
+    "label": "Read Punches",
+    "description": "View attendance punch records and dashboard summaries.",
+    "scope": "Punches"
+  },
+  {
+    "value": "write:punches",
+    "label": "Write Punches",
+    "description": "Create or correct punch records (manual override).",
+    "scope": "Punches"
+  },
+  {
+    "value": "read:devices",
+    "label": "Read Devices",
+    "description": "View device configuration and connection status.",
+    "scope": "Devices"
+  },
+  {
+    "value": "write:devices",
+    "label": "Write Devices",
+    "description": "Add, update, or remove devices from the registry.",
+    "scope": "Devices"
+  },
+  {
+    "value": "manage:device_users",
+    "label": "Manage Device Users",
+    "description": "Enroll or delete users on biometric scanners.",
+    "scope": "Devices"
+  },
+  {
+    "value": "manage:device_commands",
+    "label": "Manage Device Commands",
+    "description": "Enqueue commands on devices (reboot, clear attendance, etc.).",
+    "scope": "Devices"
+  },
+  {
+    "value": "manage:dashboard_users",
+    "label": "Manage Dashboard Users",
+    "description": "Create, update, or delete dashboard operators.",
+    "scope": "Admin"
+  },
+  {
+    "value": "manage:api_keys",
+    "label": "Manage API Keys",
+    "description": "Create or revoke API keys for integration partners.",
+    "scope": "Admin"
+  },
+  {
+    "value": "manage:endpoints",
+    "label": "Manage Endpoints",
+    "description": "Create, edit, or delete integration endpoints.",
+    "scope": "Admin"
+  },
+  {
+    "value": "manage:settings",
+    "label": "Manage Settings",
+    "description": "Modify system-wide settings (poll interval, auto-discover).",
+    "scope": "Admin"
+  },
+  {
+    "value": "export:data",
+    "label": "Export Data",
+    "description": "Download punch data as CSV or XLSX files.",
+    "scope": "Data"
+  },
+  {
+    "value": "view:audit",
+    "label": "View Audit",
+    "description": "Read the audit log of system actions.",
+    "scope": "Data"
+  }
+]

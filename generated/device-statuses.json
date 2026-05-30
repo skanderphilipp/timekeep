@@ -1,0 +1,38 @@
+[
+  {
+    "value": "online",
+    "label": "Online",
+    "isOperational": true,
+    "isProblem": false
+  },
+  {
+    "value": "syncing",
+    "label": "Syncing",
+    "isOperational": true,
+    "isProblem": false
+  },
+  {
+    "value": "provisioning",
+    "label": "Provisioning",
+    "isOperational": false,
+    "isProblem": false
+  },
+  {
+    "value": "offline",
+    "label": "Offline",
+    "isOperational": false,
+    "isProblem": true
+  },
+  {
+    "value": "error",
+    "label": "Error",
+    "isOperational": false,
+    "isProblem": true
+  },
+  {
+    "value": "decommissioned",
+    "label": "Decommissioned",
+    "isOperational": false,
+    "isProblem": false
+  }
+]
