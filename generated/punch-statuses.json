@@ -1,0 +1,38 @@
+[
+  {
+    "value": "check_in",
+    "label": "Check In",
+    "code": 0,
+    "category": "entry"
+  },
+  {
+    "value": "check_out",
+    "label": "Check Out",
+    "code": 1,
+    "category": "exit"
+  },
+  {
+    "value": "break_out",
+    "label": "Break Out",
+    "code": 2,
+    "category": "break"
+  },
+  {
+    "value": "break_in",
+    "label": "Break In",
+    "code": 3,
+    "category": "break"
+  },
+  {
+    "value": "overtime_in",
+    "label": "Overtime In",
+    "code": 4,
+    "category": "overtime"
+  },
+  {
+    "value": "overtime_out",
+    "label": "Overtime Out",
+    "code": 5,
+    "category": "overtime"
+  }
+]

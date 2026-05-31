@@ -1,0 +1,27 @@
+[
+  {
+    "value": "password",
+    "label": "Password",
+    "shortLabel": "PW"
+  },
+  {
+    "value": "fingerprint",
+    "label": "Fingerprint",
+    "shortLabel": "FP"
+  },
+  {
+    "value": "card",
+    "label": "RF Card",
+    "shortLabel": "Card"
+  },
+  {
+    "value": "face",
+    "label": "Face Recognition",
+    "shortLabel": "Face"
+  },
+  {
+    "value": "palm",
+    "label": "Palm Vein",
+    "shortLabel": "Palm"
+  }
+]
