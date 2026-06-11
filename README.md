@@ -101,7 +101,7 @@ export TIMEKEEP_DB_PATH=./timekeep.db
 export TIMEKEEP_JWT_SECRET=a-64-char-random-secret
 export TIMEKEEP_ADMIN_USER=admin
 export TIMEKEEP_ADMIN_PASSWORD=a-strong-password
-./target/release/attendance-app
+./target/release/timekeep
 ```
 
 ### Using the Makefile
@@ -238,16 +238,16 @@ ZKTeco scanners provide two independent data paths, both running simultaneously:
 
 | Crate | Purpose |
 |-------|---------|
-| `attendance-core` | Domain model, traits (`BiometricDevice`, `Storage`, `Distributor`), events |
-| `attendance-engine` | Event bus, pipeline orchestrator, dedup cache |
-| `attendance-circuit` | Circuit breaker for external service calls |
-| `attendance-zkteco` | ZKTeco provider — ADMS push server + SDK pull (TCP binary protocol) |
-| `attendance-storage-sqlite` | SQLite storage backend with WAL mode |
-| `attendance-storage-postgres` | PostgreSQL storage backend with connection pooling |
-| `attendance-dist-webhook` | Generic webhook distributor with HMAC signatures |
-| `attendance-dist-odoo` | Odoo JSON-2 API distributor |
-| `attendance-api` | REST API server (management + integration + Swagger UI) |
-| `attendance-app` | Binary entry point that wires everything together |
+| `timekeep-core` | Domain model, traits (`BiometricDevice`, `Storage`, `Distributor`), events |
+| `timekeep-engine` | Event bus, pipeline orchestrator, dedup cache |
+| `timekeep-circuit` | Circuit breaker for external service calls |
+| `timekeep-zkteco` | ZKTeco provider — ADMS push server + SDK pull (TCP binary protocol) |
+| `timekeep-storage-sqlite` | SQLite storage backend with WAL mode |
+| `timekeep-storage-postgres` | PostgreSQL storage backend with connection pooling |
+| `timekeep-dist-webhook` | Generic webhook distributor with HMAC signatures |
+| `timekeep-dist-odoo` | Odoo JSON-2 API distributor |
+| `timekeep-api` | REST API server (management + integration + Swagger UI) |
+| `timekeep` | Binary entry point that wires everything together |
 
 ---
 
@@ -459,7 +459,7 @@ Never hardcode user-facing strings — always use the `t` macro.
 cargo test --workspace
 
 # Specific crate
-cargo test -p attendance-zkteco
+cargo test -p timekeep-zkteco
 
 # With output
 cargo test -- --nocapture
@@ -472,12 +472,12 @@ Test counts by crate:
 
 | Crate | Tests |
 |-------|-------|
-| `attendance-zkteco` | 150 |
-| `attendance-storage-sqlite` | 19 |
-| `attendance-engine` | 18 |
-| `attendance-core` | 17 |
-| `attendance-api` | 11 |
-| `attendance-dist-webhook` | 11 |
+| `timekeep-zkteco` | 150 |
+| `timekeep-storage-sqlite` | 19 |
+| `timekeep-engine` | 18 |
+| `timekeep-core` | 17 |
+| `timekeep-api` | 11 |
+| `timekeep-dist-webhook` | 11 |
 
 ### Dashboard
 
@@ -513,7 +513,7 @@ Multi-arch images available: `linux/amd64` + `linux/arm64` (Raspberry Pi).
 
 ```bash
 # Copy the binary
-sudo cp target/release/attendance-app /usr/local/bin/
+sudo cp target/release/timekeep /usr/local/bin/
 
 # Install the service
 sudo cp deploy/timekeep.service /etc/systemd/system/
@@ -557,7 +557,6 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the full roadmap.
 - [OVERVIEW.md](docs/OVERVIEW.md) — Full system overview, domain model, and feature matrix
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Dual-path data collection architecture
 - [ROADMAP.md](docs/ROADMAP.md) — Development roadmap and status
-- [API-AUDIT.md](docs/API-AUDIT.md) — API endpoint audit
 - [docs/adr/](docs/adr/) — Architecture Decision Records (5 ADRs)
 
 ---
