@@ -1,3 +1,10 @@
+[package]
+name = "timekeep-workspace"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish = false
+
 [workspace]
 resolver = "3"
 	members = [
@@ -10,8 +17,7 @@ resolver = "3"
 	    "crates/timekeep-dist-webhook",
 	    "crates/timekeep-dist-odoo",
 	    "crates/timekeep-api",
-	"crates/timekeep-app",
-	"crates/timekeep-sim",
+	    "crates/timekeep-app",
 	]
 
 [workspace.package]
