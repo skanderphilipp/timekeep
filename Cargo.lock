@@ -3099,16 +3099,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "timekeep-sim"
-version = "0.1.0"
-dependencies = [
- "jiff",
- "timekeep-core",
- "timekeep-zkteco",
- "tokio",
-]
-
-[[package]]
 name = "timekeep-storage-postgres"
 version = "0.1.0"
 dependencies = [
@@ -3134,6 +3124,10 @@ dependencies = [
  "tokio",
  "tracing",
 ]
+
+[[package]]
+name = "timekeep-workspace"
+version = "0.1.0"
 
 [[package]]
 name = "timekeep-zkteco"
