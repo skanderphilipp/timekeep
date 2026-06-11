@@ -1,6 +1,6 @@
 # Roadmap — Rust Backend
 
-> Last audited: 2026-07-10 | Updated: 2026-07-10 (hardening complete) | See `adr/` for architecture decisions
+> Last audited: 2026-07-10 | Updated: 2026-07-10 (hardening complete)
 
 ## Current State
 
@@ -21,8 +21,6 @@
 - **cargo-deny**: `deny.toml` + CI
 - **CI pipeline**: fmt + clippy + test + deny + docs
 - **CHANGELOG.md**: v0.1.0 release notes
-- **5 ADR documents** in `docs/adr/`
-
 ---
 
 ## 🔴 P0 — Critical (Now)
@@ -34,7 +32,6 @@
 ### 6. Odoo Distributor (Implement JSON-2 API)
 
 **Why:** Currently a stub — logs "would push attendance to Odoo" but does nothing.
-See [ADR-003](adr/003-odoo-json2-api.md).
 
 **Plan:**
 1. Add `reqwest::Client` to `OdooDistributor` struct

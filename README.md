@@ -557,7 +557,6 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the full roadmap.
 - [OVERVIEW.md](docs/OVERVIEW.md) — Full system overview, domain model, and feature matrix
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Dual-path data collection architecture
 - [ROADMAP.md](docs/ROADMAP.md) — Development roadmap and status
-- [docs/adr/](docs/adr/) — Architecture Decision Records (5 ADRs)
 
 ---
 

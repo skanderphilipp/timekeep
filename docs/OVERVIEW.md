@@ -213,23 +213,23 @@ trait Distributor {     // Who gets notified
 
 ### 🔴 P0 — Critical Gaps (Now)
 
-| Feature | Impact | ADR |
-|---------|--------|-----|
-| Systemd service unit | Auto-start on NAS/linux reboot | — |
-| Integration tests | Zero e2e tests. All 209 are unit tests. | — |
-| PostgreSQL tests | SQLite has 19, Postgres has 0 | ADR-001 |
-| OpenTelemetry tracing | No OTLP export, no correlation IDs | ADR-005 |
-| PostgreSQL wiring in app | Postgres implemented but not selectable | ADR-001 |
+| Feature | Impact |
+|---------|--------|
+| Systemd service unit | Auto-start on NAS/linux reboot |
+| Integration tests | Zero e2e tests. All 209 are unit tests. |
+| PostgreSQL tests | SQLite has 19, Postgres has 0 |
+| OpenTelemetry tracing | No OTLP export, no correlation IDs |
+| PostgreSQL wiring in app | Postgres implemented but not selectable |
 
 ### 🟡 P1 — Important (Next)
 
-| Feature | Impact | ADR |
-|---------|--------|-----|
-| Odoo distributor (implement) | Stub with TODO(ENTERPRISE). Needs JSON-2 API. | ADR-003 |
-| Enrichment pipeline (implement) | Pass-through. Needs HR employee lookup. | — |
-| Docker support | Dockerfile + docker-compose | — |
-| cargo-deny in CI | License audit + security advisories | — |
-| Dashboard embedded serving | React dashboard not served from Rust binary | — |
+| Feature | Impact |
+|---------|--------|
+| Odoo distributor (implement) | Stub with TODO(ENTERPRISE). Needs JSON-2 API. |
+| Enrichment pipeline (implement) | Pass-through. Needs HR employee lookup. |
+| Docker support | Dockerfile + docker-compose |
+| cargo-deny in CI | License audit + security advisories |
+| Dashboard embedded serving | React dashboard not served from Rust binary |
 
 ### 🟢 P2 — Polish (Later)
 
@@ -368,38 +368,6 @@ Currently, setting up a ZKTeco scanner requires:
 5. Scanner is live within 60 seconds
 
 This doesn't exist in any open-source tool. BioTime and ZKBioSecurity have it, but locked behind their licensing.
-
----
-
-## 9. Architecture Decision Records
-
-Key decisions are documented as ADRs in [`docs/adr/`](adr/):
-
-| ADR | Decision |
-|-----|----------|
-| [ADR-001](adr/001-storage-sqlite-default-postgres-upgrade.md) | SQLite by default, PostgreSQL as upgrade path |
-| [ADR-002](adr/002-event-driven-tokio-broadcast.md) | Event-driven architecture with tokio broadcast |
-| [ADR-003](adr/003-odoo-json2-api.md) | Odoo integration via JSON-2 API (not XML-RPC) |
-| [ADR-004](adr/004-device-config-database.md) | Device configuration is database-backed, not file-based |
-| [ADR-005](adr/005-observability-tracing-prometheus-otel.md) | Observability: tracing-first with Prometheus + OTel |
-
-### Previously Resolved (Implicit)
-
-**Async Traits:** `#[async_trait]` for all trait definitions. The provider pattern requires `dyn` trait objects. Native async traits in edition 2024 don't yet handle `dyn` well. `async_trait` automatically boxes futures and adds `Send` bounds.
-
-**Access Control: Separate Bounded Context.** Door relays and access control are NOT part of timekeep. The `BiometricDevice` trait contains no door methods.
-
-**Single Vendor: ZKTeco Only.** The provider trait exists for architectural cleanliness but only `timekeep-zkteco` is implemented.
-
-**No SaaS: Self-Hosted Only.** Single binary, deploy with `scp`. No multi-tenancy, no cloud hosting.
-
-**Open-Core: MIT Licensed.** See [LICENSE](../LICENSE). Entire workspace is open source.
-
-**Go ADMS Server: Not in Scope.** The Go ADMS in `.reference/zkteco-adms/` is reference only. This project builds its own Rust ADMS.
-
-**ADMS Push + SDK Pull: Both Needed.** ADMS for real-time (~3s push interval), SDK for catch-up, enrollment, time sync, and scanners without ADMS. Both implemented.
-
-**Fingerprint Templates: Vendor-Locked.** ZKTeco-proprietary binary blobs. Templates stay on device. Attendance metadata flows to server.
 
 ---
 
