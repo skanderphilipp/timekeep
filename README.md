@@ -1,18 +1,18 @@
-# Timekeep
+# Attendance OS
 
 **Self-hosted, multi-vendor biometric attendance management.**
 
 A single Rust binary that collects real-time attendance data from biometric scanners (ZKTeco, Suprema, Anviz), enriches it with employee identity, and distributes it to your HR/payroll systems. Runs on a Synology NAS, Raspberry Pi, or any Linux server. No cloud dependency — your data stays on your hardware.
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
-[![CI](https://github.com/skanderphilipp/timekeep/actions/workflows/ci.yml/badge.svg)](https://github.com/skanderphilipp/timekeep/actions/workflows/ci.yml)
+[![CI](https://github.com/bentech/timekeep/actions/workflows/ci.yml/badge.svg)](https://github.com/bentech/timekeep/actions/workflows/ci.yml)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)](https://www.rust-lang.org)
 
 ---
 
 ## Table of Contents
 
-- [Why Timekeep?](#why-timekeep)
+- [Why Attendance OS?](#why-timekeep)
 - [Quick Start (Docker)](#quick-start-docker)
 - [Quick Start (Bare Metal)](#quick-start-bare-metal)
 - [Features](#features)
@@ -28,11 +28,11 @@ A single Rust binary that collects real-time attendance data from biometric scan
 
 ---
 
-## Why Timekeep?
+## Why Attendance OS?
 
 Most biometric attendance systems lock you into a single vendor's ecosystem. You either pay for expensive proprietary software, or you're stuck with vendor-provided tools that don't integrate with your stack.
 
-Timekeep gives you:
+Attendance OS gives you:
 
 - **Vendor independence** — ZKTeco today, Suprema or Anviz tomorrow. The trait-based architecture makes adding new device providers straightforward.
 - **Data ownership** — SQLite or PostgreSQL on your own hardware. No cloud, no telemetry, no vendor lock-in.
@@ -101,7 +101,7 @@ export TIMEKEEP_DB_PATH=./timekeep.db
 export TIMEKEEP_JWT_SECRET=a-64-char-random-secret
 export TIMEKEEP_ADMIN_USER=admin
 export TIMEKEEP_ADMIN_PASSWORD=a-strong-password
-./target/release/timekeep
+./target/release/attendance-app
 ```
 
 ### Using the Makefile
@@ -139,8 +139,11 @@ make lint          # Run all linters (clippy + oxlint + fmt)
 
 | Distributor | Status |
 |-------------|--------|
-| Webhook (HMAC-signed payloads, configurable retry) | ✅ |
+| Webhook (HMAC-signed outbound POST to your URL) | ✅ |
 | Odoo (JSON-2 API, employee lookup, check-in/out) | ✅ |
+
+Both are configured through the dashboard (Settings → Endpoints) and stored
+in the database. No environment variables required.
 
 ### API & Auth
 
@@ -235,16 +238,16 @@ ZKTeco scanners provide two independent data paths, both running simultaneously:
 
 | Crate | Purpose |
 |-------|---------|
-| `timekeep-core` | Domain model, traits (`BiometricDevice`, `Storage`, `Distributor`), events |
-| `timekeep-engine` | Event bus, pipeline orchestrator, dedup cache |
-| `timekeep-circuit` | Circuit breaker for external service calls |
-| `timekeep-zkteco` | ZKTeco provider — ADMS push server + SDK pull (TCP binary protocol) |
-| `timekeep-storage-sqlite` | SQLite storage backend with WAL mode |
-| `timekeep-storage-postgres` | PostgreSQL storage backend with connection pooling |
-| `timekeep-dist-webhook` | Generic webhook distributor with HMAC signatures |
-| `timekeep-dist-odoo` | Odoo JSON-2 API distributor |
-| `timekeep-api` | REST API server (management + integration + Swagger UI) |
-| `timekeep-app` | Binary entry point that wires everything together |
+| `attendance-core` | Domain model, traits (`BiometricDevice`, `Storage`, `Distributor`), events |
+| `attendance-engine` | Event bus, pipeline orchestrator, dedup cache |
+| `attendance-circuit` | Circuit breaker for external service calls |
+| `attendance-zkteco` | ZKTeco provider — ADMS push server + SDK pull (TCP binary protocol) |
+| `attendance-storage-sqlite` | SQLite storage backend with WAL mode |
+| `attendance-storage-postgres` | PostgreSQL storage backend with connection pooling |
+| `attendance-dist-webhook` | Generic webhook distributor with HMAC signatures |
+| `attendance-dist-odoo` | Odoo JSON-2 API distributor |
+| `attendance-api` | REST API server (management + integration + Swagger UI) |
+| `attendance-app` | Binary entry point that wires everything together |
 
 ---
 
@@ -285,13 +288,17 @@ All configuration is via environment variables. No config files.
 
 ### Distribution
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `TIMEKEEP_WEBHOOK_URL` | No | Webhook endpoint URL for punch events |
-| `TIMEKEEP_WEBHOOK_SECRET` | No | HMAC secret for webhook signature |
-| `ODOO_URL` | No | Odoo JSON-2 API base URL |
-| `ODOO_API_KEY` | No | Odoo API key |
-| `ODOO_DATABASE` | No | Odoo database name |
+Webhook and Odoo endpoints are configured **dynamically through the dashboard**
+(Settings → Endpoints) and stored in the database. No environment variables
+are needed for distribution. Each endpoint gets a circuit breaker (5 failures
+→ open, 30s cooldown) automatically.
+
+- **Webhook** — timekeep POSTs punch events to your configured URL with
+  optional HMAC-SHA256 signing (`X-Signature` header). This is an **outbound**
+  webhook — timekeep calls you, not the other way around.
+- **Odoo** — timekeep calls the Odoo JSON-2 API for employee lookup and
+  check-in/check-out creation. Configure URL, API key, and database name
+  through the dashboard.
 
 ### Observability
 
@@ -327,7 +334,7 @@ cargo install cargo-watch  # Auto-reload on changes
 
 ```bash
 # Clone the repo
-git clone https://github.com/skanderphilipp/timekeep.git
+git clone https://github.com/bentech/timekeep.git
 cd timekeep
 
 # Install dashboard dependencies
@@ -378,7 +385,7 @@ make lint
 
 ## Internationalization (i18n)
 
-Timekeep supports multiple languages with automatic detection and RTL layout.
+Attendance OS supports multiple languages with automatic detection and RTL layout.
 
 ### Supported Languages
 
@@ -452,7 +459,7 @@ Never hardcode user-facing strings — always use the `t` macro.
 cargo test --workspace
 
 # Specific crate
-cargo test -p timekeep-zkteco
+cargo test -p attendance-zkteco
 
 # With output
 cargo test -- --nocapture
@@ -465,12 +472,12 @@ Test counts by crate:
 
 | Crate | Tests |
 |-------|-------|
-| `timekeep-zkteco` | 150 |
-| `timekeep-storage-sqlite` | 19 |
-| `timekeep-engine` | 18 |
-| `timekeep-core` | 17 |
-| `timekeep-api` | 11 |
-| `timekeep-dist-webhook` | 11 |
+| `attendance-zkteco` | 150 |
+| `attendance-storage-sqlite` | 19 |
+| `attendance-engine` | 18 |
+| `attendance-core` | 17 |
+| `attendance-api` | 11 |
+| `attendance-dist-webhook` | 11 |
 
 ### Dashboard
 
@@ -506,7 +513,7 @@ Multi-arch images available: `linux/amd64` + `linux/arm64` (Raspberry Pi).
 
 ```bash
 # Copy the binary
-sudo cp target/release/timekeep /usr/local/bin/
+sudo cp target/release/attendance-app /usr/local/bin/
 
 # Install the service
 sudo cp deploy/timekeep.service /etc/systemd/system/
