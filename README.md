@@ -1,4 +1,4 @@
-# Attendance OS
+# Timekeep
 
 **Self-hosted, multi-vendor biometric attendance management.**
 
@@ -12,7 +12,7 @@ A single Rust binary that collects real-time attendance data from biometric scan
 
 ## Table of Contents
 
-- [Why Attendance OS?](#why-timekeep)
+- [Why Timekeep?](#why-timekeep)
 - [Quick Start (Docker)](#quick-start-docker)
 - [Quick Start (Bare Metal)](#quick-start-bare-metal)
 - [Features](#features)
@@ -28,11 +28,11 @@ A single Rust binary that collects real-time attendance data from biometric scan
 
 ---
 
-## Why Attendance OS?
+## Why Timekeep?
 
 Most biometric attendance systems lock you into a single vendor's ecosystem. You either pay for expensive proprietary software, or you're stuck with vendor-provided tools that don't integrate with your stack.
 
-Attendance OS gives you:
+Timekeep gives you:
 
 - **Vendor independence** — ZKTeco today, Suprema or Anviz tomorrow. The trait-based architecture makes adding new device providers straightforward.
 - **Data ownership** — SQLite or PostgreSQL on your own hardware. No cloud, no telemetry, no vendor lock-in.
@@ -385,7 +385,7 @@ make lint
 
 ## Internationalization (i18n)
 
-Attendance OS supports multiple languages with automatic detection and RTL layout.
+Timekeep supports multiple languages with automatic detection and RTL layout.
 
 ### Supported Languages
 

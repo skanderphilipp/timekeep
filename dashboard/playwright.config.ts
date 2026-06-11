@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Playwright E2E configuration for Attendance OS Dashboard.
+ * Playwright E2E configuration for timekeep Dashboard.
  *
  * Strategy:
  * - Tests run against the Vite dev server (localhost:5173)

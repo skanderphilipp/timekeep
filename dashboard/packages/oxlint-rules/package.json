@@ -1,11 +1,11 @@
 {
   "name": "@bentech/oxlint-rules",
-    "private": true,
+  "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "Custom oxlint rules for Attendance OS dashboard — enforces SCSS Modules, design tokens, component conventions",
+  "description": "Custom oxlint rules for timekeep dashboard \u2014 enforces SCSS Modules, design tokens, component conventions",
   "author": "Skander Ben Abdelmalak <skander@bentech.app>",
-    "license": "MIT",
+  "license": "MIT",
   "scripts": {
     "build": "node build.mjs"
   },
