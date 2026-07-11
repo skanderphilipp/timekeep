@@ -17,7 +17,8 @@
 *.db-shm
 
 # Dashboard (build output — not committed)
-/dashboard/dist/
+/dashboard/dist/*
+!/dashboard/dist/index.html
 /dashboard/node_modules/
 /dashboard/storybook-static/
 /dashboard/tsconfig.tsbuildinfo
@@ -36,5 +37,3 @@ Thumbs.db
 /release/
 .notes/
 
-# CI placeholder for rust-embed (needs dist/ to exist at compile time)
-!dashboard/dist/index.html
