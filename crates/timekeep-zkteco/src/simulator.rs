@@ -251,7 +251,7 @@ async fn serve_connection(mut stream: TcpStream, peer: SocketAddr, responder: Ar
         }
 
         let payload_size = u32::from_le_bytes([buf[4], buf[5], buf[6], buf[7]]) as usize;
-        if payload_size < 8 || payload_size > 65535 {
+        if !(8..=65535).contains(&payload_size) {
             return;
         }
 
@@ -283,10 +283,11 @@ async fn serve_connection(mut stream: TcpStream, peer: SocketAddr, responder: Ar
         let responses = responder(cmd, &packet.data, session_id, reply);
 
         // Track session from the first CONNECT response
-        if let Some(first) = responses.first() {
-            if cmd == CMD_CONNECT && first.cmd_id == CMD_ACK_OK {
-                session_id = first.session_id;
-            }
+        if let Some(first) = responses.first()
+            && cmd == CMD_CONNECT
+            && first.cmd_id == CMD_ACK_OK
+        {
+            session_id = first.session_id;
         }
 
         // ── Send responses ──

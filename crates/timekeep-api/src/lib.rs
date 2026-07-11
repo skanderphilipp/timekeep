@@ -2541,7 +2541,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_integration_api_key_blocks() {
-        let state = AppState {
+        let _state = AppState {
             event_bus: EventBus::default(),
             storage: Arc::new(FakeStorage::new()),
             employees: None,

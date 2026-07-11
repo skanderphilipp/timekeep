@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Integration tests using the ZKTeco device simulator.
 //!
 //! These tests exercise the full `ZkConnection` TCP stack against a

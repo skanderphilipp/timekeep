@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! End-to-end integration tests against real ZKTeco scanners.
 //!
 //! ## Prerequisites
@@ -168,7 +169,7 @@ async fn test_device_info_rich() {
 
     // Derived metrics
     let usage = info.record_usage_pct();
-    assert!(usage >= 0.0 && usage <= 100.0, "record usage should be 0-100%");
+    assert!((0.0..=100.0).contains(&usage), "record usage should be 0-100%");
     assert!(info.is_operational());
 
     // Device time — should be close to now (within 5 minutes)

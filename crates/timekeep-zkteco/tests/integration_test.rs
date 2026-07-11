@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Integration tests against a real ZKTeco Biopro SA40 scanner.
 //!
 //! Run with:

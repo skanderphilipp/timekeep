@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Re-exports the public simulator API from timekeep-zkteco,
 //! plus the test-only ADMS device simulator.
 //!

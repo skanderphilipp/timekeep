@@ -3128,6 +3128,19 @@ dependencies = [
 [[package]]
 name = "timekeep-workspace"
 version = "0.1.0"
+dependencies = [
+ "axum",
+ "jiff",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "timekeep-api",
+ "timekeep-core",
+ "timekeep-engine",
+ "timekeep-storage-sqlite",
+ "tokio",
+ "tower",
+]
 
 [[package]]
 name = "timekeep-zkteco"

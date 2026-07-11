@@ -182,10 +182,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let url = ep.config["url"].as_str().unwrap_or_default();
                 let secret = ep.config["secret"].as_str();
                 let mut dist = timekeep_dist_webhook::WebhookDistributor::new(url);
-                if let Some(s) = secret {
-                    if !s.is_empty() {
-                        dist = dist.with_secret(s);
-                    }
+                if let Some(s) = secret
+                    && !s.is_empty()
+                {
+                    dist = dist.with_secret(s);
                 }
                 tracing::info!(name = %ep.name, url = %url, "webhook distributor loaded");
                 Arc::new(dist)
@@ -369,7 +369,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let poll_bus = event_bus.clone();
     let poll_device_state = device_state.clone();
     let _poll_handle = tokio::spawn(async move {
-        let interval = std::time::Duration::from_secs(poll_interval.max(5).min(3600) as u64);
+        let interval = std::time::Duration::from_secs(poll_interval.clamp(5, 3600) as u64);
         let mut tick = tokio::time::interval(interval);
         // Skip first tick — let ADMS push establish connections
         tick.tick().await;

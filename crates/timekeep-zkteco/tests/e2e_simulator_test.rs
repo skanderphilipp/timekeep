@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! End-to-end tests with simulated ZKTeco devices (SDK + ADMS).
 //!
 //! These tests spin up the actual `AdmsServer` and exercise the full

@@ -9,7 +9,6 @@
 //! ```
 
 use async_trait::async_trait;
-use sqlx::QueryBuilder;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use timekeep_core::{
     Error, FacetGroup, FacetKind, FacetOption, FacetQuery,
@@ -279,8 +278,8 @@ impl PostgresStorage {
         builder: &mut sqlx::QueryBuilder<'a, sqlx::Postgres>,
         context: &'a timekeep_core::FacetContext,
     ) {
-        if let Some(ref sns) = context.device_sns {
-            if !sns.is_empty() {
+        if let Some(ref sns) = context.device_sns
+            && !sns.is_empty() {
                 builder.push(" AND p.device_sn IN (");
                 let mut separated = builder.separated(", ");
                 for sn in sns {
@@ -288,7 +287,6 @@ impl PostgresStorage {
                 }
                 separated.push_unseparated(")");
             }
-        }
         if let Some(ref since) = context.since {
             builder.push(" AND p.timestamp >= ");
             builder.push_bind(since.as_second().to_string());
@@ -363,7 +361,7 @@ impl PostgresStorage {
                 count: Some(count as u64),
             });
         }
-        options.sort_by(|a, b| b.count.unwrap_or(0).cmp(&a.count.unwrap_or(0)));
+        options.sort_by_key(|b| std::cmp::Reverse(b.count.unwrap_or(0)));
         Ok(FacetGroup {
             key: "status".into(),
             label: "Status".into(),
@@ -399,7 +397,7 @@ impl PostgresStorage {
                 count: Some(count as u64),
             });
         }
-        options.sort_by(|a, b| b.count.unwrap_or(0).cmp(&a.count.unwrap_or(0)));
+        options.sort_by_key(|b| std::cmp::Reverse(b.count.unwrap_or(0)));
         Ok(FacetGroup {
             key: "verify_mode".into(),
             label: "Method".into(),
@@ -419,8 +417,8 @@ impl PostgresStorage {
         let mut builder = QueryBuilder::<sqlx::Postgres>::new(
             "SELECT p.user_pin as value, COALESCE(e.name, u.name, p.user_pin) as label, CAST(COUNT(*) AS BIGINT) as count FROM attendance_punches p LEFT JOIN employees e ON e.pin = p.user_pin LEFT JOIN users u ON u.pin = p.user_pin WHERE 1=1",
         );
-        if let Some(ref search) = query.search {
-            if !search.is_empty() {
+        if let Some(ref search) = query.search
+            && !search.is_empty() {
                 let pattern = timekeep_core::sanitize_search(search);
                 builder
                     .push(" AND (e.name LIKE ")
@@ -431,7 +429,6 @@ impl PostgresStorage {
                     .push_bind(pattern)
                     .push(" ESCAPE '\\')");
             }
-        }
         self.pg_push_context_clauses(&mut builder, &query.context);
         builder
             .push(" GROUP BY p.user_pin, e.name, u.name ORDER BY count DESC LIMIT ")
@@ -568,8 +565,8 @@ impl Storage for PostgresStorage {
             builder
                 .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
         }
-        if let Some(search) = &filter.params.search {
-            if !search.is_empty() {
+        if let Some(search) = &filter.params.search
+            && !search.is_empty() {
                 let pattern = timekeep_core::sanitize_search(search);
                 builder.push(" AND (p.user_pin LIKE ");
                 builder.push_bind(pattern.clone());
@@ -579,7 +576,6 @@ impl Storage for PostgresStorage {
                 builder.push_bind(pattern);
                 builder.push(" ESCAPE '\\')");
             }
-        }
 
         let sort_col = match filter.params.sort_by.as_deref().unwrap_or("timestamp") {
             "timestamp" => "timestamp",

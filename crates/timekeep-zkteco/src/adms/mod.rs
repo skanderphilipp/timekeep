@@ -19,7 +19,6 @@ use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
-use timekeep_core::{Error, EventBus, events::DomainEvent};
 use axum::{
     Router,
     extract::{Query, State},
@@ -28,6 +27,7 @@ use axum::{
     routing::{get, post},
 };
 use queue::CommandQueue;
+use timekeep_core::{Error, EventBus, events::DomainEvent};
 use tokio::net::TcpListener;
 
 /// Status of a device tracked by the ADMS server.
@@ -45,6 +45,7 @@ pub struct DeviceStatus {
 }
 
 /// Time after which a device is considered offline (no contact).
+#[expect(dead_code)]
 const DEVICE_OFFLINE_TIMEOUT_SECS: u64 = 120;
 
 /// Per-device state stored in the shared ADMS server registry.
@@ -537,11 +538,11 @@ async fn handle_inspect(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use timekeep_core::events::EventBus;
     use axum::{
         body::Body,
         http::{Request, StatusCode},
     };
+    use timekeep_core::events::EventBus;
     use tower::ServiceExt;
 
     /// Create a test ADMS server with one registered device.

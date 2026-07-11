@@ -717,7 +717,7 @@ mod provider_tests {
 
     #[test]
     fn test_default_impl() {
-        let provider = ZkTecoProvider::default();
+        let provider = ZkTecoProvider;
         assert_eq!(provider.vendor_key(), "zkteco");
     }
 }

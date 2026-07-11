@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! ADMS device simulator — HTTP client that behaves like a real ZKTeco
 //! device pushing attendance data to the ADMS server.
 //!
@@ -59,7 +60,7 @@ impl AdmsDeviceSim {
             .map(|p| {
                 format!(
                     "{}\t{}\t{}\t{}\t0\t0\t\n",
-                    p.pin, p.timestamp, p.status as u8, p.verify as u8
+                    p.pin, p.timestamp, p.status as u8, { p.verify }
                 )
             })
             .collect();

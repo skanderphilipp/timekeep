@@ -117,3 +117,15 @@ lto = true
 codegen-units = 1
 strip = true
 opt-level = "z"
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+jiff = { workspace = true }
+serde = { workspace = true }
+tempfile = "3"
+axum = "0.8"
+tower = "0.5"
+timekeep-core = { workspace = true, features = ["test-utils"] }
+timekeep-storage-sqlite = { workspace = true }
+timekeep-api = { workspace = true }
+timekeep-engine = { workspace = true }

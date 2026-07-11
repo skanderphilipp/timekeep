@@ -144,7 +144,7 @@ mod tests {
     fn test_uptime_increases() {
         let health = EngineHealth::new();
         std::thread::sleep(std::time::Duration::from_millis(10));
-        assert!(health.uptime_seconds() >= 0, "uptime should be non-negative");
+        assert!(health.uptime_seconds() < 100_000, "uptime should be reasonable");
     }
 
     #[test]
@@ -168,7 +168,7 @@ mod tests {
         let health = EngineHealth::new();
         health.inc_processed();
         let snap = health.snapshot();
-        assert!(snap.uptime_seconds >= 0);
+        assert!(snap.uptime_seconds < 100_000);
         assert_eq!(snap.events_processed, 1);
         assert_eq!(snap.events_dropped, 0);
     }
