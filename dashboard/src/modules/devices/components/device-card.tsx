@@ -2,8 +2,7 @@ import type { DeviceSummary } from "@/lib/api";
 import { Link } from "react-router-dom";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { Card } from "@/components/ui/card";
-import { Badge, StatusDot, InlineHeader, Text } from "@/components/ui";
+import { Card, Badge, StatusDot, InlineHeader, Text } from "@/components/ui";
 
 type DeviceCardProps = {
   device: DeviceSummary;

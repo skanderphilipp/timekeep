@@ -12,7 +12,8 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { fetchPunchFilters, type FacetFilterParams, type FacetOption } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
-import type { ComboboxOption } from "@/components/ui/combobox";
+import { Text } from "@/components/ui";
+import type { ComboboxOption } from "@/components/ui";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ function facetToOption(opt: FacetOption): ComboboxOption {
     label: opt.label || opt.value,
     suffix:
       opt.count !== undefined && opt.count !== null ? (
-        <span className="facetCount">{opt.count}</span>
+        <Text as="span" variant="caption" color="tertiary">{opt.count}</Text>
       ) : undefined,
   };
 }

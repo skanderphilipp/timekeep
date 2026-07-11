@@ -1,9 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { DataTable, type DataTableColumn, type SortState } from "@/components/ui/data-table/data-table";
-import { TextCell, TimestampCell, StatusCell } from "@/components/ui/data-table/cells";
-import { Tag } from "@/components/ui/tag";
+import { DataTable, TextCell, TimestampCell, StatusCell, Tag, type DataTableColumn, type SortState } from "@/components/ui";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

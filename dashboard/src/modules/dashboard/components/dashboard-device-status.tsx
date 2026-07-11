@@ -2,8 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconDeviceDesktop } from "@tabler/icons-react";
 
-import { Heading, Text, Badge, CardGrid, Card } from "@/components/ui";
-import { Banner } from "@/components/ui/banner";
+import { Heading, Text, Badge, CardGrid, Card, Banner } from "@/components/ui";
 import type { DashboardDeviceHealth } from "@/lib/api";
 
 type DashboardDeviceStatusProps = {
@@ -24,6 +23,7 @@ export function DashboardDeviceStatus({ devices, onDeviceClick }: DashboardDevic
           <Card
             key={device.serial_number}
             data-slot="device-status-card"
+            clickable
             onClick={() => onDeviceClick(device.serial_number, device.label)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -33,7 +33,6 @@ export function DashboardDeviceStatus({ devices, onDeviceClick }: DashboardDevic
             }}
             tabIndex={0}
             role="button"
-            style={{ cursor: "pointer" }}
           >
             <Card.Content>
               <Badge variant={device.online ? "success" : "danger"}>

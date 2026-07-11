@@ -1,4 +1,4 @@
-import { Tag, type TagColor } from "@/components/ui/tag";
+import { Tag, type TagColor } from "@/components/ui";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 

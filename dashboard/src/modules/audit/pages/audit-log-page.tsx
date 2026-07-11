@@ -13,11 +13,12 @@ import {
   Badge,
   FilterBar,
   FilterInput,
+  PageError,
+  type DataTableColumn,
 } from "@/components/ui";
 import { useListState } from "@/infrastructure/query-params";
 import { useAuditLog } from "../hooks/use-audit-log";
 import type { AuditEvent, AuditFilter } from "@/lib/api";
-import type { DataTableColumn } from "@/components/ui/data-table";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 type AuditColumn = "timestamp" | "actor" | "action" | "resource" | "status";
@@ -44,7 +45,7 @@ export function AuditLogPage() {
     sortDefaults: { column: "timestamp", direction: "desc" },
   });
 
-  const { data: events, isLoading, error } = useAuditLog({
+  const { data: events, isLoading, error, refetch } = useAuditLog({
     ...filters,
     limit: DEFAULT_PAGE_SIZE,
     sort_by: sort?.column,
@@ -93,6 +94,20 @@ export function AuditLogPage() {
 
   const items = events ?? [];
 
+  if (error) {
+    return (
+      <PageLayout>
+        <PageBody>
+          <PageHeader
+            title={_(msg`Audit Log`)}
+            description={_(msg`Track every authenticated write operation across the system.`)}
+          />
+          <PageError onRetry={() => refetch()} />
+        </PageBody>
+      </PageLayout>
+    );
+  }
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -125,12 +140,7 @@ export function AuditLogPage() {
         </Section>
 
         <Section>
-          {error ? (
-            <EmptyState
-              title={_(msg`Failed to load audit log.`)}
-              description={_(msg`Is the backend running?`)}
-            />
-          ) : items.length === 0 ? (
+          {items.length === 0 ? (
             <EmptyState
               title={_(msg`No audit events`)}
               description={_(msg`Audit events will appear here as users perform actions.`)}

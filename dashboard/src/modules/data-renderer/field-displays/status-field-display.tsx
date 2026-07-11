@@ -1,4 +1,4 @@
-import { Tag, type TagColor } from "@/components/ui/tag";
+import { Tag, type TagColor } from "@/components/ui";
 import { getPunchStatusColor } from "@/lib/punch-status-colors";
 
 type StatusFieldDisplayProps = {

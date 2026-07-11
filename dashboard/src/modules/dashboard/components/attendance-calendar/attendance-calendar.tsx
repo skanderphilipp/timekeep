@@ -6,8 +6,7 @@ import { useLingui } from "@lingui/react";
 import type { MessageDescriptor } from "@lingui/core";
 
 import { openSidePanelAtom } from "@/infrastructure/state";
-import { CalendarMonth, type CalendarDay } from "@/components/ui/calendar-month";
-import { Dot, Select, IconButton, Button, Text, ActionGroup, StatusDot } from "@/components/ui";
+import { CalendarMonth, Dot, Select, IconButton, Button, Text, ActionGroup, StatusDot, type CalendarDay } from "@/components/ui";
 import { useAttendanceCalendar, statusLabel } from "./use-attendance-calendar";
 import { DayDetailPanel } from "./day-detail-panel";
 

@@ -6,13 +6,15 @@ import styles from "./card.module.scss";
 type CardProps = {
   children: ReactNode;
   className?: string;
+  /** When true, applies cursor: pointer for clickable cards. */
+  clickable?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
 type CardContentProps = CardProps;
 
-export function Card({ children, className, ...props }: CardProps) {
+export function Card({ children, className, clickable, ...props }: CardProps) {
   return (
-    <div data-slot="card" className={clsx(styles.card, className)} {...props}>
+    <div data-slot="card" className={clsx(styles.card, clickable && styles.clickable, className)} {...props}>
       {children}
     </div>
   );

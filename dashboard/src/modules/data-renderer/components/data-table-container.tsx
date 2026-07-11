@@ -7,10 +7,7 @@ import { useTableFilter } from "../hooks/use-table-filter";
 import { useTableInstanceId } from "../hooks/use-cell-click-handler";
 import { useCellClickHandler } from "../hooks/use-cell-click-handler";
 import { useInfiniteScrollSentinel } from "../hooks/use-infinite-scroll-sentinel";
-import { DataTable, type DataTableColumn } from "@/components/ui/data-table/data-table";
-import { Spinner } from "@/components/ui/spinner";
-import { Text } from "@/components/ui/text";
-import { Banner } from "@/components/ui/banner";
+import { DataTable, Spinner, Text, PageError, type DataTableColumn } from "@/components/ui";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import type { ColumnDefinition, FieldMetadata, EntityType, PaginationState } from "../types";
@@ -26,6 +23,7 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
   loadingRowCount?: number;
   emptyState?: ReactNode;
   error?: string | null;
+  onRetry?: () => void;
   externalSortState?: { column: string; direction: "asc" | "desc" } | null;
   onSortChange?: (columnId: string) => void;
   pagination?: PaginationState;
@@ -59,6 +57,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
   loadingRowCount = 5,
   emptyState,
   error,
+  onRetry,
   externalSortState,
   onSortChange: externalOnSortChange,
   pagination,
@@ -131,20 +130,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
   });
 
   if (error) {
-    /**
-     * TODO(ENTERPRISE): Extract error display to an ErrorBoundary UI component.
-     * Phase: Data table polish
-     * Impact: Uses raw div for ARIA role="alert" accessibility pattern.
-     * Fix: Create ErrorDisplay in components/ui/ or use Banner consistently.
-     */
-    return (
-      <div data-slot="data-table-error" role="alert">
-        {emptyState}
-        {!emptyState && (
-          <Banner variant="danger">{error}</Banner>
-        )}
-      </div>
-    );
+    return <PageError message={error} onRetry={onRetry} />;
   }
 
   return (

@@ -1,5 +1,4 @@
-import { Pagination } from "@/components/ui/pagination";
-import { Text } from "@/components/ui/text";
+import { Pagination, Text } from "@/components/ui";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import styles from "./data-table-footer.module.scss";

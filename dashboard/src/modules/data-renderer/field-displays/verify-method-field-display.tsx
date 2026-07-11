@@ -1,4 +1,4 @@
-import { Tag, type TagColor } from "@/components/ui/tag";
+import { Tag, type TagColor } from "@/components/ui";
 
 type VerifyMethodFieldDisplayProps = {
   value: string;

@@ -13,7 +13,9 @@ import {
   SchemaForm,
   DetailGrid,
   DetailItem,
-  StatusDot,
+  StatusBadge,
+  Text,
+  PageError,
 } from "@/components/ui";
 import { useCurrentUser } from "@/modules/auth/hooks/use-current-user";
 import { useSystemSettings } from "../hooks/use-system-settings";
@@ -24,28 +26,30 @@ import { createSystemSettingsFormDef } from "../schemas/settings-form.schema";
 // Health status helpers
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Map a status string to a StatusDot variant. */
-function statusVariant(status: string): "online" | "offline" | "warning" {
+/** Map a health status string to a StatusBadge status. */
+function healthStatus(status: string): "online" | "offline" | "warning" {
   if (status === "healthy" || status === "connected") return "online";
   if (status === "degraded") return "warning";
   return "offline";
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const { _ } = useLingui();
-  const label =
-    status === "healthy"
-      ? _(msg`Healthy`)
-      : status === "degraded"
-        ? _(msg`Degraded`)
-        : status === "connected"
-          ? _(msg`Connected`)
-          : _(msg`Error`);
+function healthLabel(status: string, _: ReturnType<typeof useLingui>["_"]): string {
+  switch (status) {
+    case "healthy": return _(msg`Healthy`);
+    case "degraded": return _(msg`Degraded`);
+    case "connected": return _(msg`Connected`);
+    default: return _(msg`Error`);
+  }
+}
+
+/** Protocol indicator row for a single device protocol (ADMS or SDK). */
+function ProtocolIndicator({ active, label }: { active: boolean; label: string }) {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ao-space-xs)" }}>
-      <StatusDot status={statusVariant(status)} />
-      <span>{label}</span>
-    </span>
+    <StatusBadge
+      status={active ? "online" : "offline"}
+      label={label}
+      active={active}
+    />
   );
 }
 
@@ -56,8 +60,8 @@ function StatusBadge({ status }: { status: string }) {
 export function SettingsPage() {
   const { _ } = useLingui();
   const user = useCurrentUser();
-  const { form, isLoading: settingsLoading, isSaving, handleSubmit } = useSystemSettings();
-  const { health, isLoading: healthLoading, formatUptime } = useSystemHealth();
+  const { form, isLoading: settingsLoading, isSaving, error: settingsError, refetch: refetchSettings, handleSubmit } = useSystemSettings();
+  const { health, isLoading: healthLoading, isError: healthError, refetch: refetchHealth, formatUptime } = useSystemHealth();
 
   const formSchema = createSystemSettingsFormDef(_);
 
@@ -70,20 +74,22 @@ export function SettingsPage() {
         />
 
         {/* ── System Health ─────────────────────────────────────── */}
-        {healthLoading ? (
-          <Spinner />
-        ) : health ? (
+        {healthError && <PageError onRetry={() => refetchHealth()} />}
+
+        {!healthError && healthLoading && <Spinner />}
+
+        {!healthError && !healthLoading && health && (
           <Card>
             <Card.Content>
               <DetailGrid title={_(msg`System Health`)}>
                 <DetailItem label={_(msg`Status`)}>
-                  <StatusBadge status={health.status} />
+                  <StatusBadge status={healthStatus(health.status)} label={healthLabel(health.status, _)} />
                 </DetailItem>
                 <DetailItem label={_(msg`Version`)}>
                   v{health.version}
                 </DetailItem>
                 <DetailItem label={_(msg`Database`)}>
-                  <StatusBadge status={health.db} />
+                  <StatusBadge status={healthStatus(health.db)} label={healthLabel(health.db, _)} />
                 </DetailItem>
                 <DetailItem label={_(msg`Uptime`)}>
                   {formatUptime(health.uptime_seconds)}
@@ -91,7 +97,7 @@ export function SettingsPage() {
               </DetailGrid>
             </Card.Content>
           </Card>
-        ) : null}
+        )}
 
         {/* ── Engine Pipeline ───────────────────────────────────── */}
         {health?.engine ? (
@@ -122,42 +128,14 @@ export function SettingsPage() {
               <DetailGrid title={_(msg`Devices`)}>
                 {health.devices.map((d) => (
                   <DetailItem key={d.serial_number} label={d.serial_number}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        gap: "var(--ao-space-md)",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {d.adms_active ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ao-space-xs)" }}>
-                          <StatusDot status="online" />
-                          <span style={{ fontSize: "var(--ao-font-size-sm)" }}>ADMS</span>
-                        </span>
-                      ) : (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ao-space-xs)", opacity: 0.5 }}>
-                          <StatusDot status="offline" />
-                          <span style={{ fontSize: "var(--ao-font-size-sm)" }}>ADMS</span>
-                        </span>
-                      )}
-                      {d.sdk_active ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ao-space-xs)" }}>
-                          <StatusDot status="online" />
-                          <span style={{ fontSize: "var(--ao-font-size-sm)" }}>SDK</span>
-                        </span>
-                      ) : (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ao-space-xs)", opacity: 0.5 }}>
-                          <StatusDot status="offline" />
-                          <span style={{ fontSize: "var(--ao-font-size-sm)" }}>SDK</span>
-                        </span>
-                      )}
-                      {d.last_seen_secs_ago != null && (
-                        <span style={{ fontSize: "var(--ao-font-size-sm)", opacity: 0.6 }}>
-                          {_(msg`Last seen`)}: {d.last_seen_secs_ago}s ago
-                        </span>
-                      )}
-                    </span>
+                    <ProtocolIndicator active={d.adms_active} label="ADMS" />
+                    {" "}
+                    <ProtocolIndicator active={d.sdk_active} label="SDK" />
+                    {d.last_seen_secs_ago != null && (
+                      <Text as="span" variant="caption" color="tertiary">
+                        {_(msg`Last seen`)}: {d.last_seen_secs_ago}s ago
+                      </Text>
+                    )}
                   </DetailItem>
                 ))}
               </DetailGrid>
@@ -172,27 +150,19 @@ export function SettingsPage() {
               <DetailGrid title={_(msg`Distributors`)}>
                 {health.distributors.map((d) => (
                   <DetailItem key={d.name} label={d.name}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        gap: "var(--ao-space-md)",
-                        fontSize: "var(--ao-font-size-sm)",
-                      }}
-                    >
-                      <span style={{ color: "var(--ao-color-success)" }}>
-                        {d.delivered} {_(msg`delivered`)}
-                      </span>
-                      {d.queued > 0 && (
-                        <span style={{ color: "var(--ao-color-warning)" }}>
-                          {d.queued} {_(msg`queued`)}
-                        </span>
-                      )}
-                      {d.dead > 0 && (
-                        <span style={{ color: "var(--ao-color-error)" }}>
-                          {d.dead} {_(msg`dead`)}
-                        </span>
-                      )}
-                    </span>
+                    <Text as="span" variant="caption" color="success">
+                      {d.delivered} {_(msg`delivered`)}
+                    </Text>
+                    {d.queued > 0 && (
+                      <Text as="span" variant="caption" color="warning">
+                        {" · "}{d.queued} {_(msg`queued`)}
+                      </Text>
+                    )}
+                    {d.dead > 0 && (
+                      <Text as="span" variant="caption" color="danger">
+                        {" · "}{d.dead} {_(msg`dead`)}
+                      </Text>
+                    )}
                   </DetailItem>
                 ))}
               </DetailGrid>
@@ -201,9 +171,11 @@ export function SettingsPage() {
         ) : null}
 
         {/* ── Settings Form ─────────────────────────────────────── */}
-        {settingsLoading ? (
-          <Spinner />
-        ) : (
+        {settingsError && <PageError onRetry={() => refetchSettings()} />}
+
+        {!settingsError && settingsLoading && <Spinner />}
+
+        {!settingsError && !settingsLoading && (
           <Form onSubmit={handleSubmit}>
             <SchemaForm formSchema={formSchema} form={form} />
             <FormActions>

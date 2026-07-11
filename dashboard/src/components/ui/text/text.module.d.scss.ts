@@ -9,5 +9,7 @@ declare const classNames: {
   readonly secondary: "secondary";
   readonly tertiary: "tertiary";
   readonly danger: "danger";
+  readonly success: "success";
+  readonly warning: "warning";
 };
 export = classNames;

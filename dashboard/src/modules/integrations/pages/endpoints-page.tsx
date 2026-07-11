@@ -3,13 +3,12 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPlus, IconPencil, IconTrash, IconPower } from "@tabler/icons-react";
 
-import { PageLayout, PageBody, PageHeader, Section, DataTable, Spinner, EmptyState, Badge, Button, IconButton, Dialog, FormActions, ActionGroup } from "@/components/ui";
+import { PageLayout, PageBody, PageHeader, Section, DataTable, Spinner, EmptyState, Badge, Button, IconButton, Dialog, FormActions, ActionGroup, PageError, type DataTableColumn } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
 import { useEndpoints } from "../hooks/use-endpoints";
 import { EndpointForm } from "../components/endpoint-form";
 import { updateEndpoint } from "@/lib/api";
 import type { IntegrationEndpoint } from "@/lib/api";
-import type { DataTableColumn } from "@/components/ui/data-table";
 
 function kindVariant(k: string): "success" | "warning" | "neutral" {
   if (k === "webhook") return "success";
@@ -61,6 +60,20 @@ export function EndpointsPage() {
 
   if (query.isLoading) return <PageLayout><PageBody><PageHeader title={_(msg`Integration Endpoints`)} /><Section><Spinner /></Section></PageBody></PageLayout>;
 
+  if (query.error) {
+    return (
+      <PageLayout>
+        <PageBody>
+          <PageHeader
+            title={_(msg`Integration Endpoints`)}
+            description={_(msg`Configure where attendance events are delivered — webhooks, Odoo, SAP, Zapier.`)}
+          />
+          <PageError onRetry={() => query.refetch()} />
+        </PageBody>
+      </PageLayout>
+    );
+  }
+
   const endpoints = query.data ?? [];
 
   return (
@@ -77,8 +90,7 @@ export function EndpointsPage() {
         />
 
         <Section>
-          {query.error ? <EmptyState title={_(msg`Failed to load endpoints`)} description={_(msg`Is the backend running?`)} /> :
-           endpoints.length === 0 ? <EmptyState title={_(msg`No endpoints`)} description={_(msg`Add an endpoint to start sending attendance events.`)} action={<Button icon={<IconPlus size={16} />} onClick={() => { setEditing(undefined); setFormOpen(true); }}>{_(msg`Add Endpoint`)}</Button>} /> :
+          {endpoints.length === 0 ? <EmptyState title={_(msg`No endpoints`)} description={_(msg`Add an endpoint to start sending attendance events.`)} action={<Button icon={<IconPlus size={16} />} onClick={() => { setEditing(undefined); setFormOpen(true); }}>{_(msg`Add Endpoint`)}</Button>} /> :
            <DataTable columns={columns} data={endpoints} getRowKey={(e) => e.id} />}
         </Section>
 

@@ -1,9 +1,9 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { Card, Text, Badge, ListItem, EmptyState } from "@/components/ui";
-import { ClickableListItem } from "@/components/ui/clickable-list-item";
+import { Card, Text, Badge, ListItem, EmptyState, ClickableListItem } from "@/components/ui";
 import type { CurrentlyCheckedIn } from "@/lib/api";
+import styles from "./checked-in-list.module.scss";
 
 type CheckedInListProps = {
   employees: CurrentlyCheckedIn[];
@@ -71,7 +71,7 @@ export function CheckedInList({ employees, onUserClick }: CheckedInListProps) {
           </ClickableListItem>
         ))}
         {employees.length > 8 && (
-          <Text variant="caption" color="tertiary" style={{ display: "block", padding: "8px 0", textAlign: "center" }}>
+          <Text variant="caption" color="tertiary" className={styles.overflowHint}>
             {_(msg`+ ${employees.length - 8} more employees`)}
           </Text>
         )}

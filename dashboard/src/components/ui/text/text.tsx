@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import styles from "./text.module.scss";
 
 export type TextVariant = "body" | "caption" | "label";
-export type TextColor = "primary" | "secondary" | "tertiary" | "danger";
+export type TextColor = "primary" | "secondary" | "tertiary" | "danger" | "success" | "warning";
 export type TextElement = "p" | "span" | "label";
 
 type TextProps = {

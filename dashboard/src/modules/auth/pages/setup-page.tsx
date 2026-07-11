@@ -98,17 +98,15 @@ export function SetupPage() {
     <section data-slot="login-page" className={styles.page}>
       <main data-slot="login-main" className={styles.main}>
         <Card>
-          <Card.Content style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)" }}>
+          <Card.Content className={styles.cardContent}>
             <IconShieldLock size={40} stroke={1.5} />
 
-            <div>
-              <Heading level="h1">
-                {_(msg`Welcome to Attendance OS`)}
-              </Heading>
-              <Text variant="caption" color="tertiary">
-                {_(msg`Create your admin account to get started.`)}
-              </Text>
-            </div>
+            <Heading level="h1">
+              {_(msg`Welcome to Attendance OS`)}
+            </Heading>
+            <Text variant="caption" color="tertiary">
+              {_(msg`Create your admin account to get started.`)}
+            </Text>
 
             <Separator noMargin />
 

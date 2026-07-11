@@ -6,8 +6,7 @@ import type { MessageDescriptor } from "@lingui/core";
 
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
-import { Timeline, type TimelineRowData, type TimelineBlockData } from "@/components/ui/timeline";
-import { Text, Heading, ListItem } from "@/components/ui";
+import { Timeline, Text, Heading, ListItem, type TimelineRowData, type TimelineBlockData } from "@/components/ui";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

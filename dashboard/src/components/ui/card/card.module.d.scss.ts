@@ -1,5 +1,6 @@
 declare const classNames: {
   readonly card: "card";
+  readonly clickable: "clickable";
   readonly header: "header";
   readonly title: "title";
   readonly subtitle: "subtitle";

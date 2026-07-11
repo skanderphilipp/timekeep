@@ -1,4 +1,4 @@
-import { Text } from "@/components/ui/text";
+import { Text } from "@/components/ui";
 import type { TimestampFieldMetadata } from "../types";
 
 type TimestampFieldDisplayProps = {

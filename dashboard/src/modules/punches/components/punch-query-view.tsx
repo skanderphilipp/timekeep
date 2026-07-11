@@ -12,11 +12,12 @@ import {
   FilterSelect,
   DatePicker,
   Toggle,
+  Banner,
+  MultiSelect,
+  type FilterField,
 } from "@/components/ui";
-import type { FilterField } from "@/components/ui/filter-dropdown";
-import { Banner } from "@/components/ui/banner";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { PUNCH_STATUSES } from "@shared/punch-statuses";
+import styles from "../pages/punch-query-page.module.scss";
 
 /** Punch status options for the FilterSelect dropdown. */
 function useStatusOptions() {
@@ -117,14 +118,12 @@ export function PunchQueryView() {
       )}
 
       {/* Search input — full width, always visible */}
-      <div style={{ marginBottom: "var(--ao-spacing-3)" }}>
-        <FilterInput
-          style={{ width: "100%" }}
-          placeholder={_(msg`Search by employee name or PIN…`)}
-          value={page.filters.user_pin ?? ""}
-          onChange={page.handleSearchChange}
-        />
-      </div>
+      <FilterInput
+        className={styles.searchBar}
+        placeholder={_(msg`Search by employee name or PIN…`)}
+        value={page.filters.user_pin ?? ""}
+        onChange={page.handleSearchChange}
+      />
 
       {/* Filter button + chips + actions (Twenty-style compact toolbar) */}
       <FilterDropdown
@@ -150,6 +149,7 @@ export function PunchQueryView() {
         entityType="punch"
         isLoading={page.isLoading}
         error={page.error}
+        onRetry={page.refetch}
         onSortChange={page.handleSortChange}
         infiniteScroll={{
           hasNextPage: page.hasNextPage,

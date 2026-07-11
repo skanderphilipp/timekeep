@@ -3,11 +3,10 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPencil, IconKey, IconTrash } from "@tabler/icons-react";
 
-import { Badge, IconButton, ActionGroup } from "@/components/ui";
+import { Badge, IconButton, ActionGroup, type DataTableColumn } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
 import { useUsers } from "./use-users";
 import type { DashboardUser } from "@/lib/api";
-import type { DataTableColumn } from "@/components/ui/data-table";
 
 function roleVariant(role: string): "success" | "warning" | "neutral" {
   switch (role) {

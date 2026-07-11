@@ -2,8 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconUsers, IconUserX, IconClockExclamation, IconClockCheck } from "@tabler/icons-react";
 
-import { MetricCard } from "./metric-card";
-import { CardGrid } from "@/components/ui/card-grid";
+import { MetricCard, CardGrid } from "@/components/ui";
 import type { TodaySummary } from "@/lib/api";
 
 type DashboardMetricsProps = {

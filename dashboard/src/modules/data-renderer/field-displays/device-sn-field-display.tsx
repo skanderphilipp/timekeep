@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Chip, ChipAccent, ChipVariant, ChipSize } from "@/components/ui/chip";
+import { Chip, ChipAccent, ChipVariant, ChipSize } from "@/components/ui";
 import { useOpenDetailPanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import { useFieldContext } from "../contexts/field-context";
 
