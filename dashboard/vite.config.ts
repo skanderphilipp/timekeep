@@ -6,11 +6,13 @@ import checker from "vite-plugin-checker";
 import sassDts from "vite-plugin-sass-dts";
 import svgr from "vite-plugin-svgr";
 import postcssRtl from "postcss-rtlcss";
+import { codeInspectorPlugin } from "code-inspector-plugin";
 
 export default defineConfig(({ command }) => {
   const isDev = command === "serve";
   return {
     plugins: [
+      ...(isDev ? [codeInspectorPlugin({ bundler: "vite", editor: "zed" })] : []),
       react({ plugins: [["@lingui/swc-plugin", {}]] }),
       lingui(),
       svgr(),
