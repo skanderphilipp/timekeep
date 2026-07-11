@@ -54,7 +54,7 @@ impl UserContext {
 
 /// Middleware: validates the JWT Bearer token and extracts user context.
 ///
-/// On success, attaches [`UserContext`] to the request via [`Extension`].
+/// On success, attaches `UserContext` to the request via `axum::Extension`.
 /// On failure, returns 401 Unauthorized.
 pub async fn require_jwt(
     State(state): State<AppState>,

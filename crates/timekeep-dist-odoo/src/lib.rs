@@ -144,7 +144,7 @@ impl OdooDistributor {
                 let resp = self
                     .client
                     .post(&url)
-                    .header("Authorization", format!("Bearer {}", &api_key))
+                    .header("Authorization", format!("Bearer {}", api_key))
                     .header("X-Odoo-Database", &database)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({ "domain": &domain }))
@@ -194,7 +194,7 @@ impl OdooDistributor {
                 let resp = self
                     .client
                     .post(&url)
-                    .header("Authorization", format!("Bearer {}", &api_key))
+                    .header("Authorization", format!("Bearer {}", api_key))
                     .header("X-Odoo-Database", &database)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({
@@ -240,7 +240,7 @@ impl OdooDistributor {
                 let resp = self
                     .client
                     .post(&url)
-                    .header("Authorization", format!("Bearer {}", &api_key))
+                    .header("Authorization", format!("Bearer {}", api_key))
                     .header("X-Odoo-Database", &database)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({ "domain": &domain, "limit": 1 }))
@@ -272,7 +272,7 @@ impl OdooDistributor {
                 let resp = self
                     .client
                     .post(&url)
-                    .header("Authorization", format!("Bearer {}", &api_key))
+                    .header("Authorization", format!("Bearer {}", api_key))
                     .header("X-Odoo-Database", &database)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({
@@ -308,7 +308,7 @@ impl OdooDistributor {
                 let resp = self
                     .client
                     .post(&url)
-                    .header("Authorization", format!("Bearer {}", &api_key))
+                    .header("Authorization", format!("Bearer {}", api_key))
                     .header("X-Odoo-Database", &database)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({
