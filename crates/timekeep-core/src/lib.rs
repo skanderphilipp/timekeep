@@ -39,7 +39,6 @@ pub use model::{
     AuditFilter,
     DashboardUser,
     DeviceConfig,
-    Error as ModelError,
     IntegrationEndpoint,
     IntegrationKind,
     PermissionSet,

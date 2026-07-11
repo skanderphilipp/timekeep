@@ -192,12 +192,12 @@ impl AttendancePunch {
     }
 
     /// Validate that this punch is internally consistent.
-    pub fn validate(&self) -> Result<(), crate::model::Error> {
+    pub fn validate(&self) -> Result<(), crate::Error> {
         if self.user_pin.is_empty() {
-            return Err(crate::model::Error::Validation("empty user_pin".into()));
+            return Err(crate::Error::validation("empty user_pin"));
         }
         if self.device_sn.is_empty() {
-            return Err(crate::model::Error::Validation("empty device_sn".into()));
+            return Err(crate::Error::validation("empty device_sn"));
         }
         Ok(())
     }

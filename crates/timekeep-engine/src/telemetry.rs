@@ -29,6 +29,7 @@ use std::sync::OnceLock;
 use opentelemetry::KeyValue;
 use opentelemetry::global;
 use opentelemetry::metrics::Counter;
+use opentelemetry::metrics::MeterProvider as _;
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
@@ -72,10 +73,9 @@ struct AttendanceMetrics {
 /// When `TIMEKEEP_OTEL_ENABLED` is not `"true"` or `"1"`, only the `fmt`
 /// layer is installed — no OTLP connection is attempted.
 ///
-/// # Panics
-///
-/// Panics if the OTLP exporter cannot be built — this is intentional so the
-/// operator gets a clear start-up failure rather than silently missing traces.
+/// OTLP exporter failures are logged and the application continues without
+/// distributed tracing. A misconfigured OTLP endpoint should never prevent
+/// the application from starting.
 pub fn init_telemetry() {
     let enabled =
         std::env::var("TIMEKEEP_OTEL_ENABLED").map(|v| v == "true" || v == "1").unwrap_or(false);
@@ -86,63 +86,92 @@ pub fn init_telemetry() {
     let fmt_layer = tracing_subscriber::fmt::layer().with_filter(filter);
 
     if enabled {
-        let resource = Resource::builder().with_service_name("timekeep").build();
+        match build_otel_providers() {
+            Ok((span_exporter, meter_provider, metrics)) => {
+                global::set_meter_provider(meter_provider);
+                METRICS.set(metrics).ok();
+                TRACER_PROVIDER
+                    .set(
+                        SdkTracerProvider::builder()
+                            .with_batch_exporter(span_exporter)
+                            .with_resource(
+                                Resource::builder().with_service_name("timekeep").build(),
+                            )
+                            .build(),
+                    )
+                    .ok();
 
-        // ── Tracer provider ────────────────────────────────────────────
-        let span_exporter = opentelemetry_otlp::SpanExporter::builder()
-            .with_http()
-            .build()
-            .expect("failed to build OTLP span exporter (check OTEL_EXPORTER_OTLP_ENDPOINT)");
+                // Re-acquire the tracer from the provider for the OTLP layer
+                // (the raw exporter was consumed by the provider builder above).
+                // We use a fixed tracer name here — the provider was already built.
+                let otel_layer = {
+                    let provider = TRACER_PROVIDER.get().expect("TRACER_PROVIDER was just set");
+                    OpenTelemetryLayer::new(provider.tracer("timekeep"))
+                };
 
-        let tracer_provider = SdkTracerProvider::builder()
-            .with_batch_exporter(span_exporter)
-            .with_resource(resource.clone())
-            .build();
-
-        let tracer = tracer_provider.tracer("timekeep");
-
-        // ── Meter provider ─────────────────────────────────────────────
-        let metric_exporter = opentelemetry_otlp::MetricExporter::builder()
-            .with_http()
-            .build()
-            .expect("failed to build OTLP metric exporter (check OTEL_EXPORTER_OTLP_ENDPOINT)");
-
-        let meter_provider = SdkMeterProvider::builder()
-            .with_periodic_exporter(metric_exporter)
-            .with_resource(resource)
-            .build();
-
-        global::set_meter_provider(meter_provider);
-
-        // ── Pre-resolve counters ───────────────────────────────────────
-        let meter = global::meter("timekeep");
-        let metrics = AttendanceMetrics {
-            punches_received: meter
-                .u64_counter("attendance_punches_received_total")
-                .with_description("Total number of attendance punches received")
-                .build(),
-            punches_deduplicated: meter
-                .u64_counter("attendance_punches_deduplicated_total")
-                .with_description("Total number of punches filtered as duplicates")
-                .build(),
-            punches_distributed: meter
-                .u64_counter("attendance_punches_distributed_total")
-                .with_description("Total number of punches forwarded to distributors")
-                .build(),
-        };
-        METRICS.set(metrics).ok();
-
-        // Keep the provider alive so the batch exporter can flush.
-        TRACER_PROVIDER.set(tracer_provider).ok();
-
-        let otel_layer = OpenTelemetryLayer::new(tracer);
-
-        tracing_subscriber::registry().with(fmt_layer).with(otel_layer).init();
-
-        tracing::info!("OpenTelemetry tracing enabled (OTLP/HTTP)");
+                tracing_subscriber::registry().with(fmt_layer).with(otel_layer).init();
+                tracing::info!("OpenTelemetry tracing enabled (OTLP/HTTP)");
+            },
+            Err(e) => {
+                tracing::error!(
+                    error = %e,
+                    "failed to initialize OTLP exporters — continuing without distributed tracing"
+                );
+                tracing_subscriber::registry().with(fmt_layer).init();
+            },
+        }
     } else {
         tracing_subscriber::registry().with(fmt_layer).init();
     }
+}
+
+/// Build both the OTLP span exporter and metric exporter.
+///
+/// Returns the raw components on success so the caller can compose them
+/// into providers. On failure, returns a descriptive error — the caller
+/// degrades to fmt-only logging.
+fn build_otel_providers()
+-> Result<(opentelemetry_otlp::SpanExporter, SdkMeterProvider, AttendanceMetrics), String> {
+    let resource = Resource::builder().with_service_name("timekeep").build();
+
+    // ── Span exporter ──────────────────────────────────────────────
+    let span_exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_http()
+        .build()
+        .map_err(|e| format!("failed to build OTLP span exporter: {e}"))?;
+
+    // ── Metric exporter ────────────────────────────────────────────
+    let metric_exporter = opentelemetry_otlp::MetricExporter::builder()
+        .with_http()
+        .build()
+        .map_err(|e| format!("failed to build OTLP metric exporter: {e}"))?;
+
+    let meter_provider = SdkMeterProvider::builder()
+        .with_periodic_exporter(metric_exporter)
+        .with_resource(resource)
+        .build();
+
+    // ── Pre-resolve counters ───────────────────────────────────────
+    // We need to set the global meter provider *before* we can create
+    // meters, but we can pre-build the counters after. We'll return
+    // the meter_provider for the caller to set globally.
+    let meter = meter_provider.meter("timekeep");
+    let metrics = AttendanceMetrics {
+        punches_received: meter
+            .u64_counter("attendance_punches_received_total")
+            .with_description("Total number of attendance punches received")
+            .build(),
+        punches_deduplicated: meter
+            .u64_counter("attendance_punches_deduplicated_total")
+            .with_description("Total number of punches filtered as duplicates")
+            .build(),
+        punches_distributed: meter
+            .u64_counter("attendance_punches_distributed_total")
+            .with_description("Total number of punches forwarded to distributors")
+            .build(),
+    };
+
+    Ok((span_exporter, meter_provider, metrics))
 }
 
 /// Returns `true` when OpenTelemetry tracing is active.

@@ -217,9 +217,7 @@ impl From<timekeep_core::Error> for AppError {
             Error::NotFound(_) => Self::NotFound(msg),
             Error::Validation(_) => Self::Validation(ApiError::validation(msg)),
             Error::Duplicate(_) => Self::Duplicate(msg),
-            Error::Authentication(_) => {
-                Self::Validation(ApiError { code: "auth_error", message: msg, fields: None })
-            },
+            Error::Authentication(_) => Self::Unauthorized,
             Error::Storage(_)
             | Error::DeviceCommunication(_)
             | Error::Network(_)

@@ -33,8 +33,6 @@ pub use work_day::{DayStatus, WorkDay};
 pub use work_period::{PeriodKind, WorkPeriod};
 pub use work_policy::WorkPolicy;
 
-use thiserror::Error;
-
 /// Common configuration for a device managed by timekeep.
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct DeviceConfig {
@@ -83,14 +81,4 @@ impl DeviceConfig {
             poll_interval_secs: None,
         }
     }
-}
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("validation error: {0}")]
-    Validation(String),
-    #[error("device communication error: {0}")]
-    DeviceCommunication(String),
-    #[error("duplicate punch detected: {punch_id}")]
-    DuplicatePunch { punch_id: String },
 }

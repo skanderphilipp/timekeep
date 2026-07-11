@@ -119,11 +119,26 @@ fn validate_config() {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
     // OpenTelemetry must be initialised **before** the subscriber so the
     // OTLP layer can be composed into the registry.
     timekeep_engine::telemetry::init_telemetry();
 
+    if let Err(e) = try_main().await {
+        // Print the full error chain for operators
+        tracing::error!(error = %e, "timekeep failed to start");
+        eprint!("Fatal: {e}");
+        let mut source: Option<&dyn std::error::Error> = e.source();
+        while let Some(s) = source {
+            eprint!("\n  caused by: {s}");
+            source = s.source();
+        }
+        eprintln!();
+        std::process::exit(1);
+    }
+}
+
+async fn try_main() -> Result<(), Box<dyn std::error::Error>> {
     // Validate production config early — warn about insecure defaults
     // before any device connections or API listeners are opened.
     validate_config();
@@ -156,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         _ => {
             let db_path =
-                std::env::var("TIMEKEEP_DB_PATH").unwrap_or_else(|_| "attendance.db".to_string());
+                std::env::var("TIMEKEEP_DB_PATH").unwrap_or_else(|_| "timekeep.db".to_string());
             tracing::info!(path = %db_path, "using SQLite storage backend (WAL mode)");
             let sqlite = Arc::new(timekeep_storage_sqlite::SqliteStorage::new(&db_path).await?);
             storage = sqlite.clone() as Arc<dyn Storage>;

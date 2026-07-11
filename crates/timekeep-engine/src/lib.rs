@@ -251,10 +251,11 @@ impl Engine {
                         // Fallback: direct storage write (no batch writer configured)
                         for storage in &self.storages {
                             if let Err(e) = storage.store_punch(&punch).await {
+                                self.health.inc_failed();
                                 tracing::error!(
                                     user_pin = %punch.user_pin,
                                     error = %e,
-                                    "storage failed",
+                                    "storage failed — punch may be lost",
                                 );
                             }
                         }
