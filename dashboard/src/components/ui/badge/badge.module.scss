@@ -3,6 +3,7 @@
   border-radius: var(--ao-radius-sm);
   display: inline-flex;
   font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-1);
   line-height: 1;
   white-space: nowrap;
   width: fit-content;
@@ -18,44 +19,50 @@
   padding: var(--ao-spacing-1) var(--ao-spacing-3);
 }
 
-// ── Variants ─────────────────────────────────────────────────────────────────
+/* ── Pill variant (replaces former <Pill> component) ── */
+
+.pill {
+  border-radius: var(--ao-radius-pill);
+  font-size: var(--ao-font-size-xxs);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ── Icon ── */
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* ── Status dot prefix ── */
+
+.dot {
+  flex-shrink: 0;
+}
+
+/* ── Variants ── */
 
 .success {
-  --badge-bg: var(--ao-color-green3);
-  --badge-color: var(--ao-color-green11);
-
-  background-color: var(--badge-bg);
-  color: var(--badge-color);
+  background-color: var(--ao-color-green3);
+  color: var(--ao-color-green11);
 }
 
 .warning {
-  --badge-bg: var(--ao-color-amber3);
-  --badge-color: var(--ao-color-amber11);
-
-  background-color: var(--badge-bg);
-  color: var(--badge-color);
+  background-color: var(--ao-color-amber3);
+  color: var(--ao-color-amber11);
 }
 
 .danger {
-  --badge-bg: var(--ao-color-red3);
-  --badge-color: var(--ao-color-red11);
-
-  background-color: var(--badge-bg);
-  color: var(--badge-color);
+  background-color: var(--ao-color-red3);
+  color: var(--ao-color-red11);
 }
 
 .info {
-  --badge-bg: var(--ao-color-blue3);
-  --badge-color: var(--ao-color-blue11);
-
-  background-color: var(--badge-bg);
-  color: var(--badge-color);
+  background-color: var(--ao-color-blue3);
+  color: var(--ao-color-blue11);
 }
 
 .neutral {
-  --badge-bg: var(--ao-background-secondary);
-  --badge-color: var(--ao-font-color-secondary);
-
-  background-color: var(--badge-bg);
-  color: var(--badge-color);
+  background-color: var(--ao-background-secondary);
+  color: var(--ao-font-color-secondary);
 }

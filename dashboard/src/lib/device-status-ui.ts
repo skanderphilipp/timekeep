@@ -7,11 +7,11 @@
 
 import { DEVICE_STATUSES, type DeviceStatusValue } from "@shared/device-statuses";
 
-export type StatusBadgeVariant = "success" | "warning" | "danger" | "info" | "neutral";
+export type BadgeVariant = "success" | "warning" | "danger" | "info" | "neutral";
 export type StatusDotColor = "online" | "offline" | "warning";
 
 type DeviceStatusUI = {
-  variant: StatusBadgeVariant;
+  variant: BadgeVariant;
   dotColor: StatusDotColor;
 };
 

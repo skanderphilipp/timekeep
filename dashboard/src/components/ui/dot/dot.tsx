@@ -13,10 +13,15 @@ type DotProps = {
 };
 
 /**
- * Minimal colored dot indicator. Used in calendars, legends, and timelines
- * where a full StatusDot with ARIA semantics isn't appropriate.
+ * Decorative colored dot — no semantic meaning, no ARIA role.
  *
- * Renders as an 8px (sm) or 12px (md) colored circle.
+ * Use for visual-only indicators: calendar heat maps, legend swatches,
+ * timeline color markers. Renders `aria-hidden="true"` — screen readers
+ * ignore it.
+ *
+ * For live status indicators (online/offline/warning), use
+ * `<StatusDot>` instead — it carries `role="status"` and an
+ * `aria-label`.
  */
 export function Dot({ color, title, size = "sm", className }: DotProps) {
   return (

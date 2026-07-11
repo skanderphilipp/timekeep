@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { DetailGrid, DetailItem } from "./detail-grid";
-import { StatusBadge } from "../status-badge";
+import { Badge } from "../badge";
 import { Text } from "../text";
 import { Tag } from "../tag";
 
@@ -23,11 +23,15 @@ export const Primary: Story = {
   render: () => (
     <DetailGrid title="System Health">
       <DetailItem label="Status">
-        <StatusBadge status="online" label="Healthy" />
+        <Badge dot="online" variant="success">
+          Healthy
+        </Badge>
       </DetailItem>
       <DetailItem label="Version">v1.2.3</DetailItem>
       <DetailItem label="Database">
-        <StatusBadge status="online" label="Connected" />
+        <Badge dot="online" variant="success">
+          Connected
+        </Badge>
       </DetailItem>
       <DetailItem label="Uptime">3d 14h 22m</DetailItem>
     </DetailGrid>
@@ -61,7 +65,9 @@ export const AllVariants: Story = {
         <DetailItem label="Model">SpeedFace-V5L [TI]</DetailItem>
         <DetailItem label="Firmware">Ver 8.45</DetailItem>
         <DetailItem label="Status">
-          <StatusBadge status="online" label="Connected" />
+          <Badge dot="online" variant="success">
+            Connected
+          </Badge>
         </DetailItem>
       </DetailGrid>
     </div>

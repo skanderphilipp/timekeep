@@ -36,8 +36,6 @@ export type {
   ChartTheme,
 } from "./chart";
 export { Checkbox } from "./checkbox";
-export { Chip, ChipSize, ChipAccent, ChipVariant } from "./chip";
-export type { ChipProps } from "./chip";
 export { ClickableListItem } from "./clickable-list-item";
 export { Combobox } from "./combobox";
 export type { ComboboxOption } from "./combobox";
@@ -101,7 +99,6 @@ export { Select } from "./select";
 export { Separator } from "./separator";
 export { Skeleton, SkeletonLines } from "./skeleton";
 export { Spinner } from "./spinner";
-export { StatusBadge } from "./status-badge";
 export { StatusDot } from "./status-dot";
 export { TabList, Tab, TabPanel } from "./tab-list";
 export { Text } from "./text";
@@ -122,8 +119,6 @@ export { AnimatedPlaceholder } from "./animated-placeholder";
 export type { AnimatedPlaceholderProps, AnimatedPlaceholderType } from "./animated-placeholder";
 export { Info } from "./info";
 export type { InfoProps, InfoAccent } from "./info";
-export { Pill } from "./pill";
-export type { PillProps } from "./pill";
 export { Tag } from "./tag";
 export type { TagProps, TagColor, TagVariant, TagWeight } from "./tag";
 export { AnimatedButton } from "./animated-button";
@@ -136,7 +131,6 @@ export type { CircularProgressBarProps } from "./circular-progress-bar";
 // ── Device management molecules ──
 export { StorageGauge } from "./storage-gauge";
 export { Dot } from "./dot";
-export { DeviceStatusBadge } from "./device-status-badge";
 export { DeviceHealthCard } from "./device-health-card";
 export { ActivityTimeline } from "./activity-timeline";
 export { Timeline } from "./timeline";

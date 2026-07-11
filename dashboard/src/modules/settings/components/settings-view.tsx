@@ -11,7 +11,7 @@ import {
   SchemaForm,
   DetailGrid,
   DetailItem,
-  StatusBadge,
+  Badge,
   Text,
   PageError,
 } from "@/components/ui";
@@ -24,11 +24,14 @@ import { createSystemSettingsFormDef } from "../schemas/settings-form.schema";
 // Health status helpers
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Map a health status string to a StatusBadge status. */
-function healthStatus(status: string): "online" | "offline" | "warning" {
-  if (status === "healthy" || status === "connected") return "online";
-  if (status === "degraded") return "warning";
-  return "offline";
+/** Map a health status string to a Badge dot + variant. */
+function healthVariant(status: string): {
+  dot: "online" | "offline" | "warning";
+  variant: "success" | "warning" | "danger" | "neutral";
+} {
+  if (status === "healthy" || status === "connected") return { dot: "online", variant: "success" };
+  if (status === "degraded") return { dot: "warning", variant: "warning" };
+  return { dot: "offline", variant: "neutral" };
 }
 
 function healthLabel(status: string, _: ReturnType<typeof useLingui>["_"]): string {
@@ -46,7 +49,11 @@ function healthLabel(status: string, _: ReturnType<typeof useLingui>["_"]): stri
 
 /** Protocol indicator row for a single device protocol (ADMS or SDK). */
 function ProtocolIndicator({ active, label }: { active: boolean; label: string }) {
-  return <StatusBadge status={active ? "online" : "offline"} label={label} active={active} />;
+  return (
+    <Badge dot={active ? "online" : "offline"} variant={active ? "success" : "neutral"}>
+      {label}
+    </Badge>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -96,14 +103,21 @@ export function SettingsView() {
           <Card.Content>
             <DetailGrid title={_(msg`System Health`)}>
               <DetailItem label={_(msg`Status`)}>
-                <StatusBadge
-                  status={healthStatus(health.status)}
-                  label={healthLabel(health.status, _)}
-                />
+                <Badge
+                  dot={healthVariant(health.status).dot}
+                  variant={healthVariant(health.status).variant}
+                >
+                  {healthLabel(health.status, _)}
+                </Badge>
               </DetailItem>
               <DetailItem label={_(msg`Version`)}>v{health.version}</DetailItem>
               <DetailItem label={_(msg`Database`)}>
-                <StatusBadge status={healthStatus(health.db)} label={healthLabel(health.db, _)} />
+                <Badge
+                  dot={healthVariant(health.db).dot}
+                  variant={healthVariant(health.db).variant}
+                >
+                  {healthLabel(health.db, _)}
+                </Badge>
               </DetailItem>
               <DetailItem label={_(msg`Uptime`)}>{formatUptime(health.uptime_seconds)}</DetailItem>
             </DetailGrid>
