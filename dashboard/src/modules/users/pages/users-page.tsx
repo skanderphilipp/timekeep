@@ -16,11 +16,26 @@ import {
   Button,
   Dialog as DialogComponent,
   FormActions,
+  PageError,
 } from "@/components/ui";
 
 export function UsersPage() {
   const { _ } = useLingui();
   const page = useUsersPage();
+
+  if (page.query.error) {
+    return (
+      <PageLayout>
+        <PageBody>
+          <PageHeader
+            title={_(msg`Users`)}
+            description={_(msg`Manage dashboard users, roles, and passwords.`)}
+          />
+          <PageError onRetry={() => page.query.refetch()} />
+        </PageBody>
+      </PageLayout>
+    );
+  }
 
   if (page.query.isLoading) {
     return (
@@ -48,9 +63,7 @@ export function UsersPage() {
           }
         />
         <Section>
-          {page.query.error ? (
-            <EmptyState title={_(msg`Failed to load users`)} description={_(msg`Is the backend running?`)} />
-          ) : page.users.length === 0 ? (
+          {page.users.length === 0 ? (
             <EmptyState
               title={_(msg`No users`)}
               description={_(msg`Create your first dashboard user to get started.`)}

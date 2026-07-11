@@ -54,7 +54,7 @@ export function createSetupFormDef(_: I18n["_"]) {
       {
         key: "credentials",
         title: _(msg`Create Admin Account`),
-        description: _(msg`Set up the initial administrator credentials for Attendance OS.`),
+        description: _(msg`Set up the initial administrator credentials for timekeep.`),
       },
     ],
   } satisfies FormSchemaDefinition;

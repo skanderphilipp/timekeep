@@ -1,4 +1,4 @@
-# English translations for Attendance OS
+# English translations for timekeep
 msgid ""
 msgstr ""
 "Language: en\n"
@@ -277,12 +277,12 @@ msgid "Attendance data will appear here once devices start recording punches."
 msgstr "Attendance data will appear here once devices start recording punches."
 
 #: src/modules/auth/pages/login-page.tsx:77
-#~ msgid "Attendance OS"
-#~ msgstr "Attendance OS"
+#~ msgid "timekeep"
+#~ msgstr "timekeep"
 
 #: src/modules/exports/components/export-bar.tsx:70
-msgid "Attendance OS — Confidential"
-msgstr "Attendance OS — Confidential"
+msgid "timekeep — Confidential"
+msgstr "timekeep — Confidential"
 
 #: src/modules/dashboard/pages/dashboard-page.tsx:41
 msgid "Attendance overview and device status."
@@ -534,8 +534,8 @@ msgid "Copy this key now. It will not be shown again."
 msgstr "Copy this key now. It will not be shown again."
 
 #: src/modules/devices/pages/device-list-page.tsx:54
-msgid "Could not connect to the Attendance OS server."
-msgstr "Could not connect to the Attendance OS server."
+msgid "Could not connect to the timekeep server."
+msgstr "Could not connect to the timekeep server."
 
 #: src/modules/apikeys/components/create-api-key-dialog.tsx:118
 msgid "Create a key for an integration partner."
@@ -672,8 +672,8 @@ msgstr "Device added successfully."
 
 #: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:84
 #: src/modules/devices/components/device-detail-panel.tsx:44
-msgid "Device details will be available when connected to the Attendance OS server."
-msgstr "Device details will be available when connected to the Attendance OS server."
+msgid "Device details will be available when connected to the timekeep server."
+msgstr "Device details will be available when connected to the timekeep server."
 
 #: src/modules/devices/components/device-form.tsx:80
 msgid "Device Identity"
@@ -819,8 +819,8 @@ msgid "Enrollment"
 msgstr "Enrollment"
 
 #: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:85
-msgid "Enrollment details will be available when connected to the Attendance OS server."
-msgstr "Enrollment details will be available when connected to the Attendance OS server."
+msgid "Enrollment details will be available when connected to the timekeep server."
+msgstr "Enrollment details will be available when connected to the timekeep server."
 
 #: src/modules/auth/components/login-form.tsx:82
 msgid "Enter your credentials to access the dashboard"
@@ -919,8 +919,8 @@ msgid "Failed to load chart data"
 msgstr "Failed to load chart data"
 
 #: src/modules/dashboard/pages/dashboard-page.tsx:57
-msgid "Failed to load dashboard data. Is the Attendance OS server running?"
-msgstr "Failed to load dashboard data. Is the Attendance OS server running?"
+msgid "Failed to load dashboard data. Is the timekeep server running?"
+msgstr "Failed to load dashboard data. Is the timekeep server running?"
 
 #: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:38
 msgid "Failed to load device details."
@@ -1845,8 +1845,8 @@ msgstr "Sign in"
 #~ msgstr "Sign In"
 
 #: src/modules/auth/components/login-form.tsx:78
-msgid "Sign in to Attendance OS"
-msgstr "Sign in to Attendance OS"
+msgid "Sign in to timekeep"
+msgstr "Sign in to timekeep"
 
 #: src/modules/auth/pages/login-page.tsx:79
 #~ msgid "Sign in to your management dashboard"

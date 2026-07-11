@@ -92,9 +92,8 @@ export function ReportsPage() {
               <Chart
                 title={_(msg`Punch Type Distribution`)}
                 description={_(msg`Breakdown of attendance events by type.`)}
-                height={320}
               >
-                <PieChart data={page.pieData} donut showLegend />
+                <PieChart data={page.pieData} donut showLegend height={320} />
               </Chart>
             ) : (
               <EmptyState
@@ -107,12 +106,12 @@ export function ReportsPage() {
               <Chart
                 title={_(msg`Daily Punch Volume`)}
                 description={_(msg`Number of punches per day in the selected range.`)}
-                height={320}
               >
                 <BarChart
                   data={page.barData}
                   bars={[{ dataKey: "value", fill: "var(--ao-accent-accent9)" }]}
                   xKey="name"
+                  height={320}
                 />
               </Chart>
             )}

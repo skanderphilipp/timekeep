@@ -17,7 +17,7 @@ export function useSystemSettings() {
   const { _ } = useLingui();
   const toast = useToast();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: QueryKeys.settings.system(),
     queryFn: fetchSystemSettings,
   });
@@ -47,6 +47,8 @@ export function useSystemSettings() {
     form,
     isLoading,
     isSaving: save.isPending,
+    error,
+    refetch,
     handleSubmit: form.handleSubmit((v) => save.mutate(v)),
   } as const;
 }

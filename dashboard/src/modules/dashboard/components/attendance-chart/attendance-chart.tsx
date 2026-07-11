@@ -42,7 +42,6 @@ export function HourlyArrivalsChart({ hourlyBreakdown, isLoading, error }: Hourl
       error={error ?? null}
       isEmpty={chartData.every((d) => d.count === 0)}
       emptyMessage={_(msg`No arrivals yet today.`)}
-      height={240}
     >
       <BarChart
         data={chartData}
@@ -51,11 +50,11 @@ export function HourlyArrivalsChart({ hourlyBreakdown, isLoading, error }: Hourl
             dataKey: "count",
             fill: "var(--ao-accent-accent9)",
             name: _(msg`Arrivals`),
-            radius: [4, 4, 0, 0],
           },
         ]}
         xKey="hour"
         grid
+        height={240}
       />
     </Chart>
   );

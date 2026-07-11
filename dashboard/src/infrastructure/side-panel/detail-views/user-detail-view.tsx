@@ -82,7 +82,7 @@ export function UserDetailView({ userPin }: UserDetailViewProps) {
         </dt>
         <dd style={{ margin: "0 0 16px 0" }}>
           <Text variant="body" color="secondary">
-            {_(msg`Enrollment details will be available when connected to the Attendance OS server.`)}
+            {_(msg`Enrollment details will be available when connected to the timekeep server.`)}
           </Text>
         </dd>
       </dl>

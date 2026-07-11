@@ -7,7 +7,7 @@ import { QueryKeys } from "@/lib/query-keys";
 const HEALTH_REFETCH_INTERVAL_MS = 30_000;
 
 export function useSystemHealth() {
-  const { data, isLoading, isError, error } = useQuery<Health>({
+  const { data, isLoading, isError, error, refetch } = useQuery<Health>({
     queryKey: QueryKeys.health.system(),
     queryFn: fetchHealth,
     refetchInterval: HEALTH_REFETCH_INTERVAL_MS,
@@ -31,6 +31,7 @@ export function useSystemHealth() {
     isLoading,
     isError,
     error,
+    refetch,
     formatUptime,
   } as const;
 }

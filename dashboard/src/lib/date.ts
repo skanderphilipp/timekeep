@@ -1,5 +1,5 @@
 /**
- * Attendance OS — Date utility functions.
+ * timekeep — Date utility functions.
  *
  * Pure functions for date formatting and parsing. All functions operate
  * in local time — no UTC surprises, no timezone shifts.

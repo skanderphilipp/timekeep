@@ -3,11 +3,16 @@ import { useState } from "react";
 import { DialogComponent } from "./dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PermissionMultiSelect } from "@/components/ui/permission-multiselect";
 import { FormField } from "@/components/ui/form/form-field";
 
+/**
+ * Dialog — modal overlay for forms, confirmations, and detail views.
+ *
+ * Used for: create/edit device, add employee, punch correction,
+ * API key creation, and delete confirmations.
+ */
 const meta: Meta<typeof DialogComponent> = {
-  title: "UI/Dialog",
+  title: "UI/Overlays/Dialog",
   component: DialogComponent,
   tags: ["autodocs"],
   argTypes: {
@@ -20,7 +25,7 @@ const meta: Meta<typeof DialogComponent> = {
 export default meta;
 type Story = StoryObj<typeof DialogComponent>;
 
-export const Simple: Story = {
+export const Primary: Story = {
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -29,44 +34,15 @@ export const Simple: Story = {
         <DialogComponent
           open={open}
           onOpenChange={setOpen}
-          title="Simple Dialog"
-          description="This is a simple dialog for demonstration."
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <p>Dialog content goes here.</p>
-            <Button onClick={() => setOpen(false)}>Close</Button>
-          </div>
-        </DialogComponent>
-      </div>
-    );
-  },
-};
-
-export const WithForm: Story = {
-  render: () => {
-    const [open, setOpen] = useState(false);
-    const [name, setName] = useState("");
-    return (
-      <div style={{ padding: 20 }}>
-        <Button onClick={() => setOpen(true)}>Open Form Dialog</Button>
-        <DialogComponent
-          open={open}
-          onOpenChange={setOpen}
           title="Create Item"
           description="Fill in the details below."
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <FormField label="Name">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter name…"
-              />
+              <Input placeholder="Enter name…" />
             </FormField>
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <Button variant="secondary" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
               <Button onClick={() => setOpen(false)}>Save</Button>
             </div>
           </div>
@@ -76,45 +52,61 @@ export const WithForm: Story = {
   },
 };
 
-export const WithPermissionMultiSelect: Story = {
+export const AllVariants: Story = {
+  name: "All Variants",
+  parameters: { controls: { disable: true } },
   render: () => {
-    const [open, setOpen] = useState(false);
-    const [permissions, setPermissions] = useState<string[]>(["read:punches"]);
+    const [openSimple, setOpenSimple] = useState(false);
+    const [openForm, setOpenForm] = useState(false);
     const [name, setName] = useState("");
     return (
+      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", padding: 20 }}>
+        <Button onClick={() => setOpenSimple(true)}>Simple Dialog</Button>
+        <Button onClick={() => setOpenForm(true)}>Form Dialog</Button>
+        <DialogComponent open={openSimple} onOpenChange={setOpenSimple} title="Simple Dialog" description="This is a simple confirmation.">
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <Button variant="secondary" onClick={() => setOpenSimple(false)}>Cancel</Button>
+            <Button onClick={() => setOpenSimple(false)}>Confirm</Button>
+          </div>
+        </DialogComponent>
+        <DialogComponent open={openForm} onOpenChange={setOpenForm} title="Edit Employee" description="Update employee details.">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <FormField label="Name">
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Employee name…" />
+            </FormField>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <Button variant="secondary" onClick={() => setOpenForm(false)}>Cancel</Button>
+              <Button onClick={() => setOpenForm(false)}>Save</Button>
+            </div>
+          </div>
+        </DialogComponent>
+      </div>
+    );
+  },
+};
+
+export const ContextPunchCorrection: Story = {
+  name: "Context: Punch Correction",
+  parameters: { controls: { disable: true } },
+  render: () => {
+    const [open, setOpen] = useState(false);
+    return (
       <div style={{ padding: 20 }}>
-        <Button onClick={() => setOpen(true)}>Open API Key Dialog</Button>
+        <Button onClick={() => setOpen(true)}>Correct Punch</Button>
         <DialogComponent
           open={open}
           onOpenChange={setOpen}
-          title="New API Key"
-          description="Create a key for an integration partner."
+          title="Correct Punch Record"
+          description="Manually override a punch record for HR purposes."
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <FormField label="Name">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Odoo Production Integration"
-              />
-            </FormField>
-            <FormField
-              label="Permissions"
-              helperText="Scoped permissions for this API key."
-            >
-              <PermissionMultiSelect
-                values={permissions}
-                onChange={setPermissions}
-                placeholder="Select permissions…"
-              />
-            </FormField>
-            <div
-              style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}
-            >
-              <Button variant="secondary" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setOpen(false)}>Create Key</Button>
+            <p style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>
+              Employee: Omar Khalid (PIN 147)<br />
+              Original: Check In at 09:02 (duplicate)
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="danger" onClick={() => setOpen(false)}>Mark as Corrected</Button>
             </div>
           </div>
         </DialogComponent>

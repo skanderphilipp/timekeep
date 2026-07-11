@@ -1,5 +1,5 @@
 /**
- * Attendance OS — es-toolkit utility re-exports.
+ * timekeep — es-toolkit utility re-exports.
  *
  * Centralized barrel for tree-shakeable lodash alternatives.
  * Only the functions we actually use are re-exported, keeping the

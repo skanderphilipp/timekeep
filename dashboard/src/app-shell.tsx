@@ -204,7 +204,7 @@ export function AppShell({ children }: AppShellProps) {
           </span>
           {(!isMobile || sidebarOpen) && (!sidebarCollapsed || isMobile) && (
             <span data-slot="sidebar-brand" className={styles.brand}>
-              Attendance OS
+              timekeep
             </span>
           )}
         </div>

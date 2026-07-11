@@ -1,5 +1,5 @@
 /**
- * JS accessor map for all Attendance OS design tokens.
+ * JS accessor map for all timekeep design tokens.
  *
  * Every `--ao-*` CSS custom property is mirrored here as a structured
  * JavaScript object. Values are `var(--ao-*)` references — they resolve

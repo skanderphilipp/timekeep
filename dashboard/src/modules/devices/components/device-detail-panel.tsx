@@ -21,7 +21,7 @@ export function DeviceDetailPanel({ serialNumber, deviceName }: DeviceDetailPane
         </DetailItem>
         <DetailItem label={_(msg`Status`)}>
           <Text variant="body" color="secondary">
-            {_(msg`Device details will be available when connected to the Attendance OS server.`)}
+            {_(msg`Device details will be available when connected to the timekeep server.`)}
           </Text>
         </DetailItem>
       </DetailGrid>

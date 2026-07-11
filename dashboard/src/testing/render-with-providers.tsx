@@ -19,7 +19,7 @@ type WrapperOptions = {
 
 /**
  * Creates a wrapper component with all providers needed for rendering
- * Attendance OS components in tests.
+ * timekeep components in tests.
  *
  * Usage:
  *   const { render } = createRenderWrapper();

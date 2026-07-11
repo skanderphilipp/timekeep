@@ -1,5 +1,5 @@
 /**
- * Attendance OS — Effect Hooks
+ * timekeep — Effect Hooks
  *
  * Barrel file for all application-wide custom hooks.
  * Import like: import { usePrevious, useIntersection } from "@/hooks";

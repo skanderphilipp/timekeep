@@ -68,7 +68,7 @@ export function LoginForm() {
         </Text>
 
         <Heading level="h1">
-          {_(msg`Sign in to Attendance OS`)}
+          {_(msg`Sign in to timekeep`)}
         </Heading>
 
         <Text variant="caption" color="tertiary">

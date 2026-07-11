@@ -10,6 +10,7 @@ import {
   Spinner,
   EmptyState,
   Button,
+  PageError,
 } from "@/components/ui";
 import { useApiKeys } from "../hooks/use-api-keys";
 import { useToast } from "@/infrastructure/toast/toast";
@@ -49,6 +50,20 @@ export function ApiKeysPage() {
           <Section>
             <Spinner />
           </Section>
+        </PageBody>
+      </PageLayout>
+    );
+  }
+
+  if (query.error) {
+    return (
+      <PageLayout>
+        <PageBody>
+          <PageHeader
+            title={_(msg`API Keys`)}
+            description={_(msg`Manage integration API keys for Odoo, Zapier, and other partners.`)}
+          />
+          <PageError onRetry={() => query.refetch()} />
         </PageBody>
       </PageLayout>
     );

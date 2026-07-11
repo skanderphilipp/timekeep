@@ -31,6 +31,7 @@ export function usePunchQueryPage() {
     hasNextPage,
     fetchNextPage,
     error,
+    query,
     hasActiveFilters,
     handleSortChange,
     handleFilterChange,
@@ -196,5 +197,6 @@ export function usePunchQueryPage() {
     handleDeviceChange,
     handleStatusChange,
     handleAnomaliesOnlyToggle,
+    refetch: () => query.refetch(),
   };
 }

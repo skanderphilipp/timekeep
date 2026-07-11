@@ -1,6 +1,5 @@
 import { clsx } from "clsx";
-import { type ReactElement } from "react";
-import { ResponsiveContainer } from "recharts";
+import { type ReactElement, type ReactNode } from "react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
@@ -10,12 +9,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import styles from "./chart.module.scss";
 
 /**
- * Base chart wrapper providing:
- * - Responsive container (Recharts `ResponsiveContainer`)
- * - Loading, error, and empty state handling
- * - Consistent padding and min-height
+ * Chart presentation wrapper.
+ *
+ * Provides title, description, loading/error/empty states, and footer.
+ * Does NOT provide sizing — each chart component handles its own dimensions
+ * via its internal responsive container.
  */
-type ChartProps = {
+
+export type ChartProps = {
   children: ReactElement;
   title?: string;
   description?: string;
@@ -23,32 +24,19 @@ type ChartProps = {
   error?: Error | null;
   isEmpty?: boolean;
   emptyMessage?: string;
-  height?: number;
   className?: string;
+  footer?: ReactNode;
 };
 
-export function Chart({
-  children,
-  title,
-  description,
-  isLoading,
-  error,
-  isEmpty,
-  emptyMessage,
-  height = 300,
-  className,
-}: ChartProps) {
+export function Chart({ children, title, description, isLoading, error, isEmpty, emptyMessage, className, footer }: ChartProps) {
   const { _ } = useLingui();
+
   return (
     <div data-slot="chart" className={clsx(styles.chart, className)}>
       {(title || description) && (
         <div data-slot="chart-header" className={styles.header}>
           {title && <h3 data-slot="chart-title" className={styles.title}>{title}</h3>}
-          {description && (
-            <p data-slot="chart-description" className={styles.description}>
-              {description}
-            </p>
-          )}
+          {description && <p data-slot="chart-description" className={styles.description}>{description}</p>}
         </div>
       )}
 
@@ -60,25 +48,17 @@ export function Chart({
         )}
 
         {error && !isLoading && (
-          <EmptyState
-            title={_(msg`Failed to load chart data`)}
-            description={error.message}
-          />
+          <EmptyState title={_(msg`Failed to load chart data`)} description={error.message} />
         )}
 
         {isEmpty && !isLoading && !error && (
-          <EmptyState
-            title={_(msg`No data`)}
-            description={emptyMessage ?? _(msg`No data available`)}
-          />
+          <EmptyState title={_(msg`No data`)} description={emptyMessage ?? _(msg`No data available for this period`)} />
         )}
 
-        {!isLoading && !error && !isEmpty && (
-          <ResponsiveContainer width="100%" height={height}>
-            {children}
-          </ResponsiveContainer>
-        )}
+        {!isLoading && !error && !isEmpty && children}
       </div>
+
+      {footer && <div data-slot="chart-footer" className={styles.footer}>{footer}</div>}
     </div>
   );
 }

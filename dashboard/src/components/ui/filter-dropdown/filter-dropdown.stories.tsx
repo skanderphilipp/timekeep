@@ -1,20 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { fn } from "@storybook/test";
+import { fn } from "storybook/test";
 import {
   IconDeviceDesktop,
   IconStatusChange,
   IconCalendar,
   IconAlertTriangle,
 } from "@tabler/icons-react";
-
 import { FilterDropdown } from "./filter-dropdown";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Toggle } from "@/components/ui/toggle";
-import { MultiSelect } from "@/components/ui/multi-select";
 import type { FilterChip, FilterField } from "./filter-dropdown";
-
-// ── Sample data ───────────────────────────────────────────────────────────────
 
 const deviceOptions = [
   { value: "", label: "All Devices" },
@@ -32,53 +28,10 @@ const statusOptions = [
 ];
 
 const fields: FilterField[] = [
-  {
-    key: "device",
-    label: "Device",
-    icon: <IconDeviceDesktop size={14} />,
-    renderValueSelector: () => (
-      <FilterSelect
-        options={deviceOptions}
-        value=""
-        onChange={fn()}
-        label="Device"
-      />
-    ),
-  },
-  {
-    key: "status",
-    label: "Status",
-    icon: <IconStatusChange size={14} />,
-    renderValueSelector: () => (
-      <FilterSelect
-        options={statusOptions}
-        value=""
-        onChange={fn()}
-        label="Status"
-      />
-    ),
-  },
-  {
-    key: "date",
-    label: "Date range",
-    icon: <IconCalendar size={14} />,
-    renderValueSelector: () => (
-      <DatePicker
-        mode="range"
-        value={null}
-        onChange={fn()}
-        placeholder="Select date range…"
-      />
-    ),
-  },
-  {
-    key: "anomalies",
-    label: "Anomalies only",
-    icon: <IconAlertTriangle size={14} />,
-    renderValueSelector: () => (
-      <Toggle checked={false} onChange={fn()} label="Show only anomalous punches" />
-    ),
-  },
+  { key: "device", label: "Device", icon: <IconDeviceDesktop size={14} />, renderValueSelector: () => <FilterSelect options={deviceOptions} value="" onChange={fn()} label="Device" /> },
+  { key: "status", label: "Status", icon: <IconStatusChange size={14} />, renderValueSelector: () => <FilterSelect options={statusOptions} value="" onChange={fn()} label="Status" /> },
+  { key: "date", label: "Date range", icon: <IconCalendar size={14} />, renderValueSelector: () => <DatePicker mode="range" value={null} onChange={fn()} placeholder="Select date range…" /> },
+  { key: "anomalies", label: "Anomalies only", icon: <IconAlertTriangle size={14} />, renderValueSelector: () => <Toggle checked={false} onChange={fn()} label="Show only anomalous punches" /> },
 ];
 
 const sampleChips: FilterChip[] = [
@@ -87,8 +40,14 @@ const sampleChips: FilterChip[] = [
   { key: "date", label: "From: 2026-07-01", onRemove: fn() },
 ];
 
+/**
+ * FilterDropdown — "Add Filter" button with popover of filter options.
+ *
+ * Used alongside FilterBar on list pages (Punches, Audit Logs).
+ * Each filter field can render its own value selector (select, date picker, toggle).
+ */
 const meta: Meta<typeof FilterDropdown> = {
-  title: "UI/FilterDropdown",
+  title: "UI/Inputs/FilterDropdown",
   component: FilterDropdown,
   tags: ["autodocs"],
   argTypes: {
@@ -100,78 +59,45 @@ const meta: Meta<typeof FilterDropdown> = {
 export default meta;
 type Story = StoryObj<typeof FilterDropdown>;
 
-// ── Stories ──────────────────────────────────────────────────────────────────
-
-export const Default: Story = {
-  args: {
-    fields,
-  },
+export const Primary: Story = {
+  args: { fields },
 };
 
-export const WithActiveFilters: Story = {
-  args: {
-    fields,
-    activeFilters: sampleChips,
-    hasActiveFilters: true,
-    onClear: fn(),
-    resultCount: 12,
-  },
+export const AllVariants: Story = {
+  name: "All Variants",
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: "var(--ao-spacing-4)" }}>
+      <div>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>No active filters</p>
+        <FilterDropdown fields={fields} />
+      </div>
+      <div>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With result count</p>
+        <FilterDropdown fields={fields} resultCount={128} />
+      </div>
+      <div>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Active filters + clear</p>
+        <FilterDropdown fields={fields} activeFilters={sampleChips} hasActiveFilters onClear={fn()} resultCount={12} />
+      </div>
+      <div>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>No results</p>
+        <FilterDropdown fields={fields} activeFilters={sampleChips} hasActiveFilters onClear={fn()} resultCount={0} />
+      </div>
+    </div>
+  ),
 };
 
-export const WithCount: Story = {
-  args: {
-    fields,
-    resultCount: 128,
-  },
-};
-
-export const WithActions: Story = {
-  args: {
-    fields,
-    activeFilters: sampleChips,
-    hasActiveFilters: true,
-    onClear: fn(),
-    resultCount: 42,
-    actions: (
-      <MultiSelect
-        options={[
-          { value: "time", label: "Time" },
-          { value: "employee", label: "Employee" },
-          { value: "device", label: "Device" },
-        ]}
-        values={["time", "employee", "device"]}
-        onChange={fn()}
-        placeholder="Columns"
-      />
-    ),
-  },
-};
-
-export const PopoverOpen: Story = {
-  args: {
-    fields,
-  },
-  play: async ({ canvasElement }) => {
-    const button = canvasElement.querySelector("button") as HTMLButtonElement;
-    if (button) button.click();
-  },
-};
-
-export const SingleField: Story = {
-  args: {
-    fields: [fields[0]],
-    activeFilters: [sampleChips[0]],
-    hasActiveFilters: true,
-    onClear: fn(),
-  },
-};
-
-export const NoResults: Story = {
-  args: {
-    fields,
-    resultCount: 0,
-    activeFilters: sampleChips,
-    hasActiveFilters: true,
-    onClear: fn(),
-  },
+export const ContextPunchesFilter: Story = {
+  name: "Context: Punches Page Filters",
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <FilterDropdown
+      fields={fields}
+      activeFilters={sampleChips.slice(0, 2)}
+      hasActiveFilters
+      onClear={fn()}
+      resultCount={42}
+    />
+  ),
 };

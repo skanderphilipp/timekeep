@@ -81,7 +81,7 @@ export function DeviceDetailView({ serialNumber }: DeviceDetailViewProps) {
           <Text variant="body" color="secondary">
             {device
               ? _(msg`Connected`)
-              : _(msg`Device details will be available when connected to the Attendance OS server.`)}
+              : _(msg`Device details will be available when connected to the timekeep server.`)}
           </Text>
         </dd>
       </dl>

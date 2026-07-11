@@ -9,6 +9,7 @@
 }
 
 .title {
+  color: var(--ao-font-color-primary);
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-semibold);
   margin: 0;
@@ -33,4 +34,10 @@
   inset: 0;
   justify-content: center;
   min-height: 200px;
+}
+
+.footer {
+  background: var(--ao-background-secondary);
+  border-block-start: 1px solid var(--ao-border-color-light);
+  padding: var(--ao-spacing-2) var(--ao-spacing-4);
 }

@@ -6,6 +6,7 @@ import {
   Grid,
   CardGrid,
   Card,
+  PageError,
 } from "@/components/ui";
 
 import { useDashboardPage } from "../hooks/use-dashboard-page";
@@ -14,7 +15,6 @@ import { CheckedInList } from "../components/checked-in-list";
 import { DashboardActivityFeed } from "../components/dashboard-activity-feed";
 import { DashboardDeviceStatus } from "../components/dashboard-device-status";
 import { HourlyArrivalsChart } from "../components/attendance-chart";
-import { DashboardError } from "../components/dashboard-error";
 import { DashboardHeaderActions } from "../components/dashboard-header-actions";
 
 /** Card-shaped loading skeleton — matches metric card dimensions. */
@@ -56,7 +56,7 @@ export function DashboardPage() {
         {page.isLoading && !page.data && <DashboardSkeleton />}
 
         {page.error && !page.data && (
-          <DashboardError onRetry={page.handleRefresh} />
+          <PageError onRetry={page.handleRefresh} />
         )}
 
         {page.data && (

@@ -225,8 +225,8 @@ msgid "Attendance data will appear here once devices start recording punches."
 msgstr "Les données de pointage apparaîtront ici une fois que les appareils commenceront à enregistrer."
 
 #: src/modules/exports/components/export-bar.tsx:70
-msgid "Attendance OS — Confidential"
-msgstr "Attendance OS — Confidentiel"
+msgid "timekeep — Confidential"
+msgstr "timekeep — Confidentiel"
 
 #: src/modules/dashboard/pages/dashboard-page.tsx:41
 msgid "Attendance overview and device status."
@@ -444,8 +444,8 @@ msgid "Copy this key now. It will not be shown again."
 msgstr "Copiez cette clé maintenant. Elle ne sera plus affichée."
 
 #: src/modules/devices/pages/device-list-page.tsx:54
-msgid "Could not connect to the Attendance OS server."
-msgstr "Impossible de se connecter au serveur Attendance OS."
+msgid "Could not connect to the timekeep server."
+msgstr "Impossible de se connecter au serveur timekeep."
 
 #: src/modules/apikeys/components/create-api-key-dialog.tsx:118
 msgid "Create a key for an integration partner."
@@ -577,8 +577,8 @@ msgstr "Appareil ajouté avec succès."
 
 #: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:84
 #: src/modules/devices/components/device-detail-panel.tsx:44
-msgid "Device details will be available when connected to the Attendance OS server."
-msgstr "Les détails de l'appareil seront disponibles une fois connecté au serveur Attendance OS."
+msgid "Device details will be available when connected to the timekeep server."
+msgstr "Les détails de l'appareil seront disponibles une fois connecté au serveur timekeep."
 
 #: src/modules/devices/components/device-form.tsx:80
 msgid "Device Identity"
@@ -712,8 +712,8 @@ msgid "Enrollment"
 msgstr "Inscription"
 
 #: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:85
-msgid "Enrollment details will be available when connected to the Attendance OS server."
-msgstr "Les détails d'inscription seront disponibles une fois connecté au serveur Attendance OS."
+msgid "Enrollment details will be available when connected to the timekeep server."
+msgstr "Les détails d'inscription seront disponibles une fois connecté au serveur timekeep."
 
 #: src/modules/auth/components/login-form.tsx:82
 msgid "Enter your credentials to access the dashboard"
@@ -780,8 +780,8 @@ msgid "Failed to load chart data"
 msgstr "Échec du chargement des données du graphique"
 
 #: src/modules/dashboard/pages/dashboard-page.tsx:57
-msgid "Failed to load dashboard data. Is the Attendance OS server running?"
-msgstr "Échec du chargement des données du tableau de bord. Le serveur Attendance OS est-il en cours d'exécution ?"
+msgid "Failed to load dashboard data. Is the timekeep server running?"
+msgstr "Échec du chargement des données du tableau de bord. Le serveur timekeep est-il en cours d'exécution ?"
 
 #: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:38
 msgid "Failed to load device details."
@@ -1584,8 +1584,8 @@ msgid "Sign in"
 msgstr "Se connecter"
 
 #: src/modules/auth/components/login-form.tsx:78
-msgid "Sign in to Attendance OS"
-msgstr "Se connecter à Attendance OS"
+msgid "Sign in to timekeep"
+msgstr "Se connecter à timekeep"
 
 #: src/app-shell.tsx:282
 #: src/app-shell.tsx:283

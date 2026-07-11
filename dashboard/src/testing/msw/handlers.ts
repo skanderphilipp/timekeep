@@ -95,7 +95,7 @@ export type HandlerOptions = {
 // ── Factory ──────────────────────────────────────────────────────────────────
 
 /**
- * Creates MSW handlers for the Attendance OS management API.
+ * Creates MSW handlers for the timekeep management API.
  *
  * Every handler mirrors the real Rust endpoints exactly:
  * - All success responses are wrapped in `ApiEnvelope<T>` via `envelope()`.

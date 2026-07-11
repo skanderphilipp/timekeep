@@ -1,5 +1,5 @@
 /**
- * Attendance OS — Jotai State Management
+ * timekeep — Jotai State Management
  *
  * Barrel file for all application-wide atoms. Import like:
  *   import { themeAtom, toggleThemeAtom } from "@/infrastructure/state";

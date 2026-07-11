@@ -5,5 +5,6 @@ declare const classNames: {
   readonly description: "description";
   readonly body: "body";
   readonly stateOverlay: "stateOverlay";
+  readonly footer: "footer";
 };
 export = classNames;

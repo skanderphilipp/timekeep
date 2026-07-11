@@ -4,13 +4,14 @@ import { IconPlus } from "@tabler/icons-react";
 
 import { AppRoute } from "@/lib/navigation";
 import { useDeviceList } from "../hooks/use-device-list";
-import { PageLayout, PageBody, PageHeader, Section, Button, Spinner, EmptyState, FilterBar, FilterInput, CardGrid } from "@/components/ui";
+import { PageLayout, PageBody, PageHeader, Section, Button, Spinner, EmptyState, FilterBar, FilterInput, CardGrid, PageError } from "@/components/ui";
 import { DeviceCard } from "../components/device-card";
 
 export function DeviceListPage() {
   const { _ } = useLingui();
   const {
     query: { isLoading, error },
+    query,
     devices,
     search,
     handleSearchChange,
@@ -50,10 +51,7 @@ export function DeviceListPage() {
           )}
 
           {error && (
-            <EmptyState
-              title={_(msg`Failed to load devices`)}
-              description={_(msg`Could not connect to the Attendance OS server.`)}
-            />
+            <PageError onRetry={() => query.refetch()} message={_(msg`Failed to load devices.`)} />
           )}
 
           {!isLoading && !error && devices.length === 0 && (

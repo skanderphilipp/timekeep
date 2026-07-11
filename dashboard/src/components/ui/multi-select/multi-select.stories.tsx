@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { fn } from "@storybook/test";
+import { fn } from "storybook/test";
 import { useState } from "react";
 import { MultiSelect, type MultiSelectOption } from "./multi-select";
 
@@ -16,8 +16,14 @@ const sampleOptions: MultiSelectOption[] = [
   { value: "admin:apikeys", label: "Admin API Keys" },
 ];
 
+/**
+ * MultiSelect — dropdown for selecting multiple options.
+ *
+ * Used for column visibility toggles (FilterBar), permission
+ * selection (API keys), and multi-value filters.
+ */
 const meta: Meta<typeof MultiSelect> = {
-  title: "UI/MultiSelect",
+  title: "UI/Inputs/MultiSelect",
   component: MultiSelect,
   tags: ["autodocs"],
   argTypes: {
@@ -31,79 +37,79 @@ const meta: Meta<typeof MultiSelect> = {
 export default meta;
 type Story = StoryObj<typeof MultiSelect>;
 
-function MultiSelectStory(args: Partial<typeof MultiSelect>) {
-  const [values, setValues] = useState<string[]>(["read:punches"]);
-  return (
-    <div style={{ padding: 20, maxWidth: 400 }}>
-      <MultiSelect
-        options={sampleOptions}
-        values={values}
-        onChange={(v) => {
-          setValues(v);
-          fn()(v);
-        }}
-        placeholder="Select permissions…"
-        searchPlaceholder="Search…"
-        emptyMessage="No results found"
-        {...(args as any)}
-      />
-    </div>
-  );
-}
-
-export const Default: Story = {
-  render: () => <MultiSelectStory />,
-};
-
-export const Empty: Story = {
+export const Primary: Story = {
   render: () => {
-    const [values, setValues] = useState<string[]>([]);
+    const [values, setValues] = useState<string[]>(["read:punches"]);
     return (
       <div style={{ padding: 20, maxWidth: 400 }}>
         <MultiSelect
           options={sampleOptions}
           values={values}
-          onChange={setValues}
-          placeholder="Nothing selected…"
+          onChange={(v) => { setValues(v); fn()(v); }}
+          placeholder="Select permissions…"
+          searchPlaceholder="Search…"
+          emptyMessage="No results found"
         />
       </div>
     );
   },
 };
 
-export const ManySelected: Story = {
+export const AllVariants: Story = {
+  name: "All Variants",
+  parameters: { controls: { disable: true } },
   render: () => {
-    const [values, setValues] = useState<string[]>([
-      "read:punches",
-      "write:punches",
-      "read:devices",
-      "read:users",
-      "read:reports",
-    ]);
     return (
-      <div style={{ padding: 20, maxWidth: 400 }}>
-        <MultiSelect
-          options={sampleOptions}
-          values={values}
-          onChange={setValues}
-          placeholder="Select…"
-        />
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: 20 }}>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Empty — nothing selected</p>
+          <MultiSelect options={sampleOptions} values={[]} onChange={fn()} placeholder="Nothing selected…" />
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With selections (3 items)</p>
+          <MultiSelect
+            options={sampleOptions}
+            values={["read:punches", "write:punches", "read:devices"]}
+            onChange={fn()}
+            placeholder="Select…"
+          />
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Many selected (5+ items)</p>
+          <MultiSelect
+            options={sampleOptions}
+            values={["read:punches", "write:punches", "read:devices", "read:users", "read:reports"]}
+            onChange={fn()}
+            placeholder="Select…"
+          />
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Loading state</p>
+          <MultiSelect options={[]} values={[]} onChange={fn()} placeholder="Loading options…" loading />
+        </div>
       </div>
     );
   },
 };
 
-export const Loading: Story = {
+export const ContextColumnVisibility: Story = {
+  name: "Context: Column Visibility",
+  parameters: { controls: { disable: true } },
   render: () => {
-    const [values, setValues] = useState<string[]>([]);
+    const [cols, setCols] = useState(["time", "employee", "device", "status"]);
     return (
-      <div style={{ padding: 20, maxWidth: 400 }}>
+      <div style={{ padding: 20, maxWidth: 300 }}>
         <MultiSelect
-          options={[]}
-          values={values}
-          onChange={setValues}
-          placeholder="Loading options…"
-          loading
+          options={[
+            { value: "time", label: "Time" },
+            { value: "employee", label: "Employee" },
+            { value: "device", label: "Device" },
+            { value: "status", label: "Status" },
+            { value: "method", label: "Method" },
+          ]}
+          values={cols}
+          onChange={setCols}
+          placeholder="Columns"
         />
       </div>
     );

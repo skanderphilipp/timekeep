@@ -67,7 +67,7 @@ export function ExportBar({
     status: _(msg`Status`),
     verify: _(msg`Verify`),
     workCode: _(msg`Work Code`),
-    confidential: _(msg`Attendance OS — Confidential`),
+    confidential: _(msg`timekeep — Confidential`),
     page: _(msg`Page`),
     of: _(msg`of`),
   }), [_]);

@@ -41,7 +41,7 @@ const EN_REPORT_LABELS: ReportLabels = {
   status: "Status",
   verify: "Verify",
   workCode: "Work Code",
-  confidential: "Attendance OS — Confidential",
+  confidential: "timekeep — Confidential",
   page: "Page",
   of: "of",
 };

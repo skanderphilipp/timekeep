@@ -102,7 +102,7 @@ export function SetupPage() {
             <IconShieldLock size={40} stroke={1.5} />
 
             <Heading level="h1">
-              {_(msg`Welcome to Attendance OS`)}
+              {_(msg`Welcome to timekeep`)}
             </Heading>
             <Text variant="caption" color="tertiary">
               {_(msg`Create your admin account to get started.`)}
