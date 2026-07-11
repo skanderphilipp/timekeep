@@ -27,7 +27,6 @@ allow = [
     "Zlib",
     "CC0-1.0",
 ]
-allow-osi-fsf-free = "either"
 confidence-threshold = 0.8
 exceptions = []
 
