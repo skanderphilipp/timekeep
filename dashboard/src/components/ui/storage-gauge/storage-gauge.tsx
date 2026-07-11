@@ -2,7 +2,7 @@ import { clsx } from "clsx";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { PieChart } from "@/components/ui/pie-chart";
+import { PieChart } from "@/components/ui/chart";
 import { ProgressBar } from "@/components/ui/progress-bar";
 
 import styles from "./storage-gauge.module.scss";
