@@ -17,9 +17,9 @@
 //! ```
 
 use async_trait::async_trait;
-use timekeep_core::{Error, events::DomainEvent, traits::distributor::Distributor};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
+use timekeep_core::{Error, events::DomainEvent, traits::distributor::Distributor};
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -237,10 +237,10 @@ impl From<&DomainEvent> for WebhookPayload {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use timekeep_core::model::{AttendancePunch, PunchStatus, VerifyMode};
     use axum::{Router, routing::post};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicU32, Ordering};
+    use timekeep_core::model::{AttendancePunch, PunchStatus, VerifyMode};
 
     /// Create a minimal test punch event.
     fn test_punch_event() -> DomainEvent {

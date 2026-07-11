@@ -5,7 +5,6 @@
 //! return `WorkDay`-shaped responses. No business logic lives here — it's all
 //! in `timekeep-core`.
 
-use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter, WorkPolicy};
 use axum::{
     Json,
     extract::{Path, Query, State},
@@ -13,6 +12,7 @@ use axum::{
 };
 use jiff::Timestamp;
 use std::sync::Arc;
+use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter, WorkPolicy};
 
 use crate::AppState;
 use crate::dto::{
@@ -117,14 +117,10 @@ pub(crate) async fn dashboard_quick_stats(
 
     let unique_users: std::collections::HashSet<&str> =
         work_days.iter().map(|d| d.user_pin.as_str()).collect();
-    let check_ins = punches
-        .iter()
-        .filter(|p| matches!(p.status, timekeep_core::PunchStatus::CheckIn))
-        .count();
-    let check_outs = punches
-        .iter()
-        .filter(|p| matches!(p.status, timekeep_core::PunchStatus::CheckOut))
-        .count();
+    let check_ins =
+        punches.iter().filter(|p| matches!(p.status, timekeep_core::PunchStatus::CheckIn)).count();
+    let check_outs =
+        punches.iter().filter(|p| matches!(p.status, timekeep_core::PunchStatus::CheckOut)).count();
     let currently_present = work_days.iter().filter(|d| d.is_present_now()).count();
     let late_arrivals = work_days.iter().filter(|d| d.status == DayStatus::Late).count();
     let anomalies = work_days.iter().map(|d| d.anomalies.len()).sum();

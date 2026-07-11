@@ -58,10 +58,9 @@ impl AdmsDeviceSim {
         let body: String = punches
             .iter()
             .map(|p| {
-                format!(
-                    "{}\t{}\t{}\t{}\t0\t0\t\n",
-                    p.pin, p.timestamp, p.status as u8, { p.verify }
-                )
+                format!("{}\t{}\t{}\t{}\t0\t0\t\n", p.pin, p.timestamp, p.status as u8, {
+                    p.verify
+                })
             })
             .collect();
 

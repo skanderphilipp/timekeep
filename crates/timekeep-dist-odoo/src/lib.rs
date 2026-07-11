@@ -38,11 +38,11 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
+use serde::Deserialize;
 use timekeep_circuit::{CircuitBreaker, CircuitBreakerError};
 use timekeep_core::{
     Error, events::DomainEvent, model::AttendancePunch, traits::distributor::Distributor,
 };
-use serde::Deserialize;
 
 /// Odoo JSON-2 API response wrapper.
 #[allow(dead_code)]

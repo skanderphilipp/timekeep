@@ -10,9 +10,9 @@
 //! Uses the `Storage` trait for user lookups. When no storage is
 //! configured or the user is not found, punches pass through unchanged.
 
+use std::sync::Arc;
 use timekeep_core::model::AttendancePunch;
 use timekeep_core::traits::storage::Storage;
-use std::sync::Arc;
 
 /// Enrich a punch with data from the local user table.
 ///
@@ -57,9 +57,9 @@ pub async fn enrich_punch(punch: &mut AttendancePunch, storage: Option<&Arc<dyn 
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use timekeep_core::Error;
     use std::collections::HashMap;
     use std::sync::Mutex;
+    use timekeep_core::Error;
 
     /// Fake storage with an in-memory user table for testing enrichment.
     struct FakeUserStorage {
@@ -87,10 +87,7 @@ mod tests {
         ) -> Result<Vec<AttendancePunch>, Error> {
             Ok(vec![])
         }
-        async fn upsert_device(
-            &self,
-            _device: &timekeep_core::model::Device,
-        ) -> Result<(), Error> {
+        async fn upsert_device(&self, _device: &timekeep_core::model::Device) -> Result<(), Error> {
             Ok(())
         }
         async fn upsert_device_config(

@@ -144,9 +144,9 @@ impl Drop for BatchWriter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use timekeep_core::Error;
     use std::sync::Mutex as StdMutex;
     use std::sync::atomic::{AtomicU64, Ordering};
+    use timekeep_core::Error;
 
     /// A test storage that counts calls and stores punches in memory.
     struct TestStorage {
@@ -180,10 +180,7 @@ mod tests {
         ) -> Result<Vec<AttendancePunch>, Error> {
             Ok(vec![])
         }
-        async fn upsert_device(
-            &self,
-            _device: &timekeep_core::model::Device,
-        ) -> Result<(), Error> {
+        async fn upsert_device(&self, _device: &timekeep_core::model::Device) -> Result<(), Error> {
             Ok(())
         }
         async fn upsert_device_config(

@@ -60,10 +60,10 @@ pub async fn sync_users_to_storage(
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use timekeep_core::model::{Device, DeviceConfig, User};
-    use timekeep_core::traits::storage::PunchFilter;
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex as StdMutex};
+    use timekeep_core::model::{Device, DeviceConfig, User};
+    use timekeep_core::traits::storage::PunchFilter;
 
     // ─── Mock BiometricDevice ──────────────────────────────────────────
 

@@ -114,8 +114,8 @@ impl DedupCache {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use timekeep_core::Error;
     use std::sync::Mutex;
+    use timekeep_core::Error;
 
     /// Fake storage that tracks which IDs it was asked about.
     struct FakeStorage {
@@ -147,10 +147,7 @@ mod tests {
         ) -> Result<Vec<AttendancePunch>, Error> {
             Ok(vec![])
         }
-        async fn upsert_device(
-            &self,
-            _device: &timekeep_core::model::Device,
-        ) -> Result<(), Error> {
+        async fn upsert_device(&self, _device: &timekeep_core::model::Device) -> Result<(), Error> {
             Ok(())
         }
         async fn upsert_device_config(

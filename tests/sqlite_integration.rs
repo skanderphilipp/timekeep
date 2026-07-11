@@ -56,8 +56,8 @@ fn make_punch(
 async fn temp_storage() -> (tempfile::TempDir, SqliteStorage) {
     // Create a dummy TempDir just to satisfy the return type — not used
     // for I/O by the in-memory database.
-    let dir = tempfile::TempDir::with_prefix_in("timekeep-test-", "/tmp")
-        .expect("create dummy temp dir");
+    let dir =
+        tempfile::TempDir::with_prefix_in("timekeep-test-", "/tmp").expect("create dummy temp dir");
     let storage = SqliteStorage::new(":memory:").await.expect("open in-memory storage");
     (dir, storage)
 }

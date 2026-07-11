@@ -30,6 +30,12 @@ use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use axum::extract::{Path, Query, State};
+use axum::http::StatusCode;
+use axum::middleware::{self, Next};
+use axum::routing::{delete, get, post, put};
+use axum::{Json, Router};
+use axum_prometheus::PrometheusMetricLayer;
 use timekeep_core::{
     Error, ProviderRegistry,
     events::{DomainEvent, EventBus},
@@ -40,12 +46,6 @@ use timekeep_core::{
     },
 };
 use timekeep_engine::health::EngineHealth;
-use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
-use axum::middleware::{self, Next};
-use axum::routing::{delete, get, post, put};
-use axum::{Json, Router};
-use axum_prometheus::PrometheusMetricLayer;
 use tokio::sync::Mutex as TokioMutex;
 use tower_http::limit::RequestBodyLimitLayer;
 use utoipa::OpenApi;
@@ -118,11 +118,7 @@ struct Claims {
     iat: usize,
 }
 
-fn create_token(
-    username: &str,
-    role: timekeep_core::Role,
-    secret: &str,
-) -> Result<String, Error> {
+fn create_token(username: &str, role: timekeep_core::Role, secret: &str) -> Result<String, Error> {
     let now = jiff::Timestamp::now().as_second() as usize;
     let claims = Claims {
         sub: username.into(),
@@ -2237,9 +2233,9 @@ pub(crate) async fn enqueue_device_command(
 mod tests {
     use super::*;
     use async_trait::async_trait;
+    use std::sync::Mutex as StdMutex;
     use timekeep_core::model::AttendancePunch;
     use timekeep_core::traits::Storage;
-    use std::sync::Mutex as StdMutex;
 
     struct FakeStorage {
         punches: StdMutex<Vec<AttendancePunch>>,
@@ -2275,10 +2271,7 @@ mod tests {
         async fn upsert_device(&self, _: &timekeep_core::model::Device) -> Result<(), Error> {
             Ok(())
         }
-        async fn upsert_device_config(
-            &self,
-            c: &timekeep_core::DeviceConfig,
-        ) -> Result<(), Error> {
+        async fn upsert_device_config(&self, c: &timekeep_core::DeviceConfig) -> Result<(), Error> {
             let mut d = self.devices.lock().unwrap();
             if let Some(e) = d.iter_mut().find(|x| x.serial_number == c.serial_number) {
                 *e = c.clone();

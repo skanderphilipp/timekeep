@@ -4,12 +4,12 @@
 //! concurrent reads during writes. Single-file, zero-configuration.
 
 use async_trait::async_trait;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use timekeep_core::{
     Error, FacetGroup, FacetKind, FacetOption, FacetQuery,
     model::{AttendancePunch, Device, DeviceConfig},
     traits::storage::{PunchFilter, Storage},
 };
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 
 /// SQLite-backed attendance storage.
 pub struct SqliteStorage {
@@ -179,12 +179,9 @@ impl SqliteStorage {
         })
     }
 
-    async fn facet_statuses(
-        &self,
-        query: &timekeep_core::FacetQuery,
-    ) -> Result<FacetGroup, Error> {
-        use timekeep_core::facet::STATUS_VALUES;
+    async fn facet_statuses(&self, query: &timekeep_core::FacetQuery) -> Result<FacetGroup, Error> {
         use sqlx::QueryBuilder;
+        use timekeep_core::facet::STATUS_VALUES;
 
         let mut options = Vec::with_capacity(STATUS_VALUES.len());
 
@@ -226,8 +223,8 @@ impl SqliteStorage {
         &self,
         query: &timekeep_core::FacetQuery,
     ) -> Result<FacetGroup, Error> {
-        use timekeep_core::facet::VERIFY_MODE_VALUES;
         use sqlx::QueryBuilder;
+        use timekeep_core::facet::VERIFY_MODE_VALUES;
 
         let mut options = Vec::with_capacity(VERIFY_MODE_VALUES.len());
 
@@ -1773,10 +1770,7 @@ impl Storage for SqliteStorage {
 
     // ── Provider Registry ─────────────────────────────────────────────
 
-    async fn register_provider(
-        &self,
-        provider: &timekeep_core::ProviderInfo,
-    ) -> Result<(), Error> {
+    async fn register_provider(&self, provider: &timekeep_core::ProviderInfo) -> Result<(), Error> {
         let caps =
             serde_json::to_string(&provider.capabilities).unwrap_or_else(|_| "{}".to_string());
 
@@ -2021,8 +2015,7 @@ struct DashboardUserRow {
 
 impl DashboardUserRow {
     fn into_user(self) -> Result<timekeep_core::DashboardUser, Error> {
-        let role =
-            timekeep_core::Role::from_str(&self.role).unwrap_or(timekeep_core::Role::Viewer);
+        let role = timekeep_core::Role::from_str(&self.role).unwrap_or(timekeep_core::Role::Viewer);
         let permissions = self
             .permissions_text
             .as_deref()
@@ -3029,10 +3022,7 @@ mod tests {
         let event2 = timekeep_core::DeviceEvent::new(
             sn,
             ts,
-            timekeep_core::DeviceEventType::SyncCompleted {
-                records_synced: 27,
-                duration_ms: 1200,
-            },
+            timekeep_core::DeviceEventType::SyncCompleted { records_synced: 27, duration_ms: 1200 },
         );
         let event3 = timekeep_core::DeviceEvent::new(
             sn,

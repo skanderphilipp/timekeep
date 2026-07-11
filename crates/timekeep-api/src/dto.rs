@@ -4,11 +4,11 @@
 //! The `From` impls centralize field mapping — add a field to the domain
 //! type and the API response picks it up automatically.
 
+use serde::Serialize;
 use timekeep_core::model::{
     AttendancePunch, Device, DeviceConfig, DeviceEvent, DeviceEventType, DeviceProbe,
     ProviderCapabilities, ProviderInfo, PunchStatus,
 };
-use serde::Serialize;
 use utoipa::ToSchema;
 
 // ─── Auth ───────────────────────────────────────────────────────────

@@ -21,13 +21,13 @@
 
 use std::sync::Arc;
 
-use timekeep_core::{ApiKey, PermissionSet};
 use axum::{
     extract::{Request, State},
     http::StatusCode,
     middleware::Next,
     response::Response,
 };
+use timekeep_core::{ApiKey, PermissionSet};
 
 use crate::AppState;
 

@@ -11,11 +11,11 @@
 
 mod simulator;
 
+use simulator::ZkSimServer;
+use simulator::adms::{AdmsDeviceSim, AdmsPunch, AdmsStatus};
 use timekeep_core::events::EventBus;
 use timekeep_zkteco::adms::{AdmsServer, DeviceAdmsState};
 use timekeep_zkteco::sdk::connection::ZkConnection;
-use simulator::ZkSimServer;
-use simulator::adms::{AdmsDeviceSim, AdmsPunch, AdmsStatus};
 
 // ── Helpers ───────────────────────────────────────────────────────────
 

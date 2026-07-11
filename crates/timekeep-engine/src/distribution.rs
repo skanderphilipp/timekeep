@@ -127,20 +127,18 @@ impl DistributorHandle {
         tokio::spawn(async move {
             // `call` returns Result<T, CircuitBreakerError<E>>.
             // Distributor: T=(), E=timekeep_core::Error → Result<(), CircuitBreakerError<Error>>
-            let result: Result<
-                (),
-                timekeep_circuit::CircuitBreakerError<timekeep_core::Error>,
-            > = match cb {
-                Some(ref cb) => {
-                    let dist2 = Arc::clone(&dist);
-                    let event2 = event.clone();
-                    cb.call(|| async { dist2.on_event(&event2).await }).await
-                },
-                None => match dist.on_event(&event).await {
-                    Ok(()) => Ok(()),
-                    Err(e) => Err(timekeep_circuit::CircuitBreakerError::Inner(e)),
-                },
-            };
+            let result: Result<(), timekeep_circuit::CircuitBreakerError<timekeep_core::Error>> =
+                match cb {
+                    Some(ref cb) => {
+                        let dist2 = Arc::clone(&dist);
+                        let event2 = event.clone();
+                        cb.call(|| async { dist2.on_event(&event2).await }).await
+                    },
+                    None => match dist.on_event(&event).await {
+                        Ok(()) => Ok(()),
+                        Err(e) => Err(timekeep_circuit::CircuitBreakerError::Inner(e)),
+                    },
+                };
 
             match result {
                 Ok(()) => {

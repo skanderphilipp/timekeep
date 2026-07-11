@@ -1,5 +1,8 @@
 //! Integration tests for the REST API — management and integration routers.
 
+use axum::body::Body;
+use serde_json::{Value, json};
+use std::sync::Arc;
 use timekeep_api::{DeviceConnectionState, integration_router, management_router};
 use timekeep_core::ProviderRegistry;
 use timekeep_core::events::EventBus;
@@ -9,9 +12,6 @@ use timekeep_core::traits::storage::Storage;
 use timekeep_core::{PunchStatus, VerifyMode};
 use timekeep_engine::health::EngineHealth;
 use timekeep_storage_sqlite::SqliteStorage;
-use axum::body::Body;
-use serde_json::{Value, json};
-use std::sync::Arc;
 
 fn mgmt_router(storage: Arc<dyn Storage>) -> axum::Router {
     management_router(

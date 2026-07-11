@@ -25,14 +25,14 @@ pub mod telemetry;
 
 use std::sync::Arc;
 
+use batch::BatchWriter;
+use distribution::{DistributorHandle, DistributorSnapshot, Outbox};
+use pipeline::dedup::DedupCache;
 use timekeep_core::{
     Error,
     events::{DomainEvent, EventBus},
     traits::{Distributor, Storage},
 };
-use batch::BatchWriter;
-use distribution::{DistributorHandle, DistributorSnapshot, Outbox};
-use pipeline::dedup::DedupCache;
 use tokio::sync::Mutex;
 use tokio::sync::broadcast;
 use tracing::{Span, info};

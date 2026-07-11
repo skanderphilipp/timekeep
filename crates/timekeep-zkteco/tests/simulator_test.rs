@@ -11,8 +11,8 @@
 
 mod simulator;
 
-use timekeep_zkteco::sdk::connection::ZkConnection;
 use simulator::ZkSimServer;
+use timekeep_zkteco::sdk::connection::ZkConnection;
 
 // ── Connection & authentication ───────────────────────────────────────
 

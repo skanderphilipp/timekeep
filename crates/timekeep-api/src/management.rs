@@ -12,10 +12,10 @@
 //! at creation time. Listing keys shows metadata (prefix, permissions, dates)
 //! but never the hash or raw key.
 
-use timekeep_core::{ApiKey, PermissionSet};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::{Extension, Json};
+use timekeep_core::{ApiKey, PermissionSet};
 use uuid::Uuid;
 
 use crate::AppState;
@@ -260,9 +260,7 @@ fn export_as_csv(punches: &[timekeep_core::AttendancePunch]) -> Result<ExportRes
     Ok(ExportResponse { data, filename, content_type: "text/csv; charset=utf-8" })
 }
 
-fn export_as_xlsx(
-    punches: &[timekeep_core::AttendancePunch],
-) -> Result<ExportResponse, AppError> {
+fn export_as_xlsx(punches: &[timekeep_core::AttendancePunch]) -> Result<ExportResponse, AppError> {
     use rust_xlsxwriter::*;
 
     let mut workbook = Workbook::new();
