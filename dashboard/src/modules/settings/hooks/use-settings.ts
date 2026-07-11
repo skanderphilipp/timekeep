@@ -29,8 +29,7 @@ export function useSystemSettings() {
   });
 
   const mutation = useMutation({
-    mutationFn: (settings: UpdateSystemSettingsRequest) =>
-      updateSystemSettings(settings),
+    mutationFn: (settings: UpdateSystemSettingsRequest) => updateSystemSettings(settings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.settings.system() });
     },
@@ -61,8 +60,7 @@ export function useEndpoints() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...req }: { id: string } & UpdateEndpointRequest) =>
-      updateEndpoint(id, req),
+    mutationFn: ({ id, ...req }: { id: string } & UpdateEndpointRequest) => updateEndpoint(id, req),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.endpoints.settings() });
     },

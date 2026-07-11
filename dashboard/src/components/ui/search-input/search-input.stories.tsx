@@ -22,7 +22,15 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 350 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 350,
+      }}
+    >
       <SearchInput value="" onChange={fn()} placeholder="Search…" />
       <SearchInput value="Ahmed" onChange={fn()} placeholder="Search…" />
     </div>
@@ -33,7 +41,14 @@ export const ContextFilterBar: Story = {
   name: "Context: Filter Bar Search",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 400, background: "var(--ao-background-secondary)", borderRadius: "var(--ao-radius-md)" }}>
+    <div
+      style={{
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 400,
+        background: "var(--ao-background-secondary)",
+        borderRadius: "var(--ao-radius-md)",
+      }}
+    >
       <SearchInput value="" onChange={fn()} placeholder="Search by employee name or PIN…" />
     </div>
   ),

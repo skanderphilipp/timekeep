@@ -18,11 +18,7 @@ describe("useColumnDefinitions", () => {
     // Since hooks can't be called outside React components,
     // we test the filtering logic directly via the hook's behavior.
     // In integration tests, this would be rendered in a component.
-    const columns = [
-      makeColumn("a", true),
-      makeColumn("b", false),
-      makeColumn("c", true),
-    ];
+    const columns = [makeColumn("a", true), makeColumn("b", false), makeColumn("c", true)];
 
     const filtered = columns.filter((col) => col.isVisible !== false);
     expect(filtered).toHaveLength(2);
@@ -31,10 +27,7 @@ describe("useColumnDefinitions", () => {
   });
 
   it("returns all columns when all are visible", () => {
-    const columns = [
-      makeColumn("a", true),
-      makeColumn("b", true),
-    ];
+    const columns = [makeColumn("a", true), makeColumn("b", true)];
 
     const filtered = columns.filter((col) => col.isVisible !== false);
     expect(filtered).toHaveLength(2);

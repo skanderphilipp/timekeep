@@ -53,20 +53,19 @@ export function Text({
 }: TextProps) {
   const Tag = as ?? (variant === "label" ? "label" : "p");
 
-  const weightClass = weight === "medium" ? styles.weightMedium : weight === "regular" ? styles.weightRegular : weightMap[variant];
+  const weightClass =
+    weight === "medium"
+      ? styles.weightMedium
+      : weight === "regular"
+        ? styles.weightRegular
+        : weightMap[variant];
 
   return (
     <Tag
       data-slot="text"
       data-variant={variant}
       data-color={color}
-      className={clsx(
-        styles.text,
-        sizeMap[variant],
-        weightClass,
-        styles[color],
-        className,
-      )}
+      className={clsx(styles.text, sizeMap[variant], weightClass, styles[color], className)}
       htmlFor={htmlFor}
       style={style}
     >

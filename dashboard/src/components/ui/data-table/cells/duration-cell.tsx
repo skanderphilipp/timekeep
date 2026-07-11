@@ -26,9 +26,5 @@ function formatDuration(totalMinutes: number): string {
 export function DurationCell({ minutes, humanized = true, className }: DurationCellProps) {
   const display = humanized ? formatDuration(minutes) : `${minutes}m`;
 
-  return (
-    <span className={clsx(styles.duration, className)}>
-      {display}
-    </span>
-  );
+  return <span className={clsx(styles.duration, className)}>{display}</span>;
 }

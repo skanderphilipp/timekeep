@@ -35,7 +35,9 @@ export const Primary: Story = {
   args: {
     title: "Hourly Arrivals",
     description: "Number of check-ins per hour today.",
-    children: <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" grid height={300} />,
+    children: (
+      <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" grid height={300} />
+    ),
   },
 };
 
@@ -53,7 +55,12 @@ export const AllVariants: Story = {
       <Chart title="Loading State" description="Data is being fetched." isLoading>
         <div />
       </Chart>
-      <Chart title="Empty State" description="No data for this period." isEmpty emptyMessage="No arrivals recorded today.">
+      <Chart
+        title="Empty State"
+        description="No data for this period."
+        isEmpty
+        emptyMessage="No arrivals recorded today."
+      >
         <div />
       </Chart>
     </div>

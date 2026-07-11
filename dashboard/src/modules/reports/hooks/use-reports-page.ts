@@ -4,8 +4,9 @@ import { msg } from "@lingui/core/macro";
 
 import { useFilterUrl } from "@/infrastructure/query-params";
 import { useReportSummary } from "./use-report-summary";
+import { useReportPresets } from "./use-report-presets";
 import { fetchPunches } from "@/lib/api";
-import type { ActiveFilter, DateRangePreset } from "@/components/ui";
+import type { ActiveFilter } from "@/components/ui";
 
 const reportFilterDefaults = {
   date_from: "",
@@ -22,63 +23,10 @@ function isoToUnixEnd(iso: string): number {
   return Math.floor(new Date(`${iso}T23:59:59Z`).getTime() / 1000);
 }
 
-/** Creates date range presets with fresh dates on every call. */
-function useReportPresets() {
-  const { _ } = useLingui();
-  return useMemo<DateRangePreset[]>(() => [
-    {
-      key: "today",
-      label: () => _(msg`Today`),
-      getRange: () => {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        return { from: start, to: new Date(start.getTime() + 86_399_999) };
-      },
-    },
-    {
-      key: "thisWeek",
-      label: () => _(msg`This Week`),
-      getRange: () => {
-        const now = new Date();
-        const day = now.getDay();
-        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (day === 0 ? 6 : day - 1));
-        return { from: monday, to: now };
-      },
-    },
-    {
-      key: "thisMonth",
-      label: () => _(msg`This Month`),
-      getRange: () => {
-        const now = new Date();
-        return {
-          from: new Date(now.getFullYear(), now.getMonth(), 1),
-          to: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
-        };
-      },
-    },
-    {
-      key: "lastMonth",
-      label: () => _(msg`Last Month`),
-      getRange: () => {
-        const now = new Date();
-        return {
-          from: new Date(now.getFullYear(), now.getMonth() - 1, 1),
-          to: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59),
-        };
-      },
-    },
-  ], [_]);
-}
-
 export function useReportsPage() {
   const { _ } = useLingui();
 
-  const {
-    filters,
-    setFilter,
-    resetFilters,
-    hasActiveFilters,
-  } = useFilterUrl({
+  const { filters, setFilter, resetFilters, hasActiveFilters } = useFilterUrl({
     namespace: "reports",
     defaults: reportFilterDefaults,
   });
@@ -97,10 +45,18 @@ export function useReportsPage() {
   const activeFilters: ActiveFilter[] = useMemo(() => {
     const result: ActiveFilter[] = [];
     if (filters.date_from) {
-      result.push({ key: "date_from", label: `${_(msg`From`)} ${filters.date_from}`, onRemove: () => setFilter({ date_from: "" }) });
+      result.push({
+        key: "date_from",
+        label: `${_(msg`From`)} ${filters.date_from}`,
+        onRemove: () => setFilter({ date_from: "" }),
+      });
     }
     if (filters.date_to) {
-      result.push({ key: "date_to", label: `${_(msg`To`)} ${filters.date_to}`, onRemove: () => setFilter({ date_to: "" }) });
+      result.push({
+        key: "date_to",
+        label: `${_(msg`To`)} ${filters.date_to}`,
+        onRemove: () => setFilter({ date_to: "" }),
+      });
     }
     return result;
   }, [filters, setFilter, _]);

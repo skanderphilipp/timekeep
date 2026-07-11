@@ -10,12 +10,7 @@ type SkeletonProps = {
   className?: string;
 };
 
-export function Skeleton({
-  variant = "text",
-  width,
-  height,
-  className,
-}: SkeletonProps) {
+export function Skeleton({ variant = "text", width, height, className }: SkeletonProps) {
   return (
     <span
       data-slot="skeleton"
@@ -31,11 +26,7 @@ export function SkeletonLines({ lines = 3 }: { lines?: number }) {
   return (
     <div data-slot="skeleton-lines" className={styles.lines}>
       {Array.from({ length: lines }, (_, i) => (
-        <Skeleton
-          key={i}
-          variant="text"
-          width={i === lines - 1 ? "60%" : "100%"}
-        />
+        <Skeleton key={i} variant="text" width={i === lines - 1 ? "60%" : "100%"} />
       ))}
     </div>
   );

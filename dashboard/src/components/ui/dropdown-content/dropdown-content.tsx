@@ -16,11 +16,7 @@ type DropdownContentProps = {
 
 export function DropdownContent({ children, className }: DropdownContentProps) {
   return (
-    <div
-      data-slot="dropdown-content"
-      className={clsx(styles.content, className)}
-      role="none"
-    >
+    <div data-slot="dropdown-content" className={clsx(styles.content, className)} role="none">
       {children}
     </div>
   );

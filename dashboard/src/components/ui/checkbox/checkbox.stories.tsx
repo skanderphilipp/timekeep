@@ -29,7 +29,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-3)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-3)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
         <Checkbox checked={false} />
         <Text variant="body">Unchecked</Text>
@@ -40,11 +47,15 @@ export const AllVariants: Story = {
       </div>
       <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
         <Checkbox checked={false} disabled />
-        <Text variant="body" color="tertiary">Disabled (unchecked)</Text>
+        <Text variant="body" color="tertiary">
+          Disabled (unchecked)
+        </Text>
       </div>
       <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
         <Checkbox checked disabled />
-        <Text variant="body" color="tertiary">Disabled (checked)</Text>
+        <Text variant="body" color="tertiary">
+          Disabled (checked)
+        </Text>
       </div>
     </div>
   ),
@@ -54,7 +65,14 @@ export const ContextWorkingDays: Story = {
   name: "Context: Working Days",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-3)", padding: "var(--ao-spacing-4)", flexWrap: "wrap" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-3)",
+        padding: "var(--ao-spacing-4)",
+        flexWrap: "wrap",
+      }}
+    >
       {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
         <label key={day} style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <Checkbox checked={day !== "Sat" && day !== "Sun"} />

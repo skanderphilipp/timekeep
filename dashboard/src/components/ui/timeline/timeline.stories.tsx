@@ -53,9 +53,30 @@ export const AllVariants: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)" }}>
-      <Timeline headerLabel="Employee" hourMarkers={hourMarkers} rows={sampleRows} legendItems={legendItems} />
-      <Timeline headerLabel="Employee" hourMarkers={hourMarkers} rows={[]} emptyState={<p style={{ padding: 16, color: "var(--ao-font-color-tertiary)" }}>No attendance data for today.</p>} legendItems={legendItems} />
-      <Timeline headerLabel="Employee" hourMarkers={hourMarkers} rows={[]} isLoading legendItems={legendItems} />
+      <Timeline
+        headerLabel="Employee"
+        hourMarkers={hourMarkers}
+        rows={sampleRows}
+        legendItems={legendItems}
+      />
+      <Timeline
+        headerLabel="Employee"
+        hourMarkers={hourMarkers}
+        rows={[]}
+        emptyState={
+          <p style={{ padding: 16, color: "var(--ao-font-color-tertiary)" }}>
+            No attendance data for today.
+          </p>
+        }
+        legendItems={legendItems}
+      />
+      <Timeline
+        headerLabel="Employee"
+        hourMarkers={hourMarkers}
+        rows={[]}
+        isLoading
+        legendItems={legendItems}
+      />
     </div>
   ),
 };

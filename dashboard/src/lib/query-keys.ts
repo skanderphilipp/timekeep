@@ -46,8 +46,7 @@ export const QueryKeys = {
     infinite: <T extends Record<string, unknown>>(filter: T) =>
       ["punches-infinite", filter] as const,
     /** Facet filter metadata. */
-    filters: <T extends Record<string, unknown>>(filter: T) =>
-      ["punch-filters", filter] as const,
+    filters: <T extends Record<string, unknown>>(filter: T) => ["punch-filters", filter] as const,
   },
 
   /** Reports */
@@ -55,8 +54,7 @@ export const QueryKeys = {
     /** All report queries (invalidate with `QueryKeys.reports.all`). */
     all: ["reports"] as const,
     /** Report summary with date range filter. */
-    summary: <T extends Record<string, unknown>>(filter: T) =>
-      ["report-summary", filter] as const,
+    summary: <T extends Record<string, unknown>>(filter: T) => ["report-summary", filter] as const,
   },
 
   /** API keys */
@@ -68,8 +66,7 @@ export const QueryKeys = {
   /** Audit log */
   audit: {
     /** Audit log with filters. */
-    list: <T extends Record<string, unknown>>(filter: T) =>
-      ["audit-logs", filter] as const,
+    list: <T extends Record<string, unknown>>(filter: T) => ["audit-logs", filter] as const,
   },
 
   /** Integration endpoints */

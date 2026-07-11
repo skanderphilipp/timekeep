@@ -1,5 +1,8 @@
 import { type ReactNode } from "react";
-import { DataTableCellContext, type DataTableCellContextValue } from "../contexts/data-table-cell-context";
+import {
+  DataTableCellContext,
+  type DataTableCellContextValue,
+} from "../contexts/data-table-cell-context";
 import { FieldContext, type FieldContextValue } from "../contexts/field-context";
 import { FieldDisplay } from "../field-displays";
 import type { ColumnDefinition, FieldMetadata } from "../types";
@@ -53,7 +56,7 @@ export function createCellRenderer<T extends Record<string, unknown>>(
     const value = rawValue;
 
     const isClickable =
-      (column.type === "device_sn" || column.type === "user_pin" || !!column.isLabelIdentifier);
+      column.type === "device_sn" || column.type === "user_pin" || !!column.isLabelIdentifier;
 
     const handleClick = () => {
       if (isClickable && onCellClick) {
@@ -88,6 +91,12 @@ export function createCellRenderer<T extends Record<string, unknown>>(
 }
 
 // Re-export contexts for convenience
-export { DataTableCellContext, type DataTableCellContextValue } from "../contexts/data-table-cell-context";
-export { DataTableRowContext, type DataTableRowContextValue } from "../contexts/data-table-row-context";
+export {
+  DataTableCellContext,
+  type DataTableCellContextValue,
+} from "../contexts/data-table-cell-context";
+export {
+  DataTableRowContext,
+  type DataTableRowContextValue,
+} from "../contexts/data-table-row-context";
 export { FieldContext, type FieldContextValue } from "../contexts/field-context";

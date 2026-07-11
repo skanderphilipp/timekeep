@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { EntityType } from "@/modules/data-renderer/types";
+import type { EntityType } from "@/types/entities";
 
 /**
  * Side panel navigation entry.
@@ -43,15 +43,12 @@ export const sidePanelActiveEntryAtom = atom<SidePanelEntry | null>((get) => {
 // ── Navigation operations ───────────────────────────────────────────────
 
 /** Push a new entry onto the stack and navigate to it. */
-export const pushSidePanelAtom = atom(
-  null,
-  (get, set, entry: SidePanelEntry) => {
-    const stack = get(sidePanelStackAtom);
-    const next = [...stack, entry];
-    set(sidePanelStackAtom, next);
-    set(sidePanelActiveIndexAtom, next.length - 1);
-  },
-);
+export const pushSidePanelAtom = atom(null, (get, set, entry: SidePanelEntry) => {
+  const stack = get(sidePanelStackAtom);
+  const next = [...stack, entry];
+  set(sidePanelStackAtom, next);
+  set(sidePanelActiveIndexAtom, next.length - 1);
+});
 
 /** Pop the top entry off the stack (go back). */
 export const popSidePanelAtom = atom(null, (get, set) => {

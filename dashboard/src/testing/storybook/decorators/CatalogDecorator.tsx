@@ -28,10 +28,6 @@ import styles from "./CatalogDecorator.module.scss";
  *
  * Adapted from Twenty's CatalogDecorator pattern.
  */
-export function CatalogDecorator({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function CatalogDecorator({ children }: { children: ReactNode }) {
   return <div className={styles.grid}>{children}</div>;
 }

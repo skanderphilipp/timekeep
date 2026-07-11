@@ -1,15 +1,11 @@
-import { useLocation, Navigate } from "react-router-dom";
-import { useAtomValue } from "jotai";
+import { Navigate } from "react-router-dom";
 
-import { isAuthenticatedAtom } from "@/infrastructure/state";
 import { LoginForm } from "@/modules/auth/components/login-form";
+import { useLoginPage } from "@/modules/auth/hooks/use-login-page";
 import styles from "./login-page.module.scss";
 
 export function LoginPage() {
-  const location = useLocation();
-  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
-
-  const from = (location.state as { from?: Location })?.from?.pathname || "/";
+  const { isAuthenticated, from } = useLoginPage();
 
   if (isAuthenticated) {
     return <Navigate to={from} replace />;

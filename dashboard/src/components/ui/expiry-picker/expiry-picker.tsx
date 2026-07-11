@@ -148,7 +148,12 @@ export function ExpiryPicker({
         </span>
       )}
 
-      <div data-slot="expiry-picker-presets" className={styles.presets} role="radiogroup" aria-label={label || _(msg`Expiry duration`)}>
+      <div
+        data-slot="expiry-picker-presets"
+        className={styles.presets}
+        role="radiogroup"
+        aria-label={label || _(msg`Expiry duration`)}
+      >
         {PRESETS.map((preset) => (
           <button
             key={preset.key}

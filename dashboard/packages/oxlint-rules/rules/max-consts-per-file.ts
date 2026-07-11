@@ -1,27 +1,27 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'max-consts-per-file';
+export const RULE_NAME = "max-consts-per-file";
 
 export const rule = defineRule({
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
       description:
-        'Ensure there are at most a specified number of const declarations per constant file',
+        "Ensure there are at most a specified number of const declarations per constant file",
     },
-    fixable: 'code',
+    fixable: "code",
     schema: [
       {
-        type: 'object',
+        type: "object",
         properties: {
-          max: { type: 'integer', minimum: 0 },
+          max: { type: "integer", minimum: 0 },
         },
         additionalProperties: false,
       },
     ],
     messages: {
       tooManyConstants:
-        'Only a maximum of ({{ max }}) const declarations are allowed in this file.',
+        "Only a maximum of ({{ max }}) const declarations are allowed in this file.",
     },
   },
   create: (context) => {
@@ -33,7 +33,7 @@ export const rule = defineRule({
         if (constCount > max) {
           context.report({
             node,
-            messageId: 'tooManyConstants',
+            messageId: "tooManyConstants",
             data: { max },
           });
         }

@@ -117,24 +117,14 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             >
               {selectedLabel}
             </SelectPrimitive.Value>
-            <SelectPrimitive.Icon
-              data-slot="select-icon"
-              className={styles.icon}
-            >
+            <SelectPrimitive.Icon data-slot="select-icon" className={styles.icon}>
               <IconSelector size={14} aria-hidden="true" />
             </SelectPrimitive.Icon>
           </SelectPrimitive.Trigger>
 
           <SelectPrimitive.Portal>
-            <SelectPrimitive.Positioner
-              sideOffset={4}
-              align="start"
-              className={styles.positioner}
-            >
-              <SelectPrimitive.Popup
-                data-slot="select-popup"
-                className={styles.popup}
-              >
+            <SelectPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
+              <SelectPrimitive.Popup data-slot="select-popup" className={styles.popup}>
                 <SelectPrimitive.List data-slot="select-list" className={styles.list}>
                   {options.map((opt) => (
                     <SelectItem key={opt.value} option={opt} />

@@ -7,13 +7,13 @@
 
 .track {
   background: var(--ao-background-secondary);
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   overflow: hidden;
 }
 
 .fill {
   background: var(--ao-accent-accent9);
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   height: 100%;
   transition: width 0.3s ease;
 }

@@ -34,7 +34,14 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)" }}>
       <ViewBar viewType="table" onViewTypeChange={fn()} totalCount={128} />
-      <ViewBar viewType="table" onViewTypeChange={fn()} filters={activeFilters} onRemoveFilter={fn()} onAddFilter={fn()} totalCount={42} />
+      <ViewBar
+        viewType="table"
+        onViewTypeChange={fn()}
+        filters={activeFilters}
+        onRemoveFilter={fn()}
+        onAddFilter={fn()}
+        totalCount={42}
+      />
     </div>
   ),
 };

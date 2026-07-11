@@ -12,7 +12,7 @@
   align-items: center;
   background-color: var(--ao-background-secondary);
   border: 1px solid var(--ao-border-color-light);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: flex;
@@ -48,6 +48,7 @@
 
 .customDateInput {
   @include input-base;
+
   width: auto;
 }
 
@@ -66,7 +67,7 @@
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: flex;
-  padding: 2px;
+  padding: var(--ao-spacing-0_5);
 
   &:hover {
     color: var(--ao-font-color-primary);

@@ -7,9 +7,15 @@ import { createApiClient, setApiClient, apiClient } from "../api-client";
 const store: Record<string, string> = {};
 const localStorageMock = {
   getItem: vi.fn((key: string) => store[key] ?? null),
-  setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-  removeItem: vi.fn((key: string) => { delete store[key]; }),
-  clear: vi.fn(() => { for (const k of Object.keys(store)) delete store[k]; }),
+  setItem: vi.fn((key: string, value: string) => {
+    store[key] = value;
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete store[key];
+  }),
+  clear: vi.fn(() => {
+    for (const k of Object.keys(store)) delete store[k];
+  }),
 };
 
 Object.defineProperty(globalThis, "localStorage", { value: localStorageMock });
@@ -21,9 +27,7 @@ const BASE = "http://test.local/api";
 function mockFetch(status: number, body: unknown = {}) {
   vi.stubGlobal(
     "fetch",
-    vi.fn(() =>
-      Promise.resolve(new Response(JSON.stringify(body), { status })),
-    ),
+    vi.fn(() => Promise.resolve(new Response(JSON.stringify(body), { status }))),
   );
 }
 
@@ -67,7 +71,11 @@ describe("createApiClient", () => {
     const client = createApiClient({ baseUrl: BASE, onUnauthorized, retries: 0 });
     mockFetch(401, { error: "unauthorized" });
 
-    try { await client.get("me").json(); } catch { /* expected */ }
+    try {
+      await client.get("me").json();
+    } catch {
+      /* expected */
+    }
 
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });

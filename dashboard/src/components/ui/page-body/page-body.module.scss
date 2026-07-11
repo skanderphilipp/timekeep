@@ -9,7 +9,7 @@
   padding: var(--ao-spacing-6);
   width: 100%;
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     gap: var(--ao-spacing-4);
     padding: var(--ao-spacing-3);
   }

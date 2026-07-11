@@ -19,10 +19,7 @@ import type { SortField, SortUrlOptions } from "./types";
  * toggleSort("timestamp");  // none (params removed)
  * ```
  */
-export function useSortUrl({
-  namespace,
-  defaultSort = null,
-}: SortUrlOptions) {
+export function useSortUrl({ namespace, defaultSort = null }: SortUrlOptions) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const sortParam = `${namespace}_sort`;

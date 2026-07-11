@@ -338,9 +338,7 @@ export const MOCK_PUNCHES: Punch[] = [
   },
 ];
 
-export const MOCK_PUNCHES_ONLY_ANOMALIES: Punch[] = MOCK_PUNCHES.filter(
-  (p) => p.is_anomaly,
-);
+export const MOCK_PUNCHES_ONLY_ANOMALIES: Punch[] = MOCK_PUNCHES.filter((p) => p.is_anomaly);
 
 export const MOCK_PUNCHES_EMPTY: Punch[] = [];
 
@@ -439,16 +437,40 @@ export const MOCK_REPORT_SUMMARY: ReportSummary = {
   overtime_seconds: hoursToSeconds(12.5),
   absence_rate: 4.2,
   daily_hours: [
-    { date: julyDate(1), regular_seconds: hoursToSeconds(8.0), overtime_seconds: hoursToSeconds(0.5) },
+    {
+      date: julyDate(1),
+      regular_seconds: hoursToSeconds(8.0),
+      overtime_seconds: hoursToSeconds(0.5),
+    },
     { date: julyDate(2), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    { date: julyDate(3), regular_seconds: hoursToSeconds(7.5), overtime_seconds: hoursToSeconds(1.0) },
-    { date: julyDate(4), regular_seconds: hoursToSeconds(8.0), overtime_seconds: hoursToSeconds(0.5) },
+    {
+      date: julyDate(3),
+      regular_seconds: hoursToSeconds(7.5),
+      overtime_seconds: hoursToSeconds(1.0),
+    },
+    {
+      date: julyDate(4),
+      regular_seconds: hoursToSeconds(8.0),
+      overtime_seconds: hoursToSeconds(0.5),
+    },
     { date: julyDate(5), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    { date: julyDate(8), regular_seconds: hoursToSeconds(7.5), overtime_seconds: hoursToSeconds(0.8) },
-    { date: julyDate(9), regular_seconds: hoursToSeconds(8.0), overtime_seconds: hoursToSeconds(0.2) },
+    {
+      date: julyDate(8),
+      regular_seconds: hoursToSeconds(7.5),
+      overtime_seconds: hoursToSeconds(0.8),
+    },
+    {
+      date: julyDate(9),
+      regular_seconds: hoursToSeconds(8.0),
+      overtime_seconds: hoursToSeconds(0.2),
+    },
     { date: julyDate(10), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
     { date: julyDate(11), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    { date: julyDate(12), regular_seconds: hoursToSeconds(7.8), overtime_seconds: hoursToSeconds(0.5) },
+    {
+      date: julyDate(12),
+      regular_seconds: hoursToSeconds(7.8),
+      overtime_seconds: hoursToSeconds(0.5),
+    },
   ],
   weekly_hours: [
     { week: 27, year: 2026, total_seconds: 280 * 3600 },
@@ -468,8 +490,7 @@ export const MOCK_REPORT_SUMMARY: ReportSummary = {
 export const MOCK_USER_PROFILE: UserProfile = {
   username: "admin",
   role: "admin",
-  permissions:
-    "read:punches write:punches read:devices write:devices manage:users manage:commands",
+  permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
 };
 
 export const MOCK_LOGIN_RESPONSE: LoginResponse = {
@@ -478,8 +499,7 @@ export const MOCK_LOGIN_RESPONSE: LoginResponse = {
   token_type: "Bearer",
   username: "admin",
   role: "admin",
-  permissions:
-    "read:punches write:punches read:devices write:devices manage:users manage:commands",
+  permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
 };
 
 // ── Device mocks ──────────────────────────────────────────────────────────────

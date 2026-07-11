@@ -1,6 +1,6 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'matching-state-variable';
+export const RULE_NAME = "matching-state-variable";
 
 /**
  * Enforces the React convention that `useState` destructuring matches:
@@ -11,24 +11,23 @@ export const RULE_NAME = 'matching-state-variable';
  * must have its state variable named consistently.
  */
 
-const VALUE_HOOKS = ['useState', 'useReducer'];
+const VALUE_HOOKS = ["useState", "useReducer"];
 
 const SUFFIX_PATTERN = /(State|Reducer)$/;
 
 const _getExpectedBaseName = (stateArgName: string): string =>
-  stateArgName.replace(SUFFIX_PATTERN, '');
+  stateArgName.replace(SUFFIX_PATTERN, "");
 
 const getExpectedSetterName = (baseName: string): string =>
   `set${baseName.charAt(0).toUpperCase()}${baseName.slice(1)}`;
 
 export const rule = defineRule({
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description:
-        'Ensure state variable and setter naming follows React conventions',
+      description: "Ensure state variable and setter naming follows React conventions",
     },
-    fixable: 'code',
+    fixable: "code",
     schema: [],
     messages: {
       invalidVariableName:
@@ -41,8 +40,8 @@ export const rule = defineRule({
     return {
       VariableDeclarator: (node: any) => {
         if (
-          node?.init?.type !== 'CallExpression' ||
-          node.init.callee?.type !== 'Identifier' ||
+          node?.init?.type !== "CallExpression" ||
+          node.init.callee?.type !== "Identifier" ||
           !VALUE_HOOKS.includes(node.init.callee.name)
         ) {
           return;
@@ -50,45 +49,40 @@ export const rule = defineRule({
 
         const hookName = node.init.callee.name;
 
-        if (node.id.type === 'ArrayPattern') {
+        if (node.id.type === "ArrayPattern") {
           const actualVariableName =
-            node.id.elements?.[0]?.type === 'Identifier'
-              ? node.id.elements[0].name
-              : undefined;
+            node.id.elements?.[0]?.type === "Identifier" ? node.id.elements[0].name : undefined;
 
           if (!actualVariableName) return;
 
           if (!actualVariableName.match(/^[a-z]/)) {
             context.report({
               node,
-              messageId: 'invalidVariableName',
+              messageId: "invalidVariableName",
               data: {
                 actualName: actualVariableName,
-                expectedName: 'camelCase variable',
+                expectedName: "camelCase variable",
                 hookName,
               },
             });
           }
 
-          if (node.id.elements[1]?.type === 'Identifier') {
+          if (node.id.elements[1]?.type === "Identifier") {
             const actualSetterName = node.id.elements[1].name;
             const expectedSetter = getExpectedSetterName(actualVariableName);
 
             if (actualSetterName !== expectedSetter) {
               context.report({
                 node,
-                messageId: 'invalidSetterName',
+                messageId: "invalidSetterName",
                 data: {
                   hookName,
                   actualName: actualSetterName,
                   expectedName: expectedSetter,
                 },
                 fix: (fixer: any) => {
-                  if (node.id.type === 'ArrayPattern') {
-                    return fixer.replaceText(
-                      node.id.elements[1]!,
-                      expectedSetter,
-                    );
+                  if (node.id.type === "ArrayPattern") {
+                    return fixer.replaceText(node.id.elements[1]!, expectedSetter);
                   }
                   return null;
                 },

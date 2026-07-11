@@ -38,9 +38,6 @@ export type CatalogParameters<Props> = {
  *     },
  *   };
  */
-export type CatalogStory<
-  TStory extends StoryObj,
-  TComponent,
-> = TStory & {
+export type CatalogStory<TStory extends StoryObj, TComponent> = TStory & {
   parameters: TStory["parameters"] & CatalogParameters<TComponent>;
 };

@@ -183,7 +183,9 @@ function scanComponents(): ComponentBarrel[] {
       const indexPath = resolve(uiDir, entry.name, "index.ts");
 
       if (!existsSync(indexPath)) {
-        console.warn(`  ⚠️  ${entry.name}/ — no index.ts, skipping`);
+        if (!isStoriesOnly(entry.name)) {
+          console.warn(`  ⚠️  ${entry.name}/ — no index.ts, skipping`);
+        }
         continue;
       }
 
@@ -313,6 +315,13 @@ function generateBarrel(components: ComponentBarrel[]): string {
 
 // ── Verification ───────────────────────────────────────────────────────────
 
+/** A directory containing only story files is documentation-only — no barrel needed. */
+function isStoriesOnly(dirName: string): boolean {
+  const entries = readdirSync(resolve(uiDir, dirName), { withFileTypes: true });
+  const files = entries.filter((e) => e.isFile());
+  return files.length > 0 && files.every((e) => /\.stories\.(tsx|ts|mdx)$/.test(e.name));
+}
+
 /** Checks that every component directory has an index.ts with exports. */
 function verifyComponents(components: ComponentBarrel[]): { clean: boolean; issues: string[] } {
   const issues: string[] = [];
@@ -324,7 +333,9 @@ function verifyComponents(components: ComponentBarrel[]): { clean: boolean; issu
 
     const indexPath = resolve(uiDir, entry.name, "index.ts");
     if (!existsSync(indexPath)) {
-      issues.push(`  ❌ ${entry.name}/ — missing index.ts (create a barrel file)`);
+      if (!isStoriesOnly(entry.name)) {
+        issues.push(`  ❌ ${entry.name}/ — missing index.ts (create a barrel file)`);
+      }
       continue;
     }
 

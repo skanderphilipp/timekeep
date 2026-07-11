@@ -21,7 +21,7 @@
     padding: var(--ao-spacing-3) var(--ao-spacing-4);
   }
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     font-size: var(--ao-font-size-xs);
 
     th,
@@ -58,7 +58,7 @@ th {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--ao-accent-accent8);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: -2px;
   }
 }
@@ -91,7 +91,7 @@ th:hover .sortIcon {
   cursor: pointer;
 
   &:focus-visible {
-    outline: 2px solid var(--ao-accent-accent8);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: -2px;
   }
 }
@@ -108,7 +108,7 @@ tr:last-child td {
 
 .skeleton {
   background: var(--ao-background-secondary);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: block;
   height: 1em;
   width: 100%;
@@ -120,6 +120,7 @@ tr:last-child td {
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.4;
   }
@@ -127,11 +128,13 @@ tr:last-child td {
 
 // ── Empty State ──────────────────────────────────────────────────────────────
 
+/* stylelint-disable declaration-no-important -- overrides td padding from row-level selectors */
 .emptyCell {
   padding: var(--ao-spacing-12) var(--ao-spacing-4) !important;
   text-align: center;
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     padding: var(--ao-spacing-8) var(--ao-spacing-2) !important;
   }
 }
+/* stylelint-enable declaration-no-important */

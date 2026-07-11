@@ -19,7 +19,11 @@ function formatTimestamp(value: string | Date, format: "datetime" | "date" | "ti
     case "date":
       return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
     case "time":
-      return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return d.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     case "datetime":
     default:
       return d.toLocaleString(undefined, {

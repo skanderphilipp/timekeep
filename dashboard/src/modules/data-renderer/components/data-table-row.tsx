@@ -42,17 +42,9 @@ export function DataTableRow<T extends Record<string, unknown>>({
   return (
     <DataTableRowContext.Provider value={rowContextValue}>
       {columns.map((col) => {
-        const renderFn = createCellRenderer(
-          col,
-          onCellClick,
-          () => rowKey,
-        );
+        const renderFn = createCellRenderer(col, onCellClick, () => rowKey);
         return (
-          <td
-            key={col.id}
-            data-column={col.id}
-            className={col.cellClassName}
-          >
+          <td key={col.id} data-column={col.id} className={col.cellClassName}>
             {renderFn(row)}
           </td>
         );

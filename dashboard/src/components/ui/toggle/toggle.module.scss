@@ -1,3 +1,5 @@
+@use "@/styles/mixins" as *;
+
 .label {
   align-items: center;
   cursor: pointer;
@@ -12,26 +14,21 @@
 }
 
 .input {
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  position: absolute;
-  width: 1px;
+  @include sr-only;
 
   &:focus-visible + .track {
-    outline: 2px solid var(--ao-accent-accent9);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: 2px;
   }
 }
 
 .track {
   background: var(--ao-background-tertiary);
-  border-radius: var(--ao-border-radius-pill, 999px);
+  border-radius: var(--ao-radius-pill);
   display: inline-flex;
   flex-shrink: 0;
   height: 20px;
-  padding: 2px;
+  padding: var(--ao-spacing-0_5);
   transition: background-color 0.15s ease;
   width: 36px;
 

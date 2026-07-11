@@ -1,5 +1,5 @@
-import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { type ReactNode, useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   IconMoon,
   IconSun,
@@ -8,7 +8,6 @@ import {
   IconX,
   IconChevronLeft,
   IconChevronRight,
-  IconChevronDown,
 } from "@tabler/icons-react";
 import { clsx } from "clsx";
 import { useLingui } from "@lingui/react";
@@ -28,102 +27,11 @@ import {
 } from "@/infrastructure/state";
 import { LocaleSwitcher } from "@/infrastructure/locale/locale-switcher";
 import { RoleBadge } from "@/infrastructure/role-badge";
-import { useNavigation, type ResolvedNavItem } from "@/infrastructure/navigation/use-navigation";
+import { useNavigation } from "@/infrastructure/navigation/use-navigation";
 import { useBreadcrumbs } from "@/infrastructure/navigation/use-breadcrumbs";
 import { SidePanelShell } from "@/infrastructure/side-panel/side-panel-shell";
+import { NavGroup, NavLeaf } from "./app-shell-nav";
 import styles from "./app-shell.module.scss";
-
-// ── NavItem (leaf) ────────────────────────────────────────────────────────────
-
-function NavLeaf({
-  item,
-  collapsed,
-  onClick,
-}: {
-  item: ResolvedNavItem;
-  collapsed: boolean;
-  onClick: () => void;
-}) {
-  if (!item.path) return null;
-
-  return (
-    <NavLink
-      key={item.key}
-      to={item.path!}
-      end={item.end}
-      onClick={onClick}
-      className={({ isActive }) =>
-        clsx(
-          styles.navItem,
-          !item.icon && styles.navItemNested,
-          isActive && styles.navItemActive,
-        )
-      }
-      title={collapsed ? item.label() : undefined}
-    >
-      {item.icon && <item.icon data-slot="nav-icon" size={20} />}
-      {!collapsed && <span data-slot="nav-label">{item.label()}</span>}
-    </NavLink>
-  );
-}
-
-// ── NavGroup (collapsible parent) ─────────────────────────────────────────────
-
-function NavGroup({
-  item,
-  collapsed,
-  closeSidebar,
-}: {
-  item: ResolvedNavItem;
-  collapsed: boolean;
-  closeSidebar: () => void;
-}) {
-  const location = useLocation();
-  const isChildActive =
-    item.children?.some((c) => location.pathname.startsWith(c.path ?? "")) ?? false;
-  const [expanded, setExpanded] = useState(isChildActive);
-
-  if (collapsed) {
-    // When collapsed, show only the parent icon (no expand)
-    return (
-      <div data-slot="nav-group-collapsed" className={styles.navGroupCollapsed}>
-        <div className={clsx(styles.navItem, isChildActive && styles.navItemActive)}>
-          {item.icon && <item.icon data-slot="nav-icon" size={20} />}
-        </div>
-        {item.children?.map((child) => (
-          <NavLeaf key={child.key} item={child} collapsed={collapsed} onClick={closeSidebar} />
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div data-slot="nav-group" className={styles.navGroup}>
-      <button
-        data-slot="nav-group-header"
-        className={clsx(styles.navGroupHeader, isChildActive && styles.navGroupHeaderActive)}
-        onClick={() => setExpanded((e) => !e)}
-        aria-expanded={expanded}
-      >
-        {item.icon && <item.icon data-slot="nav-icon" size={20} />}
-        <span data-slot="nav-label" className={styles.navGroupLabel}>
-          {item.label()}
-        </span>
-        <IconChevronDown
-          size={14}
-          className={clsx(styles.navGroupChevron, expanded && styles.navGroupChevronOpen)}
-        />
-      </button>
-      {expanded && (
-        <div data-slot="nav-group-children" className={styles.navGroupChildren}>
-          {item.children?.map((child) => (
-            <NavLeaf key={child.key} item={child} collapsed={false} onClick={closeSidebar} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── AppShell ──────────────────────────────────────────────────────────────────
 
@@ -258,11 +166,23 @@ export function AppShell({ children }: AppShellProps) {
             </button>
 
             {!isMobile && breadcrumbs.length > 0 && (
-              <nav data-slot="breadcrumbs" className={styles.breadcrumbs} aria-label={_(msg`Breadcrumb`)}>
+              <nav
+                data-slot="breadcrumbs"
+                className={styles.breadcrumbs}
+                aria-label={_(msg`Breadcrumb`)}
+              >
                 {breadcrumbs.map((crumb, index) => (
-                  <span data-slot="breadcrumb-item" key={crumb.path} className={styles.breadcrumbItem}>
+                  <span
+                    data-slot="breadcrumb-item"
+                    key={crumb.path}
+                    className={styles.breadcrumbItem}
+                  >
                     {index > 0 && (
-                      <BreadcrumbSeparator data-slot="breadcrumb-separator" size={14} className={styles.breadcrumbSeparator} />
+                      <BreadcrumbSeparator
+                        data-slot="breadcrumb-separator"
+                        size={14}
+                        className={styles.breadcrumbSeparator}
+                      />
                     )}
                     <Link
                       data-slot="breadcrumb-link"

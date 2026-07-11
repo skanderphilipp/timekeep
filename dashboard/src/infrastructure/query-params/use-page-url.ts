@@ -13,10 +13,7 @@ import type { PageUrlOptions } from "./types";
  * const { page, setPage, resetPage } = usePageUrl({ namespace: "punches" });
  * ```
  */
-export function usePageUrl({
-  namespace,
-  defaultPage = 1,
-}: PageUrlOptions) {
+export function usePageUrl({ namespace, defaultPage = 1 }: PageUrlOptions) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const paramKey = `${namespace}_page`;

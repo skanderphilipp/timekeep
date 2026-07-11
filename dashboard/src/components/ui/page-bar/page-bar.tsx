@@ -47,7 +47,9 @@ export function PageBar({ title, description, breadcrumbs, actions }: PageBarPro
               )}
             >
               {index > 0 && (
-                <span className={styles.breadcrumbSeparator} aria-hidden="true">/</span>
+                <span className={styles.breadcrumbSeparator} aria-hidden="true">
+                  /
+                </span>
               )}
               {index === breadcrumbs.length - 1 ? (
                 <span className={styles.breadcrumbCurrent}>{crumb.label}</span>

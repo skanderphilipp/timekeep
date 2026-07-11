@@ -1,6 +1,5 @@
 // ── Shared Text Input Base ──────────────────────────────────────────────────
 // Used by: input, ip-input, port-input, expiry-picker (mixin), ip-port-input (mixin)
-//
 // Provides the standard bordered text input with focus, disabled, and error
 // states. Use the `.input` class for standard full-width form inputs, or
 // `@include input-base` for components that need a custom class name.
@@ -8,7 +7,7 @@
 @mixin input-base {
   background-color: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-primary);
   font-family: var(--ao-font-family);
   font-size: var(--ao-font-size-md);
@@ -34,6 +33,7 @@
 
 .input {
   @include input-base;
+
   width: 100%;
 }
 

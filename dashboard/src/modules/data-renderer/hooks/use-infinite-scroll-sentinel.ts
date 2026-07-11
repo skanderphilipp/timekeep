@@ -20,7 +20,9 @@ export function useInfiniteScrollSentinel({
   enabled,
   rootMargin = "200px",
 }: UseInfiniteScrollSentinelOptions): RefObject<HTMLDivElement | null> {
+  // oxlint-disable-next-line bentech/no-state-useref -- DOM ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // oxlint-disable-next-line bentech/no-state-useref -- latest-callback pattern; never affects rendering
   const onIntersectRef = useRef(onIntersect);
   onIntersectRef.current = onIntersect;
 

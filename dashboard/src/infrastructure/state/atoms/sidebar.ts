@@ -14,7 +14,4 @@ import { atomWithStorage } from "jotai/utils";
 export const sidebarOpenAtom = atom(false);
 
 /** Desktop sidebar collapsed state. Persisted across sessions. */
-export const sidebarCollapsedAtom = atomWithStorage(
-  "ao:sidebar-collapsed",
-  false,
-);
+export const sidebarCollapsedAtom = atomWithStorage("ao:sidebar-collapsed", false);

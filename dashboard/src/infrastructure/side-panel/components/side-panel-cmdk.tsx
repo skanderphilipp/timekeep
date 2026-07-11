@@ -60,49 +60,103 @@ export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
   const items: CommandItem[] = useMemo(
     () => [
       {
-        id: "dashboard", label: _(msg`Dashboard`), description: _(msg`Attendance overview`),
-        icon: IconDashboard, keywords: ["home", "overview"],
-        action: () => { onClose(); navigate(AppRoute.dashboard); },
+        id: "dashboard",
+        label: _(msg`Dashboard`),
+        description: _(msg`Attendance overview`),
+        icon: IconDashboard,
+        keywords: ["home", "overview"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.dashboard);
+        },
       },
       {
-        id: "devices", label: _(msg`Devices`), description: _(msg`Manage biometric scanners`),
-        icon: IconDevices, keywords: ["scanner", "hardware"],
-        action: () => { onClose(); navigate(AppRoute.devices.list); },
+        id: "devices",
+        label: _(msg`Devices`),
+        description: _(msg`Manage biometric scanners`),
+        icon: IconDevices,
+        keywords: ["scanner", "hardware"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.devices.list);
+        },
       },
       {
-        id: "devices-add", label: _(msg`Add Device`), description: _(msg`Register a new scanner`),
-        icon: IconPlus, keywords: ["new", "register", "scanner"],
-        action: () => { onClose(); navigate(AppRoute.devices.new); },
+        id: "devices-add",
+        label: _(msg`Add Device`),
+        description: _(msg`Register a new scanner`),
+        icon: IconPlus,
+        keywords: ["new", "register", "scanner"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.devices.new);
+        },
       },
       {
-        id: "punches", label: _(msg`Punch Records`), description: _(msg`View and query attendance data`),
-        icon: IconFingerprint, keywords: ["attendance", "records", "check-in"],
-        action: () => { onClose(); navigate(AppRoute.punches.list); },
+        id: "punches",
+        label: _(msg`Punch Records`),
+        description: _(msg`View and query attendance data`),
+        icon: IconFingerprint,
+        keywords: ["attendance", "records", "check-in"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.punches.list);
+        },
       },
       {
-        id: "users", label: _(msg`Users`), description: _(msg`Manage dashboard accounts`),
-        icon: IconUsers, keywords: ["accounts", "roles", "admin"],
-        action: () => { onClose(); navigate(AppRoute.settings.users); },
+        id: "users",
+        label: _(msg`Users`),
+        description: _(msg`Manage dashboard accounts`),
+        icon: IconUsers,
+        keywords: ["accounts", "roles", "admin"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.settings.users);
+        },
       },
       {
-        id: "api-keys", label: _(msg`API Keys`), description: _(msg`Manage integration keys`),
-        icon: IconKey, keywords: ["integrations", "tokens"],
-        action: () => { onClose(); navigate(AppRoute.settings.apiKeys); },
+        id: "api-keys",
+        label: _(msg`API Keys`),
+        description: _(msg`Manage integration keys`),
+        icon: IconKey,
+        keywords: ["integrations", "tokens"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.settings.apiKeys);
+        },
       },
       {
-        id: "audit-log", label: _(msg`Audit Log`), description: _(msg`View activity history`),
-        icon: IconHistory, keywords: ["history", "activity", "events"],
-        action: () => { onClose(); navigate(AppRoute.legacy.audit); },
+        id: "audit-log",
+        label: _(msg`Audit Log`),
+        description: _(msg`View activity history`),
+        icon: IconHistory,
+        keywords: ["history", "activity", "events"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.legacy.audit);
+        },
       },
       {
-        id: "reports", label: _(msg`Reports`), description: _(msg`Attendance reports and exports`),
-        icon: IconReport, keywords: ["export", "csv", "summary"],
-        action: () => { onClose(); navigate(AppRoute.reports); },
+        id: "reports",
+        label: _(msg`Reports`),
+        description: _(msg`Attendance reports and exports`),
+        icon: IconReport,
+        keywords: ["export", "csv", "summary"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.reports);
+        },
       },
       {
-        id: "settings", label: _(msg`Settings`), description: _(msg`Application configuration`),
-        icon: IconSettings, keywords: ["config", "preferences"],
-        action: () => { onClose(); navigate(AppRoute.settings.system); },
+        id: "settings",
+        label: _(msg`Settings`),
+        description: _(msg`Application configuration`),
+        icon: IconSettings,
+        keywords: ["config", "preferences"],
+        action: () => {
+          onClose();
+          navigate(AppRoute.settings.system);
+        },
       },
     ],
     [_],
@@ -144,7 +198,12 @@ export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
   return (
     <div data-slot="side-panel-cmdk" className={styles.container} onKeyDown={handleKeyDown}>
       <div data-slot="cmdk-search" className={styles.search}>
-        <SearchInput ref={inputRef} placeholder={_(msg`Search commands…`)} value={query} onChange={setQuery} />
+        <SearchInput
+          ref={inputRef}
+          placeholder={_(msg`Search commands…`)}
+          value={query}
+          onChange={setQuery}
+        />
       </div>
 
       <div data-slot="cmdk-results" className={styles.results}>

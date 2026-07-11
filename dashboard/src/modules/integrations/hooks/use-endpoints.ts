@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchEndpoints, createEndpoint, updateEndpoint, deleteEndpoint, type CreateEndpointRequest, type UpdateEndpointRequest } from "@/lib/api";
+import {
+  fetchEndpoints,
+  createEndpoint,
+  updateEndpoint,
+  deleteEndpoint,
+  type CreateEndpointRequest,
+  type UpdateEndpointRequest,
+} from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
 
 export function useEndpoints() {

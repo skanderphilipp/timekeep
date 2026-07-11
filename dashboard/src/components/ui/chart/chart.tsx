@@ -28,15 +28,33 @@ export type ChartProps = {
   footer?: ReactNode;
 };
 
-export function Chart({ children, title, description, isLoading, error, isEmpty, emptyMessage, className, footer }: ChartProps) {
+export function Chart({
+  children,
+  title,
+  description,
+  isLoading,
+  error,
+  isEmpty,
+  emptyMessage,
+  className,
+  footer,
+}: ChartProps) {
   const { _ } = useLingui();
 
   return (
     <div data-slot="chart" className={clsx(styles.chart, className)}>
       {(title || description) && (
         <div data-slot="chart-header" className={styles.header}>
-          {title && <h3 data-slot="chart-title" className={styles.title}>{title}</h3>}
-          {description && <p data-slot="chart-description" className={styles.description}>{description}</p>}
+          {title && (
+            <h3 data-slot="chart-title" className={styles.title}>
+              {title}
+            </h3>
+          )}
+          {description && (
+            <p data-slot="chart-description" className={styles.description}>
+              {description}
+            </p>
+          )}
         </div>
       )}
 
@@ -52,13 +70,20 @@ export function Chart({ children, title, description, isLoading, error, isEmpty,
         )}
 
         {isEmpty && !isLoading && !error && (
-          <EmptyState title={_(msg`No data`)} description={emptyMessage ?? _(msg`No data available for this period`)} />
+          <EmptyState
+            title={_(msg`No data`)}
+            description={emptyMessage ?? _(msg`No data available for this period`)}
+          />
         )}
 
         {!isLoading && !error && !isEmpty && children}
       </div>
 
-      {footer && <div data-slot="chart-footer" className={styles.footer}>{footer}</div>}
+      {footer && (
+        <div data-slot="chart-footer" className={styles.footer}>
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

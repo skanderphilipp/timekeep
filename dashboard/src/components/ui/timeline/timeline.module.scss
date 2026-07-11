@@ -75,7 +75,7 @@
 .employeeLabel {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ao-spacing-0_5);
   min-width: 140px;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .block {
-  border-radius: 3px;
+  border-radius: var(--ao-radius-sm);
   height: 100%;
   position: absolute;
   top: 0;
@@ -139,7 +139,7 @@
 }
 
 .legendDot {
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   display: inline-block;
   height: 8px;
   width: 8px;

@@ -35,7 +35,13 @@ export const AllVariants: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: 20 }}>
-      <Dropdown trigger={<Button variant="secondary" size="sm">User Menu</Button>}>
+      <Dropdown
+        trigger={
+          <Button variant="secondary" size="sm">
+            User Menu
+          </Button>
+        }
+      >
         <DropdownContent>
           <MenuItem label="Profile" onClick={fn()} />
           <MenuItem label="Settings" onClick={fn()} />
@@ -43,7 +49,13 @@ export const AllVariants: Story = {
           <MenuItem label="Sign Out" variant="danger" onClick={fn()} />
         </DropdownContent>
       </Dropdown>
-      <Dropdown trigger={<Button variant="secondary" size="sm">Filter</Button>}>
+      <Dropdown
+        trigger={
+          <Button variant="secondary" size="sm">
+            Filter
+          </Button>
+        }
+      >
         <DropdownContent>
           <MenuItem label="Today" onClick={fn()} />
           <MenuItem label="This Week" onClick={fn()} />

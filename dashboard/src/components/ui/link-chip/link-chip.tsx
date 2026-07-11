@@ -1,13 +1,7 @@
 import { type MouseEvent, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import {
-  Chip,
-  ChipAccent,
-  type ChipProps,
-  ChipSize,
-  ChipVariant,
-} from "@/components/ui/chip";
+import { Chip, ChipAccent, type ChipProps, ChipSize, ChipVariant } from "@/components/ui/chip";
 
 import styles from "./link-chip.module.scss";
 
@@ -15,10 +9,7 @@ import styles from "./link-chip.module.scss";
 
 export type TriggerEventType = "MOUSE_DOWN" | "CLICK";
 
-export type LinkChipProps = Omit<
-  ChipProps,
-  "onClick" | "disabled" | "clickable"
-> & {
+export type LinkChipProps = Omit<ChipProps, "onClick" | "disabled" | "clickable"> & {
   to: string;
   onClick?: (event: MouseEvent<HTMLElement>) => void;
   onMouseDown?: (event: MouseEvent<HTMLElement>) => void;
@@ -33,9 +24,7 @@ const LINK_CHIP_CLICK_OUTSIDE_ID = "link-chip-click-outside-id";
 function isNavigationModifierPressed(
   event: Pick<MouseEvent, "button" | "metaKey" | "altKey" | "ctrlKey" | "shiftKey">,
 ): boolean {
-  const modifier = [event.altKey, event.ctrlKey, event.shiftKey, event.metaKey].some(
-    Boolean,
-  );
+  const modifier = [event.altKey, event.ctrlKey, event.shiftKey, event.metaKey].some(Boolean);
   const isLeftClick = event.button === 0;
   return modifier || !isLeftClick;
 }

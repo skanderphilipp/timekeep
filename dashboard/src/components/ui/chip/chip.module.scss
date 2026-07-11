@@ -17,7 +17,7 @@
   font-weight: inherit;
   background-color: inherit;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
 
   & > svg {
     flex-shrink: 0;
@@ -42,7 +42,7 @@
 
 // Disabled color wins over accent colors, matching the Linaria ternary order.
 .disabled {
-  color: var(--ao-font-color-light);
+  color: var(--ao-font-color-disabled);
 }
 
 .fontMedium {

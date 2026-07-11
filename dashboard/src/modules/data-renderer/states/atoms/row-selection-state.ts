@@ -2,11 +2,10 @@ import { atom } from "jotai";
 import { makeAtomFamily } from "./atom-family";
 import type { RowSelectionState } from "../../types";
 
-export const tableRowSelectionStateFamily = makeAtomFamily(
-  (_instanceId: string) =>
-    atom<RowSelectionState>({
-      selectedIds: new Map<string, boolean>(),
-    }),
+export const tableRowSelectionStateFamily = makeAtomFamily((_instanceId: string) =>
+  atom<RowSelectionState>({
+    selectedIds: new Map<string, boolean>(),
+  }),
 );
 
 export const toggleRowSelectionAtom = atom(
@@ -36,10 +35,7 @@ export const selectAllRowsAtom = atom(
   },
 );
 
-export const deselectAllRowsAtom = atom(
-  null,
-  (_get, set, payload: { instanceId: string }) => {
-    const selectionAtom = tableRowSelectionStateFamily(payload.instanceId);
-    set(selectionAtom, { selectedIds: new Map() });
-  },
-);
+export const deselectAllRowsAtom = atom(null, (_get, set, payload: { instanceId: string }) => {
+  const selectionAtom = tableRowSelectionStateFamily(payload.instanceId);
+  set(selectionAtom, { selectedIds: new Map() });
+});

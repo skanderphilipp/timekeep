@@ -29,7 +29,15 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 320 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 320,
+      }}
+    >
       <div>
         <FormField label="Username">
           <Input placeholder="Enter username…" />

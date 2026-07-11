@@ -18,7 +18,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-2)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <LinkChip label="Ahmed Al-Sabah" to="/employees/145" />
       <LinkChip label="Main Gate" to="/devices/CQZ7232960836" />
       <LinkChip label="Fatima Hassan" to="/employees/146" />
@@ -30,7 +37,14 @@ export const ContextEmployeeLinks: Story = {
   name: "Context: Employee References",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-1)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-1)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <LinkChip label="Ahmed Al-Sabah" to="/employees/145" />
       <LinkChip label="Omar Khalid" to="/employees/147" />
       <LinkChip label="Fatima Hassan" to="/employees/146" />

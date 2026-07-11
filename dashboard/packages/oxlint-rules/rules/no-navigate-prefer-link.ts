@@ -1,16 +1,15 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'no-navigate-prefer-link';
+export const RULE_NAME = "no-navigate-prefer-link";
 
 export const rule = defineRule({
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
-      description:
-        'Discourage usage of navigate() where a simple <Link> component would suffice.',
+      description: "Discourage usage of navigate() where a simple <Link> component would suffice.",
     },
     messages: {
-      preferLink: 'Use <Link> instead of navigate() for pure navigation.',
+      preferLink: "Use <Link> instead of navigate() for pure navigation.",
     },
     schema: [],
   },
@@ -19,20 +18,20 @@ export const rule = defineRule({
 
     const checkFunctionBodyHasSingleNavigateCall = (func: any) => {
       if (
-        func.body.type === 'CallExpression' &&
-        func.body.callee.type === 'Identifier' &&
-        func.body.callee.name === 'navigate'
+        func.body.type === "CallExpression" &&
+        func.body.callee.type === "Identifier" &&
+        func.body.callee.name === "navigate"
       ) {
         return true;
       }
 
       if (
-        func.body.type === 'BlockStatement' &&
+        func.body.type === "BlockStatement" &&
         func.body.body.length === 1 &&
-        func.body.body[0].type === 'ExpressionStatement' &&
-        func.body.body[0].expression.type === 'CallExpression' &&
-        func.body.body[0].expression.callee.type === 'Identifier' &&
-        func.body.body[0].expression.callee.name === 'navigate'
+        func.body.body[0].type === "ExpressionStatement" &&
+        func.body.body[0].expression.type === "CallExpression" &&
+        func.body.body[0].expression.callee.type === "Identifier" &&
+        func.body.body[0].expression.callee.name === "navigate"
       ) {
         return true;
       }
@@ -44,8 +43,8 @@ export const rule = defineRule({
       VariableDeclarator: (node: any) => {
         if (
           node.init &&
-          node.init.type === 'ArrowFunctionExpression' &&
-          node.id.type === 'Identifier'
+          node.init.type === "ArrowFunctionExpression" &&
+          node.id.type === "Identifier"
         ) {
           const func = node.init;
           functionMap[node.id.name] = func;
@@ -53,35 +52,29 @@ export const rule = defineRule({
           if (checkFunctionBodyHasSingleNavigateCall(func)) {
             context.report({
               node: func,
-              messageId: 'preferLink',
+              messageId: "preferLink",
             });
           }
         }
       },
       JSXAttribute: (node: any) => {
-        if (
-          node.name.name === 'onClick' &&
-          node.value.type === 'JSXExpressionContainer'
-        ) {
+        if (node.name.name === "onClick" && node.value.type === "JSXExpressionContainer") {
           const expression = node.value.expression;
 
           if (
-            expression.type === 'ArrowFunctionExpression' &&
+            expression.type === "ArrowFunctionExpression" &&
             checkFunctionBodyHasSingleNavigateCall(expression)
           ) {
             context.report({
               node: expression,
-              messageId: 'preferLink',
+              messageId: "preferLink",
             });
-          } else if (
-            expression.type === 'Identifier' &&
-            functionMap[expression.name]
-          ) {
+          } else if (expression.type === "Identifier" && functionMap[expression.name]) {
             const func = functionMap[expression.name];
             if (checkFunctionBodyHasSingleNavigateCall(func)) {
               context.report({
                 node: expression,
-                messageId: 'preferLink',
+                messageId: "preferLink",
               });
             }
           }

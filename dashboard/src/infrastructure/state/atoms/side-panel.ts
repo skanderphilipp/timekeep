@@ -11,7 +11,7 @@ export const SIDE_PANEL_CONSTRAINTS = {
 } as const;
 
 /** CSS custom property name for the side panel width. */
-export const SIDE_PANEL_WIDTH_VAR = "--ao-side-panel-width";
+export const SIDE_PANEL_WIDTH_VAR = "--tk-side-panel-width";
 
 /**
  * Side panel state management via Jotai atoms.
@@ -51,11 +51,7 @@ export const sidePanelContentAtom = atom<(() => React.ReactNode) | null>(null);
  */
 export const openSidePanelAtom = atom(
   null,
-  (
-    _get,
-    set,
-    payload: { title?: string; render: () => React.ReactNode },
-  ) => {
+  (_get, set, payload: { title?: string; render: () => React.ReactNode }) => {
     set(sidePanelTitleAtom, payload.title);
     set(sidePanelContentAtom, payload.render);
     set(sidePanelOpenAtom, true);
@@ -71,7 +67,7 @@ export const closeSidePanelAtom = atom(null, (_get, set) => {
  * Side panel width in pixels.
  *
  * Persisted to localStorage so the user's preferred panel width survives
- * page refreshes. The CSS variable `--ao-side-panel-width` is set by the
+ * page refreshes. The CSS variable `--tk-side-panel-width` is set by the
  * SidePanel component on mount and during resize.
  */
 export const sidePanelWidthAtom = atomWithStorage<number>(

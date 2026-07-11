@@ -1,6 +1,6 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'no-raw-html-elements';
+export const RULE_NAME = "no-raw-html-elements";
 
 /**
  * Enforces architectural layering: only components under `components/ui/` may
@@ -31,8 +31,8 @@ export const RULE_NAME = 'no-raw-html-elements';
 /** Raw HTML elements that must never appear outside components/ui/. */
 const FORBIDDEN_ELEMENTS: Record<string, string> = {
   // Structural
-  div: 'a UI layout primitive (Section, Card, Grid) from components/ui/',
-  span: 'Text component from components/ui/',
+  div: "a UI layout primitive (Section, Card, Grid) from components/ui/",
+  span: "Text component from components/ui/",
   // Typography
   h1: 'Heading level="h1" from components/ui/',
   h2: 'Heading level="h2" from components/ui/',
@@ -41,24 +41,24 @@ const FORBIDDEN_ELEMENTS: Record<string, string> = {
   h5: 'Heading level="h5" from components/ui/',
   h6: 'Heading level="h6" from components/ui/',
   p: 'Text variant="body" from components/ui/',
-  hr: 'Separator from components/ui/',
+  hr: "Separator from components/ui/",
   // Form
-  label: 'FormField from components/ui/',
-  button: 'Button or IconButton from components/ui/',
-  input: 'Input or FilterInput from components/ui/',
-  select: 'Select from components/ui/',
-  textarea: 'TextArea from components/ui/',
+  label: "FormField from components/ui/",
+  button: "Button or IconButton from components/ui/",
+  input: "Input or FilterInput from components/ui/",
+  select: "Select from components/ui/",
+  textarea: "TextArea from components/ui/",
 };
 
 /** Semantic HTML5 elements allowed as layout primitives everywhere. */
 const ALLOWED_SEMANTIC_ELEMENTS = new Set([
-  'section',
-  'nav',
-  'main',
-  'article',
-  'aside',
-  'header',
-  'footer',
+  "section",
+  "nav",
+  "main",
+  "article",
+  "aside",
+  "header",
+  "footer",
 ]);
 
 /**
@@ -67,98 +67,94 @@ const ALLOWED_SEMANTIC_ELEMENTS = new Set([
  */
 const FORBIDDEN_UI_IMPORTS = new Set([
   // Typography
-  'Heading',
-  'Text',
-  'Separator',
+  "Heading",
+  "Text",
+  "Separator",
   // Form primitives
-  'Form',
-  'FormField',
-  'FormActions',
-  'FormSection',
-  'Input',
-  'Select',
-  'Checkbox',
-  'Toggle',
-  'TextArea',
-  'Button',
-  'IconButton',
+  "Form",
+  "FormField",
+  "FormActions",
+  "FormSection",
+  "Input",
+  "Select",
+  "Checkbox",
+  "Toggle",
+  "TextArea",
+  "Button",
+  "IconButton",
   // Data display
-  'Badge',
-  'Chip',
-  'Avatar',
-  'StatusDot',
-  'Banner',
-  'ProgressBar',
-  'Tooltip',
+  "Badge",
+  "Chip",
+  "Avatar",
+  "StatusDot",
+  "Banner",
+  "ProgressBar",
+  "Tooltip",
   // Navigation
-  'TabList',
-  'Tab',
-  'TabPanel',
-  'Pagination',
+  "TabList",
+  "Tab",
+  "TabPanel",
+  "Pagination",
   // Overlays
-  'Dialog',
-  'Dropdown',
-  'DropdownContent',
-  'DropdownSearch',
+  "Dialog",
+  "Dropdown",
+  "DropdownContent",
+  "DropdownSearch",
   // Charts (should be in molecules)
-  'Chart',
-  'BarChart',
-  'LineChart',
-  'PieChart',
+  "Chart",
+  "BarChart",
+  "LineChart",
+  "PieChart",
   // Search/Filter
-  'FilterBar',
-  'FilterInput',
-  'FilterSelect',
-  'FilterDateRange',
-  'SearchInput',
-  'Combobox',
-  'MultiSelect',
+  "FilterBar",
+  "FilterInput",
+  "FilterSelect",
+  "FilterDateRange",
+  "SearchInput",
+  "Combobox",
+  "MultiSelect",
   // Table
-  'DataTable',
+  "DataTable",
   // Date
-  'DatePicker',
+  "DatePicker",
   // Menu
-  'MenuItem',
-  'MenuItemNavigate',
-  'MenuSeparator',
+  "MenuItem",
+  "MenuItemNavigate",
+  "MenuSeparator",
   // Misc
-  'VisuallyHidden',
+  "VisuallyHidden",
 ]);
 
 /** UI imports that ARE allowed in pages (layout + feedback primitives). */
 const ALLOWED_UI_IMPORTS = new Set([
-  'PageLayout',
-  'PageBody',
-  'PageBar',
-  'PageHeader',
-  'Section',
-  'Card',
-  'CardGrid',
-  'EmptyState',
-  'Spinner',
-  'Skeleton',
-  'SkeletonLines',
+  "PageLayout",
+  "PageBody",
+  "PageBar",
+  "PageHeader",
+  "Section",
+  "Card",
+  "CardGrid",
+  "EmptyState",
+  "Spinner",
+  "Skeleton",
+  "SkeletonLines",
 ]);
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const isUiComponent = (filename: string): boolean =>
-  /(?:^|\/)components\/ui\//.test(filename);
+const isUiComponent = (filename: string): boolean => /(?:^|\/)components\/ui\//.test(filename);
 
-const isTestOrStory = (filename: string): boolean =>
-  /\.(test|spec|stories)\.tsx?$/.test(filename);
+const isTestOrStory = (filename: string): boolean => /\.(test|spec|stories)\.tsx?$/.test(filename);
 
-const isPageFile = (filename: string): boolean =>
-  /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
+const isPageFile = (filename: string): boolean => /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
 
-const isModuleFile = (filename: string): boolean =>
-  /(?:^|\/)modules\//.test(filename);
+const isModuleFile = (filename: string): boolean => /(?:^|\/)modules\//.test(filename);
 
 const resolveImportSource = (node: any): string | null => {
   const source = node.source?.value;
-  if (typeof source === 'string') return source;
+  if (typeof source === "string") return source;
   return null;
 };
 
@@ -168,24 +164,23 @@ const resolveImportSource = (node: any): string | null => {
 
 export const rule = defineRule({
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
       description:
-        'Raw HTML elements (div, span, h1-h6, p, button, input, select, textarea) are forbidden outside components/ui/. Pages and module components must compose from UI primitives. Pages additionally cannot import UI atoms directly.',
+        "Raw HTML elements (div, span, h1-h6, p, button, input, select, textarea) are forbidden outside components/ui/. Pages and module components must compose from UI primitives. Pages additionally cannot import UI atoms directly.",
     },
     messages: {
-      rawElement:
-        'Raw <{{ element }}> outside components/ui/. Replace with {{ replacement }}',
+      rawElement: "Raw <{{ element }}> outside components/ui/. Replace with {{ replacement }}",
       rawElementInModule:
-        'Raw <{{ element }}> in module component. Replace with {{ replacement }} If no UI primitive exists, create one in components/ui/ first.',
+        "Raw <{{ element }}> in module component. Replace with {{ replacement }} If no UI primitive exists, create one in components/ui/ first.",
       atomImport:
         'Atom component "{{ name }}" imported in page from @/components/ui. Extract this into a module component under modules/*/components/ and compose that from the page. Only PageLayout, PageBody, PageBar, PageHeader, Section, Card, CardGrid, EmptyState, Spinner, and Skeleton are permitted at the page level.',
     },
     schema: [
       {
-        type: 'object',
+        type: "object",
         properties: {
-          skipTestFiles: { type: 'boolean' },
+          skipTestFiles: { type: "boolean" },
         },
         additionalProperties: false,
       },
@@ -214,13 +209,10 @@ export const rule = defineRule({
         if (!inPage) return;
 
         const source = resolveImportSource(node);
-        if (!source || source !== '@/components/ui') return;
+        if (!source || source !== "@/components/ui") return;
 
         for (const spec of node.specifiers || []) {
-          const name =
-            spec.imported?.name ||
-            spec.imported?.value ||
-            spec.local?.name;
+          const name = spec.imported?.name || spec.imported?.value || spec.local?.name;
           if (!name) continue;
 
           // Allow layout/feedback primitives
@@ -230,7 +222,7 @@ export const rule = defineRule({
           if (FORBIDDEN_UI_IMPORTS.has(name)) {
             context.report({
               node: spec,
-              messageId: 'atomImport',
+              messageId: "atomImport",
               data: { name },
             });
           }
@@ -242,10 +234,7 @@ export const rule = defineRule({
         const openingEl = node.openingElement;
         if (!openingEl) return;
 
-        const tagName =
-          openingEl.name?.type === 'JSXIdentifier'
-            ? openingEl.name.name
-            : null;
+        const tagName = openingEl.name?.type === "JSXIdentifier" ? openingEl.name.name : null;
 
         if (!tagName) return;
 
@@ -253,7 +242,7 @@ export const rule = defineRule({
         if (ALLOWED_SEMANTIC_ELEMENTS.has(tagName)) return;
 
         // Allow web components (custom elements with hyphens)
-        if (tagName.includes('-')) return;
+        if (tagName.includes("-")) return;
 
         // Allow JSX component names (uppercase)
         if (tagName[0] === tagName[0].toUpperCase()) return;
@@ -263,7 +252,7 @@ export const rule = defineRule({
 
         context.report({
           node: openingEl,
-          messageId: inPage ? 'rawElement' : 'rawElementInModule',
+          messageId: inPage ? "rawElement" : "rawElementInModule",
           data: {
             element: tagName,
             replacement: FORBIDDEN_ELEMENTS[tagName],

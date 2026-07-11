@@ -21,10 +21,7 @@ import type { FilterValues, FilterUrlOptions } from "./types";
  * setFilter({ user_pin: "" });    // → URL: param removed
  * ```
  */
-export function useFilterUrl<T extends FilterValues>({
-  namespace,
-  defaults,
-}: FilterUrlOptions<T>) {
+export function useFilterUrl<T extends FilterValues>({ namespace, defaults }: FilterUrlOptions<T>) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Decode current filter values from URL → state
@@ -42,10 +39,7 @@ export function useFilterUrl<T extends FilterValues>({
 
   // Whether any filter differs from its default
   const hasActiveFilters = useMemo(
-    () =>
-      (Object.keys(defaults) as (keyof T)[]).some(
-        (key) => filters[key] !== defaults[key],
-      ),
+    () => (Object.keys(defaults) as (keyof T)[]).some((key) => filters[key] !== defaults[key]),
     [filters, defaults],
   );
 
@@ -55,10 +49,7 @@ export function useFilterUrl<T extends FilterValues>({
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          for (const [key, value] of Object.entries(update) as [
-            string,
-            string | undefined,
-          ][]) {
+          for (const [key, value] of Object.entries(update) as [string, string | undefined][]) {
             const paramKey = `${namespace}_${key}`;
             const defaultVal = (defaults as Record<string, string | undefined>)[key];
             if (value === undefined || value === "" || value === defaultVal) {

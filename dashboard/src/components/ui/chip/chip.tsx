@@ -54,8 +54,7 @@ const renderRightComponent = (
     return null;
   }
 
-  const rendered =
-    typeof rightComponent === "function" ? rightComponent() : rightComponent;
+  const rendered = typeof rightComponent === "function" ? rightComponent() : rightComponent;
 
   if (rightComponentDivider === true) {
     return (
@@ -129,9 +128,7 @@ export const Chip = ({
       className={clsx(
         styles.chip,
         size === ChipSize.Large ? styles.sizeLarge : styles.sizeSmall,
-        accent === ChipAccent.TextPrimary
-          ? styles.accentTextPrimary
-          : styles.accentTextSecondary,
+        accent === ChipAccent.TextPrimary ? styles.accentTextPrimary : styles.accentTextSecondary,
         disabled && styles.disabled,
         (isBold || accent === ChipAccent.TextSecondary) && styles.fontMedium,
         cursorClass,
@@ -141,9 +138,7 @@ export const Chip = ({
         className,
       )}
       style={
-        maxWidth
-          ? ({ "--chip-max-width": `${maxWidth}px` } as React.CSSProperties)
-          : undefined
+        maxWidth ? ({ "--chip-max-width": `${maxWidth}px` } as React.CSSProperties) : undefined
       }
     >
       {leftComponent}

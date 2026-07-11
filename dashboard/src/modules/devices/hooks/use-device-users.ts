@@ -1,9 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  setUserOnDevice,
-  deleteUserFromDevice,
-  type SetUserRequest,
-} from "@/lib/api";
+import { setUserOnDevice, deleteUserFromDevice, type SetUserRequest } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
 
 /**

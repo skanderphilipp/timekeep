@@ -1,6 +1,11 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconDeviceDesktop, IconStatusChange, IconCalendar, IconAlertTriangle } from "@tabler/icons-react";
+import {
+  IconDeviceDesktop,
+  IconStatusChange,
+  IconCalendar,
+  IconAlertTriangle,
+} from "@tabler/icons-react";
 
 import { usePunchQueryPage } from "../hooks/use-punch-query-page";
 import { DataTableContainer } from "@/modules/data-renderer/components/data-table-container";
@@ -161,7 +166,9 @@ export function PunchQueryView() {
             title={_(msg`No punch records found`)}
             description={
               page.hasActiveFilters
-                ? _(msg`No punch records match the current filters. Try adjusting or clearing them.`)
+                ? _(
+                    msg`No punch records match the current filters. Try adjusting or clearing them.`,
+                  )
                 : _(msg`Attendance data will appear here once devices start recording punches.`)
             }
           />

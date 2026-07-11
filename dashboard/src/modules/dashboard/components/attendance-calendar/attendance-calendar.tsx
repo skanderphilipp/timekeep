@@ -6,7 +6,17 @@ import { useLingui } from "@lingui/react";
 import type { MessageDescriptor } from "@lingui/core";
 
 import { openSidePanelAtom } from "@/infrastructure/state";
-import { CalendarMonth, Dot, Select, IconButton, Button, Text, ActionGroup, StatusDot, type CalendarDay } from "@/components/ui";
+import {
+  CalendarMonth,
+  Dot,
+  Select,
+  IconButton,
+  Button,
+  Text,
+  ActionGroup,
+  StatusDot,
+  type CalendarDay,
+} from "@/components/ui";
 import { useAttendanceCalendar, statusLabel } from "./use-attendance-calendar";
 import { DayDetailPanel } from "./day-detail-panel";
 
@@ -14,7 +24,15 @@ import styles from "./attendance-calendar.module.scss";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-type PunchStatus = "check_in" | "check_out" | "break_out" | "break_in" | "overtime_in" | "overtime_out" | "absent" | "day_off";
+type PunchStatus =
+  | "check_in"
+  | "check_out"
+  | "break_out"
+  | "break_in"
+  | "overtime_in"
+  | "overtime_out"
+  | "absent"
+  | "day_off";
 
 const TIMEKEEP_COLORS: Record<string, string> = {
   check_in: styles.dotPresent,
@@ -49,13 +67,7 @@ function CalendarDot({
   status: PunchStatus;
   _: (desc: MessageDescriptor) => string;
 }) {
-  return (
-    <Dot
-      color={TIMEKEEP_COLORS[status]}
-      title={statusLabel(status, _)}
-      size="sm"
-    />
-  );
+  return <Dot color={TIMEKEEP_COLORS[status]} title={statusLabel(status, _)} size="sm" />;
 }
 
 // ── Legend ─────────────────────────────────────────────────────────────────────
@@ -64,7 +76,9 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <ActionGroup>
       <StatusDot status="online" className={color} />
-      <Text variant="caption" color="secondary">{label}</Text>
+      <Text variant="caption" color="secondary">
+        {label}
+      </Text>
     </ActionGroup>
   );
 }
@@ -81,7 +95,11 @@ export function AttendanceCalendarPage() {
       const key = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
       const punches = cal.punchesByDay.get(key) ?? [];
       openSidePanel({
-        title: day.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }),
+        title: day.date.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
         render: () => <DayDetailPanel day={day} punches={punches} />,
       });
     },

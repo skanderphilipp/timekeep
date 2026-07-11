@@ -31,7 +31,8 @@ const makePunch = (overrides: Partial<Punch> = {}): Punch => ({
 });
 
 // Identity translator for tests — returns the default English message text
-const _ = (descriptor: { id?: string; message?: string }) => descriptor.message ?? descriptor.id ?? "";
+const _ = (descriptor: { id?: string; message?: string }) =>
+  descriptor.message ?? descriptor.id ?? "";
 
 const baseProps = {
   columns: createPunchColumns(_),
@@ -44,9 +45,7 @@ const baseProps = {
 
 describe("DataTableContainer", () => {
   it("renders loading state", () => {
-    render(
-      <DataTableContainer {...baseProps} isLoading />,
-    );
+    render(<DataTableContainer {...baseProps} isLoading />);
 
     const table = screen.getByRole("table");
     expect(table).toBeDefined();
@@ -54,10 +53,7 @@ describe("DataTableContainer", () => {
 
   it("renders empty state when no data and not loading", () => {
     render(
-      <DataTableContainer
-        {...baseProps}
-        emptyState={<div data-testid="empty">No records</div>}
-      />,
+      <DataTableContainer {...baseProps} emptyState={<div data-testid="empty">No records</div>} />,
     );
 
     expect(screen.getByTestId("empty")).toBeDefined();
@@ -69,12 +65,7 @@ describe("DataTableContainer", () => {
       makePunch({ id: "p-2", user_pin: "222", device_sn: "DEV-B" }),
     ];
 
-    render(
-      <DataTableContainer
-        {...baseProps}
-        data={punches}
-      />,
-    );
+    render(<DataTableContainer {...baseProps} data={punches} />);
 
     // Each punch should render its PIN
     expect(screen.getByText("111")).toBeDefined();
@@ -88,12 +79,7 @@ describe("DataTableContainer", () => {
   it("renders status as colored tags", () => {
     const punches = [makePunch({ id: "p-1", status: "check_in" })];
 
-    render(
-      <DataTableContainer
-        {...baseProps}
-        data={punches}
-      />,
-    );
+    render(<DataTableContainer {...baseProps} data={punches} />);
 
     expect(screen.getByText("Check In")).toBeDefined();
   });
@@ -101,12 +87,7 @@ describe("DataTableContainer", () => {
   it("renders column headers", () => {
     const punches = [makePunch()];
 
-    render(
-      <DataTableContainer
-        {...baseProps}
-        data={punches}
-      />,
-    );
+    render(<DataTableContainer {...baseProps} data={punches} />);
 
     expect(screen.getByText("Timestamp")).toBeDefined();
     expect(screen.getByText("Employee")).toBeDefined();
@@ -118,12 +99,7 @@ describe("DataTableContainer", () => {
   it("renders timestamp as formatted date", () => {
     const punches = [makePunch({ id: "p-1", timestamp: 1700000000 })];
 
-    render(
-      <DataTableContainer
-        {...baseProps}
-        data={punches}
-      />,
-    );
+    render(<DataTableContainer {...baseProps} data={punches} />);
 
     const date = new Date(1700000000 * 1000);
     const expected = date.toLocaleString();
@@ -134,13 +110,7 @@ describe("DataTableContainer", () => {
     const onRowClick = vi.fn();
     const punches = [makePunch({ id: "p-1" })];
 
-    render(
-      <DataTableContainer
-        {...baseProps}
-        data={punches}
-        onRowClick={onRowClick}
-      />,
-    );
+    render(<DataTableContainer {...baseProps} data={punches} onRowClick={onRowClick} />);
 
     const rows = screen.getAllByRole("row");
     const dataRow = rows[1];
@@ -153,12 +123,7 @@ describe("DataTableContainer", () => {
   });
 
   it("renders error state", () => {
-    render(
-      <DataTableContainer
-        {...baseProps}
-        error="Connection refused"
-      />,
-    );
+    render(<DataTableContainer {...baseProps} error="Connection refused" />);
 
     expect(screen.getByText("Connection refused")).toBeDefined();
   });

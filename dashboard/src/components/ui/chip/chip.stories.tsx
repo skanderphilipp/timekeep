@@ -28,7 +28,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap" }}>
         <Chip label="Default" />
         <Chip label="Highlighted" variant={ChipVariant.Highlighted} />
@@ -49,7 +56,14 @@ export const ContextFilterChips: Story = {
   name: "Context: Active Filters",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-2)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <Chip label="Device: Main Gate" variant={ChipVariant.Highlighted} />
       <Chip label="Status: Check In" variant={ChipVariant.Highlighted} />
       <Chip label="From: 2026-07-01" variant={ChipVariant.Highlighted} />

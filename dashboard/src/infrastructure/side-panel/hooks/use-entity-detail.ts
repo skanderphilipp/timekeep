@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { EntityType } from "@/modules/data-renderer/types";
+import type { EntityType } from "@/types/entities";
 import { QueryKeys } from "@/lib/query-keys";
 import { PUNCHES_STALE_TIME_MS } from "@/lib/constants";
 

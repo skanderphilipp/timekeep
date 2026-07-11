@@ -1,9 +1,6 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
-import type {
-  ApiEnvelope,
-  PageMeta,
-} from "@/lib/api-client";
+import type { ApiEnvelope, PageMeta } from "@/lib/api-client";
 import type {
   LoginResponse,
   DeviceSummary,
@@ -147,14 +144,14 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
           token_type: "Bearer",
           username: "admin",
           role: "admin",
-          permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
+          permissions:
+            "read:punches write:punches read:devices write:devices manage:users manage:commands",
         };
         return HttpResponse.json(envelope(data));
       }
-      return HttpResponse.json(
-        envelopeError("unauthorized", "authentication required"),
-        { status: 401 },
-      );
+      return HttpResponse.json(envelopeError("unauthorized", "authentication required"), {
+        status: 401,
+      });
     }),
 
     // ── Devices ──────────────────────────────────────────────────────────────
@@ -174,10 +171,9 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
     http.get("/api/devices/:sn", ({ params }) => {
       const device = devices.find((d) => d.serial_number === params.sn);
       if (!device) {
-        return HttpResponse.json(
-          envelopeError("not_found", `device '${params.sn}' not found`),
-          { status: 404 },
-        );
+        return HttpResponse.json(envelopeError("not_found", `device '${params.sn}' not found`), {
+          status: 404,
+        });
       }
       // Rust DeviceDetailResponse flattens DeviceResponse with extra fields
       const detail = {
@@ -210,27 +206,22 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
     http.put("/api/devices/:sn", async ({ params }) => {
       const exists = devices.some((d) => d.serial_number === params.sn);
       if (!exists) {
-        return HttpResponse.json(
-          envelopeError("not_found", `device '${params.sn}' not found`),
-          { status: 404 },
-        );
+        return HttpResponse.json(envelopeError("not_found", `device '${params.sn}' not found`), {
+          status: 404,
+        });
       }
       return HttpResponse.json(envelope({ status: "updated" }));
     }),
 
     // DELETE /api/devices/:sn — remove device from registry.
     // Rust: ApiEnvelope<StatusResponse { status: "deleted" }>
-    http.delete("/api/devices/:sn", () =>
-      HttpResponse.json(envelope({ status: "deleted" })),
-    ),
+    http.delete("/api/devices/:sn", () => HttpResponse.json(envelope({ status: "deleted" }))),
 
     // ── Dashboard ────────────────────────────────────────────────────────────
 
     // GET /api/dashboard/today — today's attendance summary.
     // Rust: ApiEnvelope<TodaySummaryResponse>
-    http.get("/api/dashboard/today", () =>
-      HttpResponse.json(envelope(todaySummary)),
-    ),
+    http.get("/api/dashboard/today", () => HttpResponse.json(envelope(todaySummary))),
 
     // ── Punches ──────────────────────────────────────────────────────────────
 
@@ -257,15 +248,11 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
 
       const meta: PageMeta = {
         has_more: hasMore,
-        next_cursor: hasMore && last
-          ? btoa(`${last.timestamp}:${last.id}`)
-          : null,
+        next_cursor: hasMore && last ? btoa(`${last.timestamp}:${last.id}`) : null,
         total: hasMore ? null : filtered.length,
       };
 
-      return HttpResponse.json(
-        envelope({ punches: page }, meta),
-      );
+      return HttpResponse.json(envelope({ punches: page }, meta));
     }),
 
     // POST /api/punches/correct — manual punch correction (HR override).

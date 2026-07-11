@@ -2,24 +2,17 @@ import { useState, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 
 import { useZodForm } from "@/lib/form";
-import {
-  createApiKeyFormSchema,
-  type ApiKeyFormValues,
-} from "../schemas/api-key-form.schema";
+import { createApiKeyFormSchema, type ApiKeyFormValues } from "../schemas/api-key-form.schema";
 import type { CreateApiKeyRequest, ApiKeyCreatedResponse } from "@/lib/api";
 
 /**
  * Compute the number of days until expiry from the ExpiryValue.
  * Returns null for "never" (no expiration).
  */
-export function computeExpiryDays(
-  expiry: NonNullable<ApiKeyFormValues["expiry"]>,
-): number | null {
+export function computeExpiryDays(expiry: NonNullable<ApiKeyFormValues["expiry"]>): number | null {
   if (expiry.preset === "never") return null;
   if (expiry.preset === "custom" && expiry.customDate) {
-    const days = Math.ceil(
-      (expiry.customDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
+    const days = Math.ceil((expiry.customDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return Math.max(1, days);
   }
   const presetDays: Record<string, number> = {
@@ -45,8 +38,7 @@ type UseApiKeyFormOptions = {
  */
 export function useApiKeyForm({ onCreateKey }: UseApiKeyFormOptions) {
   const { _ } = useLingui();
-  const [createdKey, setCreatedKey] =
-    useState<ApiKeyCreatedResponse | null>(null);
+  const [createdKey, setCreatedKey] = useState<ApiKeyCreatedResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const form = useZodForm(createApiKeyFormSchema(_), {

@@ -14,7 +14,15 @@ type Story = StoryObj<typeof MenuSeparator>;
 
 export const Primary: Story = {
   render: () => (
-    <div style={{ width: 200, border: "1px solid var(--ao-border-secondary)", borderRadius: "var(--ao-radius-md)", overflow: "hidden", padding: 4 }}>
+    <div
+      style={{
+        width: 200,
+        border: "1px solid var(--ao-border-color-light)",
+        borderRadius: "var(--ao-radius-md)",
+        overflow: "hidden",
+        padding: 4,
+      }}
+    >
       <MenuItem label="Profile" onClick={fn()} />
       <MenuSeparator />
       <MenuItem label="Sign Out" variant="danger" onClick={fn()} />

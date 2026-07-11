@@ -1,11 +1,7 @@
 import { useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import {
-  isAuthenticatedAtom,
-  currentUserAtom,
-  authTokenAtom,
-} from "@/infrastructure/state";
+import { isAuthenticatedAtom, currentUserAtom, authTokenAtom } from "@/infrastructure/state";
 import { fetchMe } from "@/lib/api";
 
 /**
@@ -38,10 +34,7 @@ export function useCurrentUserLoader(): void {
       .catch((err: unknown) => {
         if (cancelled) return;
         // 401 → clear everything defensively
-        if (
-          err instanceof Error &&
-          err.message.includes("401")
-        ) {
+        if (err instanceof Error && err.message.includes("401")) {
           setToken(null);
         }
       });

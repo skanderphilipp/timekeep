@@ -29,8 +29,7 @@ export default {
     {
       name: "ui-no-module-deps",
       severity: "error",
-      comment:
-        "UI components are foundational. They must not depend on feature modules.",
+      comment: "UI components are foundational. They must not depend on feature modules.",
       from: { path: "src/components/ui" },
       to: { path: "src/modules" },
     },
@@ -61,8 +60,7 @@ export default {
     {
       name: "lib-no-ui-deps",
       severity: "error",
-      comment:
-        "lib/ must not depend on UI components. Extract shared logic into hooks/ instead.",
+      comment: "lib/ must not depend on UI components. Extract shared logic into hooks/ instead.",
       from: { path: "src/lib" },
       to: { path: "src/components" },
     },
@@ -81,8 +79,7 @@ export default {
     {
       name: "infra-no-module-deps",
       severity: "error",
-      comment:
-        "Infrastructure is cross-cutting. It must not depend on feature modules.",
+      comment: "Infrastructure is cross-cutting. It must not depend on feature modules.",
       from: { path: "src/infrastructure" },
       to: { path: "src/modules" },
     },
@@ -93,8 +90,7 @@ export default {
     {
       name: "types-no-runtime-deps",
       severity: "error",
-      comment:
-        "types/ must only contain type definitions. No runtime imports from other layers.",
+      comment: "types/ must only contain type definitions. No runtime imports from other layers.",
       from: { path: "src/types" },
       to: { path: "src/(components|modules|infrastructure|lib|hooks|testing)" },
     },
@@ -105,8 +101,7 @@ export default {
     {
       name: "hooks-no-module-deps",
       severity: "error",
-      comment:
-        "Shared hooks must not depend on feature modules. They are a bridge layer.",
+      comment: "Shared hooks must not depend on feature modules. They are a bridge layer.",
       from: { path: "src/hooks" },
       to: { path: "src/modules" },
     },
@@ -117,8 +112,7 @@ export default {
     {
       name: "no-circular",
       severity: "error",
-      comment:
-        "Circular dependencies cause hard-to-debug initialization order issues.",
+      comment: "Circular dependencies cause hard-to-debug initialization order issues.",
       from: {},
       to: { circular: true },
     },
@@ -146,8 +140,7 @@ export default {
         collapsePattern: "node_modules/(?:@[^/]+/[^/]+|[^/]+)",
       },
       archi: {
-        collapsePattern:
-          "^(?:src/[^/]+/[^/]+/)",
+        collapsePattern: "^(?:src/[^/]+/[^/]+/)",
       },
     },
   },

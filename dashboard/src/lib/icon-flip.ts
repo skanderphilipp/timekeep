@@ -9,12 +9,7 @@ import { IconChevronLeft, IconChevronRight, type Icon } from "@tabler/icons-reac
  * @param dir - Current text direction ("ltr" | "rtl")
  * @param forward - Whether this represents forward/next navigation
  */
-export function chevronForDirection(
-  dir: "ltr" | "rtl",
-  forward: boolean,
-): Icon {
+export function chevronForDirection(dir: "ltr" | "rtl", forward: boolean): Icon {
   const isLtr = dir === "ltr";
-  return (forward && isLtr) || (!forward && !isLtr)
-    ? IconChevronRight
-    : IconChevronLeft;
+  return (forward && isLtr) || (!forward && !isLtr) ? IconChevronRight : IconChevronLeft;
 }

@@ -1,8 +1,4 @@
-import type {
-  FieldDefinition,
-  FieldMetadata,
-  DirectionFieldMetadata,
-} from "../types";
+import type { FieldDefinition, FieldMetadata, DirectionFieldMetadata } from "../types";
 
 /**
  * Type guard: returns `true` if the field is a direction field (IN/OUT).

@@ -28,7 +28,7 @@
   height: 40px;
   justify-content: center;
   min-width: 20px;
-  padding: 0 4px;
+  padding: 0 var(--ao-spacing-1);
   user-select: none;
 }
 
@@ -40,6 +40,7 @@
 
 .ipInput {
   @include input-base;
+
   border-bottom-right-radius: 0;
   border-right: none;
   border-top-right-radius: 0;
@@ -47,6 +48,7 @@
 
 .portInput {
   @include input-base;
+
   border-bottom-left-radius: 0;
   border-left: none;
   border-top-left-radius: 0;

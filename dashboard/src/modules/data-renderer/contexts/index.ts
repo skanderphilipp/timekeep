@@ -13,8 +13,4 @@ export {
   useDataTableCellContext,
   type DataTableCellContextValue,
 } from "./data-table-cell-context";
-export {
-  FieldContext,
-  useFieldContext,
-  type FieldContextValue,
-} from "./field-context";
+export { FieldContext, useFieldContext, type FieldContextValue } from "./field-context";

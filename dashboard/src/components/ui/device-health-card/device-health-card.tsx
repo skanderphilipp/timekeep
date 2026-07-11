@@ -40,18 +40,10 @@ export function DeviceHealthCard({
   className,
 }: DeviceHealthCardProps) {
   const pct =
-    capacity && capacity.max > 0
-      ? Math.min(100, (capacity.current / capacity.max) * 100)
-      : null;
+    capacity && capacity.max > 0 ? Math.min(100, (capacity.current / capacity.max) * 100) : null;
 
   const barVariant =
-    pct !== null
-      ? pct >= 80
-        ? "danger"
-        : pct >= 60
-          ? "warning"
-          : "success"
-      : "default";
+    pct !== null ? (pct >= 80 ? "danger" : pct >= 60 ? "warning" : "success") : "default";
 
   return (
     <div

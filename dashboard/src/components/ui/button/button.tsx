@@ -56,9 +56,7 @@ export function Button(props: ButtonProps) {
 
   const content = (
     <>
-      {loading && (
-        <span data-slot="button-spinner" className={styles.spinner} aria-hidden="true" />
-      )}
+      {loading && <span data-slot="button-spinner" className={styles.spinner} aria-hidden="true" />}
       {!loading && icon && (
         <span data-slot="button-icon" className={styles.icon}>
           {icon}
@@ -69,7 +67,16 @@ export function Button(props: ButtonProps) {
   );
 
   if (to) {
-    const { variant: _v, size: _s, loading: _l, icon: _i, fullWidth: _f, to: _t, className: _c, ...linkProps } = props as ButtonAsLink;
+    const {
+      variant: _v,
+      size: _s,
+      loading: _l,
+      icon: _i,
+      fullWidth: _f,
+      to: _t,
+      className: _c,
+      ...linkProps
+    } = props as ButtonAsLink;
     return (
       <Link
         data-slot="button"
@@ -87,7 +94,17 @@ export function Button(props: ButtonProps) {
     );
   }
 
-  const { variant: _v, size: _s, loading: _l, icon: _i, fullWidth: _f, to: _t, className: _c, disabled: _d, ...buttonProps } = props as ButtonAsButton;
+  const {
+    variant: _v,
+    size: _s,
+    loading: _l,
+    icon: _i,
+    fullWidth: _f,
+    to: _t,
+    className: _c,
+    disabled: _d,
+    ...buttonProps
+  } = props as ButtonAsButton;
   return (
     <button
       data-slot="button"

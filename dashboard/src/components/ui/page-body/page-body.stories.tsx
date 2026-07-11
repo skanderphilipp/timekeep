@@ -17,10 +17,20 @@ export const Primary: Story = {
   render: () => (
     <PageBody>
       <Section>
-        <Card><Card.Content><Text variant="body">Content inside PageBody. Use Section for vertical rhythm and Card for visual grouping.</Text></Card.Content></Card>
+        <Card>
+          <Card.Content>
+            <Text variant="body">
+              Content inside PageBody. Use Section for vertical rhythm and Card for visual grouping.
+            </Text>
+          </Card.Content>
+        </Card>
       </Section>
       <Section>
-        <Card><Card.Content><Text variant="body">Second section below the first.</Text></Card.Content></Card>
+        <Card>
+          <Card.Content>
+            <Text variant="body">Second section below the first.</Text>
+          </Card.Content>
+        </Card>
       </Section>
     </PageBody>
   ),

@@ -32,11 +32,20 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-8)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-8)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div>
         <TabList defaultTab="active">
           <Tab id="active">Active</Tab>
-          <Tab id="archived" disabled>Archived</Tab>
+          <Tab id="archived" disabled>
+            Archived
+          </Tab>
           <TabPanel id="active">Active content.</TabPanel>
           <TabPanel id="archived">This tab is disabled.</TabPanel>
         </TabList>
@@ -67,8 +76,10 @@ export const ContextEmployeeDetail: Story = {
       <Tab id="punches">Punch History</Tab>
       <TabPanel id="overview">
         <div style={{ padding: "var(--ao-spacing-4)" }}>
-          <strong>Fatima Hassan</strong> · PIN 146<br />
-          Department: Operations · Active<br />
+          <strong>Fatima Hassan</strong> · PIN 146
+          <br />
+          Department: Operations · Active
+          <br />
           Attendance: 100% this month
         </div>
       </TabPanel>

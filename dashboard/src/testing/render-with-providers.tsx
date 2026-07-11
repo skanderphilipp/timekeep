@@ -52,10 +52,7 @@ export function createRenderWrapper(opts: WrapperOptions = {}) {
     );
   }
 
-  function renderWithProviders(
-    ui: ReactNode,
-    renderOptions?: Omit<RenderOptions, "wrapper">,
-  ) {
+  function renderWithProviders(ui: ReactNode, renderOptions?: Omit<RenderOptions, "wrapper">) {
     return render(ui, { wrapper: AllProviders, ...renderOptions });
   }
 

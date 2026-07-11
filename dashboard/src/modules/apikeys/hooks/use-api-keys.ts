@@ -1,10 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchApiKeys,
-  createApiKey,
-  revokeApiKey,
-  type CreateApiKeyRequest,
-} from "@/lib/api";
+import { fetchApiKeys, createApiKey, revokeApiKey, type CreateApiKeyRequest } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
 
 /**

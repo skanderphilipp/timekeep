@@ -12,8 +12,7 @@ import styles from "./ip-port-input.module.scss";
 const IP_PORT_REGEX =
   /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)[:\s](\d{1,5})$/;
 
-const IPV4_REGEX =
-  /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
 
 type IpPortValue = {
   ip: string;
@@ -139,7 +138,11 @@ export function IpPortInput({
       {label && (
         <label data-slot="ip-port-input-label" className={styles.label} htmlFor={inputId}>
           {label}
-          {required && <span data-slot="ip-port-input-required" className={styles.required}>*</span>}
+          {required && (
+            <span data-slot="ip-port-input-required" className={styles.required}>
+              *
+            </span>
+          )}
         </label>
       )}
 
@@ -150,10 +153,7 @@ export function IpPortInput({
           }}
           id={inputId}
           data-slot="ip-port-input-ip"
-          className={clsx(
-            styles.ipInput,
-            error && styles.ipInputError,
-          )}
+          className={clsx(styles.ipInput, error && styles.ipInputError)}
           type="text"
           inputMode="decimal"
           placeholder="192.168.1.100"
@@ -170,10 +170,7 @@ export function IpPortInput({
 
         <input
           data-slot="ip-port-input-port"
-          className={clsx(
-            styles.portInput,
-            error && styles.portInputError,
-          )}
+          className={clsx(styles.portInput, error && styles.portInputError)}
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"

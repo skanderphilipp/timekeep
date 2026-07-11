@@ -18,8 +18,12 @@ export const Primary: Story = {
       {[1, 2, 3, 4].map((i) => (
         <Card key={i}>
           <Card.Content>
-            <Text variant="body" weight="medium">Card {i}</Text>
-            <Text variant="caption" color="tertiary">Grid column content</Text>
+            <Text variant="body" weight="medium">
+              Card {i}
+            </Text>
+            <Text variant="caption" color="tertiary">
+              Grid column content
+            </Text>
           </Card.Content>
         </Card>
       ))}
@@ -33,26 +37,65 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)" }}>
       <div>
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", display: "block", marginBottom: 8 }}>2 columns</span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--ao-font-color-tertiary)",
+            display: "block",
+            marginBottom: 8,
+          }}
+        >
+          2 columns
+        </span>
         <CardGrid>
           {[1, 2].map((i) => (
-            <Card key={i}><Card.Content><Text variant="body">Item {i}</Text></Card.Content></Card>
+            <Card key={i}>
+              <Card.Content>
+                <Text variant="body">Item {i}</Text>
+              </Card.Content>
+            </Card>
           ))}
         </CardGrid>
       </div>
       <div>
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", display: "block", marginBottom: 8 }}>4 columns</span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--ao-font-color-tertiary)",
+            display: "block",
+            marginBottom: 8,
+          }}
+        >
+          4 columns
+        </span>
         <CardGrid>
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}><Card.Content><Text variant="body">Item {i}</Text></Card.Content></Card>
+            <Card key={i}>
+              <Card.Content>
+                <Text variant="body">Item {i}</Text>
+              </Card.Content>
+            </Card>
           ))}
         </CardGrid>
       </div>
       <div>
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", display: "block", marginBottom: 8 }}>3 columns (odd count)</span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--ao-font-color-tertiary)",
+            display: "block",
+            marginBottom: 8,
+          }}
+        >
+          3 columns (odd count)
+        </span>
         <CardGrid>
           {[1, 2, 3].map((i) => (
-            <Card key={i}><Card.Content><Text variant="body">Item {i}</Text></Card.Content></Card>
+            <Card key={i}>
+              <Card.Content>
+                <Text variant="body">Item {i}</Text>
+              </Card.Content>
+            </Card>
           ))}
         </CardGrid>
       </div>
@@ -65,10 +108,46 @@ export const ContextMetricCards: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <CardGrid>
-      <Card><Card.Content><Text variant="body" weight="medium">Present</Text><Text variant="body" weight="medium" color="success">42</Text></Card.Content></Card>
-      <Card><Card.Content><Text variant="body" weight="medium">Absent</Text><Text variant="body" weight="medium" color="danger">8</Text></Card.Content></Card>
-      <Card><Card.Content><Text variant="body" weight="medium">Late</Text><Text variant="body" weight="medium" color="warning">3</Text></Card.Content></Card>
-      <Card><Card.Content><Text variant="body" weight="medium">On Time</Text><Text variant="body" weight="medium" color="success">39</Text></Card.Content></Card>
+      <Card>
+        <Card.Content>
+          <Text variant="body" weight="medium">
+            Present
+          </Text>
+          <Text variant="body" weight="medium" color="success">
+            42
+          </Text>
+        </Card.Content>
+      </Card>
+      <Card>
+        <Card.Content>
+          <Text variant="body" weight="medium">
+            Absent
+          </Text>
+          <Text variant="body" weight="medium" color="danger">
+            8
+          </Text>
+        </Card.Content>
+      </Card>
+      <Card>
+        <Card.Content>
+          <Text variant="body" weight="medium">
+            Late
+          </Text>
+          <Text variant="body" weight="medium" color="warning">
+            3
+          </Text>
+        </Card.Content>
+      </Card>
+      <Card>
+        <Card.Content>
+          <Text variant="body" weight="medium">
+            On Time
+          </Text>
+          <Text variant="body" weight="medium" color="success">
+            39
+          </Text>
+        </Card.Content>
+      </Card>
     </CardGrid>
   ),
 };

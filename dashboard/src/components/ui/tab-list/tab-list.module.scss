@@ -15,7 +15,9 @@
   font-weight: var(--ao-font-weight-medium);
   margin-block-end: -1px;
   padding: var(--ao-spacing-2) var(--ao-spacing-3);
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover:not(:disabled) {
     color: var(--ao-font-color-primary);
@@ -27,7 +29,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--ao-accent-accent8);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: -2px;
   }
 }

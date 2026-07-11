@@ -6,14 +6,8 @@
  */
 
 export { themeAtom, toggleThemeAtom, type Theme } from "./atoms/theme";
-export {
-  sidebarOpenAtom,
-  sidebarCollapsedAtom,
-} from "./atoms/sidebar";
-export {
-  createFilterAtoms,
-  type FilterAtoms,
-} from "./atoms/filter";
+export { sidebarOpenAtom, sidebarCollapsedAtom } from "./atoms/sidebar";
+export { createFilterAtoms, type FilterAtoms } from "./atoms/filter";
 export {
   authTokenAtom,
   isAuthenticatedAtom,
@@ -25,11 +19,7 @@ export {
   isViewerAtom,
   hasPermissionAtom,
 } from "./atoms/auth";
-export {
-  endpointsAtom,
-  systemSettingsAtom,
-  settingsLoadedAtom,
-} from "./atoms/settings";
+export { endpointsAtom, systemSettingsAtom, settingsLoadedAtom } from "./atoms/settings";
 export {
   sidePanelOpenAtom,
   sidePanelTitleAtom,

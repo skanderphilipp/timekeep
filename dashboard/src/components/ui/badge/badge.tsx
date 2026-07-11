@@ -13,12 +13,7 @@ type BadgeProps = {
   className?: string;
 };
 
-export function Badge({
-  variant = "neutral",
-  size = "sm",
-  children,
-  className,
-}: BadgeProps) {
+export function Badge({ variant = "neutral", size = "sm", children, className }: BadgeProps) {
   return (
     <span
       data-slot="badge"

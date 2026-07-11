@@ -13,7 +13,10 @@ export default meta;
 type Story = StoryObj<typeof PageHeader>;
 
 export const Primary: Story = {
-  args: { title: "Devices", description: "Manage ZKTeco biometric scanners and attendance terminals." },
+  args: {
+    title: "Devices",
+    description: "Manage ZKTeco biometric scanners and attendance terminals.",
+  },
 };
 
 export const AllVariants: Story = {
@@ -22,7 +25,10 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-8)" }}>
       <PageHeader title="Simple Title" />
-      <PageHeader title="With Description" description="This page shows attendance data for the selected period." />
+      <PageHeader
+        title="With Description"
+        description="This page shows attendance data for the selected period."
+      />
       <PageHeader
         title="With Actions"
         description="Manage dashboard users, roles, and passwords."

@@ -1,14 +1,14 @@
 .tag {
   align-items: center;
   border: 1px solid transparent;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: inline-flex;
   font-family: var(--ao-font-family);
   font-size: var(--ao-font-size-xs);
   font-weight: var(--ao-font-weight-regular);
   gap: var(--ao-spacing-1);
   line-height: 1;
-  padding: 2px var(--ao-spacing-1_5);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1_5);
   white-space: nowrap;
 }
 
@@ -127,7 +127,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   color: inherit;
   cursor: pointer;
   display: flex;

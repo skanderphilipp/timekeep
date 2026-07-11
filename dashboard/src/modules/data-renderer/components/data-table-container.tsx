@@ -4,10 +4,16 @@ import { DataTableFooter } from "./data-table-footer";
 import { createCellRenderer } from "./data-table-cell";
 import { useTableSort } from "../hooks/use-table-sort";
 import { useTableFilter } from "../hooks/use-table-filter";
-import { useTableInstanceId } from "../hooks/use-cell-click-handler";
-import { useCellClickHandler } from "../hooks/use-cell-click-handler";
+import { useTableInstanceId, useCellClickHandler } from "../hooks/use-cell-click-handler";
 import { useInfiniteScrollSentinel } from "../hooks/use-infinite-scroll-sentinel";
-import { DataTable, Spinner, Text, PageError, type DataTableColumn } from "@/components/ui";
+import {
+  DataTable,
+  InfiniteScrollSentinel,
+  Spinner,
+  Text,
+  PageError,
+  type DataTableColumn,
+} from "@/components/ui";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import type { ColumnDefinition, FieldMetadata, EntityType, PaginationState } from "../types";
@@ -79,11 +85,17 @@ export function DataTableContainer<T extends Record<string, unknown>>({
       const col = columns.find((c) => c.id === columnId);
       if (!col) return;
       switch (col.type) {
-        case "device_sn": handleCellClick("device", recordId); break;
-        case "user_pin": handleCellClick("user", recordId); break;
+        case "device_sn":
+          handleCellClick("device", recordId);
+          break;
+        case "user_pin":
+          handleCellClick("user", recordId);
+          break;
         // For all other column types (timestamp, status, verify_method, etc.),
         // clicking opens the parent entity type's detail (e.g., punch detail).
-        default: handleCellClick(entityType, recordId); break;
+        default:
+          handleCellClick(entityType, recordId);
+          break;
       }
     },
     [columns, handleCellClick, entityType],
@@ -94,14 +106,16 @@ export function DataTableContainer<T extends Record<string, unknown>>({
     () =>
       columns
         .filter((col) => col.isVisible !== false)
-        .map((col): DataTableColumn<T> => ({
-          id: col.id,
-          header: col.header,
-          sortable: col.metadata?.isSortable ?? false,
-          width: col.width,
-          cellClassName: col.cellClassName,
-          cell: createCellRenderer(col, onCellClick, getRowKey),
-        })),
+        .map(
+          (col): DataTableColumn<T> => ({
+            id: col.id,
+            header: col.header,
+            sortable: col.metadata?.isSortable ?? false,
+            width: col.width,
+            cellClassName: col.cellClassName,
+            cell: createCellRenderer(col, onCellClick, getRowKey),
+          }),
+        ),
     [columns, onCellClick, getRowKey],
   );
 
@@ -159,21 +173,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
       )}
 
       {infiniteScroll && (
-        /**
-         * TODO(ENTERPRISE): Extract infinite scroll sentinel to a UI component.
-         * Phase: Data table polish
-         * Impact: Uses raw div for IntersectionObserver ref — no existing UI primitive.
-         * Fix: Create InfiniteScrollSentinel in components/ui/ that accepts ref + children.
-         */
-        <div
-          ref={sentinelRef}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            padding: "16px",
-            borderTop: "1px solid var(--ao-border-color-light)",
-          }}
-        >
+        <InfiniteScrollSentinel ref={sentinelRef}>
           {infiniteScroll.isFetchingNextPage ? (
             <Spinner />
           ) : infiniteScroll.hasNextPage ? (
@@ -185,7 +185,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
               {_(msg`All records loaded`)}
             </Text>
           ) : null}
-        </div>
+        </InfiniteScrollSentinel>
       )}
     </DataTableContext.Provider>
   );

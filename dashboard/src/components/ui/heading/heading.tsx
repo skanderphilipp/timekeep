@@ -40,7 +40,13 @@ export function Heading({
       data-slot="heading"
       data-level={level}
       data-color={color}
-      className={clsx(styles.heading, styles[level], styles[color], icon && styles.withIcon, className)}
+      className={clsx(
+        styles.heading,
+        styles[level],
+        styles[color],
+        icon && styles.withIcon,
+        className,
+      )}
       style={style}
     >
       {icon}

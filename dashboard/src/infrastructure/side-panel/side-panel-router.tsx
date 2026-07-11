@@ -48,9 +48,7 @@ function SidePanelEntityRenderer({
       // Fallback for entities without a dedicated detail view yet
       return (
         <div style={{ padding: "16px" }}>
-          <p>
-            {_(msg`${entry.entityType} detail: ${entry.entityId}`)}
-          </p>
+          <p>{_(msg`${entry.entityType} detail: ${entry.entityId}`)}</p>
         </div>
       );
     default:

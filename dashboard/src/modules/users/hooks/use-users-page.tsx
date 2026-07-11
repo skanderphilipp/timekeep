@@ -10,9 +10,12 @@ import type { DashboardUser } from "@/lib/api";
 
 function roleVariant(role: string): "success" | "warning" | "neutral" {
   switch (role) {
-    case "admin": return "success";
-    case "operator": return "warning";
-    default: return "neutral";
+    case "admin":
+      return "success";
+    case "operator":
+      return "warning";
+    default:
+      return "neutral";
   }
 }
 
@@ -71,23 +74,50 @@ export function useUsersPage() {
   const columns: DataTableColumn<DashboardUser, string>[] = useMemo(
     () => [
       { id: "username", header: _(msg`Username`), accessor: (u) => u.username, sortable: true },
-      { id: "display_name", header: _(msg`Display Name`), accessor: (u) => u.display_name || "—", sortable: true },
-      { id: "role", header: _(msg`Role`), accessor: (u) => u.role, cell: (u) => <Badge variant={roleVariant(u.role)}>{u.role}</Badge> },
       {
-        id: "active", header: _(msg`Status`), accessor: (u) => (u.active ? "active" : "inactive"),
-        cell: (u) => <Badge variant={u.active ? "success" : "neutral"}>{u.active ? _(msg`Active`) : _(msg`Inactive`)}</Badge>,
+        id: "display_name",
+        header: _(msg`Display Name`),
+        accessor: (u) => u.display_name || "—",
+        sortable: true,
       },
       {
-        id: "actions", header: _(msg`Actions`), accessor: () => "",
+        id: "role",
+        header: _(msg`Role`),
+        accessor: (u) => u.role,
+        cell: (u) => <Badge variant={roleVariant(u.role)}>{u.role}</Badge>,
+      },
+      {
+        id: "active",
+        header: _(msg`Status`),
+        accessor: (u) => (u.active ? "active" : "inactive"),
+        cell: (u) => (
+          <Badge variant={u.active ? "success" : "neutral"}>
+            {u.active ? _(msg`Active`) : _(msg`Inactive`)}
+          </Badge>
+        ),
+      },
+      {
+        id: "actions",
+        header: _(msg`Actions`),
+        accessor: () => "",
         cell: (u) => (
           <ActionGroup>
             <IconButton size="sm" aria-label={_(msg`Edit`)} onClick={() => handleEdit(u)}>
               <IconPencil size={14} />
             </IconButton>
-            <IconButton size="sm" aria-label={_(msg`Change password`)} onClick={() => setPasswordUser(u)}>
+            <IconButton
+              size="sm"
+              aria-label={_(msg`Change password`)}
+              onClick={() => setPasswordUser(u)}
+            >
               <IconKey size={14} />
             </IconButton>
-            <IconButton size="sm" accent="tertiary" aria-label={_(msg`Delete`)} onClick={() => setDeletingUser(u)}>
+            <IconButton
+              size="sm"
+              accent="tertiary"
+              aria-label={_(msg`Delete`)}
+              onClick={() => setDeletingUser(u)}
+            >
               <IconTrash size={14} />
             </IconButton>
           </ActionGroup>

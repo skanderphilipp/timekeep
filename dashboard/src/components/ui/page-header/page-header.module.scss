@@ -12,7 +12,7 @@
   align-items: flex-start;
   gap: var(--ao-spacing-4);
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     flex-direction: column;
     gap: var(--ao-spacing-3);
   }
@@ -25,7 +25,7 @@
 .actions {
   flex-shrink: 0;
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     width: 100%;
 
     > * {

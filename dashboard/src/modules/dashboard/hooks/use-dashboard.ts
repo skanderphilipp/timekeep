@@ -34,9 +34,7 @@ export function useDashboard() {
     enabled: !!query.data,
   });
 
-  const secondsSinceUpdate = lastUpdated
-    ? Math.floor((Date.now() - lastUpdated) / 1000)
-    : null;
+  const secondsSinceUpdate = lastUpdated ? Math.floor((Date.now() - lastUpdated) / 1000) : null;
 
   return {
     ...query,

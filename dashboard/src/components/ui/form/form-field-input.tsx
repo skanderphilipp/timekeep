@@ -34,13 +34,7 @@ import { FormFieldPassword } from "@/components/ui/form/fields/form-field-passwo
  * />
  * ```
  */
-export function FormFieldInput({
-  field,
-  form,
-}: {
-  field: FormFieldDef;
-  form: UseFormReturn<any>;
-}) {
+export function FormFieldInput({ field, form }: { field: FormFieldDef; form: UseFormReturn<any> }) {
   const inputId = useId();
 
   switch (field.type) {

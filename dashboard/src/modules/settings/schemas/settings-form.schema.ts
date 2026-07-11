@@ -21,21 +21,13 @@ export function createSystemSettingsSchema(_: I18n["_"]) {
   return z.object({
     poll_interval_secs: z
       .number()
-      .min(
-        MIN_POLL_INTERVAL_SECS,
-        _(msg`Minimum ${MIN_POLL_INTERVAL_SECS} seconds`),
-      )
-      .max(
-        MAX_POLL_INTERVAL_SECS,
-        _(msg`Maximum ${MAX_POLL_INTERVAL_SECS} seconds`),
-      ),
+      .min(MIN_POLL_INTERVAL_SECS, _(msg`Minimum ${MIN_POLL_INTERVAL_SECS} seconds`))
+      .max(MAX_POLL_INTERVAL_SECS, _(msg`Maximum ${MAX_POLL_INTERVAL_SECS} seconds`)),
     auto_discover: z.boolean(),
   });
 }
 
-export type SystemSettingsFormValues = z.infer<
-  ReturnType<typeof createSystemSettingsSchema>
->;
+export type SystemSettingsFormValues = z.infer<ReturnType<typeof createSystemSettingsSchema>>;
 
 // ── Form schema definition ─────────────────────────────────────────────────────
 
@@ -55,9 +47,7 @@ export function createSystemSettingsFormDef(_: I18n["_"]) {
       },
       auto_discover: {
         label: _(msg`Auto-discover devices`),
-        description: _(
-          msg`Periodically scan the local network for new ZKTeco scanners.`,
-        ),
+        description: _(msg`Periodically scan the local network for new ZKTeco scanners.`),
         section: "polling",
       },
     },
@@ -65,9 +55,7 @@ export function createSystemSettingsFormDef(_: I18n["_"]) {
       {
         key: "polling",
         title: _(msg`Device Polling`),
-        description: _(
-          msg`Control how the server reads attendance data from connected scanners.`,
-        ),
+        description: _(msg`Control how the server reads attendance data from connected scanners.`),
       },
     ],
   } satisfies FormSchemaDefinition;

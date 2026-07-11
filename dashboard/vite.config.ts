@@ -21,10 +21,10 @@ export default defineConfig(({ command }) => {
     ],
     resolve: {
       alias: {
-              "@": path.resolve(__dirname, "./src"),
-              "@shared": path.resolve(__dirname, "../shared"),
-              "@assets": path.resolve(__dirname, "./src/components/reaktly-ui/assets"),
-            },
+        "@": path.resolve(__dirname, "./src"),
+        "@shared": path.resolve(__dirname, "../shared"),
+        "@assets": path.resolve(__dirname, "./src/components/reaktly-ui/assets"),
+      },
     },
     css: {
       modules: { localsConvention: "camelCaseOnly" },
@@ -40,7 +40,8 @@ export default defineConfig(({ command }) => {
       },
     },
     build: {
-      outDir: "dist", sourcemap: isDev,
+      outDir: "dist",
+      sourcemap: isDev,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -53,10 +54,11 @@ export default defineConfig(({ command }) => {
       },
     },
     test: {
-          globals: true, environment: "jsdom",
-          setupFiles: ["./vitest.setup.ts"],
-          css: { modules: { classNameStrategy: "non-scoped" } },
-          exclude: ["e2e/**", "node_modules/**", "dist/**"],
-        },
+      globals: true,
+      environment: "jsdom",
+      setupFiles: ["./vitest.setup.ts"],
+      css: { modules: { classNameStrategy: "non-scoped" } },
+      exclude: ["e2e/**", "node_modules/**", "dist/**"],
+    },
   };
 });

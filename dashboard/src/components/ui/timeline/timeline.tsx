@@ -58,13 +58,7 @@ type TimelineProps = {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function TimelineHeader({
-  label,
-  markers,
-}: {
-  label: string;
-  markers: string[];
-}) {
+function TimelineHeader({ label, markers }: { label: string; markers: string[] }) {
   return (
     <div data-slot="timeline-header" className={styles.header}>
       <span data-slot="timeline-header-label" className={styles.headerLabel}>
@@ -81,12 +75,9 @@ function TimelineHeader({
   );
 }
 
-function TimelineRow({
-  name,
-  subLabel,
-  blocks,
-  onClick,
-}: TimelineRowData) {
+type TimelineRowProps = TimelineRowData;
+
+function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowProps) {
   const isClickable = !!onClick;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -133,7 +124,7 @@ function TimelineSkeleton({ height = 200 }: { height?: number }) {
       style={{
         height: `${height}px`,
         background: "var(--ao-background-tertiary)",
-        borderRadius: "var(--ao-border-radius-md)",
+        borderRadius: "var(--ao-radius-md)",
       }}
     />
   );

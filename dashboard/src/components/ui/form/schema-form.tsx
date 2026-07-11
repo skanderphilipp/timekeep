@@ -83,17 +83,9 @@ export function SchemaForm({ formSchema, form, fieldOverrides }: SchemaFormProps
         if (!fields || fields.length === 0) return null;
 
         return (
-          <FormSection
-            key={section.key}
-            title={section.title}
-            description={section.description}
-          >
+          <FormSection key={section.key} title={section.title} description={section.description}>
             {fields.map((field) => (
-              <FormFieldInput
-                key={resolveFieldName(field)}
-                field={field}
-                form={form}
-              />
+              <FormFieldInput key={resolveFieldName(field)} field={field} form={form} />
             ))}
           </FormSection>
         );

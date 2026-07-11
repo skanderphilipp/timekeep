@@ -16,9 +16,7 @@ import type { ExpiryValue } from "@/components/ui/expiry-picker";
  */
 export function createApiKeyFormSchema(_: I18n["_"]) {
   return z.object({
-    name: z
-      .string({ message: _(msg`Name is required`) })
-      .min(1, _(msg`Name is required`)),
+    name: z.string({ message: _(msg`Name is required`) }).min(1, _(msg`Name is required`)),
     permissions: z.array(z.string()).default(["read:punches"]),
     expiry: z
       .object({
@@ -29,9 +27,7 @@ export function createApiKeyFormSchema(_: I18n["_"]) {
   });
 }
 
-export type ApiKeyFormValues = z.infer<
-  ReturnType<typeof createApiKeyFormSchema>
->;
+export type ApiKeyFormValues = z.infer<ReturnType<typeof createApiKeyFormSchema>>;
 
 // ── Form schema definition (Zod + UI metadata + sections) ──────────────────────
 

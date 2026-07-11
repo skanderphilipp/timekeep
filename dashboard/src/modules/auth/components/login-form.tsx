@@ -67,9 +67,7 @@ export function LoginForm() {
           AO
         </Text>
 
-        <Heading level="h1">
-          {_(msg`Sign in to timekeep`)}
-        </Heading>
+        <Heading level="h1">{_(msg`Sign in to timekeep`)}</Heading>
 
         <Text variant="caption" color="tertiary">
           {_(msg`Enter your credentials to access the dashboard`)}

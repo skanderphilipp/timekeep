@@ -16,12 +16,7 @@ type FormProps = {
  */
 export function Form({ children, className, ...props }: FormProps) {
   return (
-    <form
-      data-slot="form"
-      className={clsx(styles.form, className)}
-      noValidate
-      {...props}
-    >
+    <form data-slot="form" className={clsx(styles.form, className)} noValidate {...props}>
       {children}
     </form>
   );

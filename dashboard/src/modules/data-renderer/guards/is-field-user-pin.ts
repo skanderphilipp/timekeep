@@ -1,8 +1,4 @@
-import type {
-  FieldDefinition,
-  FieldMetadata,
-  UserPinFieldMetadata,
-} from "../types";
+import type { FieldDefinition, FieldMetadata, UserPinFieldMetadata } from "../types";
 
 /**
  * Type guard: returns `true` if the field is a user PIN field.

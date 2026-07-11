@@ -14,7 +14,7 @@
 }
 
 .headerDay {
-  color: var(--ao-font-color-light);
+  color: var(--ao-font-color-tertiary);
   display: flex;
   font-size: var(--ao-font-size-sm);
   height: 24px;
@@ -27,7 +27,7 @@
 
 .body {
   border: 1px solid var(--ao-border-color-light);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -61,7 +61,7 @@
 
 .otherMonth {
   background: var(--ao-background-secondary);
-  color: var(--ao-font-color-light);
+  color: var(--ao-font-color-tertiary);
 }
 
 .weekend {
@@ -82,7 +82,7 @@
 
 .dayNumber {
   align-items: center;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-primary);
   display: flex;
   font-size: var(--ao-font-size-sm);
@@ -96,7 +96,7 @@
 
 .today {
   background: var(--ao-color-blue9);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-inverted);
   font-weight: var(--ao-font-weight-medium);
 }

@@ -5,14 +5,7 @@
  * implementation. Uses base-ui's built-in positioning (Positioner) for
  * reliable placement, collision detection, and stacking context.
  */
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
@@ -64,10 +57,7 @@ export function Dropdown({
 
   const close = useCallback(() => setOpen(false), []);
 
-  const id = useMemo(
-    () => `dropdown-${++dropdownCounter}`,
-    [],
-  );
+  const id = useMemo(() => `dropdown-${++dropdownCounter}`, []);
 
   const ctxValue = useMemo<DropdownContextType>(
     () => ({ open, close, dropdownId: id }),
@@ -108,9 +98,7 @@ export function Dropdown({
                     />
                   }
                 >
-                  <MenuCloseContext.Provider value={close}>
-                    {children}
-                  </MenuCloseContext.Provider>
+                  <MenuCloseContext.Provider value={close}>{children}</MenuCloseContext.Provider>
                 </Popover.Popup>
               </Popover.Positioner>
             </Popover.Portal>

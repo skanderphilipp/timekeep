@@ -31,7 +31,15 @@
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ao-color-green9) 40%, transparent); }
-  70% { box-shadow: 0 0 0 4px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ao-color-green9) 40%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 4px transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
 }

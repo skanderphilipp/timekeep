@@ -40,25 +40,20 @@ export function PageError({ message, onRetry, icon }: PageErrorProps) {
   return (
     <Section>
       <div data-slot="page-error" className={styles.container} role="alert">
-        <div className={styles.iconWrapper}>
-          {icon ?? <IconServerOff size={48} stroke={1.5} />}
-        </div>
+        <div className={styles.iconWrapper}>{icon ?? <IconServerOff size={48} stroke={1.5} />}</div>
 
-        <h3 className={styles.title}>
-          {_(msg`Server Unreachable`)}
-        </h3>
+        <h3 className={styles.title}>{_(msg`Server Unreachable`)}</h3>
 
         <p className={styles.description}>
-          {message ?? _(msg`Could not connect to the timekeep server. Check that the backend is running and try again.`)}
+          {message ??
+            _(
+              msg`Could not connect to the timekeep server. Check that the backend is running and try again.`,
+            )}
         </p>
 
         {onRetry && (
           <div className={styles.action}>
-            <Button
-              variant="secondary"
-              icon={<IconRefresh size={16} />}
-              onClick={onRetry}
-            >
+            <Button variant="secondary" icon={<IconRefresh size={16} />} onClick={onRetry}>
               {_(msg`Retry`)}
             </Button>
           </div>

@@ -8,13 +8,9 @@ import styles from "./tag.module.scss";
 /**
  * Color palette for tags, mapped to our semantic status colors.
  */
-export type TagColor =
-  | "gray"
-  | "red"
-  | "green"
-  | "amber"
-  | "blue"
-  | "accent";
+import type { StatusColor } from "@/types/status-color";
+
+export type TagColor = StatusColor;
 
 export type TagVariant = "solid" | "outline";
 export type TagWeight = "regular" | "medium";

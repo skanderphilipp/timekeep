@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+
+import { createRenderWrapper } from "@/testing/render-with-providers";
 import { VerifyMethodFieldDisplay } from "./verify-method-field-display";
+
+const { render } = createRenderWrapper();
 
 describe("VerifyMethodFieldDisplay", () => {
   it("renders fingerprint with green tag", () => {
@@ -36,22 +40,14 @@ describe("VerifyMethodFieldDisplay", () => {
 
   it("uses custom labels when provided", () => {
     render(
-      <VerifyMethodFieldDisplay
-        value="fingerprint"
-        labels={{ fingerprint: "Finger Scan" }}
-      />,
+      <VerifyMethodFieldDisplay value="fingerprint" labels={{ fingerprint: "Finger Scan" }} />,
     );
     expect(screen.getByText("Finger Scan")).toBeInTheDocument();
     expect(screen.queryByText("Fingerprint")).toBeNull();
   });
 
   it("uses custom colors when provided", () => {
-    render(
-      <VerifyMethodFieldDisplay
-        value="fingerprint"
-        colors={{ fingerprint: "red" }}
-      />,
-    );
+    render(<VerifyMethodFieldDisplay value="fingerprint" colors={{ fingerprint: "red" }} />);
     // Color is applied via Tag component; verify it renders
     expect(screen.getByText("Fingerprint")).toBeInTheDocument();
   });
@@ -63,9 +59,10 @@ describe("VerifyMethodFieldDisplay", () => {
   });
 
   it("handles empty value gracefully", () => {
-    render(<VerifyMethodFieldDisplay value="" />);
-    // Renders the empty string (Tag will handle it)
-    const tag = screen.getByText("");
+    const { container } = render(<VerifyMethodFieldDisplay value="" />);
+    // Renders an empty tag (Tag will handle it)
+    const tag = container.querySelector('[data-slot="tag"]');
     expect(tag).toBeInTheDocument();
+    expect(tag).toHaveTextContent("");
   });
 });

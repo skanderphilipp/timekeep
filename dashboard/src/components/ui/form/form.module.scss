@@ -48,7 +48,7 @@
   gap: var(--ao-spacing-3);
   padding-block-start: var(--ao-spacing-4);
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     flex-direction: column;
     width: 100%;
 

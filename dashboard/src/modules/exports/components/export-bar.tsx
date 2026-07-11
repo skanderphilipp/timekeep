@@ -51,26 +51,29 @@ export function ExportBar({
   const toast = useToast();
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
-  const reportLabels = useMemo<ReportLabels>(() => ({
-    title: _(msg`Attendance Punch Report`),
-    generated: _(msg`Generated: `),
-    from: _(msg`From: `),
-    to: _(msg`To: `),
-    totalPunches: _(msg`Total Punches`),
-    uniqueUsers: _(msg`Unique Users`),
-    checkIns: _(msg`Check Ins`),
-    date: _(msg`Date`),
-    time: _(msg`Time`),
-    userPin: _(msg`User PIN`),
-    employee: _(msg`Employee`),
-    deviceSn: _(msg`Device SN`),
-    status: _(msg`Status`),
-    verify: _(msg`Verify`),
-    workCode: _(msg`Work Code`),
-    confidential: _(msg`timekeep — Confidential`),
-    page: _(msg`Page`),
-    of: _(msg`of`),
-  }), [_]);
+  const reportLabels = useMemo<ReportLabels>(
+    () => ({
+      title: _(msg`Attendance Punch Report`),
+      generated: _(msg`Generated: `),
+      from: _(msg`From: `),
+      to: _(msg`To: `),
+      totalPunches: _(msg`Total Punches`),
+      uniqueUsers: _(msg`Unique Users`),
+      checkIns: _(msg`Check Ins`),
+      date: _(msg`Date`),
+      time: _(msg`Time`),
+      userPin: _(msg`User PIN`),
+      employee: _(msg`Employee`),
+      deviceSn: _(msg`Device SN`),
+      status: _(msg`Status`),
+      verify: _(msg`Verify`),
+      workCode: _(msg`Work Code`),
+      confidential: _(msg`timekeep — Confidential`),
+      page: _(msg`Page`),
+      of: _(msg`of`),
+    }),
+    [_],
+  );
 
   const locale = useMemo(() => {
     if (typeof navigator !== "undefined" && navigator.language) {
@@ -149,6 +152,7 @@ export function ExportBar({
         {_(msg`Excel`)}
       </Button>
 
+      {/* oxlint-disable-next-line bentech/no-raw-html-elements -- decorative divider, not text */}
       <span data-slot="export-bar-spacer" className={styles.spacer} aria-hidden="true" />
 
       <Button

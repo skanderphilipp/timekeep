@@ -17,7 +17,11 @@ type HourlyArrivalsChartProps = {
  * Uses the `hourly_breakdown` array from `TodaySummary` — no separate API call.
  * Shows check-in counts grouped by hour of day.
  */
-export function HourlyArrivalsChart({ hourlyBreakdown, isLoading, error }: HourlyArrivalsChartProps) {
+export function HourlyArrivalsChart({
+  hourlyBreakdown,
+  isLoading,
+  error,
+}: HourlyArrivalsChartProps) {
   const { _ } = useLingui();
 
   const chartData = useMemo(() => {

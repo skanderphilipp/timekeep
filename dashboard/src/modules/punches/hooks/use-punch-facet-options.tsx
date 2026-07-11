@@ -12,8 +12,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { fetchPunchFilters, type FacetFilterParams, type FacetOption } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
-import { Text } from "@/components/ui";
-import type { ComboboxOption } from "@/components/ui";
+import { Text, type ComboboxOption } from "@/components/ui";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,7 +25,9 @@ function facetToOption(opt: FacetOption): ComboboxOption {
     label: opt.label || opt.value,
     suffix:
       opt.count !== undefined && opt.count !== null ? (
-        <Text as="span" variant="caption" color="tertiary">{opt.count}</Text>
+        <Text as="span" variant="caption" color="tertiary">
+          {opt.count}
+        </Text>
       ) : undefined,
   };
 }
@@ -43,9 +44,7 @@ type UsePunchFacetOptionsReturn = {
   resetEmployeeSearch: () => void;
 };
 
-export function usePunchFacetOptions(
-  context: FacetFilterParams = {},
-): UsePunchFacetOptionsReturn {
+export function usePunchFacetOptions(context: FacetFilterParams = {}): UsePunchFacetOptionsReturn {
   const { _ } = useLingui();
 
   // ── Device options (load once, contextual counts per active filters) ─────
@@ -73,10 +72,7 @@ export function usePunchFacetOptions(
 
   const [employeeQuery, setEmployeeQuery] = useState("");
 
-  const debouncedSetQuery = useDebouncedCallback(
-    (q: string) => setEmployeeQuery(q),
-    DEBOUNCE_MS,
-  );
+  const debouncedSetQuery = useDebouncedCallback((q: string) => setEmployeeQuery(q), DEBOUNCE_MS);
 
   const { data: employeeGroup, isFetching: employeesLoading } = useQuery({
     queryKey: QueryKeys.punches.filters({

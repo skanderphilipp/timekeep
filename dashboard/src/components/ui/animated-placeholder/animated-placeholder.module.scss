@@ -12,7 +12,7 @@
 .iconWrapper {
   align-items: center;
   background-color: var(--ao-background-secondary);
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   display: flex;
   height: 80px;
   justify-content: center;
@@ -44,6 +44,7 @@
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-4px);
   }

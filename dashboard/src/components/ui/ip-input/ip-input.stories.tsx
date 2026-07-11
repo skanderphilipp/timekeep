@@ -19,9 +19,22 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 300 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 300,
+      }}
+    >
       <IpInput label="IP Address" defaultValue="192.168.1.100" onChange={fn()} />
-      <IpInput label="IP Address (error)" error="Invalid IP address" defaultValue="999.999.999.999" onChange={fn()} />
+      <IpInput
+        label="IP Address (error)"
+        error="Invalid IP address"
+        defaultValue="999.999.999.999"
+        onChange={fn()}
+      />
       <IpInput label="IP Address (disabled)" defaultValue="10.0.0.1" disabled onChange={fn()} />
     </div>
   ),

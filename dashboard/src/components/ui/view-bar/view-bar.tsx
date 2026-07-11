@@ -66,10 +66,7 @@ function ViewTypeSwitcher({
           key={type}
           type="button"
           data-active={type === active ? "" : undefined}
-          className={clsx(
-            styles.switcherButton,
-            type === active && styles.switcherActive,
-          )}
+          className={clsx(styles.switcherButton, type === active && styles.switcherActive)}
           onClick={() => onChange(type)}
         >
           {labels[type]}
@@ -130,9 +127,7 @@ function ChipRow({
           ))}
 
         {/* Separator between sort and filter chips */}
-        {hasSorts && hasFilters && (
-          <span className={styles.separator} />
-        )}
+        {hasSorts && hasFilters && <span className={styles.separator} />}
 
         {/* Filter chips */}
         {hasFilters &&
@@ -191,8 +186,7 @@ export function ViewBar({
   className,
 }: ViewBarProps) {
   const { _ } = useLingui();
-  const hasChips =
-    (filters && filters.length > 0) || (sorts && sorts.length > 0);
+  const hasChips = (filters && filters.length > 0) || (sorts && sorts.length > 0);
 
   const viewTypeLabels: Record<ViewType, string> = {
     table: _(msg`Table`),

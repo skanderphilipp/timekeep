@@ -29,7 +29,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-6)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <EmptyState
         title="No devices registered"
         description="Add your first biometric scanner to start collecting attendance data."
@@ -39,10 +46,7 @@ export const AllVariants: Story = {
         title="No punch records found"
         description="No punch records match the current filters. Try adjusting or clearing them."
       />
-      <EmptyState
-        title="No data"
-        description="No records found for the selected period."
-      />
+      <EmptyState title="No data" description="No records found for the selected period." />
     </div>
   ),
 };

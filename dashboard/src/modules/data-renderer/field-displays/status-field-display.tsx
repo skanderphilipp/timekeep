@@ -15,11 +15,7 @@ type StatusFieldDisplayProps = {
  * Status color defaults are derived from the shared punch status catalog
  * via `getPunchStatusColor()`. Override via `colors` prop.
  */
-export function StatusFieldDisplay({
-  value,
-  labels,
-  colors,
-}: StatusFieldDisplayProps) {
+export function StatusFieldDisplay({ value, labels, colors }: StatusFieldDisplayProps) {
   const label = labels?.[value] ?? value;
   const color = colors?.[value] ?? getPunchStatusColor(value);
 

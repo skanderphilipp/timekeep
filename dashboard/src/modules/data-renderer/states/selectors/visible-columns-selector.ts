@@ -14,8 +14,6 @@ export function visibleColumnsSelector<T extends FieldMetadata>(
   return atom((get) => {
     const visibilityMap = get(tableColumnVisibilityStateFamily(instanceId));
     if (visibilityMap.size === 0) return allColumns;
-    return allColumns.filter(
-      (col) => visibilityMap.get(col.id) !== false,
-    );
+    return allColumns.filter((col) => visibilityMap.get(col.id) !== false);
   });
 }

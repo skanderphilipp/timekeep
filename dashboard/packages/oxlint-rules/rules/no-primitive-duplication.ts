@@ -1,8 +1,8 @@
-import { defineRule } from '@oxlint/plugins';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { defineRule } from "@oxlint/plugins";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
-export const RULE_NAME = 'no-primitive-duplication';
+export const RULE_NAME = "no-primitive-duplication";
 
 // ── Known UI primitive fingerprints ──────────────────────────────────
 //
@@ -23,7 +23,7 @@ type PrimitivePattern = {
 
 const PRIMITIVES: PrimitivePattern[] = [
   {
-    component: 'Badge',
+    component: "Badge",
     properties: [
       /display\s*:\s*inline-flex/,
       /border-radius\s*:/,
@@ -36,7 +36,7 @@ const PRIMITIVES: PrimitivePattern[] = [
       'This looks like a Badge. Use <Badge variant="..." size="sm"> from @/components/ui/badge instead of custom styles.',
   },
   {
-    component: 'Button',
+    component: "Button",
     properties: [
       /cursor\s*:\s*pointer/,
       /border-radius\s*:/,
@@ -51,7 +51,7 @@ const PRIMITIVES: PrimitivePattern[] = [
       'This looks like a Button. Use <Button variant="ghost" size="sm"> from @/components/ui/button instead of custom styles.',
   },
   {
-    component: 'Card',
+    component: "Card",
     properties: [
       /border\s*:\s*1px\s+solid\s+var\(--ao-border/,
       /border-radius\s*:\s*var\(--ao-(?:border-)?radius/,
@@ -61,10 +61,10 @@ const PRIMITIVES: PrimitivePattern[] = [
     ],
     minMatches: 3,
     message:
-      'This looks like a Card. Use <Card><Card.Content> from @/components/ui/card instead of custom styles.',
+      "This looks like a Card. Use <Card><Card.Content> from @/components/ui/card instead of custom styles.",
   },
   {
-    component: 'Tag',
+    component: "Tag",
     properties: [
       /display\s*:\s*inline-flex/,
       /align-items\s*:\s*center/,
@@ -81,10 +81,10 @@ const PRIMITIVES: PrimitivePattern[] = [
 // ── Path checks ──────────────────────────────────────────────────────
 
 /** Files in these directories are checked for primitive duplication. */
-const CHECK_DIRS = ['src/infrastructure/', 'src/modules/'];
+const CHECK_DIRS = ["src/infrastructure/", "src/modules/"];
 
 /** Files in these directories are exempt (UI library itself). */
-const EXEMPT_DIRS = ['src/components/ui/'];
+const EXEMPT_DIRS = ["src/components/ui/"];
 
 const isCheckedFile = (filepath: string): boolean =>
   CHECK_DIRS.some((dir) => filepath.startsWith(dir)) &&
@@ -94,14 +94,14 @@ const isCheckedFile = (filepath: string): boolean =>
 
 export const rule = defineRule({
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
       description:
-        'Detects .module.scss files in infrastructure/ or modules/ that duplicate styles from components/ui/ primitives (Badge, Button, Card, Tag).',
+        "Detects .module.scss files in infrastructure/ or modules/ that duplicate styles from components/ui/ primitives (Badge, Button, Card, Tag).",
     },
     messages: {
       primitiveDuplication:
-        'This .module.scss duplicates the {{ component }} primitive from components/ui/. {{ message }}',
+        "This .module.scss duplicates the {{ component }} primitive from components/ui/. {{ message }}",
     },
     schema: [],
   },
@@ -112,7 +112,7 @@ export const rule = defineRule({
       ImportDeclaration: (node: any) => {
         const source = node.source?.value as string | undefined;
         if (!source) return;
-        if (!source.endsWith('.module.scss')) return;
+        if (!source.endsWith(".module.scss")) return;
 
         // Only check infrastructure/ and modules/
         if (!isCheckedFile(filename)) return;
@@ -124,17 +124,15 @@ export const rule = defineRule({
         if (!fs.existsSync(scssPath)) return;
 
         try {
-          const content = fs.readFileSync(scssPath, 'utf-8');
+          const content = fs.readFileSync(scssPath, "utf-8");
 
           for (const prim of PRIMITIVES) {
-            const matchCount = prim.properties.filter((re) =>
-              re.test(content),
-            ).length;
+            const matchCount = prim.properties.filter((re) => re.test(content)).length;
 
             if (matchCount >= prim.minMatches) {
               context.report({
                 node,
-                messageId: 'primitiveDuplication',
+                messageId: "primitiveDuplication",
                 data: { component: prim.component, message: prim.message },
               });
               return; // One violation per file is enough

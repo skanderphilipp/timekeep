@@ -71,11 +71,11 @@ async function bootstrap() {
                 <ThemeProvider>
                   <SidePanelCmdkHandler />
                   <ErrorBoundary>
-                      <AuthProvider>
-                        <App />
-                      </AuthProvider>
-                    </ErrorBoundary>
-                  </ThemeProvider>
+                    <AuthProvider>
+                      <App />
+                    </AuthProvider>
+                  </ErrorBoundary>
+                </ThemeProvider>
               </ToastProvider>
             </BrowserRouter>
           </I18nProvider>

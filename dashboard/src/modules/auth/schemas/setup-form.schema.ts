@@ -23,9 +23,7 @@ export function createSetupFormSchema(_: I18n["_"]) {
   });
 }
 
-export type SetupFormValues = z.infer<
-  ReturnType<typeof createSetupFormSchema>
->;
+export type SetupFormValues = z.infer<ReturnType<typeof createSetupFormSchema>>;
 
 // ── Form schema definition ─────────────────────────────────────────────────────
 

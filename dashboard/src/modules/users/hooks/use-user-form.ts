@@ -15,10 +15,7 @@ import {
   type UpdateDashboardUserRequest,
 } from "@/lib/api";
 import { useToast } from "@/infrastructure/toast/toast";
-import {
-  createUserFormSchema,
-  type UserFormValues,
-} from "../schemas/user-form.schema";
+import { createUserFormSchema, type UserFormValues } from "../schemas/user-form.schema";
 
 /**
  * Hook for the user create/edit form.
@@ -29,10 +26,7 @@ import {
  * @param existingUser — Existing user to edit, or undefined for create.
  * @param onSuccess — Called after a successful create/update (e.g., close dialog + refetch).
  */
-export function useUserForm(
-  existingUser?: DashboardUser,
-  onSuccess?: () => void,
-) {
+export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void) {
   const isEditing = !!existingUser;
   const toast = useToast();
   const { _ } = useLingui();
@@ -88,9 +82,7 @@ export function useUserForm(
     },
     onSuccess: () => {
       toast.success(
-        isEditing
-          ? _(msg`User updated successfully.`)
-          : _(msg`User created successfully.`),
+        isEditing ? _(msg`User updated successfully.`) : _(msg`User created successfully.`),
       );
       form.reset();
       onSuccess?.();

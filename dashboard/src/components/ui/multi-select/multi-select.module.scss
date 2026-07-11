@@ -4,7 +4,7 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   cursor: text;
   display: flex;
   min-height: 40px;
@@ -15,7 +15,7 @@
 
   &:focus-within {
     border-color: var(--ao-accent-accent9);
-    box-shadow: 0 0 0 2px var(--ao-accent-accent8);
+    box-shadow: 0 0 0 2px var(--ao-focus-ring);
   }
 
   &[data-popup-open] {
@@ -44,13 +44,13 @@
 .chip {
   align-items: center;
   background: var(--ao-accent-accent5);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-accent-accent11);
   display: inline-flex;
   font-size: var(--ao-font-size-xs);
   font-weight: var(--ao-font-weight-medium);
-  gap: 2px;
-  padding: 1px var(--ao-spacing-1);
+  gap: var(--ao-spacing-0_5);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   white-space: nowrap;
 
   &:has([data-disabled]) {
@@ -68,7 +68,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--ao-radius-xs);
   color: inherit;
   cursor: pointer;
   display: flex;

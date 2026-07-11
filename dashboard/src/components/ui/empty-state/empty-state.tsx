@@ -12,13 +12,7 @@ type EmptyStateProps = {
   className?: string;
 };
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div data-slot="empty-state" className={clsx(styles.container, className)}>
       <div data-slot="empty-state-icon" className={styles.icon}>
@@ -32,7 +26,11 @@ export function EmptyState({
           {description}
         </p>
       )}
-      {action && <div data-slot="empty-state-action" className={styles.action}>{action}</div>}
+      {action && (
+        <div data-slot="empty-state-action" className={styles.action}>
+          {action}
+        </div>
+      )}
     </div>
   );
 }

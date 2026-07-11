@@ -6,8 +6,7 @@ import { MIN_PORT, MAX_PORT, DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import type { FormSchemaDefinition } from "@/lib/form-field-meta";
 
 /** IPv4 address regex (no leading zeros). */
-const IPV4_REGEX =
-  /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
 
 /**
  * Creates a Zod validation schema for the device add/edit form.
@@ -44,9 +43,7 @@ export function createDeviceFormSchema(_: I18n["_"]) {
   });
 }
 
-export type DeviceFormValues = z.infer<
-  ReturnType<typeof createDeviceFormSchema>
->;
+export type DeviceFormValues = z.infer<ReturnType<typeof createDeviceFormSchema>>;
 
 // ── Form schema definition (Zod + UI metadata + sections) ────────────────────────
 

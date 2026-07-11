@@ -11,11 +11,7 @@
  *
  * Active filters shown as removable chips below.
  */
-import {
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { useState, useCallback, type ReactNode } from "react";
 import { clsx } from "clsx";
 import { IconFilter, IconX, IconArrowLeft } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
@@ -36,10 +32,7 @@ export type FilterField = {
   label: string;
   icon?: ReactNode;
   /** Renders the value selector for this field. */
-  renderValueSelector: (props: {
-    onApply: () => void;
-    onBack: () => void;
-  }) => ReactNode;
+  renderValueSelector: (props: { onApply: () => void; onBack: () => void }) => ReactNode;
 };
 
 type FilterDropdownProps = {
@@ -102,11 +95,7 @@ export function FilterDropdown({
           </button>
 
           {hasActiveFilters && onClear && (
-            <button
-              type="button"
-              className={styles.resetButton}
-              onClick={onClear}
-            >
+            <button type="button" className={styles.resetButton} onClick={onClear}>
               <IconX size={12} />
               <span>{_(msg`Reset`)}</span>
             </button>
@@ -116,7 +105,7 @@ export function FilterDropdown({
         <div className={styles.actions}>
           {resultCount !== undefined && (
             <span className={styles.count}>
-              {_((msg`{resultCount} results`) as any, { resultCount })}
+              {_(msg`{resultCount} results` as any, { resultCount })}
             </span>
           )}
           {actions}
@@ -126,20 +115,12 @@ export function FilterDropdown({
       {/* Popover */}
       {open && (
         <>
-          <div
-            className={styles.backdrop}
-            onClick={handleClose}
-            aria-hidden="true"
-          />
+          <div className={styles.backdrop} onClick={handleClose} aria-hidden="true" />
           <div className={styles.popover} role="dialog">
             {selectedField ? (
               /* Step 2: Value selector for chosen field */
               <div className={styles.valuePanel}>
-                <button
-                  type="button"
-                  className={styles.backButton}
-                  onClick={handleBack}
-                >
+                <button type="button" className={styles.backButton} onClick={handleBack}>
                   <IconArrowLeft size={14} />
                   <span>{selectedField.label}</span>
                 </button>
@@ -153,9 +134,7 @@ export function FilterDropdown({
             ) : (
               /* Step 1: Choose a field */
               <div className={styles.fieldList}>
-                <div className={styles.fieldListHeader}>
-                  {_(msg`Filter by`)}
-                </div>
+                <div className={styles.fieldListHeader}>{_(msg`Filter by`)}</div>
                 {fields.map((field) => (
                   <button
                     key={field.key}
@@ -163,9 +142,7 @@ export function FilterDropdown({
                     className={styles.fieldItem}
                     onClick={() => handleSelectField(field)}
                   >
-                    {field.icon && (
-                      <span className={styles.fieldIcon}>{field.icon}</span>
-                    )}
+                    {field.icon && <span className={styles.fieldIcon}>{field.icon}</span>}
                     <span className={styles.fieldLabel}>{field.label}</span>
                   </button>
                 ))}

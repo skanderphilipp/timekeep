@@ -43,9 +43,7 @@ export function OverflowingTextWithTooltip({
     const el = textRef.current;
     if (!el) return;
 
-    const overflowing =
-      el.scrollHeight > el.clientHeight ||
-      el.scrollWidth > el.clientWidth;
+    const overflowing = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
 
     setIsOverflowing(overflowing);
     setOpen(overflowing);
@@ -70,9 +68,7 @@ export function OverflowingTextWithTooltip({
           data-slot="overflowing-text"
           data-overflowing={isOverflowing ? "" : undefined}
           className={clsx(
-            isMultiLine
-              ? styles.overflowingMultilineText
-              : styles.overflowingText,
+            isMultiLine ? styles.overflowingMultilineText : styles.overflowingText,
             className,
           )}
           style={
@@ -87,10 +83,7 @@ export function OverflowingTextWithTooltip({
 
       <Tooltip.Portal>
         <Tooltip.Positioner side="bottom" sideOffset={5}>
-          <Tooltip.Popup
-            data-slot="overflowing-text-tooltip"
-            className={styles.tooltip}
-          >
+          <Tooltip.Popup data-slot="overflowing-text-tooltip" className={styles.tooltip}>
             {tooltipText}
           </Tooltip.Popup>
         </Tooltip.Positioner>

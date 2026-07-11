@@ -22,7 +22,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        alignItems: "center",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <CircularProgressBar size={24} barWidth={3} />
       <CircularProgressBar size={40} barWidth={4} />
       <CircularProgressBar size={60} barWidth={6} />
@@ -35,9 +42,20 @@ export const ContextPageLoader: Story = {
   name: "Context: Page Loading",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "var(--ao-spacing-16)", gap: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "var(--ao-spacing-16)",
+        gap: "var(--ao-spacing-4)",
+      }}
+    >
       <CircularProgressBar size={60} barWidth={6} barColor="var(--ao-accent-accent9)" />
-      <span style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>Loading dashboard data…</span>
+      <span style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>
+        Loading dashboard data…
+      </span>
     </div>
   ),
 };

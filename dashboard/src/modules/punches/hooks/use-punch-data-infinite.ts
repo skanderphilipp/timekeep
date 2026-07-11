@@ -12,9 +12,7 @@ import { QueryKeys } from "@/lib/query-keys";
  * Each page fetches `CURSOR_PAGE_SIZE` (20) punches. The cursor
  * from the previous page's response drives the next page request.
  */
-export function useInfinitePunchData(
-  filter: Omit<PunchFilter, "limit" | "offset" | "cursor">,
-) {
+export function useInfinitePunchData(filter: Omit<PunchFilter, "limit" | "offset" | "cursor">) {
   return useInfiniteQuery({
     queryKey: QueryKeys.punches.infinite(filter),
     queryFn: async ({ pageParam }: { pageParam: string | undefined }) => {

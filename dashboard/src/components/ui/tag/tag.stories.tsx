@@ -27,7 +27,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-3)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-3)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap" }}>
         <Tag text="Active" color="green" />
         <Tag text="Pending" color="amber" />
@@ -51,7 +58,14 @@ export const ContextEmployeeStatus: Story = {
   name: "Context: Employee Status",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-2)", alignItems: "center", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-2)",
+        alignItems: "center",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <span style={{ fontWeight: 600 }}>Ahmed Al-Sabah</span>
       <Tag text="Present" color="green" />
       <Tag text="On Time" color="blue" />

@@ -43,9 +43,7 @@ export function FormFieldNumber({
               fullWidth
               onChange={(e) => {
                 const val = e.target.value;
-                controllerField.onChange(
-                  val === "" ? "" : Number(val),
-                );
+                controllerField.onChange(val === "" ? "" : Number(val));
               }}
             />
           )}

@@ -28,9 +28,7 @@ const FieldContext = createContext<FieldContextValue | null>(null);
 export function useFieldContext(): FieldContextValue {
   const ctx = useContext(FieldContext);
   if (!ctx) {
-    throw new Error(
-      "useFieldContext must be used within a FieldContextProvider",
-    );
+    throw new Error("useFieldContext must be used within a FieldContextProvider");
   }
   return ctx;
 }

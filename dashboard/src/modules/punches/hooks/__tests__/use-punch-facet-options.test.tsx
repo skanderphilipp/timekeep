@@ -6,7 +6,7 @@ import { i18n } from "@lingui/core";
 import { messages as enMessages } from "@/locales/en";
 import type { ReactNode } from "react";
 
-import { usePunchFacetOptions } from "./use-punch-facet-options";
+import { usePunchFacetOptions } from "../use-punch-facet-options";
 
 i18n.load({ en: enMessages });
 i18n.activate("en");

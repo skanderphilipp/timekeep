@@ -15,9 +15,15 @@ type Story = StoryObj<typeof ActionGroup>;
 export const Primary: Story = {
   render: () => (
     <ActionGroup>
-      <IconButton aria-label="View"><IconEye size={16} /></IconButton>
-      <IconButton aria-label="Edit"><IconPencil size={16} /></IconButton>
-      <IconButton aria-label="Delete"><IconTrash size={16} /></IconButton>
+      <IconButton aria-label="View">
+        <IconEye size={16} />
+      </IconButton>
+      <IconButton aria-label="Edit">
+        <IconPencil size={16} />
+      </IconButton>
+      <IconButton aria-label="Delete">
+        <IconTrash size={16} />
+      </IconButton>
     </ActionGroup>
   ),
 };
@@ -26,15 +32,32 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <ActionGroup>
-        <IconButton aria-label="View"><IconEye size={16} /></IconButton>
-        <IconButton aria-label="Edit"><IconPencil size={16} /></IconButton>
+        <IconButton aria-label="View">
+          <IconEye size={16} />
+        </IconButton>
+        <IconButton aria-label="Edit">
+          <IconPencil size={16} />
+        </IconButton>
       </ActionGroup>
       <ActionGroup>
-        <IconButton aria-label="View"><IconEye size={16} /></IconButton>
-        <IconButton aria-label="Edit"><IconPencil size={16} /></IconButton>
-        <IconButton aria-label="Delete"><IconTrash size={16} /></IconButton>
+        <IconButton aria-label="View">
+          <IconEye size={16} />
+        </IconButton>
+        <IconButton aria-label="Edit">
+          <IconPencil size={16} />
+        </IconButton>
+        <IconButton aria-label="Delete">
+          <IconTrash size={16} />
+        </IconButton>
       </ActionGroup>
     </div>
   ),
@@ -45,9 +68,15 @@ export const ContextTableActions: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <ActionGroup>
-      <IconButton aria-label="View details"><IconEye size={16} /></IconButton>
-      <IconButton aria-label="Edit employee"><IconPencil size={16} /></IconButton>
-      <IconButton aria-label="Delete employee"><IconTrash size={16} /></IconButton>
+      <IconButton aria-label="View details">
+        <IconEye size={16} />
+      </IconButton>
+      <IconButton aria-label="Edit employee">
+        <IconPencil size={16} />
+      </IconButton>
+      <IconButton aria-label="Delete employee">
+        <IconTrash size={16} />
+      </IconButton>
     </ActionGroup>
   ),
 };

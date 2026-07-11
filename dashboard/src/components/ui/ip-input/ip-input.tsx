@@ -9,8 +9,7 @@ import styles from "./ip-input.module.scss";
  * Accepts values between 0.0.0.0 and 255.255.255.255.
  * Leading zeros are NOT allowed (e.g., "192.168.001.001" is rejected).
  */
-const IPV4_REGEX =
-  /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
 
 type IpInputProps = {
   /** Label text (optional — prefer FormField for labels). */
@@ -93,7 +92,11 @@ export function IpInput({
       {label && (
         <label data-slot="ip-input-label" className={styles.label} htmlFor={inputId}>
           {label}
-          {required && <span data-slot="ip-input-required" className={styles.required}>*</span>}
+          {required && (
+            <span data-slot="ip-input-required" className={styles.required}>
+              *
+            </span>
+          )}
         </label>
       )}
 
@@ -112,9 +115,7 @@ export function IpInput({
           disabled={disabled}
           required={required}
           aria-invalid={!!error}
-          aria-describedby={
-            error ? errorId : helperText ? helperId : undefined
-          }
+          aria-describedby={error ? errorId : helperText ? helperId : undefined}
           defaultValue={defaultValue}
         />
       </div>

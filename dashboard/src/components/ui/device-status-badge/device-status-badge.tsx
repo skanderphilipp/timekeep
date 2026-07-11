@@ -21,11 +21,7 @@ type DeviceStatusBadgeProps = {
  * Status definitions come from the shared catalog (`@shared/device-statuses`).
  * UI variant mapping is in `@/lib/device-status-ui`.
  */
-export function DeviceStatusBadge({
-  status,
-  pulsing = false,
-  className,
-}: DeviceStatusBadgeProps) {
+export function DeviceStatusBadge({ status, pulsing = false, className }: DeviceStatusBadgeProps) {
   const { _ } = useLingui();
   const ui = getDeviceStatusUI(status);
 
@@ -49,11 +45,7 @@ export function DeviceStatusBadge({
       <span
         data-slot="status-dot"
         data-status={ui.dotColor}
-        className={clsx(
-          styles.dot,
-          styles[`dot-${ui.dotColor}`],
-          showPulse && styles.pulsing,
-        )}
+        className={clsx(styles.dot, styles[`dot-${ui.dotColor}`], showPulse && styles.pulsing)}
         aria-hidden="true"
       />
       <span>{label}</span>

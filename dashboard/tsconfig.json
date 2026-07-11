@@ -23,9 +23,9 @@
       "@/*": ["./src/*"],
       "@shared/*": ["../shared/*"]
     },
-        "outDir": "./dist",
-        "rootDir": ".."
-      },
-      "include": ["src", "../shared"],
-  "exclude": ["node_modules", "dist", "../shared/generate-permissions.ts"],
+    "outDir": "./dist",
+    "rootDir": ".."
+  },
+  "include": ["src", "../shared"],
+  "exclude": ["node_modules", "dist", "../shared/generate-permissions.ts"]
 }

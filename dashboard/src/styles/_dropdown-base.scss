@@ -1,6 +1,5 @@
 // ── Shared Dropdown / Popup Patterns ────────────────────────────────────────
 // Used by: combobox, multi-select
-//
 // Provides the positioner, popup surface, scrollable list, selectable items,
 // item indicators, and loading/empty state rows shared between dropdown-like
 // components.
@@ -12,7 +11,7 @@
 .popup {
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-md);
+  border-radius: var(--ao-radius-md);
   box-shadow: var(--ao-shadow-md);
   max-height: var(--available-height, 320px);
   min-width: var(--anchor-width, 200px);
@@ -29,7 +28,7 @@
 
 .item {
   align-items: center;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-primary);
   cursor: pointer;
   display: flex;

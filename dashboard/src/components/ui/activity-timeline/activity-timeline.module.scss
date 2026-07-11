@@ -8,7 +8,7 @@
 
 .event {
   align-items: center;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: flex;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
@@ -42,12 +42,29 @@
 }
 
 /* Kind colors */
-.online .icon { color: var(--ao-color-green9); }
-.offline .icon { color: var(--ao-font-color-disabled); }
-.sync .icon { color: var(--ao-color-blue9); }
-.warning .icon { color: var(--ao-color-amber9); }
-.config .icon { color: var(--ao-font-color-secondary); }
-.provision .icon { color: var(--ao-accent-accent9); }
+.online .icon {
+  color: var(--ao-color-green9);
+}
+
+.offline .icon {
+  color: var(--ao-font-color-disabled);
+}
+
+.sync .icon {
+  color: var(--ao-color-blue9);
+}
+
+.warning .icon {
+  color: var(--ao-color-amber9);
+}
+
+.config .icon {
+  color: var(--ao-font-color-secondary);
+}
+
+.provision .icon {
+  color: var(--ao-accent-accent9);
+}
 
 .more {
   color: var(--ao-font-color-tertiary);
@@ -79,7 +96,7 @@
 
 .skeletonLine {
   background: var(--ao-border-color-light);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   flex: 1;
   height: 12px;
 }

@@ -1,11 +1,11 @@
 {
   "name": "@skanderphilipp/timekeep-dashboard",
-  "private": true,
-  "type": "module",
   "version": "0.1.0",
+  "private": true,
   "description": "timekeep management dashboard — React SPA with SCSS Modules, base-ui, Lingui i18n",
-  "author": "Skander Ben Abdelmalak <skander@bentech.app>",
   "license": "AGPL-3.0",
+  "author": "Skander Ben Abdelmalak <skander@bentech.app>",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:oxlint-rules && tsc -b && vite build",
@@ -30,8 +30,9 @@
     "check-size": "bash scripts/check-file-size.sh src",
     "lint:style": "stylelint \"src/**/*.scss\"",
     "lint:style:fix": "stylelint \"src/**/*.scss\" --fix",
+    "lint:tokens": "tsx scripts/check-tokens.ts",
     "check:dupes": "jscpd src --config .jscpd.json",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm depcruise && pnpm check-size && pnpm lint:style && pnpm check:dupes",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm depcruise && pnpm check-size && pnpm lint:style && pnpm lint:tokens && pnpm check:dupes",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "prepare": "husky"
@@ -86,12 +87,10 @@
     "@playwright/test": "^1.61.1",
     "@storybook/addon-a11y": "^10.5.0",
     "@storybook/addon-docs": "10.5.0",
-
     "@storybook/addon-links": "^10.5.0",
     "@storybook/addon-vitest": "^10.5.0",
     "@storybook/react": "^10.5.0",
     "@storybook/react-vite": "^10.5.0",
-
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -126,10 +125,10 @@
     "vite-plugin-svgr": "^5.2.0",
     "vitest": "^4.0.0"
   },
-  "packageManager": "pnpm@11.10.0",
   "engines": {
     "node": ">=22"
   },
+  "packageManager": "pnpm@11.10.0",
   "msw": {
     "workerDirectory": [
       "public"

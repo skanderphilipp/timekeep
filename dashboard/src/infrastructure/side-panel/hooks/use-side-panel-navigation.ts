@@ -9,7 +9,7 @@ import {
   sidePanelStackAtom,
   sidePanelActiveEntryAtom,
 } from "../side-panel-navigation-stack";
-import type { EntityType } from "@/modules/data-renderer/types";
+import type { EntityType } from "@/types/entities";
 
 /**
  * Hook for side panel navigation (push/pop/back).

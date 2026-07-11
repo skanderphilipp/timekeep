@@ -25,10 +25,35 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
-      <DeviceHealthCard icon={<IconDeviceDesktop size={20} />} value="12,000" label="Records" capacity={{ current: 12000, max: 100000 }} subtitle="12% used" />
-      <DeviceHealthCard icon={<IconDeviceDesktop size={20} />} value="65,000" label="Records" capacity={{ current: 65000, max: 100000 }} subtitle="65% used" />
-      <DeviceHealthCard icon={<IconDeviceDesktop size={20} />} value="92,000" label="Records" capacity={{ current: 92000, max: 100000 }} subtitle="92% used — Critical" />
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
+      <DeviceHealthCard
+        icon={<IconDeviceDesktop size={20} />}
+        value="12,000"
+        label="Records"
+        capacity={{ current: 12000, max: 100000 }}
+        subtitle="12% used"
+      />
+      <DeviceHealthCard
+        icon={<IconDeviceDesktop size={20} />}
+        value="65,000"
+        label="Records"
+        capacity={{ current: 65000, max: 100000 }}
+        subtitle="65% used"
+      />
+      <DeviceHealthCard
+        icon={<IconDeviceDesktop size={20} />}
+        value="92,000"
+        label="Records"
+        capacity={{ current: 92000, max: 100000 }}
+        subtitle="92% used — Critical"
+      />
     </div>
   ),
 };

@@ -12,9 +12,5 @@ export function useColumnDefinitions<T extends FieldMetadata>(
   _entityType: string,
   columns: ColumnDefinition<T>[],
 ): ColumnDefinition<T>[] {
-  return useMemo(
-    () =>
-      columns.filter((col) => col.isVisible !== false),
-    [columns],
-  );
+  return useMemo(() => columns.filter((col) => col.isVisible !== false), [columns]);
 }

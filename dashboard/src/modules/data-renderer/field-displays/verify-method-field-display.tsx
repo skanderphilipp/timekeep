@@ -27,11 +27,7 @@ const DEFAULT_COLORS: Record<string, TagColor> = {
 /**
  * Verify method field display — renders as a colored Tag.
  */
-export function VerifyMethodFieldDisplay({
-  value,
-  labels,
-  colors,
-}: VerifyMethodFieldDisplayProps) {
+export function VerifyMethodFieldDisplay({ value, labels, colors }: VerifyMethodFieldDisplayProps) {
   // Resolve label: custom override → default → raw value
   const label = (labels && labels[value]) || DEFAULT_LABELS[value] || value;
 

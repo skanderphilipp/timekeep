@@ -20,13 +20,20 @@ function formatTimeAgo(ts: number, _: (msg: MessageDescriptor) => string): strin
 
 function formatStatus(status: string, _: (msg: MessageDescriptor) => string): string {
   switch (status) {
-    case "check_in": return _(msg`Check In`);
-    case "check_out": return _(msg`Check Out`);
-    case "break_out": return _(msg`Break Out`);
-    case "break_in": return _(msg`Break In`);
-    case "overtime_in": return _(msg`OT In`);
-    case "overtime_out": return _(msg`OT Out`);
-    default: return status;
+    case "check_in":
+      return _(msg`Check In`);
+    case "check_out":
+      return _(msg`Check Out`);
+    case "break_out":
+      return _(msg`Break Out`);
+    case "break_in":
+      return _(msg`Break In`);
+    case "overtime_in":
+      return _(msg`OT In`);
+    case "overtime_out":
+      return _(msg`OT Out`);
+    default:
+      return status;
   }
 }
 
@@ -34,11 +41,15 @@ function statusBadgeVariant(status: string): "success" | "danger" | "warning" | 
   switch (status) {
     case "check_in":
     case "overtime_in":
-    case "break_in": return "success";
+    case "break_in":
+      return "success";
     case "break_out":
-    case "overtime_out": return "warning";
-    case "check_out": return "info";
-    default: return "neutral";
+    case "overtime_out":
+      return "warning";
+    case "check_out":
+      return "info";
+    default:
+      return "neutral";
   }
 }
 
@@ -59,25 +70,25 @@ export function DashboardActivityFeed({ events }: DashboardActivityFeedProps) {
       <Card.Header title={_(msg`Recent Activity`)} />
       <Card.Content>
         {events.map((event, i) => (
-        <ListItem key={`${event.timestamp}-${event.user_pin}-${i}`}>
-          <ListItem.Leading>
-            <Text variant="body" weight="medium">
-              {event.employee_name ?? event.user_pin}
-            </Text>
-            <Text variant="caption" color="tertiary">
-              {event.device_sn}
-            </Text>
-          </ListItem.Leading>
-          <ListItem.Trailing>
-            <Badge variant={statusBadgeVariant(event.status)}>
-              {formatStatus(event.status, _)}
-            </Badge>
-            <Text variant="caption" color="tertiary">
-              {formatTimeAgo(event.timestamp, _)}
-            </Text>
-          </ListItem.Trailing>
-        </ListItem>
-      ))}
+          <ListItem key={`${event.timestamp}-${event.user_pin}-${i}`}>
+            <ListItem.Leading>
+              <Text variant="body" weight="medium">
+                {event.employee_name ?? event.user_pin}
+              </Text>
+              <Text variant="caption" color="tertiary">
+                {event.device_sn}
+              </Text>
+            </ListItem.Leading>
+            <ListItem.Trailing>
+              <Badge variant={statusBadgeVariant(event.status)}>
+                {formatStatus(event.status, _)}
+              </Badge>
+              <Text variant="caption" color="tertiary">
+                {formatTimeAgo(event.timestamp, _)}
+              </Text>
+            </ListItem.Trailing>
+          </ListItem>
+        ))}
       </Card.Content>
     </Card>
   );

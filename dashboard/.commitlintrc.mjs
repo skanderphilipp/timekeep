@@ -20,19 +20,19 @@ export default {
       2,
       "always",
       [
-        "build",    // Build system or external dependencies
-        "chore",    // Miscellaneous tasks (not src or test changes)
-        "ci",       // CI/CD configuration
-        "docs",     // Documentation only
-        "feat",     // New feature
-        "fix",      // Bug fix
-        "perf",     // Performance improvement
+        "build", // Build system or external dependencies
+        "chore", // Miscellaneous tasks (not src or test changes)
+        "ci", // CI/CD configuration
+        "docs", // Documentation only
+        "feat", // New feature
+        "fix", // Bug fix
+        "perf", // Performance improvement
         "refactor", // Code change that neither fixes a bug nor adds a feature
-        "revert",   // Revert a previous commit
-        "style",    // Code style changes (formatting, etc.)
-        "test",     // Adding or correcting tests
-        "deps",     // Dependency updates
-        "dx",       // Developer experience (tooling, lint rules, config)
+        "revert", // Revert a previous commit
+        "style", // Code style changes (formatting, etc.)
+        "test", // Adding or correcting tests
+        "deps", // Dependency updates
+        "dx", // Developer experience (tooling, lint rules, config)
       ],
     ],
     "subject-case": [0], // Allow any case (PascalCase component names, etc.)

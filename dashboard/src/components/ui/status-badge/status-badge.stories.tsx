@@ -29,7 +29,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div>
         <h4 style={{ margin: "0 0 var(--ao-spacing-2)" }}>Active</h4>
         <div style={{ display: "flex", gap: "var(--ao-spacing-4)" }}>
@@ -55,7 +62,14 @@ export const DeviceProtocolsExample: Story = {
   name: "Device Protocols Example",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", flexWrap: "wrap" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        flexWrap: "wrap",
+      }}
+    >
       <div>
         <div style={{ marginBottom: "var(--ao-spacing-1)", fontWeight: 500 }}>Main Gate</div>
         <div style={{ display: "flex", gap: "var(--ao-spacing-3)" }}>

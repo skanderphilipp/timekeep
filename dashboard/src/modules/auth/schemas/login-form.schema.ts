@@ -23,9 +23,7 @@ export function createLoginFormSchema(_: I18n["_"]) {
   });
 }
 
-export type LoginFormValues = z.infer<
-  ReturnType<typeof createLoginFormSchema>
->;
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginFormSchema>>;
 
 // ── Form schema definition ─────────────────────────────────────────────────────
 

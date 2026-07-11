@@ -1,11 +1,11 @@
 .badge {
   align-items: center;
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   display: inline-flex;
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
   gap: var(--ao-spacing-1);
-  padding: 2px 10px;
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-2);
 }
 
 /* Variant colors */
@@ -60,7 +60,15 @@
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ao-color-green9) 40%, transparent); }
-  70% { box-shadow: 0 0 0 4px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ao-color-green9) 40%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 4px transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
 }

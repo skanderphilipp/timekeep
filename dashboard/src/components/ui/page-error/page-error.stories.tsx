@@ -26,7 +26,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-6)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <PageError onRetry={() => {}} />
       <PageError />
     </div>
@@ -40,7 +47,8 @@ export const ContextDashboardError: Story = {
     <div style={{ padding: "var(--ao-spacing-8)" }}>
       <PageError onRetry={() => {}} />
       <p style={{ color: "var(--ao-font-color-tertiary)", marginTop: 16, textAlign: "center" }}>
-        The backend may be restarting. Attendance data is not lost — it resumes when the server comes back.
+        The backend may be restarting. Attendance data is not lost — it resumes when the server
+        comes back.
       </p>
     </div>
   ),

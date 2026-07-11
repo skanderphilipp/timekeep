@@ -4,7 +4,10 @@ import type { PunchFilter } from "@/lib/api";
 import { useListState } from "@/infrastructure/query-params";
 import { useInfinitePunchData, type Punch } from "./use-punch-data-infinite";
 
-const punchFilterDefaults: Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns"> = {
+const punchFilterDefaults: Omit<
+  PunchFilter,
+  "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns"
+> = {
   device_sn: "",
   user_pin: "",
   status: "",
@@ -22,14 +25,9 @@ const punchFilterDefaults: Omit<PunchFilter, "limit" | "offset" | "order_desc" |
  * arrays don't fit the string-only URL filter infrastructure.
  */
 export function useInfinitePunchQuery() {
-  const {
-    filters,
-    sort,
-    setFilter,
-    toggleSort,
-    resetFilters,
-    hasActiveFilters,
-  } = useListState<Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">>({
+  const { filters, sort, setFilter, toggleSort, resetFilters, hasActiveFilters } = useListState<
+    Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">
+  >({
     namespace: "punches",
     filterDefaults: punchFilterDefaults,
     sortDefaults: { column: "timestamp", direction: "desc" },
@@ -56,14 +54,14 @@ export function useInfinitePunchQuery() {
     [query.data],
   );
 
-  const handleSortChange = useCallback(
-    (columnId: string) => toggleSort(columnId),
-    [toggleSort],
-  );
+  const handleSortChange = useCallback((columnId: string) => toggleSort(columnId), [toggleSort]);
 
   const handleFilterChange = useCallback(
-    (patch: Partial<Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">>) =>
-      setFilter(patch),
+    (
+      patch: Partial<
+        Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">
+      >,
+    ) => setFilter(patch),
     [setFilter],
   );
 
@@ -73,7 +71,10 @@ export function useInfinitePunchQuery() {
   }, [resetFilters]);
 
   return {
-    filters: { ...filters, device_sns: deviceSns.length > 0 ? deviceSns : undefined } as Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by">,
+    filters: { ...filters, device_sns: deviceSns.length > 0 ? deviceSns : undefined } as Omit<
+      PunchFilter,
+      "limit" | "offset" | "order_desc" | "cursor" | "sort_by"
+    >,
     sortState: sort ? { column: sort.column, direction: sort.direction } : null,
     punches,
     query,

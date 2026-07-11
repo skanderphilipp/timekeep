@@ -33,21 +33,98 @@ export function App() {
                 <Routes>
                   <Route path={AppRoute.dashboard} element={<DashboardPage />} />
                   <Route path={AppRoute.devices.list} element={<DeviceListPage />} />
-                  <Route path={AppRoute.devices.new} element={<RequireRole minimum="admin"><DeviceFormPage /></RequireRole>} />
-                  <Route path="/devices/:sn/edit" element={<RequireRole minimum="admin"><DeviceFormPage /></RequireRole>} />
+                  <Route
+                    path={AppRoute.devices.new}
+                    element={
+                      <RequireRole minimum="admin">
+                        <DeviceFormPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path="/devices/:sn/edit"
+                    element={
+                      <RequireRole minimum="admin">
+                        <DeviceFormPage />
+                      </RequireRole>
+                    }
+                  />
                   <Route path={AppRoute.punches.list} element={<PunchQueryPage />} />
                   <Route path={AppRoute.reports} element={<ReportsPage />} />
                   <Route path={AppRoute.settings.system} element={<SettingsPage />} />
-                  <Route path={AppRoute.settings.users} element={<RequireRole minimum="admin"><UsersPage /></RequireRole>} />
-                  <Route path={AppRoute.settings.apiKeys} element={<RequireRole minimum="admin"><ApiKeysPage /></RequireRole>} />
-                  <Route path={AppRoute.settings.endpoints} element={<RequireRole minimum="admin"><EndpointsPage /></RequireRole>} />
-                  <Route path={AppRoute.settings.audit} element={<RequireRole minimum="admin"><AuditLogPage /></RequireRole>} />
+                  <Route
+                    path={AppRoute.settings.users}
+                    element={
+                      <RequireRole minimum="admin">
+                        <UsersPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.settings.apiKeys}
+                    element={
+                      <RequireRole minimum="admin">
+                        <ApiKeysPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.settings.endpoints}
+                    element={
+                      <RequireRole minimum="admin">
+                        <EndpointsPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.settings.audit}
+                    element={
+                      <RequireRole minimum="admin">
+                        <AuditLogPage />
+                      </RequireRole>
+                    }
+                  />
                   {/* Legacy redirects — keep old URLs working */}
-                  <Route path={AppRoute.legacy.users} element={<RequireRole minimum="admin"><UsersPage /></RequireRole>} />
-                  <Route path={AppRoute.legacy.endpoints} element={<RequireRole minimum="admin"><EndpointsPage /></RequireRole>} />
-                  <Route path={AppRoute.legacy.apiKeys} element={<RequireRole minimum="admin"><ApiKeysPage /></RequireRole>} />
-                  <Route path={AppRoute.legacy.apiKeysAlt} element={<RequireRole minimum="admin"><ApiKeysPage /></RequireRole>} />
-                  <Route path={AppRoute.legacy.audit} element={<RequireRole minimum="admin"><AuditLogPage /></RequireRole>} />
+                  <Route
+                    path={AppRoute.legacy.users}
+                    element={
+                      <RequireRole minimum="admin">
+                        <UsersPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.legacy.endpoints}
+                    element={
+                      <RequireRole minimum="admin">
+                        <EndpointsPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.legacy.apiKeys}
+                    element={
+                      <RequireRole minimum="admin">
+                        <ApiKeysPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.legacy.apiKeysAlt}
+                    element={
+                      <RequireRole minimum="admin">
+                        <ApiKeysPage />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path={AppRoute.legacy.audit}
+                    element={
+                      <RequireRole minimum="admin">
+                        <AuditLogPage />
+                      </RequireRole>
+                    }
+                  />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </AppShell>

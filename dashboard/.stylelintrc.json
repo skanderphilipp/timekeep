@@ -3,7 +3,7 @@
   "plugins": ["stylelint-declaration-strict-value"],
   "rules": {
     "declaration-no-important": true,
-    "selector-no-empty": true,
+    "block-no-empty": true,
     "declaration-block-no-duplicate-properties": true,
     "declaration-block-no-duplicate-custom-properties": true,
     "scss/no-duplicate-mixins": true,
@@ -14,11 +14,29 @@
     "no-descending-specificity": null,
     "alpha-value-notation": null,
     "color-function-notation": null,
+    "color-function-alias-notation": null,
+    "custom-property-pattern": "^(ao|tk)-[a-z0-9]+(-[a-z0-9_]+)*$|^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+    "keyframes-name-pattern": "^[a-z][a-zA-Z0-9-]*$",
+
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["global", "local"] }],
 
     "scale-unlimited/declaration-strict-value": [
       ["/color/", "fill", "stroke", "background", "background-color", "border-color", "box-shadow"],
       {
-        "ignoreKeywords": ["transparent", "inherit", "currentColor", "none", "unset"],
+        "ignoreValues": [
+          "transparent",
+          "inherit",
+          "currentColor",
+          "currentcolor",
+          "none",
+          "unset",
+          "light",
+          "dark",
+          "0",
+          "/^-?\\d+(\\.\\d+)?(px|%|em|rem)$/",
+          "/^color-mix\\(in srgb, var\\(--ao-/",
+          "/^linear-gradient\\([^#]*$/"
+        ],
         "ignoreFunctions": false,
         "expandShorthand": true,
         "disableFix": true
@@ -39,10 +57,11 @@
         "/^margin-right$/": ["/\\d+px/"],
         "/^margin-bottom$/": ["/\\d+px/"],
         "/^margin-left$/": ["/\\d+px/"],
-        "/^gap$/": ["/\\d+px/"]
+        "/^gap$/": ["/\\d+px/"],
+        "/^line-height$/": ["/\\d+px/"]
       },
       {
-        "message": "Hardcoded pixel value. Use var(--ao-spacing-*) or var(--ao-radius-*) or var(--ao-font-size-*) tokens instead."
+        "message": "Hardcoded pixel value. Use var(--ao-spacing-*) / var(--ao-radius-*) / var(--ao-font-size-*) / var(--ao-line-height-*) tokens instead."
       }
     ]
   },

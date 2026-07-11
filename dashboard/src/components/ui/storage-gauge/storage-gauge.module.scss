@@ -11,11 +11,12 @@
   width: 128px;
 }
 
-/* Override Recharts container to fit the donut */
+/* stylelint-disable declaration-no-important -- chart library sets inline sizes on its container */
 .donut > * {
   height: 100% !important;
   width: 100% !important;
 }
+/* stylelint-enable declaration-no-important */
 
 .overlay {
   align-items: center;
@@ -38,9 +39,17 @@
   font-size: var(--ao-font-size-xs);
 }
 
-.success { color: var(--ao-color-green9); }
-.warning { color: var(--ao-color-amber9); }
-.danger { color: var(--ao-color-red9); }
+.success {
+  color: var(--ao-color-green9);
+}
+
+.warning {
+  color: var(--ao-color-amber9);
+}
+
+.danger {
+  color: var(--ao-color-red9);
+}
 
 .label {
   color: var(--ao-font-color-secondary);
@@ -50,7 +59,7 @@
 .countRow {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ao-spacing-0_5);
   width: 100%;
 }
 

@@ -21,13 +21,27 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", maxWidth: 400 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-6)",
+        maxWidth: 400,
+      }}
+    >
       <CalendarMonth year={2026} month={7} />
       <CalendarMonth
         year={2026}
         month={7}
         renderDay={(day) => (
-          <span style={{ fontSize: 11, color: day.isCurrentMonth ? "var(--ao-font-color-secondary)" : "var(--ao-font-color-tertiary)" }}>
+          <span
+            style={{
+              fontSize: 11,
+              color: day.isCurrentMonth
+                ? "var(--ao-font-color-secondary)"
+                : "var(--ao-font-color-tertiary)",
+            }}
+          >
             {day.isCurrentMonth ? "8.0h" : ""}
           </span>
         )}

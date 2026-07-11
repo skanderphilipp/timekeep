@@ -30,7 +30,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div>
         <Skeleton variant="rect" width="100%" height={96} />
       </div>
@@ -50,9 +57,18 @@ export const ContextDashboardLoading: Story = {
   name: "Context: Dashboard Loading",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--ao-spacing-4)" }}>
+    <div
+      style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--ao-spacing-4)" }}
+    >
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} style={{ padding: "var(--ao-spacing-4)", background: "var(--ao-background-secondary)", borderRadius: "var(--ao-radius-md)" }}>
+        <div
+          key={i}
+          style={{
+            padding: "var(--ao-spacing-4)",
+            background: "var(--ao-background-secondary)",
+            borderRadius: "var(--ao-radius-md)",
+          }}
+        >
           <Skeleton variant="rect" width="100%" height={96} />
         </div>
       ))}

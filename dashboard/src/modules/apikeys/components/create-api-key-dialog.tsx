@@ -31,14 +31,9 @@ type CreateApiKeyDialogProps = {
  * Uses {@link SchemaForm} to render the form from the Zod schema + UI metadata
  * in `createApiKeyFormDef`. No manual field declarations, no raw useState.
  */
-export function CreateApiKeyDialog({
-  open,
-  onOpenChange,
-  onCreateKey,
-}: CreateApiKeyDialogProps) {
+export function CreateApiKeyDialog({ open, onOpenChange, onCreateKey }: CreateApiKeyDialogProps) {
   const { _ } = useLingui();
-  const { form, submitting, createdKey, handleSubmit, reset } =
-    useApiKeyForm({ onCreateKey });
+  const { form, submitting, createdKey, handleSubmit, reset } = useApiKeyForm({ onCreateKey });
 
   const formSchema = createApiKeyFormDef(_);
 
@@ -58,9 +53,7 @@ export function CreateApiKeyDialog({
           <Callout
             variant="warning"
             title={_(msg`Important`)}
-            description={_(
-              msg`Copy this key now. It will not be shown again.`,
-            )}
+            description={_(msg`Copy this key now. It will not be shown again.`)}
           />
           <Input value={createdKey.api_key} readOnly />
           <FormActions>
@@ -71,18 +64,10 @@ export function CreateApiKeyDialog({
         <Form onSubmit={handleSubmit}>
           <SchemaForm formSchema={formSchema} form={form} />
           <FormActions>
-            <Button
-              variant="secondary"
-              onClick={() => onOpenChange(false)}
-              type="button"
-            >
+            <Button variant="secondary" onClick={() => onOpenChange(false)} type="button">
               {_(msg`Cancel`)}
             </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              loading={isPending}
-            >
+            <Button type="submit" disabled={isPending} loading={isPending}>
               {isPending ? _(msg`Creating…`) : _(msg`Create Key`)}
             </Button>
           </FormActions>

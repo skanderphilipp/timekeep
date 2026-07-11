@@ -16,11 +16,7 @@ type FormActionsProps = {
  * Replaces raw `<div data-slot="form-actions">` in pages.
  * Default alignment is right (submit on the right, cancel on the left).
  */
-export function FormActions({
-  children,
-  align = "right",
-  className,
-}: FormActionsProps) {
+export function FormActions({ children, align = "right", className }: FormActionsProps) {
   return (
     <div
       data-slot="form-actions"

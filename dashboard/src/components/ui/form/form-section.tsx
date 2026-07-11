@@ -19,12 +19,7 @@ type FormSectionProps = {
  * Use to break long forms into logical sections (e.g., "Device Identity",
  * "Connection Settings"). Renders a heading with optional description.
  */
-export function FormSection({
-  title,
-  description,
-  children,
-  className,
-}: FormSectionProps) {
+export function FormSection({ title, description, children, className }: FormSectionProps) {
   return (
     <fieldset data-slot="form-section" className={clsx(styles.section, className)}>
       <legend data-slot="form-section-legend" className={styles.sectionLegend}>

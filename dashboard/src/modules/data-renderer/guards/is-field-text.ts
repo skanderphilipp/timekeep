@@ -1,8 +1,4 @@
-import type {
-  FieldDefinition,
-  FieldMetadata,
-  TextFieldMetadata,
-} from "../types";
+import type { FieldDefinition, FieldMetadata, TextFieldMetadata } from "../types";
 
 /**
  * Type guard: returns `true` if the field is a plain text field.

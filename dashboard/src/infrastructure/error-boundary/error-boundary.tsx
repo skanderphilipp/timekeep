@@ -35,12 +35,12 @@ type ErrorBoundaryState = {
 
 // ── Default Fallback ────────────────────────────────────────────────
 
-type FallbackProps = {
+type DefaultErrorFallbackProps = {
   error: Error | null;
   onReset: () => void;
 };
 
-function DefaultErrorFallback({ error, onReset }: FallbackProps) {
+function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
   const { _ } = useLingui();
 
   return (
@@ -79,9 +79,7 @@ function DefaultErrorFallback({ error, onReset }: FallbackProps) {
           {error && (
             <div style={{ marginTop: "var(--ao-spacing-4)" }}>
               <Banner variant="danger">
-                <code style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>
-                  {error.message}
-                </code>
+                <code style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>{error.message}</code>
               </Banner>
             </div>
           )}
@@ -136,12 +134,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
 
-      return (
-        <DefaultErrorFallback
-          error={this.state.error}
-          onReset={this.handleReset}
-        />
-      );
+      return <DefaultErrorFallback error={this.state.error} onReset={this.handleReset} />;
     }
 
     return this.props.children;

@@ -1,7 +1,7 @@
 .avatar {
   align-items: center;
   background: var(--ao-accent-accent3);
-  border-radius: var(--ao-border-radius-full);
+  border-radius: var(--ao-radius-full);
   color: var(--ao-accent-accent11);
   display: inline-flex;
   flex-shrink: 0;
@@ -24,7 +24,7 @@
 // ── Sizes ──────────────────────────────────────────────────────────────────────
 
 .sm {
-  font-size: 10px;
+  font-size: var(--ao-font-size-xxs);
   height: 24px;
   width: 24px;
 }

@@ -33,7 +33,11 @@ type InlineHeaderProps = {
 export function InlineHeader({ icon, title, children }: InlineHeaderProps) {
   return (
     <div data-slot="inline-header" className={styles.row}>
-      {icon && <span data-slot="inline-header-icon" className={styles.icon}>{icon}</span>}
+      {icon && (
+        <span data-slot="inline-header-icon" className={styles.icon}>
+          {icon}
+        </span>
+      )}
       <span data-slot="inline-header-title" className={styles.title}>
         <Heading level="h3">{title}</Heading>
       </span>

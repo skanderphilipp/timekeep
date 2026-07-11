@@ -4,7 +4,7 @@
   align-items: center;
   background: var(--btn-bg, transparent);
   border: 1px solid var(--btn-border-color, transparent);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--btn-color, var(--ao-font-color-primary));
   cursor: pointer;
   display: inline-flex;
@@ -15,7 +15,10 @@
   line-height: 1;
   padding: 0 var(--ao-spacing-4);
   text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
   user-select: none;
   white-space: nowrap;
 
@@ -104,7 +107,7 @@
 
 .spinner {
   animation: spin 0.8s linear infinite;
-  border: 2px solid currentColor;
+  border: 2px solid currentcolor;
   border-radius: 50%;
   border-right-color: transparent;
   display: inline-block;
@@ -119,5 +122,7 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

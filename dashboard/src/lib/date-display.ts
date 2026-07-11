@@ -47,11 +47,7 @@ function resolveLocale(locale?: string): Locale {
  *
  * @see https://date-fns.org/docs/format
  */
-export function formatDate(
-  date: Date | number,
-  pattern: string,
-  locale?: string,
-): string {
+export function formatDate(date: Date | number, pattern: string, locale?: string): string {
   return format(date, pattern, { locale: resolveLocale(locale) });
 }
 
@@ -62,10 +58,7 @@ export function formatDate(
  *
  * Uses date-fns `formatDistanceToNow` with `addSuffix: true`.
  */
-export function formatRelative(
-  date: Date | number,
-  locale?: string,
-): string {
+export function formatRelative(date: Date | number, locale?: string): string {
   return formatDistanceToNow(date, {
     addSuffix: true,
     locale: resolveLocale(locale),
@@ -77,10 +70,7 @@ export function formatRelative(
  *
  * Example: "10/07/2026" (en) or "١٠/٠٧/٢٠٢٦" (ar).
  */
-export function formatShort(
-  date: Date | number,
-  locale?: string,
-): string {
+export function formatShort(date: Date | number, locale?: string): string {
   return format(date, "P", { locale: resolveLocale(locale) });
 }
 
@@ -89,10 +79,7 @@ export function formatShort(
  *
  * Example: "14:30" (24h).
  */
-export function formatTime(
-  date: Date | number,
-  locale?: string,
-): string {
+export function formatTime(date: Date | number, locale?: string): string {
   return format(date, "HH:mm", { locale: resolveLocale(locale) });
 }
 
@@ -101,9 +88,6 @@ export function formatTime(
  *
  * Example: "Jul 10, 2026, 14:30".
  */
-export function formatDateTime(
-  date: Date | number,
-  locale?: string,
-): string {
+export function formatDateTime(date: Date | number, locale?: string): string {
   return format(date, "PPpp", { locale: resolveLocale(locale) });
 }

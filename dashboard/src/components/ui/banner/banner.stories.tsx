@@ -33,11 +33,20 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-3)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-3)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <Banner variant="info">Attendance data is syncing. Last update: 2 minutes ago.</Banner>
       <Banner variant="success">Settings saved successfully.</Banner>
       <Banner variant="warning">3 anomalies detected in current view.</Banner>
-      <Banner variant="danger">All devices are currently offline. Attendance data may be stale.</Banner>
+      <Banner variant="danger">
+        All devices are currently offline. Attendance data may be stale.
+      </Banner>
     </div>
   ),
 };

@@ -6,13 +6,13 @@
 .select {
   appearance: none;
   background: transparent;
-  border: 1px solid var(--ao-border-primary);
+  border: 1px solid var(--ao-border-color-medium);
   border-radius: var(--ao-radius-sm);
-  color: var(--ao-text-secondary);
+  color: var(--ao-font-color-secondary);
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 500;
-  padding: 4px 24px 4px 8px;
+  padding: var(--ao-spacing-1) var(--ao-spacing-6) var(--ao-spacing-1) var(--ao-spacing-2);
   outline: none;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -20,12 +20,12 @@
   text-align: center;
 
   &:hover {
-    border-color: var(--ao-border-secondary);
-    color: var(--ao-text-primary);
+    border-color: var(--ao-border-color-light);
+    color: var(--ao-font-color-primary);
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 2px var(--ao-accent-ring);
+    box-shadow: 0 0 0 2px var(--ao-focus-ring);
   }
 
   option {

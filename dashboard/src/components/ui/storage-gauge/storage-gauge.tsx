@@ -45,8 +45,7 @@ export function StorageGauge({
   const clamped = Math.max(0, Math.min(100, percentage));
   const free = 100 - clamped;
 
-  const variant =
-    clamped >= 80 ? "danger" : clamped >= 60 ? "warning" : "success";
+  const variant = clamped >= 80 ? "danger" : clamped >= 60 ? "warning" : "success";
 
   const data = [
     { name: _(msg`Used`), value: clamped, color: "var(--ao-accent-accent9)" },
@@ -63,17 +62,12 @@ export function StorageGauge({
   }
 
   return (
-    <div
-      data-slot="storage-gauge"
-      className={clsx(styles.container, className)}
-    >
+    <div data-slot="storage-gauge" className={clsx(styles.container, className)}>
       <div className={styles.donut}>
         <PieChart data={data} donut showLegend={false} />
         {/* Centered percentage overlay */}
         <div className={styles.overlay}>
-          <span className={clsx(styles.percentage, styles[variant])}>
-            {clamped.toFixed(0)}%
-          </span>
+          <span className={clsx(styles.percentage, styles[variant])}>{clamped.toFixed(0)}%</span>
           <span className={styles.overlayLabel}>{_(msg`used`)}</span>
         </div>
       </div>

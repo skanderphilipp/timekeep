@@ -6,7 +6,7 @@ import type {
   FormNumberFieldDef,
   FormBooleanFieldDef,
   FormSelectFieldDef,
-} from "@/components/ui/form/form-field-def";
+} from "@/types/form-field-def";
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -129,7 +129,12 @@ function unwrapZodType(field: z.ZodTypeAny): z.ZodTypeAny {
   // Zod 3.x: `_def.typeName` is PascalCase ("ZodOptional", "ZodNullable", "ZodDefault")
   const typeName: string = def.type ?? def.typeName ?? "";
 
-  if (typeName === "optional" || typeName === "ZodOptional" || typeName === "nullable" || typeName === "ZodNullable") {
+  if (
+    typeName === "optional" ||
+    typeName === "ZodOptional" ||
+    typeName === "nullable" ||
+    typeName === "ZodNullable"
+  ) {
     // Zod 4 exposes `.unwrap()` on wrappers
     if (typeof (field as unknown as { unwrap?: () => z.ZodTypeAny }).unwrap === "function") {
       return unwrapZodType((field as unknown as { unwrap(): z.ZodTypeAny }).unwrap());
@@ -139,7 +144,10 @@ function unwrapZodType(field: z.ZodTypeAny): z.ZodTypeAny {
 
   if (typeName === "default" || typeName === "ZodDefault") {
     // Zod 4: `removeDefault()` returns the inner schema without the default
-    if (typeof (field as unknown as { removeDefault?: () => z.ZodTypeAny }).removeDefault === "function") {
+    if (
+      typeof (field as unknown as { removeDefault?: () => z.ZodTypeAny }).removeDefault ===
+      "function"
+    ) {
       return unwrapZodType((field as unknown as { removeDefault(): z.ZodTypeAny }).removeDefault());
     }
     if (def.innerType) return unwrapZodType(def.innerType);
@@ -192,9 +200,12 @@ function isZodFieldRequired(field: z.ZodTypeAny): boolean {
   // Zod 4.x uses lowercase `_def.type`, Zod 3.x uses PascalCase `_def.typeName`
   const typeName: string = def.type ?? def.typeName ?? "";
   if (
-    typeName === "optional" || typeName === "ZodOptional" ||
-    typeName === "nullable" || typeName === "ZodNullable" ||
-    typeName === "default" || typeName === "ZodDefault"
+    typeName === "optional" ||
+    typeName === "ZodOptional" ||
+    typeName === "nullable" ||
+    typeName === "ZodNullable" ||
+    typeName === "default" ||
+    typeName === "ZodDefault"
   ) {
     return false;
   }
@@ -205,8 +216,9 @@ function isZodFieldRequired(field: z.ZodTypeAny): boolean {
 function extractMinConstraint(field: z.ZodTypeAny): number | undefined {
   const inner = unwrapZodType(field);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const checks: Array<{ kind?: string; value?: number; _zod?: { def?: Record<string, unknown> } }> | undefined =
-    (inner as any)._def?.checks;
+  const checks:
+    | Array<{ kind?: string; value?: number; _zod?: { def?: Record<string, unknown> } }>
+    | undefined = (inner as any)._def?.checks;
   if (!checks) return undefined;
 
   for (const check of checks) {
@@ -229,8 +241,9 @@ function extractMinConstraint(field: z.ZodTypeAny): number | undefined {
 function extractMaxConstraint(field: z.ZodTypeAny): number | undefined {
   const inner = unwrapZodType(field);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const checks: Array<{ kind?: string; value?: number; _zod?: { def?: Record<string, unknown> } }> | undefined =
-    (inner as any)._def?.checks;
+  const checks:
+    | Array<{ kind?: string; value?: number; _zod?: { def?: Record<string, unknown> } }>
+    | undefined = (inner as any)._def?.checks;
   if (!checks) return undefined;
 
   for (const check of checks) {
@@ -258,10 +271,7 @@ function extractEnumValues(field: z.ZodTypeAny): string[] | undefined {
 
   // Zod 4.x uses lowercase `_def.type`, Zod 3.x uses PascalCase `_def.typeName`
   const typeName: string = zodDef.type ?? zodDef.typeName ?? "";
-  if (
-    typeName === "enum" || typeName === "ZodEnum" ||
-    typeName === "ZodNativeEnum"
-  ) {
+  if (typeName === "enum" || typeName === "ZodEnum" || typeName === "ZodNativeEnum") {
     // Zod 4.x: enum values are in `_def.entries` (object like {a: "a", b: "b"})
     // Zod 3.x: enum values are in `_def.values` (string[])
     const entries = zodDef.entries;
@@ -391,9 +401,7 @@ export function createFormFieldDefs(
       case "select": {
         const enumValues = extractEnumValues(zodField);
         const options: Array<{ value: string; label: string }> =
-          meta?.options ??
-          enumValues?.map((v) => ({ value: v, label: v })) ??
-          [];
+          meta?.options ?? enumValues?.map((v) => ({ value: v, label: v })) ?? [];
         result.push({
           type: "select",
           name: fieldName,

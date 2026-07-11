@@ -21,7 +21,12 @@ type Story = StoryObj<typeof Combobox>;
 export const Primary: Story = {
   render: () => (
     <div style={{ padding: 20, maxWidth: 300 }}>
-      <Combobox options={deviceOptions} value="CQZ7232960836" onChange={fn()} placeholder="Select device…" />
+      <Combobox
+        options={deviceOptions}
+        value="CQZ7232960836"
+        onChange={fn()}
+        placeholder="Select device…"
+      />
     </div>
   ),
 };
@@ -30,17 +35,35 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: 20 }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: 20 }}
+    >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With selection</p>
-        <Combobox options={deviceOptions} value="CQZ7232960836" onChange={fn()} placeholder="Select device…" />
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          With selection
+        </p>
+        <Combobox
+          options={deviceOptions}
+          value="CQZ7232960836"
+          onChange={fn()}
+          placeholder="Select device…"
+        />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>No selection</p>
-        <Combobox options={deviceOptions} value={undefined} onChange={fn()} placeholder="Select device…" />
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          No selection
+        </p>
+        <Combobox
+          options={deviceOptions}
+          value={undefined}
+          onChange={fn()}
+          placeholder="Select device…"
+        />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Loading</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          Loading
+        </p>
         <Combobox options={[]} value={undefined} onChange={fn()} placeholder="Loading…" loading />
       </div>
     </div>

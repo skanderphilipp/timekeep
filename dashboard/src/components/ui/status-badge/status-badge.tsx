@@ -23,7 +23,9 @@ export function StatusBadge({ status, label, active = true }: StatusBadgeProps) 
   return (
     <span className={clsx(styles.badge, !active && styles.dimmed)}>
       <StatusDot status={status} />
-      <Text as="span" variant="body">{label}</Text>
+      <Text as="span" variant="body">
+        {label}
+      </Text>
     </span>
   );
 }

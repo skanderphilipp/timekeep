@@ -15,19 +15,13 @@ export type EllipsisDisplayProps = {
  * Wraps content with overflow truncation. Simpler than OverflowingTextWithTooltip —
  * pure CSS ellipsis, no tooltip. Use for inline content that should not overflow.
  */
-export function EllipsisDisplay({
-  children,
-  maxWidth,
-  className,
-}: EllipsisDisplayProps) {
+export function EllipsisDisplay({ children, maxWidth, className }: EllipsisDisplayProps) {
   return (
     <div
       data-slot="ellipsis-display"
       className={clsx(styles.ellipsis, className)}
       style={
-        maxWidth
-          ? ({ "--ellipsis-max-width": `${maxWidth}px` } as React.CSSProperties)
-          : undefined
+        maxWidth ? ({ "--ellipsis-max-width": `${maxWidth}px` } as React.CSSProperties) : undefined
       }
     >
       {children}

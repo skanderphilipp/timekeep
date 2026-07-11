@@ -1,9 +1,17 @@
-import { AUTH_LOGOUT_EVENT, setAuthToken, apiGet, apiGetWithMeta, apiPost, apiPut, apiDelete } from "./api-client";
+import {
+  AUTH_LOGOUT_EVENT,
+  setAuthToken,
+  apiGet,
+  apiGetWithMeta,
+  apiPost,
+  apiPut,
+  apiDelete,
+} from "./api-client";
 import type { PunchStatusValue } from "@shared/punch-statuses";
 import type { VerifyModeValue } from "@shared/verify-modes";
 import type { DeviceStatusValue } from "@shared/device-statuses";
 import type { DeviceVendorValue } from "@shared/device-vendors";
-import type { IntegrationKindValue } from "@shared/integration-kinds";
+import { INTEGRATION_KINDS, type IntegrationKindValue } from "@shared/integration-kinds";
 import type { DeviceCommandValue } from "@shared/device-commands";
 import type { Role } from "@shared/roles";
 
@@ -256,7 +264,10 @@ export function createDevice(config: DeviceConfig): Promise<{ status: string }> 
   return apiPost<{ status: string }>("devices", config).json();
 }
 
-export function updateDevice(sn: string, config: Partial<DeviceConfig>): Promise<{ status: string }> {
+export function updateDevice(
+  sn: string,
+  config: Partial<DeviceConfig>,
+): Promise<{ status: string }> {
   return apiPut<{ status: string }>(`devices/${encodeURIComponent(sn)}`, config).json();
 }
 
@@ -313,13 +324,13 @@ export function fetchPunches(filter: PunchFilter = {}): Promise<PaginatedRespons
 export function fetchPunchesCursor(
   filter: PunchFilter = {},
 ): Promise<CursorPaginatedResponse<Punch>> {
-  return apiGetWithMeta<PaginatedResponse<Punch>>(
-    `punches${buildPunchParams(filter)}`,
-  ).json().then(({ data, meta }) => ({
-    punches: data.punches,
-    has_more: meta?.has_more ?? false,
-    next_cursor: meta?.next_cursor ?? null,
-  }));
+  return apiGetWithMeta<PaginatedResponse<Punch>>(`punches${buildPunchParams(filter)}`)
+    .json()
+    .then(({ data, meta }) => ({
+      punches: data.punches,
+      has_more: meta?.has_more ?? false,
+      next_cursor: meta?.next_cursor ?? null,
+    }));
 }
 
 /** Filter params for the facet metadata endpoint. */
@@ -386,9 +397,7 @@ export type PunchCorrectedResponse = {
   status: string;
 };
 
-export function correctPunch(
-  correction: CorrectPunchRequest,
-): Promise<PunchCorrectedResponse> {
+export function correctPunch(correction: CorrectPunchRequest): Promise<PunchCorrectedResponse> {
   return apiPost<PunchCorrectedResponse>("punches/correct", correction).json();
 }
 
@@ -414,13 +423,8 @@ export type IntegrationEndpoint = {
 type T = (descriptor: { id: string; message: string }) => string;
 
 // Re-export from shared catalog — single source of truth.
-export {
-  INTEGRATION_KINDS,
-  type IntegrationKindValue as IntegrationKind,
-} from "@shared/integration-kinds";
-
-// Also import locally for use in createIntegrationKinds
-import { INTEGRATION_KINDS as _KINDS } from "@shared/integration-kinds";
+export { INTEGRATION_KINDS };
+export type IntegrationKind = IntegrationKindValue;
 
 /**
  * Create translated integration kinds for React components.
@@ -433,7 +437,7 @@ import { INTEGRATION_KINDS as _KINDS } from "@shared/integration-kinds";
  * (English defaults).
  */
 export function createIntegrationKinds(_: T) {
-  return _KINDS.map((k) => ({
+  return INTEGRATION_KINDS.map((k) => ({
     ...k,
     label: _({ id: k.value, message: k.label }),
   }));
@@ -459,9 +463,7 @@ export function fetchEndpoints(): Promise<IntegrationEndpoint[]> {
 }
 
 /** Create a new integration endpoint. Requires Admin. */
-export function createEndpoint(
-  req: CreateEndpointRequest,
-): Promise<IntegrationEndpoint> {
+export function createEndpoint(req: CreateEndpointRequest): Promise<IntegrationEndpoint> {
   return apiPost<IntegrationEndpoint>("endpoints", req).json();
 }
 
@@ -688,10 +690,7 @@ export function setUserOnDevice(
   deviceSn: string,
   user: SetUserRequest,
 ): Promise<{ status: string }> {
-  return apiPost<{ status: string }>(
-    `devices/${encodeURIComponent(deviceSn)}/users`,
-    user,
-  ).json();
+  return apiPost<{ status: string }>(`devices/${encodeURIComponent(deviceSn)}/users`, user).json();
 }
 
 /** Delete a user from a device. Requires Operator+. */
@@ -851,8 +850,10 @@ function buildAuditParams(filter: AuditFilter): string {
   if (filter.actor) params.set("actor", filter.actor);
   if (filter.action) params.set("action", filter.action);
   if (filter.resource) params.set("resource", filter.resource);
-  if (filter.since) params.set("since", String(Math.floor(new Date(filter.since).getTime() / 1000)));
-  if (filter.until) params.set("until", String(Math.floor(new Date(filter.until).getTime() / 1000)));
+  if (filter.since)
+    params.set("since", String(Math.floor(new Date(filter.since).getTime() / 1000)));
+  if (filter.until)
+    params.set("until", String(Math.floor(new Date(filter.until).getTime() / 1000)));
   if (filter.search) params.set("search", filter.search);
   if (filter.sort_by) params.set("sort_by", filter.sort_by);
   if (filter.sort_order) params.set("sort_order", filter.sort_order);
@@ -921,5 +922,7 @@ export function deleteUser(id: string): Promise<{ status: string }> {
 
 /** Change a user's password. Requires Admin (or self). */
 export function changePassword(id: string, password: string): Promise<{ status: string }> {
-  return apiPut<{ status: string }>(`users/${encodeURIComponent(id)}/password`, { password }).json();
+  return apiPut<{ status: string }>(`users/${encodeURIComponent(id)}/password`, {
+    password,
+  }).json();
 }

@@ -13,7 +13,7 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-md);
+  border-radius: var(--ao-radius-md);
   box-shadow: var(--ao-shadow-md);
   display: flex;
   gap: var(--ao-spacing-3);
@@ -25,10 +25,21 @@
   flex-shrink: 0;
 }
 
-.success .icon { color: var(--ao-color-green9); }
-.error .icon { color: var(--ao-color-red9); }
-.warning .icon { color: var(--ao-color-amber9); }
-.info .icon { color: var(--ao-color-blue9); }
+.success .icon {
+  color: var(--ao-color-green9);
+}
+
+.error .icon {
+  color: var(--ao-color-red9);
+}
+
+.warning .icon {
+  color: var(--ao-color-amber9);
+}
+
+.info .icon {
+  color: var(--ao-color-blue9);
+}
 
 .message {
   flex: 1;
@@ -40,7 +51,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-xs);
+  border-radius: var(--ao-radius-xs);
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: flex;
@@ -56,6 +67,13 @@
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

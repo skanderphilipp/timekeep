@@ -2,12 +2,13 @@
 
 .skeleton {
   @include skeleton-loading;
-  border-radius: var(--ao-border-radius-sm);
+
+  border-radius: var(--ao-radius-sm);
   display: block;
 }
 
 .text {
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   height: 1em;
   width: 100%;
 }
@@ -19,7 +20,7 @@
 }
 
 .rect {
-  border-radius: var(--ao-border-radius-md);
+  border-radius: var(--ao-radius-md);
   height: 100px;
   width: 100%;
 }

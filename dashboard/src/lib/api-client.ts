@@ -182,9 +182,9 @@ export function apiGet<T>(path: string): { json: () => Promise<T> } {
  * Returns both the data payload AND the page meta (has_more, next_cursor, total).
  * Use this for cursor-based pagination / infinite scroll endpoints.
  */
-export function apiGetWithMeta<T>(
-  path: string,
-): { json: () => Promise<{ data: T; meta?: PageMeta | null }> } {
+export function apiGetWithMeta<T>(path: string): {
+  json: () => Promise<{ data: T; meta?: PageMeta | null }>;
+} {
   return {
     json: async () => {
       const envelope = await _client.get(path).json<ApiEnvelope<T>>();

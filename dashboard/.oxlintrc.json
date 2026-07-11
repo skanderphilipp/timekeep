@@ -1,29 +1,21 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "react",
-    "typescript",
-    "import",
-    "unicorn",
-    "jsx-a11y"
-  ],
-  "jsPlugins": [
-    "./packages/oxlint-rules/dist/oxlint-plugin.mjs"
-  ],
+  "plugins": ["react", "typescript", "import", "unicorn", "jsx-a11y"],
+  "jsPlugins": ["./packages/oxlint-rules/dist/oxlint-plugin.mjs"],
   "categories": {
     "correctness": "off"
   },
   "ignorePatterns": [
-      "storybook-static",
-      "node_modules",
-      "dist",
-      "generated",
-      "**/*.css.ts",
-      "**/*.d.scss.ts",
-      "**/tokens/build.ts",
-      "src/components/reaktly-ui/**",
-      "packages/**"
-    ],
+    "storybook-static",
+    "node_modules",
+    "dist",
+    "generated",
+    "**/*.css.ts",
+    "**/*.d.scss.ts",
+    "**/tokens/build.ts",
+    "src/components/reaktly-ui/**",
+    "packages/**"
+  ],
   "rules": {
     "func-style": [
       "error",
@@ -35,11 +27,7 @@
     "no-console": [
       "warn",
       {
-        "allow": [
-          "group",
-          "groupCollapsed",
-          "groupEnd"
-        ]
+        "allow": ["group", "groupCollapsed", "groupEnd"]
       }
     ],
     "no-control-regex": "off",

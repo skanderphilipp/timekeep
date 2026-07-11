@@ -2,7 +2,7 @@
 // Modern CSS reset + base defaults.
 // Design tokens are loaded separately via generated-tokens.css (imported in main.tsx).
 
-@use "./theme.scss";
+@use "./theme";
 
 // ── Reset ────────────────────────────────────────────────────────────────────
 // Based on modern-normalize + custom additions.
@@ -16,8 +16,6 @@
 }
 
 html {
-  -moz-text-size-adjust: none;
-  -webkit-text-size-adjust: none;
   text-size-adjust: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -32,7 +30,6 @@ body {
   font-size: var(--ao-font-size-md);
   font-weight: var(--ao-font-weight-regular);
   line-height: 1.5;
-  min-height: 100vh;
   min-height: 100dvh;
 }
 
@@ -68,7 +65,12 @@ textarea {
 
 // ── Typography ───────────────────────────────────────────────────────────────
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
   text-wrap: balance;
 }
@@ -83,7 +85,8 @@ a {
   text-decoration: none;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -93,7 +96,8 @@ table {
   border-collapse: collapse;
 }
 
-td, th {
+td,
+th {
   text-align: start;
 }
 
@@ -106,18 +110,23 @@ hr {
   height: 0;
 }
 
-pre, code, kbd, samp {
+pre,
+code,
+kbd,
+samp {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1em;
 }
 
 [hidden] {
+  /* stylelint-disable-next-line declaration-no-important -- must beat any component display rule */
   display: none !important;
 }
 
 // ── Reduced motion ───────────────────────────────────────────────────────────
 
 @media (prefers-reduced-motion: reduce) {
+  /* stylelint-disable declaration-no-important -- accessibility override must always win */
   *,
   *::before,
   *::after {
@@ -128,6 +137,7 @@ pre, code, kbd, samp {
     transition-delay: 0s !important;
     transition-duration: 0s !important;
   }
+  /* stylelint-enable declaration-no-important */
 }
 
 // ── Animated Focus Rings ────────────────────────────────────────────────────
@@ -141,6 +151,6 @@ select:focus-visible,
 textarea:focus-visible,
 a:focus-visible,
 [tabindex]:not([role]):focus-visible {
-  box-shadow: 0 0 0 2px var(--ao-accent-accent8);
+  box-shadow: 0 0 0 2px var(--ao-focus-ring);
   transition: box-shadow 0.15s ease;
 }

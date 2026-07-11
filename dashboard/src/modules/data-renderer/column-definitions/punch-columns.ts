@@ -1,6 +1,7 @@
-import type { ColumnDefinition } from "../types";
 import type { MessageDescriptor } from "@lingui/core";
+
 import type {
+  ColumnDefinition,
   DeviceSnFieldMetadata,
   UserPinFieldMetadata,
   TimestampFieldMetadata,

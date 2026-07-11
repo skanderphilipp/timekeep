@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useLayoutEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 
 import { themeAtom } from "@/infrastructure/state";
@@ -101,14 +95,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return () => cancelAnimationFrame(frame);
   }, [colorScheme]);
 
-  const value = useMemo<ThemeContextValue>(
-    () => ({ theme, colorScheme }),
-    [theme, colorScheme],
-  );
+  const value = useMemo<ThemeContextValue>(() => ({ theme, colorScheme }), [theme, colorScheme]);
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -145,7 +134,5 @@ function computeTheme(): Theme {
     return result;
   };
 
-  return resolve(
-    themeCssVariables as unknown as Record<string, unknown>,
-  ) as unknown as Theme;
+  return resolve(themeCssVariables as unknown as Record<string, unknown>) as unknown as Theme;
 }

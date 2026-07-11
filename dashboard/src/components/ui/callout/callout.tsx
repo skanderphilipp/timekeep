@@ -76,18 +76,15 @@ export function Callout({
         </span>
         <span className={styles.title}>{title}</span>
         {closable && (
-          <IconButton
-            accent="tertiary"
-            size="sm"
-            aria-label={_(msg`Close`)}
-            onClick={handleClose}
-          >
+          <IconButton accent="tertiary" size="sm" aria-label={_(msg`Close`)} onClick={handleClose}>
             <IconX size={14} />
           </IconButton>
         )}
       </div>
 
-      <div className={clsx(styles.descriptionWrapper, action && styles.descriptionWrapperWithAction)}>
+      <div
+        className={clsx(styles.descriptionWrapper, action && styles.descriptionWrapperWithAction)}
+      >
         <p className={styles.description}>{description}</p>
       </div>
 

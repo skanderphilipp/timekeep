@@ -21,7 +21,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
         <span>Default accent</span>
         <Info text="This is helpful contextual information for the user." />
@@ -39,7 +46,14 @@ export const ContextPollInterval: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 400 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)", marginBottom: 4 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--ao-spacing-2)",
+          marginBottom: 4,
+        }}
+      >
         <span style={{ fontWeight: 600 }}>Poll Interval</span>
         <Info text="How often the system pulls new attendance records from connected devices. Lower values mean more real-time data but higher load on the devices." />
       </div>

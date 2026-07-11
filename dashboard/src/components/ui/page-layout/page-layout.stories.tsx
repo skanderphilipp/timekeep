@@ -19,10 +19,16 @@ type Story = StoryObj<typeof PageLayout>;
 export const Primary: Story = {
   render: () => (
     <PageLayout>
-      <PageHeader title="Devices" description="Manage ZKTeco biometric scanners and attendance terminals." />
+      <PageHeader
+        title="Devices"
+        description="Manage ZKTeco biometric scanners and attendance terminals."
+      />
       <PageBody>
         <Section>
-          <Text variant="body">Page content goes here. Use PageLayout as the outer wrapper, PageHeader for the title, and PageBody for content sections.</Text>
+          <Text variant="body">
+            Page content goes here. Use PageLayout as the outer wrapper, PageHeader for the title,
+            and PageBody for content sections.
+          </Text>
         </Section>
       </PageBody>
     </PageLayout>
@@ -37,7 +43,9 @@ export const AllVariants: Story = {
       <PageLayout>
         <PageHeader title="Simple Page" />
         <PageBody>
-          <Section><Text variant="body">No description, no actions.</Text></Section>
+          <Section>
+            <Text variant="body">No description, no actions.</Text>
+          </Section>
         </PageBody>
       </PageLayout>
       <PageLayout>
@@ -47,7 +55,9 @@ export const AllVariants: Story = {
           actions={<Button icon={<IconPlus size={16} />}>Add Item</Button>}
         />
         <PageBody>
-          <Section><Text variant="body">Content with header actions.</Text></Section>
+          <Section>
+            <Text variant="body">Content with header actions.</Text>
+          </Section>
         </PageBody>
       </PageLayout>
     </div>
@@ -61,8 +71,14 @@ export const ContextDashboardPage: Story = {
     <PageLayout>
       <PageHeader title="Dashboard" description="Who is here right now?" />
       <PageBody>
-        <Section><Text variant="body">Live attendance overview — metrics, checked-in list, charts.</Text></Section>
-        <Section><Text variant="body" color="tertiary">Device status footer.</Text></Section>
+        <Section>
+          <Text variant="body">Live attendance overview — metrics, checked-in list, charts.</Text>
+        </Section>
+        <Section>
+          <Text variant="body" color="tertiary">
+            Device status footer.
+          </Text>
+        </Section>
       </PageBody>
     </PageLayout>
   ),

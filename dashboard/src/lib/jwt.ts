@@ -8,12 +8,14 @@
 
 export { roleSatisfies, type Role } from "@shared/roles";
 
+import type { Role } from "@shared/roles";
+
 /** Claims embedded in the JWT by the Rust backend. */
 export type JwtClaims = {
   /** Username (the `sub` claim). */
   sub: string;
   /** Role from the shared catalog. */
-  role: import("@shared/roles").Role;
+  role: Role;
   /** Space-separated permission scopes (e.g. "read:devices write:punches"). */
   permissions: string;
   /** Expiration timestamp (Unix seconds). */

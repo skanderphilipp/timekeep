@@ -21,15 +21,8 @@ import styles from "./combobox.module.scss";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type ComboboxOption = {
-  value: string;
-  label: string;
-  disabled?: boolean;
-  /** Optional icon, avatar, or status indicator rendered before the label. */
-  prefix?: ReactNode;
-  /** Optional element rendered after the label (e.g., count badge). */
-  suffix?: ReactNode;
-};
+export type { ComboboxOption } from "@/types/options";
+import type { ComboboxOption } from "@/types/options";
 
 type ComboboxProps = {
   /** Available options to choose from. */
@@ -61,13 +54,7 @@ type ComboboxProps = {
 
 // ── Default option renderer ──────────────────────────────────────────────────
 
-function DefaultOption({
-  option,
-  indicator,
-}: {
-  option: ComboboxOption;
-  indicator: ReactNode;
-}) {
+function DefaultOption({ option, indicator }: { option: ComboboxOption; indicator: ReactNode }) {
   return (
     <>
       {option.prefix && (
@@ -113,9 +100,7 @@ export function Combobox({
     const q = query.trim().toLowerCase();
     if (!q) return options;
     return options.filter(
-      (opt) =>
-        opt.label.toLowerCase().includes(q) ||
-        opt.value.toLowerCase().includes(q),
+      (opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q),
     );
   }, [options, query]);
 
@@ -142,11 +127,7 @@ export function Combobox({
     >
       <ComboboxPrimitive.Trigger
         data-slot="combobox-trigger"
-        className={clsx(
-          styles.trigger,
-          !selectedLabel && styles.placeholder,
-          className,
-        )}
+        className={clsx(styles.trigger, !selectedLabel && styles.placeholder, className)}
         aria-label={resolvedPlaceholder}
       >
         <ComboboxPrimitive.Value data-slot="combobox-value">
@@ -158,15 +139,8 @@ export function Combobox({
       </ComboboxPrimitive.Trigger>
 
       <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner
-          sideOffset={4}
-          align="start"
-          className={styles.positioner}
-        >
-          <ComboboxPrimitive.Popup
-            data-slot="combobox-popup"
-            className={styles.popup}
-          >
+        <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
+          <ComboboxPrimitive.Popup data-slot="combobox-popup" className={styles.popup}>
             {searchable && (
               <div data-slot="combobox-search-wrapper" className={styles.searchWrapper}>
                 <ComboboxPrimitive.Input
@@ -178,10 +152,7 @@ export function Combobox({
               </div>
             )}
 
-            <ComboboxPrimitive.List
-              data-slot="combobox-list"
-              className={styles.list}
-            >
+            <ComboboxPrimitive.List data-slot="combobox-list" className={styles.list}>
               {loading && (
                 <div data-slot="combobox-loading" className={styles.stateRow}>
                   <Spinner size="sm" />
@@ -189,10 +160,7 @@ export function Combobox({
               )}
 
               {!loading && filtered.length === 0 && (
-                <ComboboxPrimitive.Empty
-                  data-slot="combobox-empty"
-                  className={styles.stateRow}
-                >
+                <ComboboxPrimitive.Empty data-slot="combobox-empty" className={styles.stateRow}>
                   <span className={styles.emptyText}>{resolvedEmpty}</span>
                 </ComboboxPrimitive.Empty>
               )}

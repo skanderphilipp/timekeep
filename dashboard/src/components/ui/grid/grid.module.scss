@@ -8,7 +8,7 @@
 .grid[data-cols="2"] {
   grid-template-columns: 1fr 1fr;
 
-  @include respond-to('mobile') {
+  @include respond-to("mobile") {
     grid-template-columns: 1fr;
   }
 }

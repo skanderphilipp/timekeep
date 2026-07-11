@@ -36,10 +36,10 @@
 }
 
 .breadcrumbLink {
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-secondary);
   font-size: var(--ao-font-size-sm);
-  padding: 1px var(--ao-spacing-1);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   text-decoration: none;
   white-space: nowrap;
 

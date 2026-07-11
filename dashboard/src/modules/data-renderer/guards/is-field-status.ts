@@ -1,8 +1,4 @@
-import type {
-  FieldDefinition,
-  FieldMetadata,
-  StatusFieldMetadata,
-} from "../types";
+import type { FieldDefinition, FieldMetadata, StatusFieldMetadata } from "../types";
 
 /**
  * Type guard: returns `true` if the field is a status field.

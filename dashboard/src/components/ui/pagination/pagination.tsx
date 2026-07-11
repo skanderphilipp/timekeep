@@ -13,12 +13,7 @@ type PaginationProps = {
   className?: string;
 };
 
-export function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-  className,
-}: PaginationProps) {
+export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps) {
   const { _ } = useLingui();
   const dir = useDirection();
   const PrevIcon = chevronForDirection(dir, false);
@@ -46,11 +41,7 @@ export function Pagination({
 
       {pages.map((page, i) =>
         page === null ? (
-          <span
-            data-slot="pagination-ellipsis"
-            key={`ellipsis-${i}`}
-            className={styles.ellipsis}
-          >
+          <span data-slot="pagination-ellipsis" key={`ellipsis-${i}`} className={styles.ellipsis}>
             …
           </span>
         ) : (

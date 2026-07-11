@@ -86,9 +86,7 @@ export function SidePanelCmdkHandler() {
         close();
       } else {
         setTitle("Commands");
-        setContent(() => (
-          <SidePanelCmdk onClose={() => close()} />
-        ));
+        setContent(() => <SidePanelCmdk onClose={() => close()} />);
         setOpen(true);
       }
     },

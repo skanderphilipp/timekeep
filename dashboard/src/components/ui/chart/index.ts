@@ -6,4 +6,6 @@ export { LineChart } from "./LineChart";
 export type { LineDef, LineChartProps } from "./LineChart";
 export { PieChart } from "./PieChart";
 export type { SliceDef, PieChartProps } from "./PieChart";
-export { nivoTheme } from "./nivo-theme";
+export { buildNivoTheme } from "./nivo-theme";
+export { useChartTheme } from "./use-chart-theme";
+export type { ChartTheme } from "./use-chart-theme";

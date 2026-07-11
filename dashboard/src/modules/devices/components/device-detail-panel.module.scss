@@ -33,8 +33,8 @@
 
 .code {
   background: var(--ao-background-secondary);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   font-family: var(--ao-font-family-mono);
   font-size: var(--ao-font-size-xs);
-  padding: 1px var(--ao-spacing-1);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
 }

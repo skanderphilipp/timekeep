@@ -85,7 +85,11 @@ export const PortInput = forwardRef<HTMLInputElement, PortInputProps>(
         {label && (
           <label data-slot="port-input-label" className={styles.label} htmlFor={inputId}>
             {label}
-            {required && <span data-slot="port-input-required" className={styles.required}>*</span>}
+            {required && (
+              <span data-slot="port-input-required" className={styles.required}>
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -103,9 +107,7 @@ export const PortInput = forwardRef<HTMLInputElement, PortInputProps>(
             disabled={disabled}
             required={required}
             aria-invalid={!!error}
-            aria-describedby={
-              error ? errorId : helperText ? helperId : undefined
-            }
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}

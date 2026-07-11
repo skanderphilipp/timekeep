@@ -14,15 +14,10 @@
 }
 
 .input {
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  position: absolute;
-  width: 1px;
+  @include sr-only;
 
   &:focus-visible + .indicator {
-    outline: 2px solid var(--ao-accent-accent9);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: 2px;
   }
 }
@@ -31,12 +26,14 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-xs);
+  border-radius: var(--ao-radius-xs);
   display: flex;
   flex-shrink: 0;
   height: 16px;
   justify-content: center;
-  transition: background-color 0.1s ease, border-color 0.1s ease;
+  transition:
+    background-color 0.1s ease,
+    border-color 0.1s ease;
   width: 16px;
 
   .input:checked + & {

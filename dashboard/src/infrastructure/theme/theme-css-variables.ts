@@ -99,14 +99,14 @@ export const themeCssVariables = {
       strong: "var(--ao-border-color-strong)",
     },
     radius: {
-      xs: "var(--ao-border-radius-xs)",
-      sm: "var(--ao-border-radius-sm)",
-      md: "var(--ao-border-radius-md)",
-      lg: "var(--ao-border-radius-lg)",
-      xl: "var(--ao-border-radius-xl)",
-      pill: "var(--ao-border-radius-pill)",
-      full: "var(--ao-border-radius-full)",
-      rounded: "var(--ao-border-radius-rounded)",
+      xs: "var(--ao-radius-xs)",
+      sm: "var(--ao-radius-sm)",
+      md: "var(--ao-radius-md)",
+      lg: "var(--ao-radius-lg)",
+      xl: "var(--ao-radius-xl)",
+      pill: "var(--ao-radius-pill)",
+      full: "var(--ao-radius-full)",
+      rounded: "var(--ao-radius-full)",
     },
   },
 
@@ -161,5 +161,29 @@ export const themeCssVariables = {
   shadow: {
     sm: "var(--ao-shadow-sm)",
     md: "var(--ao-shadow-md)",
+    lg: "var(--ao-shadow-lg)",
+  },
+
+  /**
+   * Chart palette. These tokens are emitted as sRGB hex only (never P3),
+   * so their resolved values are always parseable by chart libraries
+   * (nivo / d3-color). Use these — not the raw color scales — for any
+   * color that a chart library manipulates in JavaScript.
+   */
+  chart: {
+    categorical: {
+      1: "var(--ao-chart-1)",
+      2: "var(--ao-chart-2)",
+      3: "var(--ao-chart-3)",
+      4: "var(--ao-chart-4)",
+      5: "var(--ao-chart-5)",
+      6: "var(--ao-chart-6)",
+    },
+    primary: "var(--ao-chart-primary)",
+    positive: "var(--ao-chart-positive)",
+    negative: "var(--ao-chart-negative)",
+    warning: "var(--ao-chart-warning)",
+    info: "var(--ao-chart-info)",
+    neutral: "var(--ao-chart-neutral)",
   },
 } as const;

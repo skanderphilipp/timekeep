@@ -1,13 +1,4 @@
-import {
-  PageLayout,
-  PageBody,
-  Section,
-  Skeleton,
-  Grid,
-  CardGrid,
-  Card,
-  PageError,
-} from "@/components/ui";
+import { PageLayout, PageBody, Section, Grid, PageError } from "@/components/ui";
 
 import { useDashboardPage } from "../hooks/use-dashboard-page";
 import { DashboardMetrics } from "../components/dashboard-metrics";
@@ -16,31 +7,7 @@ import { DashboardActivityFeed } from "../components/dashboard-activity-feed";
 import { DashboardDeviceStatus } from "../components/dashboard-device-status";
 import { HourlyArrivalsChart } from "../components/attendance-chart";
 import { DashboardHeaderActions } from "../components/dashboard-header-actions";
-
-/** Card-shaped loading skeleton — matches metric card dimensions. */
-function DashboardSkeleton() {
-  return (
-    <>
-      <Section>
-        <CardGrid>
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <Card.Content>
-                <Skeleton variant="rect" width="100%" height={96} />
-              </Card.Content>
-            </Card>
-          ))}
-        </CardGrid>
-      </Section>
-      <Section>
-        <Skeleton variant="rect" width="100%" height={200} />
-      </Section>
-      <Section>
-        <Skeleton variant="rect" width="100%" height={200} />
-      </Section>
-    </>
-  );
-}
+import { DashboardSkeleton } from "../components/dashboard-skeleton";
 
 export function DashboardPage() {
   const page = useDashboardPage();
@@ -55,9 +22,7 @@ export function DashboardPage() {
       <PageBody>
         {page.isLoading && !page.data && <DashboardSkeleton />}
 
-        {page.error && !page.data && (
-          <PageError onRetry={page.handleRefresh} />
-        )}
+        {page.error && !page.data && <PageError onRetry={page.handleRefresh} />}
 
         {page.data && (
           <>
@@ -67,7 +32,10 @@ export function DashboardPage() {
 
             {page.data.currently_checked_in && (
               <Section>
-                <CheckedInList employees={page.data.currently_checked_in} onUserClick={page.handleUserClick} />
+                <CheckedInList
+                  employees={page.data.currently_checked_in}
+                  onUserClick={page.handleUserClick}
+                />
               </Section>
             )}
 
@@ -79,9 +47,7 @@ export function DashboardPage() {
                   error={null}
                 />
 
-                <DashboardActivityFeed
-                  events={page.data.recent_events}
-                />
+                <DashboardActivityFeed events={page.data.recent_events} />
               </Grid>
             </Section>
 

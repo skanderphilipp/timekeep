@@ -74,10 +74,7 @@ export function useDeviceList() {
 
   // ── Handlers ────────────────────────────────────────────────────
 
-  const handleSearchChange = useCallback(
-    (search: string) => setFilter({ search }),
-    [setFilter],
-  );
+  const handleSearchChange = useCallback((search: string) => setFilter({ search }), [setFilter]);
 
   const handleClearFilters = useCallback(() => resetFilters(), [resetFilters]);
 

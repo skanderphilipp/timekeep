@@ -31,12 +31,23 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <Heading level="h1">Dashboard</Heading>
       <Heading level="h2">System Health</Heading>
       <Heading level="h3">Device Status</Heading>
-      <Heading level="h2" icon={<IconUsers size={20} />}>Employees</Heading>
-      <Heading level="h3" icon={<IconChartBar size={20} />}>Attendance Report</Heading>
+      <Heading level="h2" icon={<IconUsers size={20} />}>
+        Employees
+      </Heading>
+      <Heading level="h3" icon={<IconChartBar size={20} />}>
+        Attendance Report
+      </Heading>
     </div>
   ),
 };
@@ -46,7 +57,9 @@ export const ContextPageHeader: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ padding: "var(--ao-spacing-4)" }}>
-      <Heading level="h1" icon={<IconDeviceDesktop size={24} />}>Devices</Heading>
+      <Heading level="h1" icon={<IconDeviceDesktop size={24} />}>
+        Devices
+      </Heading>
       <p style={{ color: "var(--ao-font-color-secondary)", marginTop: 4 }}>
         Manage ZKTeco biometric scanners and attendance terminals.
       </p>

@@ -26,13 +26,47 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 500 }}>
-      <Callout variant="info" title="Information" description="This is an informational message for the user." />
-      <Callout variant="warning" title="Warning" description="3 anomalies detected in the current view. Review them before exporting." />
-      <Callout variant="error" title="Error" description="All devices are currently offline. Attendance data may be stale." />
-      <Callout variant="success" title="Success" description="Settings have been saved successfully." />
-      <Callout variant="neutral" title="Tip" description="Click any employee name to see their full attendance history." />
-      <Callout variant="warning" title="Closable" description="This callout can be dismissed." closable onClose={() => {}} />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 500,
+      }}
+    >
+      <Callout
+        variant="info"
+        title="Information"
+        description="This is an informational message for the user."
+      />
+      <Callout
+        variant="warning"
+        title="Warning"
+        description="3 anomalies detected in the current view. Review them before exporting."
+      />
+      <Callout
+        variant="error"
+        title="Error"
+        description="All devices are currently offline. Attendance data may be stale."
+      />
+      <Callout
+        variant="success"
+        title="Success"
+        description="Settings have been saved successfully."
+      />
+      <Callout
+        variant="neutral"
+        title="Tip"
+        description="Click any employee name to see their full attendance history."
+      />
+      <Callout
+        variant="warning"
+        title="Closable"
+        description="This callout can be dismissed."
+        closable
+        onClose={() => {}}
+      />
     </div>
   ),
 };

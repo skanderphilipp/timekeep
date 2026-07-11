@@ -1,9 +1,10 @@
 import { ResponsiveLine } from "@nivo/line";
 
-import { nivoTheme } from "./nivo-theme";
+import { useChartTheme } from "./use-chart-theme";
 
 export type LineDef = {
   dataKey: string;
+  /** CSS color or `var(--ao-*)` token reference. Defaults to the categorical palette. */
   stroke?: string;
   name?: string;
   dot?: boolean;
@@ -30,8 +31,12 @@ function toSeries(data: Record<string, unknown>[], lines: LineDef[], xKey: strin
 }
 
 export function LineChart({ data, lines, xKey, height = 300, grid = false }: LineChartProps) {
+  const { categorical, nivo, resolveColor } = useChartTheme();
+
   const series = toSeries(data, lines, xKey);
-  const colors = lines.map((l) => l.stroke ?? "var(--ao-accent-accent9)");
+  const colors = lines.map((l, i) =>
+    l.stroke ? resolveColor(l.stroke) : categorical[i % categorical.length],
+  );
   const hasArea = lines.some((l) => l.areaFill != null);
   const hasDots = lines.some((l) => l.dot === true);
 
@@ -40,7 +45,7 @@ export function LineChart({ data, lines, xKey, height = 300, grid = false }: Lin
       <ResponsiveLine
         data={series}
         colors={colors}
-        theme={nivoTheme}
+        theme={nivo}
         margin={{ top: 8, right: 8, bottom: 36, left: 48 }}
         enableGridX={grid}
         enableGridY={grid}

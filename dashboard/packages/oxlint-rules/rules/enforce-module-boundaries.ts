@@ -1,18 +1,18 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'enforce-module-boundaries';
+export const RULE_NAME = "enforce-module-boundaries";
 
 /**
  * Package-to-tag mapping for the Reaktly monorepo.
  * Update this as new packages are added.
  */
 const PACKAGE_TAG_MAP: Record<string, string[]> = {
-  '@reaktly/pulse': ['scope:frontend'],
-  '@reaktly/ui': ['scope:shared'],
-  '@reaktly/shared': ['scope:shared'],
-  '@reaktly/oxlint-rules': ['scope:shared'],
-  '@reaktly/server': ['scope:backend'],
-  '@reaktly/emails': ['scope:backend'],
+  "@reaktly/pulse": ["scope:frontend"],
+  "@reaktly/ui": ["scope:shared"],
+  "@reaktly/shared": ["scope:shared"],
+  "@reaktly/oxlint-rules": ["scope:shared"],
+  "@reaktly/server": ["scope:backend"],
+  "@reaktly/emails": ["scope:backend"],
 };
 
 const WORKSPACE_PACKAGES = Object.keys(PACKAGE_TAG_MAP);
@@ -24,23 +24,19 @@ type DepConstraint = {
 
 const extractPackageFromPath = (filePath: string): string | null => {
   // Match packages/<name>/ or apps/<name>/
-  const match =
-    filePath.match(/packages\/([^/]+)\//) ?? filePath.match(/apps\/([^/]+)\//);
+  const match = filePath.match(/packages\/([^/]+)\//) ?? filePath.match(/apps\/([^/]+)\//);
 
   return match ? match[1] : null;
 };
 
 const resolveImportPackage = (importSource: string): string | null => {
   for (const packageName of WORKSPACE_PACKAGES) {
-    if (
-      importSource === packageName ||
-      importSource.startsWith(`${packageName}/`)
-    ) {
+    if (importSource === packageName || importSource.startsWith(`${packageName}/`)) {
       return packageName;
     }
   }
 
-  if (importSource.startsWith('@/')) {
+  if (importSource.startsWith("@/")) {
     return null;
   }
 
@@ -76,14 +72,10 @@ const isImportAllowed = (
   return true;
 };
 
-const checkImport = (
-  node: any,
-  context: any,
-  depConstraints: DepConstraint[],
-) => {
+const checkImport = (node: any, context: any, depConstraints: DepConstraint[]) => {
   const importSource = node.source?.value;
 
-  if (!importSource || typeof importSource !== 'string') {
+  if (!importSource || typeof importSource !== "string") {
     return;
   }
 
@@ -102,7 +94,7 @@ const checkImport = (
   if (!isImportAllowed(sourcePackage, targetPackage, depConstraints)) {
     context.report({
       node,
-      messageId: 'moduleBoundaryViolation',
+      messageId: "moduleBoundaryViolation",
       data: {
         sourcePackage,
         targetPackage,
@@ -114,24 +106,23 @@ const checkImport = (
 
 export const rule = defineRule({
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description:
-        'Enforce module boundaries between packages based on scope tags',
+      description: "Enforce module boundaries between packages based on scope tags",
     },
     schema: [
       {
-        type: 'object',
+        type: "object",
         properties: {
           depConstraints: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                sourceTag: { type: 'string' },
+                sourceTag: { type: "string" },
                 onlyDependOnLibsWithTags: {
-                  type: 'array',
-                  items: { type: 'string' },
+                  type: "array",
+                  items: { type: "string" },
                 },
               },
             },
@@ -145,9 +136,7 @@ export const rule = defineRule({
     },
   },
   create: (context) => {
-    const options = (
-      context.options as [{ depConstraints: DepConstraint[] }]
-    )?.[0];
+    const options = (context.options as [{ depConstraints: DepConstraint[] }])?.[0];
     const depConstraints = options?.depConstraints ?? [];
 
     if (depConstraints.length === 0) {
@@ -159,7 +148,7 @@ export const rule = defineRule({
         checkImport(node, context, depConstraints);
       },
       ImportExpression: (node: any) => {
-        if (node.source?.type === 'Literal') {
+        if (node.source?.type === "Literal") {
           checkImport({ source: node.source }, context, depConstraints);
         }
       },

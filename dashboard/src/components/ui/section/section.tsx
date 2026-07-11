@@ -18,20 +18,12 @@ type SectionProps = {
  *
  * Pages should compose multiple Sections — never nest raw divs as layout containers.
  */
-export function Section({
-  children,
-  className,
-  alignment = "left",
-}: SectionProps) {
+export function Section({ children, className, alignment = "left" }: SectionProps) {
   return (
     <section
       data-slot="section"
       data-alignment={alignment}
-      className={clsx(
-        styles.section,
-        styles[alignment],
-        className,
-      )}
+      className={clsx(styles.section, styles[alignment], className)}
     >
       {children}
     </section>

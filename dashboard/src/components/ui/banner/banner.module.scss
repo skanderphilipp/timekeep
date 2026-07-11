@@ -1,6 +1,6 @@
 .banner {
   align-items: flex-start;
-  border-radius: var(--ao-border-radius-md);
+  border-radius: var(--ao-radius-md);
   display: flex;
   gap: var(--ao-spacing-3);
   padding: var(--ao-spacing-4);
@@ -33,7 +33,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: inherit;
   cursor: pointer;
   display: flex;

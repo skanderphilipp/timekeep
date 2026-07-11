@@ -6,11 +6,10 @@ import {
   IconCalendar,
   IconAlertTriangle,
 } from "@tabler/icons-react";
-import { FilterDropdown } from "./filter-dropdown";
+import { FilterDropdown, type FilterChip, type FilterField } from "./filter-dropdown";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Toggle } from "@/components/ui/toggle";
-import type { FilterChip, FilterField } from "./filter-dropdown";
 
 const deviceOptions = [
   { value: "", label: "All Devices" },
@@ -28,10 +27,38 @@ const statusOptions = [
 ];
 
 const fields: FilterField[] = [
-  { key: "device", label: "Device", icon: <IconDeviceDesktop size={14} />, renderValueSelector: () => <FilterSelect options={deviceOptions} value="" onChange={fn()} label="Device" /> },
-  { key: "status", label: "Status", icon: <IconStatusChange size={14} />, renderValueSelector: () => <FilterSelect options={statusOptions} value="" onChange={fn()} label="Status" /> },
-  { key: "date", label: "Date range", icon: <IconCalendar size={14} />, renderValueSelector: () => <DatePicker mode="range" value={null} onChange={fn()} placeholder="Select date range…" /> },
-  { key: "anomalies", label: "Anomalies only", icon: <IconAlertTriangle size={14} />, renderValueSelector: () => <Toggle checked={false} onChange={fn()} label="Show only anomalous punches" /> },
+  {
+    key: "device",
+    label: "Device",
+    icon: <IconDeviceDesktop size={14} />,
+    renderValueSelector: () => (
+      <FilterSelect options={deviceOptions} value="" onChange={fn()} label="Device" />
+    ),
+  },
+  {
+    key: "status",
+    label: "Status",
+    icon: <IconStatusChange size={14} />,
+    renderValueSelector: () => (
+      <FilterSelect options={statusOptions} value="" onChange={fn()} label="Status" />
+    ),
+  },
+  {
+    key: "date",
+    label: "Date range",
+    icon: <IconCalendar size={14} />,
+    renderValueSelector: () => (
+      <DatePicker mode="range" value={null} onChange={fn()} placeholder="Select date range…" />
+    ),
+  },
+  {
+    key: "anomalies",
+    label: "Anomalies only",
+    icon: <IconAlertTriangle size={14} />,
+    renderValueSelector: () => (
+      <Toggle checked={false} onChange={fn()} label="Show only anomalous punches" />
+    ),
+  },
 ];
 
 const sampleChips: FilterChip[] = [
@@ -67,22 +94,49 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-6)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>No active filters</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          No active filters
+        </p>
         <FilterDropdown fields={fields} />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With result count</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          With result count
+        </p>
         <FilterDropdown fields={fields} resultCount={128} />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Active filters + clear</p>
-        <FilterDropdown fields={fields} activeFilters={sampleChips} hasActiveFilters onClear={fn()} resultCount={12} />
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          Active filters + clear
+        </p>
+        <FilterDropdown
+          fields={fields}
+          activeFilters={sampleChips}
+          hasActiveFilters
+          onClear={fn()}
+          resultCount={12}
+        />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>No results</p>
-        <FilterDropdown fields={fields} activeFilters={sampleChips} hasActiveFilters onClear={fn()} resultCount={0} />
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          No results
+        </p>
+        <FilterDropdown
+          fields={fields}
+          activeFilters={sampleChips}
+          hasActiveFilters
+          onClear={fn()}
+          resultCount={0}
+        />
       </div>
     </div>
   ),

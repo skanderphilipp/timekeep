@@ -1,7 +1,15 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { DataTable, TextCell, TimestampCell, StatusCell, Tag, type DataTableColumn, type SortState } from "@/components/ui";
+import {
+  DataTable,
+  TextCell,
+  TimestampCell,
+  StatusCell,
+  Tag,
+  type DataTableColumn,
+  type SortState,
+} from "@/components/ui";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +37,10 @@ export type AttendanceTableProps = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const STATUS_MAP: Record<PunchRecord["status"], { variant: "online" | "offline" | "warning"; label: string }> = {
+const STATUS_MAP: Record<
+  PunchRecord["status"],
+  { variant: "online" | "offline" | "warning"; label: string }
+> = {
   present: { variant: "online", label: "Present" },
   late: { variant: "warning", label: "Late" },
   absent: { variant: "offline", label: "Absent" },

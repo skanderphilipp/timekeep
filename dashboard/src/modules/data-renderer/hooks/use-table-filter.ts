@@ -15,14 +15,10 @@ export function useTableFilter(instanceId: string) {
   const setFilter = useCallback(
     (entry: FilterEntry) => {
       setFilters((prev: FilterEntry[]) => {
-        const idx = prev.findIndex(
-          (f: FilterEntry) => f.columnId === entry.columnId,
-        );
+        const idx = prev.findIndex((f: FilterEntry) => f.columnId === entry.columnId);
         if (idx >= 0) {
           if (entry.value === "") {
-            return prev.filter(
-              (_: FilterEntry, i: number) => i !== idx,
-            );
+            return prev.filter((_: FilterEntry, i: number) => i !== idx);
           }
           const next = [...prev];
           next[idx] = entry;
@@ -37,9 +33,7 @@ export function useTableFilter(instanceId: string) {
 
   const removeFilter = useCallback(
     (columnId: string) => {
-      setFilters((prev: FilterEntry[]) =>
-        prev.filter((f: FilterEntry) => f.columnId !== columnId),
-      );
+      setFilters((prev: FilterEntry[]) => prev.filter((f: FilterEntry) => f.columnId !== columnId));
     },
     [setFilters],
   );

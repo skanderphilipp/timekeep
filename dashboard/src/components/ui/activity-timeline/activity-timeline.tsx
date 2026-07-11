@@ -116,7 +116,7 @@ function EventRow({
 }: {
   event: TimelineEvent;
   relativeTime: boolean;
-  _: ReturnType<typeof import("@lingui/react").useLingui>["_"];
+  _: LinguiFn;
 }) {
   const Icon = KIND_ICONS[event.kind];
 
@@ -140,7 +140,7 @@ function EventRow({
 
 // ─── Time formatting helpers ────────────────────────────────────────
 
-type LinguiFn = ReturnType<typeof import("@lingui/react").useLingui>["_"];
+type LinguiFn = ReturnType<typeof useLingui>["_"];
 
 function formatRelative(ts: number, _: LinguiFn): string {
   const now = Math.floor(Date.now() / 1000);

@@ -5,7 +5,9 @@ import { msg } from "@lingui/core/macro";
 import type { ActiveFilter } from "@/components/ui/filter-bar";
 import type { PunchFilter } from "@/lib/api";
 
-type FilterPatch = Partial<Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by">>;
+type FilterPatch = Partial<
+  Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by">
+>;
 
 /**
  * Converts raw punch filter state into ActiveFilter objects for display

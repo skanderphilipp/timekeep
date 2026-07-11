@@ -1,8 +1,4 @@
-import type {
-  FieldDefinition,
-  FieldMetadata,
-  TimestampFieldMetadata,
-} from "../types";
+import type { FieldDefinition, FieldMetadata, TimestampFieldMetadata } from "../types";
 
 /**
  * Type guard: returns `true` if the field is a timestamp field.

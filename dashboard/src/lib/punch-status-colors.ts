@@ -8,7 +8,7 @@
  */
 
 import { PUNCH_STATUSES, type PunchStatusValue } from "@shared/punch-statuses";
-import type { TagColor } from "@/components/ui/tag";
+import type { StatusColor as TagColor } from "@/types/status-color";
 
 /** Color mapping for punch status → Tag color. */
 const STATUS_COLORS: Record<PunchStatusValue, TagColor> = {

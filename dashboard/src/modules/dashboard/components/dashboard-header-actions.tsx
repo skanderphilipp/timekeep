@@ -17,7 +17,10 @@ function formatUpdated(seconds: number | null, _: ReturnType<typeof useLingui>["
   return _(msg`Updated ${Math.floor(seconds / 3600)}h ago`);
 }
 
-export function DashboardHeaderActions({ secondsSinceUpdate, onRefresh }: DashboardHeaderActionsProps) {
+export function DashboardHeaderActions({
+  secondsSinceUpdate,
+  onRefresh,
+}: DashboardHeaderActionsProps) {
   const { _ } = useLingui();
   const now = new Date();
 
@@ -30,9 +33,18 @@ export function DashboardHeaderActions({ secondsSinceUpdate, onRefresh }: Dashbo
           <Text variant="caption" color="tertiary">
             {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             {" · "}
-            {now.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            {now.toLocaleDateString(undefined, {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </Text>
-          <IconButton onClick={onRefresh} aria-label={_(msg`Refresh dashboard`)} title={_(msg`Refresh`)}>
+          <IconButton
+            onClick={onRefresh}
+            aria-label={_(msg`Refresh dashboard`)}
+            title={_(msg`Refresh`)}
+          >
             <IconRefresh size={16} />
           </IconButton>
           <Text variant="caption" color="tertiary">

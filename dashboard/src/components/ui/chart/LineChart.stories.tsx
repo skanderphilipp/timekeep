@@ -22,7 +22,13 @@ type Story = StoryObj<typeof LineChart>;
 export const Primary: Story = {
   render: () => (
     <Chart title="Monthly Attendance Trend" description="Attendance % over time.">
-      <LineChart data={monthlyData} xKey="month" lines={[{ dataKey: "rate", name: "Attendance %" }]} grid height={250} />
+      <LineChart
+        data={monthlyData}
+        xKey="month"
+        lines={[{ dataKey: "rate", name: "Attendance %" }]}
+        grid
+        height={250}
+      />
     </Chart>
   ),
 };
@@ -31,7 +37,13 @@ export const WithAreaFill: Story = {
   name: "With Area Fill",
   render: () => (
     <Chart title="With Subtle Fill" description="Area fill at 15% opacity.">
-      <LineChart data={monthlyData} xKey="month" lines={[{ dataKey: "rate", name: "Attendance %", areaFill: 0.15, dot: true }]} grid height={250} />
+      <LineChart
+        data={monthlyData}
+        xKey="month"
+        lines={[{ dataKey: "rate", name: "Attendance %", areaFill: 0.15, dot: true }]}
+        grid
+        height={250}
+      />
     </Chart>
   ),
 };

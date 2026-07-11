@@ -19,7 +19,15 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 200 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 200,
+      }}
+    >
       <PortInput label="Port" value={4370} onChange={fn()} />
       <PortInput label="Port (error)" error="Port must be 1–65535" onChange={fn()} />
       <PortInput label="Port (disabled)" value={4370} disabled onChange={fn()} />

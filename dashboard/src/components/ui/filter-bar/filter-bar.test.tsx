@@ -114,9 +114,7 @@ describe("FilterBar", () => {
   it("calls onRemove when a filter chip is clicked", async () => {
     const onRemove = vi.fn();
     const user = userEvent.setup();
-    const filters: ActiveFilter[] = [
-      { key: "pin", label: "PIN: 145", onRemove },
-    ];
+    const filters: ActiveFilter[] = [{ key: "pin", label: "PIN: 145", onRemove }];
 
     render(
       <Wrapper>
@@ -127,9 +125,7 @@ describe("FilterBar", () => {
     );
 
     const chipButtons = screen.getAllByRole("button");
-    const removeBtn = chipButtons.find((btn) =>
-      btn.getAttribute("aria-label")?.includes("Remove"),
-    );
+    const removeBtn = chipButtons.find((btn) => btn.getAttribute("aria-label")?.includes("Remove"));
     expect(removeBtn).toBeDefined();
     await user.click(removeBtn!);
 

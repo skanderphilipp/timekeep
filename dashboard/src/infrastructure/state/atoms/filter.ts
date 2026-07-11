@@ -29,9 +29,7 @@ export type FilterAtoms<T extends Record<string, unknown>> = {
   resetFilterAtom: ReturnType<typeof atom<unknown, [], void>>;
 };
 
-export function createFilterAtoms<T extends Record<string, unknown>>(
-  initial: T,
-): FilterAtoms<T> {
+export function createFilterAtoms<T extends Record<string, unknown>>(initial: T): FilterAtoms<T> {
   const filterAtom = atom<T>(initial);
 
   const updateFilterAtom = atom(null, (_get, set, update: Partial<T>) => {

@@ -39,7 +39,15 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", maxWidth: 320 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 320,
+      }}
+    >
       <Select options={periodOptions} placeholder="Select a period…" value="month" />
       <Select options={periodOptions} placeholder="No selection…" />
       <Select options={statusOptions} placeholder="All Statuses" value="" />

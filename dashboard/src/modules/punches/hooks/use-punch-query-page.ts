@@ -1,17 +1,13 @@
-import { useMemo, useCallback, useState, type ChangeEvent } from "react";
-import { useLingui } from "@lingui/react";
+import { useMemo, useCallback } from "react";
 
 import { useInfinitePunchQuery } from "./use-punch-query-infinite";
 import { useActivePunchFilters } from "./use-active-punch-filters";
 import { useAttendancePresets } from "./use-attendance-presets";
 import { usePunchFacetOptions } from "./use-punch-facet-options";
-import { createPunchColumns } from "@/modules/data-renderer/column-definitions/punch-columns";
-import { fromDateString, toDateString } from "@/lib/date";
+import { usePunchColumns } from "./use-punch-columns";
+import { usePunchFilterHandlers } from "./use-punch-filter-handlers";
+import { fromDateString } from "@/lib/date";
 import type { Punch, FacetFilterParams } from "@/lib/api";
-import type { ColumnDefinition } from "@/modules/data-renderer/types";
-
-/** Columns that are always visible and cannot be toggled off. */
-const REQUIRED_COLUMNS = ["timestamp"];
 
 /**
  * Page-level orchestration hook for the Punch Query page.
@@ -21,8 +17,6 @@ const REQUIRED_COLUMNS = ["timestamp"];
  * derived values into a single consumable return.
  */
 export function usePunchQueryPage() {
-  const { _ } = useLingui();
-
   const {
     filters,
     punches,
@@ -39,7 +33,7 @@ export function usePunchQueryPage() {
     handleClearFilters,
   } = useInfinitePunchQuery();
 
-  const allColumns = useMemo(() => createPunchColumns(_), [_]);
+  const { columns, columnOptions, visibleColumnIds, handleColumnToggle } = usePunchColumns();
   const presets = useAttendancePresets();
 
   // ── Facet-powered options (contextual counts) ─────────────────────
@@ -63,7 +57,7 @@ export function usePunchQueryPage() {
         const sns = patch.device_sns as string[] | undefined;
         setDeviceSns(sns ?? []);
         // Also update single device_sn for URL sync
-        handleFilterChange({ device_sn: (sns && sns.length === 1) ? sns[0] : undefined } as any);
+        handleFilterChange({ device_sn: sns && sns.length === 1 ? sns[0] : undefined } as any);
       } else {
         handleFilterChange(patch as any);
       }
@@ -76,41 +70,6 @@ export function usePunchQueryPage() {
     handleFilterChangeWithDevices,
     facetOptions.labelBySn,
   );
-
-  /** Track which optional columns the user has hidden. */
-  const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
-
-  /** Columns currently visible (respects user toggles + required columns). */
-  const columns: ColumnDefinition[] = useMemo(
-    () =>
-      allColumns.map((col) => ({
-        ...col,
-        isVisible: REQUIRED_COLUMNS.includes(col.id) ? true : !hiddenColumns.has(col.id),
-      })),
-    [allColumns, hiddenColumns],
-  );
-
-  /** Options for the column visibility MultiSelect. */
-  const columnOptions = useMemo(
-    () =>
-      allColumns
-        .filter((col) => !REQUIRED_COLUMNS.includes(col.id))
-        .map((col) => ({ value: col.id, label: col.header })),
-    [allColumns],
-  );
-
-  /** Currently selected (visible) column IDs for the MultiSelect. */
-  const visibleColumnIds = useMemo(
-    () => columns.filter((c) => c.isVisible).map((c) => c.id),
-    [columns],
-  );
-
-  const handleColumnToggle = useCallback((selectedIds: string[]) => {
-    const visibleSet = new Set(selectedIds);
-    setHiddenColumns(
-      new Set(allColumns.filter((c) => !REQUIRED_COLUMNS.includes(c.id) && !visibleSet.has(c.id)).map((c) => c.id)),
-    );
-  }, [allColumns]);
 
   /** Pre-computed Date values so the page never touches date strings. */
   const dateFrom = useMemo(
@@ -125,49 +84,18 @@ export function usePunchQueryPage() {
   /** Stable row key extractor. */
   const getRowKey = useCallback((punch: Punch) => punch.id, []);
 
-  const handleDateChange = useCallback(
-    (from: Date | null, to: Date | null | undefined) => {
-      handleFilterChange({
-        since: from ? toDateString(from) : undefined,
-        until: to ? toDateString(to) : undefined,
-      });
-    },
-    [handleFilterChange],
-  );
-
-  /** Unified search across employee name + PIN. */
-  const handleSearchChange = useCallback(
-    (v: string) => handleFilterChange({ user_pin: v || undefined }),
-    [handleFilterChange],
-  );
-
-  /** Single device select (legacy; maps to device_sns array). */
-  const handleDeviceChange = useCallback(
-    (v: string) => {
-      // Update URL-synced single device
-      handleFilterChange({ device_sn: v || undefined });
-      // Update local multi-device state
-      setDeviceSns(v ? [v] : []);
-    },
-    [handleFilterChange, setDeviceSns],
-  );
-
-  const handleStatusChange = useCallback(
-    (v: string) => handleFilterChange({ status: v || undefined }),
-    [handleFilterChange],
-  );
+  const {
+    handleDateChange,
+    handleSearchChange,
+    handleDeviceChange,
+    handleStatusChange,
+    handleAnomaliesOnlyToggle,
+  } = usePunchFilterHandlers(handleFilterChange, setDeviceSns);
 
   const anomaliesOnly = filters.anomalies_only === "true";
-  const handleAnomaliesOnlyToggle = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => handleFilterChange({ anomalies_only: e.target.checked ? "true" : undefined }),
-    [handleFilterChange],
-  );
 
   /** Count of anomalies in the currently loaded punches. */
-  const anomalyCount = useMemo(
-    () => punches.filter((p) => p.is_anomaly).length,
-    [punches],
-  );
+  const anomalyCount = useMemo(() => punches.filter((p) => p.is_anomaly).length, [punches]);
 
   return {
     columns,

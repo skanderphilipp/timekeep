@@ -28,7 +28,7 @@ function getSubmitButton() {
 
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByPlaceholderText("admin"), "admin");
-  await user.type(screen.getByPlaceholderText("••••••••"), "admin");
+  await user.type(screen.getByPlaceholderText("Password"), "admin");
   await user.click(getSubmitButton());
 }
 
@@ -40,7 +40,7 @@ describe("LoginForm", () => {
 
     expect(getSubmitButton()).toBeInTheDocument();
     expect(screen.getByPlaceholderText("admin")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
   });
 
   it("shows validation errors on empty submit", async () => {
@@ -61,7 +61,8 @@ describe("LoginForm", () => {
       token_type: "Bearer",
       username: "admin",
       role: "admin",
-      permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
+      permissions:
+        "read:punches write:punches read:devices write:devices manage:users manage:commands",
     });
 
     const user = userEvent.setup();

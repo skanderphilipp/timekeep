@@ -25,9 +25,7 @@ const DataTableContext = createContext<DataTableContextValue | null>(null);
 export function useDataTableContext(): DataTableContextValue {
   const ctx = useContext(DataTableContext);
   if (!ctx) {
-    throw new Error(
-      "useDataTableContext must be used within a DataTableContextProvider",
-    );
+    throw new Error("useDataTableContext must be used within a DataTableContextProvider");
   }
   return ctx;
 }

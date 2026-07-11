@@ -49,7 +49,9 @@ export function useHotkeyContext(): HotkeyContext {
   const register = useCallback((keys: string[], callback: HotkeyCallback) => {
     const id = Math.random().toString(36).slice(2);
     registrationsRef.current.set(id, { keys, callback });
-    return () => { registrationsRef.current.delete(id); };
+    return () => {
+      registrationsRef.current.delete(id);
+    };
   }, []);
 
   useEffect(() => {
@@ -72,8 +74,7 @@ export function useHotkeyContext(): HotkeyContext {
 
           // Check modifiers match
           const modsMatch =
-            modifiers.size === pressedMods.size &&
-            [...modifiers].every((m) => pressedMods.has(m));
+            modifiers.size === pressedMods.size && [...modifiers].every((m) => pressedMods.has(m));
 
           if (modsMatch && key === pressedKey) {
             e.preventDefault();
@@ -96,11 +97,7 @@ export function useHotkeyContext(): HotkeyContext {
  * Register a global hotkey. Must be called inside a component that is inside
  * the HotkeyProvider context.
  */
-export function useGlobalHotkey(
-  keys: string[],
-  callback: HotkeyCallback,
-  deps: unknown[] = [],
-) {
+export function useGlobalHotkey(keys: string[], callback: HotkeyCallback, deps: unknown[] = []) {
   // Simple implementation: just useEffect on the document
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -113,9 +110,9 @@ export function useGlobalHotkey(
         const ctrlPressed = e.ctrlKey || e.metaKey;
 
         const modsMatch =
-          (modifiers.has("ctrl") === ctrlPressed) &&
-          (modifiers.has("shift") === e.shiftKey) &&
-          (modifiers.has("alt") === e.altKey);
+          modifiers.has("ctrl") === ctrlPressed &&
+          modifiers.has("shift") === e.shiftKey &&
+          modifiers.has("alt") === e.altKey;
 
         if (modsMatch && key === pressedKey) {
           e.preventDefault();
@@ -127,6 +124,6 @@ export function useGlobalHotkey(
 
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, callback]);
 }

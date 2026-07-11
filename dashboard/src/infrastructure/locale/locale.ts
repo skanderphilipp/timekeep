@@ -124,7 +124,11 @@ export async function detectAndActivateLocale(): Promise<AppLocale> {
   if (urlLocale) {
     const normalized = normalizeLocale(urlLocale);
     if (isValidLocale(normalized)) locale = normalized;
-    try { localStorage.setItem("ao-locale", locale); } catch { /* noop */ }
+    try {
+      localStorage.setItem("ao-locale", locale);
+    } catch {
+      /* noop */
+    }
   } else if (storageLocale) {
     const normalized = normalizeLocale(storageLocale);
     if (isValidLocale(normalized)) locale = normalized;

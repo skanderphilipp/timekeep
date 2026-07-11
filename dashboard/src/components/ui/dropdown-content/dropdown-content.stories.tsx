@@ -32,7 +32,16 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
       <div>
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", display: "block", marginBottom: 8 }}>Short menu</span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--ao-font-color-tertiary)",
+            display: "block",
+            marginBottom: 8,
+          }}
+        >
+          Short menu
+        </span>
         <DropdownContent>
           <MenuItem label="Profile" onClick={fn()} />
           <MenuItem label="Settings" onClick={fn()} />
@@ -41,7 +50,16 @@ export const AllVariants: Story = {
         </DropdownContent>
       </div>
       <div>
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", display: "block", marginBottom: 8 }}>Long menu</span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--ao-font-color-tertiary)",
+            display: "block",
+            marginBottom: 8,
+          }}
+        >
+          Long menu
+        </span>
         <DropdownContent>
           <MenuItem label="Dashboard" onClick={fn()} />
           <MenuItem label="Punch Records" onClick={fn()} />

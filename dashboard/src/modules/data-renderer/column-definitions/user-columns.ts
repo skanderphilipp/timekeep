@@ -1,9 +1,6 @@
-import type { ColumnDefinition } from "../types";
 import type { MessageDescriptor } from "@lingui/core";
-import type {
-  UserPinFieldMetadata,
-  TextFieldMetadata,
-} from "../types";
+
+import type { ColumnDefinition, UserPinFieldMetadata, TextFieldMetadata } from "../types";
 import { msg } from "@lingui/core/macro";
 
 type T = (descriptor: MessageDescriptor) => string;

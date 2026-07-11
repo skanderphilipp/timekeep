@@ -2,16 +2,16 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: inline-flex;
   gap: var(--ao-spacing-2);
-  	height: 36px;
+  height: 36px;
   padding: 0 var(--ao-spacing-2);
   transition: border-color 0.15s ease;
   width: 180px;
 
   &:focus-within {
-    border-color: var(--ao-accent-accent8);
+    border-color: var(--ao-focus-ring);
   }
 }
 
@@ -40,7 +40,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-xs);
+  border-radius: var(--ao-radius-xs);
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: flex;

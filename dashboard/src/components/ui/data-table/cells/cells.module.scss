@@ -8,12 +8,12 @@
 .clickableText {
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-accent-accent11);
   cursor: pointer;
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
-  padding: 2px var(--ao-spacing-1);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   text-align: inherit;
 
   &:hover {

@@ -52,7 +52,7 @@ type SidePanelProps = {
  * Features:
  * - Resize handle (drag to resize between 320–600px)
  * - Width persisted to localStorage via `sidePanelWidthAtom`
- * - CSS transition on open/close (width 0 ↔ var(--ao-side-panel-width))
+ * - CSS transition on open/close (width 0 ↔ var(--tk-side-panel-width))
  * - Scrollable content area with fade-in animation
  *
  * Ported from Twenty's `SidePanelForDesktop`.
@@ -84,26 +84,18 @@ export function SidePanel({
   const isControlled = propOpen !== undefined;
   const isOpen = propOpen ?? atomOpen;
   const displayTitle = propTitle ?? atomTitle ?? "";
-  const content =
-    propChildren ??
-    (typeof atomContent === "function" ? atomContent() : null);
+  const content = propChildren ?? (typeof atomContent === "function" ? atomContent() : null);
   const handleClose = propOnClose ?? (() => atomClose());
 
   // Set CSS custom property before first paint (prevents flash)
   useLayoutEffect(() => {
-    document.documentElement.style.setProperty(
-      SIDE_PANEL_WIDTH_VAR,
-      `${width}px`,
-    );
+    document.documentElement.style.setProperty(SIDE_PANEL_WIDTH_VAR, `${width}px`);
   }, [width]);
 
   const handleWidthChange = useCallback(
     (newWidth: number) => {
       setWidth(newWidth);
-      document.documentElement.style.setProperty(
-        SIDE_PANEL_WIDTH_VAR,
-        `${newWidth}px`,
-      );
+      document.documentElement.style.setProperty(SIDE_PANEL_WIDTH_VAR, `${newWidth}px`);
     },
     [setWidth],
   );

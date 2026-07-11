@@ -1,6 +1,6 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'component-props-naming';
+export const RULE_NAME = "component-props-naming";
 
 const checkPropsTypeName = ({
   node,
@@ -17,19 +17,18 @@ const checkPropsTypeName = ({
 
   node.params.forEach((param: any) => {
     if (
-      (param.type === 'ObjectPattern' || param?.type === 'Identifier') &&
-      param.typeAnnotation?.typeAnnotation.type === 'TSTypeReference' &&
-      param.typeAnnotation?.typeAnnotation.typeName?.type === 'Identifier'
+      (param.type === "ObjectPattern" || param?.type === "Identifier") &&
+      param.typeAnnotation?.typeAnnotation.type === "TSTypeReference" &&
+      param.typeAnnotation?.typeAnnotation.typeName?.type === "Identifier"
     ) {
       const { typeName } = param.typeAnnotation.typeAnnotation;
       const actualPropTypeName = typeName.name;
       if (actualPropTypeName !== expectedPropTypeName) {
         context.report({
           node: param,
-          messageId: 'invalidPropsTypeName',
+          messageId: "invalidPropsTypeName",
           data: { expectedPropTypeName, actualPropTypeName },
-          fix: (fixer: any) =>
-            fixer.replaceText(typeName, expectedPropTypeName),
+          fix: (fixer: any) => fixer.replaceText(typeName, expectedPropTypeName),
         });
       }
     }
@@ -38,11 +37,11 @@ const checkPropsTypeName = ({
 
 export const rule = defineRule({
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Ensure component props follow naming convention',
+      description: "Ensure component props follow naming convention",
     },
-    fixable: 'code',
+    fixable: "code",
     schema: [],
     messages: {
       invalidPropsTypeName:
@@ -52,10 +51,7 @@ export const rule = defineRule({
   create: (context) => {
     return {
       ArrowFunctionExpression: (node: any) => {
-        if (
-          node.parent?.type === 'VariableDeclarator' &&
-          node.parent.id?.type === 'Identifier'
-        ) {
+        if (node.parent?.type === "VariableDeclarator" && node.parent.id?.type === "Identifier") {
           checkPropsTypeName({
             node,
             context,

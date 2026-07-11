@@ -77,9 +77,7 @@ export function DatePicker({
   const isRange = mode === "range";
 
   // Calendar sees the real value, or pendingRangeStart during selection
-  const calendarStartDate: Date | null = isRange
-    ? (pendingRangeStart ?? value)
-    : value;
+  const calendarStartDate: Date | null = isRange ? (pendingRangeStart ?? value) : value;
   const calendarEndDate: Date | null = isRange ? (endValue ?? null) : null;
 
   // Display text uses the committed (parent) value
@@ -139,7 +137,7 @@ export function DatePicker({
   );
 
   const handleClear = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.KeyboardEvent) => {
       e.stopPropagation();
       e.preventDefault();
       setPendingRangeStart(null);
@@ -171,6 +169,9 @@ export function DatePicker({
             data-slot="date-picker-clear"
             className={styles.clear}
             onClick={handleClear}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleClear(e);
+            }}
             role="button"
             tabIndex={0}
             aria-label={_(msg`Clear date`)}

@@ -67,10 +67,7 @@ export function AnimatedButton({
   );
 
   return (
-    <motion.div
-      className={clsx(styles.wrapper, className)}
-      {...motionProps}
-    >
+    <motion.div className={clsx(styles.wrapper, className)} {...motionProps}>
       <Button
         variant={variant}
         size={size}

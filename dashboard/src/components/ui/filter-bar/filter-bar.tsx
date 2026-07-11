@@ -50,10 +50,7 @@ export function FilterBar({
   const { _ } = useLingui();
 
   return (
-    <div
-      data-slot="filter-bar"
-      className={clsx(styles.root, sticky && styles.sticky, className)}
-    >
+    <div data-slot="filter-bar" className={clsx(styles.root, sticky && styles.sticky, className)}>
       {/* Search section — full-width, only rendered when provided */}
       {search && (
         <div data-slot="filter-bar-search" className={styles.search}>
@@ -70,7 +67,7 @@ export function FilterBar({
         <div data-slot="filter-bar-actions" className={styles.actions}>
           {resultCount !== undefined && (
             <span data-slot="filter-bar-count" className={styles.count}>
-              {_((msg`{resultCount} results`) as any, { resultCount })}
+              {_(msg`{resultCount} results` as any, { resultCount })}
             </span>
           )}
           {onClear && hasActiveFilters && (

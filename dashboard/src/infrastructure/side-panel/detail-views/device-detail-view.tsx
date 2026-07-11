@@ -62,9 +62,7 @@ export function DeviceDetailView({ serialNumber }: DeviceDetailViewProps) {
         >
           {_(msg`Serial Number`)}
         </dt>
-        <dd style={{ margin: "0 0 16px 0", fontFamily: "monospace" }}>
-          {serialNumber}
-        </dd>
+        <dd style={{ margin: "0 0 16px 0", fontFamily: "monospace" }}>{serialNumber}</dd>
 
         <dt
           style={{

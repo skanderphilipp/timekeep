@@ -44,35 +44,21 @@ export function FieldDisplay() {
   // Timestamp → formatted date/time
   if (type === "timestamp") {
     const meta = fieldDefinition.metadata as TimestampFieldMetadata;
-    return (
-      <TimestampFieldDisplay
-        value={Number(value ?? 0)}
-        metadata={meta}
-      />
-    );
+    return <TimestampFieldDisplay value={Number(value ?? 0)} metadata={meta} />;
   }
 
   // Status → colored Tag
   if (type === "status") {
     const meta = fieldDefinition.metadata as StatusFieldMetadata;
     return (
-      <StatusFieldDisplay
-        value={String(value ?? "")}
-        labels={meta.labels}
-        colors={meta.colors}
-      />
+      <StatusFieldDisplay value={String(value ?? "")} labels={meta.labels} colors={meta.colors} />
     );
   }
 
   // Direction → IN/OUT Tag
   if (type === "direction") {
     const meta = fieldDefinition.metadata as DirectionFieldMetadata;
-    return (
-      <DirectionFieldDisplay
-        value={String(value ?? "")}
-        labels={meta.labels}
-      />
-    );
+    return <DirectionFieldDisplay value={String(value ?? "")} labels={meta.labels} />;
   }
 
   // Verify method → colored Tag (fingerprint, face, card, password, palm)

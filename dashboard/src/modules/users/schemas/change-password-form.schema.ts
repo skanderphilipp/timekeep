@@ -15,9 +15,7 @@ export function createChangePasswordSchema(_: I18n["_"]) {
   });
 }
 
-export type ChangePasswordFormValues = z.infer<
-  ReturnType<typeof createChangePasswordSchema>
->;
+export type ChangePasswordFormValues = z.infer<ReturnType<typeof createChangePasswordSchema>>;
 
 // ── Form schema definition ─────────────────────────────────────────────────────
 

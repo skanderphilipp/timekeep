@@ -2,7 +2,7 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: inline-flex;
   gap: var(--ao-spacing-2);
   height: 32px;
@@ -11,8 +11,8 @@
   width: 220px;
 
   &:focus-within {
-    border-color: var(--ao-accent-accent8);
-    box-shadow: 0 0 0 1px var(--ao-accent-accent8);
+    border-color: var(--ao-focus-ring);
+    box-shadow: 0 0 0 1px var(--ao-focus-ring);
   }
 }
 
@@ -41,7 +41,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-xs);
+  border-radius: var(--ao-radius-xs);
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: flex;

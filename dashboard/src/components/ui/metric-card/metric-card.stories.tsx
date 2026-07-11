@@ -48,10 +48,28 @@ export const AllVariants: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <CardGrid>
-      <MetricCard icon={<IconUsers size={24} />} label="Present" value={42} sub="of 50" color="green" />
+      <MetricCard
+        icon={<IconUsers size={24} />}
+        label="Present"
+        value={42}
+        sub="of 50"
+        color="green"
+      />
       <MetricCard icon={<IconUserX size={24} />} label="Absent" value={8} sub="of 50" color="red" />
-      <MetricCard icon={<IconClockExclamation size={24} />} label="Late" value={3} sub="today" color="amber" />
-      <MetricCard icon={<IconClockCheck size={24} />} label="On Time" value={39} sub="today" color="green" />
+      <MetricCard
+        icon={<IconClockExclamation size={24} />}
+        label="Late"
+        value={3}
+        sub="today"
+        color="amber"
+      />
+      <MetricCard
+        icon={<IconClockCheck size={24} />}
+        label="On Time"
+        value={39}
+        sub="today"
+        color="green"
+      />
     </CardGrid>
   ),
 };
@@ -61,10 +79,28 @@ export const ContextDashboardMetrics: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <CardGrid>
-      <MetricCard icon={<IconUsers size={24} />} label="Present" value={42} sub="of 50" color="green" />
+      <MetricCard
+        icon={<IconUsers size={24} />}
+        label="Present"
+        value={42}
+        sub="of 50"
+        color="green"
+      />
       <MetricCard icon={<IconUserX size={24} />} label="Absent" value={8} sub="of 50" color="red" />
-      <MetricCard icon={<IconClockExclamation size={24} />} label="Late" value={3} sub="today" color="amber" />
-      <MetricCard icon={<IconClockCheck size={24} />} label="On Time" value={39} sub="today" color="green" />
+      <MetricCard
+        icon={<IconClockExclamation size={24} />}
+        label="Late"
+        value={3}
+        sub="today"
+        color="amber"
+      />
+      <MetricCard
+        icon={<IconClockCheck size={24} />}
+        label="On Time"
+        value={39}
+        sub="today"
+        color="green"
+      />
     </CardGrid>
   ),
 };
@@ -74,10 +110,34 @@ export const ContextReportMetrics: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <CardGrid>
-      <MetricCard icon={<IconCalendarStats size={24} />} label="Work Days" value={22} sub="this month" color="accent" />
-      <MetricCard icon={<IconClockHour4 size={24} />} label="Avg Hours" value={8.2} sub="per day" color="accent" />
-      <MetricCard icon={<IconClockPlus size={24} />} label="Overtime" value={12.5} sub="total hours" color="accent" />
-      <MetricCard icon={<IconPercentage size={24} />} label="Absence Rate" value={4.2} sub="this month" color="amber" />
+      <MetricCard
+        icon={<IconCalendarStats size={24} />}
+        label="Work Days"
+        value={22}
+        sub="this month"
+        color="accent"
+      />
+      <MetricCard
+        icon={<IconClockHour4 size={24} />}
+        label="Avg Hours"
+        value={8.2}
+        sub="per day"
+        color="accent"
+      />
+      <MetricCard
+        icon={<IconClockPlus size={24} />}
+        label="Overtime"
+        value={12.5}
+        sub="total hours"
+        color="accent"
+      />
+      <MetricCard
+        icon={<IconPercentage size={24} />}
+        label="Absence Rate"
+        value={4.2}
+        sub="this month"
+        color="amber"
+      />
     </CardGrid>
   ),
 };

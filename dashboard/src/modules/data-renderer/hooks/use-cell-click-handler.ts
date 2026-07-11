@@ -55,6 +55,7 @@ export function useCellClickHandler() {
  * Uses a module-level counter + useRef for stable IDs across renders.
  */
 export function useTableInstanceId(): string {
+  // oxlint-disable-next-line bentech/no-state-useref -- stable ID, never affects rendering
   const idRef = useRef<string>("");
   return useMemo(() => {
     if (!idRef.current) {

@@ -57,10 +57,7 @@ export function AnimatedPlaceholder({
 }: AnimatedPlaceholderProps) {
   if (children) {
     return (
-      <div
-        data-slot="animated-placeholder"
-        className={clsx(styles.container, className)}
-      >
+      <div data-slot="animated-placeholder" className={clsx(styles.container, className)}>
         {children}
       </div>
     );
@@ -69,10 +66,7 @@ export function AnimatedPlaceholder({
   const ResolvedIcon = Icon ?? (type ? ICON_MAP[type] : IconFileDescription);
 
   return (
-    <div
-      data-slot="animated-placeholder"
-      className={clsx(styles.container, className)}
-    >
+    <div data-slot="animated-placeholder" className={clsx(styles.container, className)}>
       <span className={styles.iconWrapper} aria-hidden="true">
         <ResolvedIcon size={48} stroke={1.5} className={styles.icon} />
       </span>

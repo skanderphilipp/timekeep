@@ -43,12 +43,20 @@ export function useListState<T extends FilterValues>({
     defaults: filterDefaults,
   });
 
-  const { sort, setSort: _setSort, toggleSort: _toggleSort } = useSortUrl({
+  const {
+    sort,
+    setSort: _setSort,
+    toggleSort: _toggleSort,
+  } = useSortUrl({
     namespace,
     defaultSort: sortDefaults,
   });
 
-  const { page, setPage: _setPage, resetPage } = usePageUrl({
+  const {
+    page,
+    setPage: _setPage,
+    resetPage,
+  } = usePageUrl({
     namespace,
     defaultPage,
   });

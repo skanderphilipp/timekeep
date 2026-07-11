@@ -19,14 +19,9 @@ export function useTableRowSelection(instanceId: string, allRowIds: string[]) {
 
   const { selectedIds } = selection;
 
-  const isSelected = useCallback(
-    (rowId: string) => selectedIds.has(rowId),
-    [selectedIds],
-  );
+  const isSelected = useCallback((rowId: string) => selectedIds.has(rowId), [selectedIds]);
 
-  const allSelected =
-    allRowIds.length > 0 &&
-    allRowIds.every((id) => selectedIds.has(id));
+  const allSelected = allRowIds.length > 0 && allRowIds.every((id) => selectedIds.has(id));
 
   const handleSelectAll = useCallback(() => {
     if (allSelected) {

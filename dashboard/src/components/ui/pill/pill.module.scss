@@ -1,7 +1,7 @@
 .pill {
   align-items: center;
   background-color: var(--ao-background-tertiary);
-  border-radius: var(--ao-border-radius-pill);
+  border-radius: var(--ao-radius-pill);
   color: var(--ao-font-color-secondary);
   display: inline-flex;
   font-size: var(--ao-font-size-xxs);
@@ -9,7 +9,7 @@
   gap: var(--ao-spacing-1);
   letter-spacing: 0.03em;
   line-height: 1;
-  padding: 2px var(--ao-spacing-2);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-2);
   text-transform: uppercase;
   white-space: nowrap;
 }

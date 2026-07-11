@@ -1,39 +1,23 @@
 import { useCallback, useState } from "react";
 
-import { useTrackPointer, type PointerEventListener } from "@/infrastructure/pointer-event/use-track-pointer";
+import {
+  useTrackPointer,
+  type PointerEventListener,
+} from "@/infrastructure/pointer-event/use-track-pointer";
+
+import {
+  clampWidth,
+  type ResizablePanelConstraints,
+  type ResizablePanelSide,
+  type UseResizablePanelOptions,
+} from "./resizable-panel-types";
+
+export type { ResizablePanelConstraints, ResizablePanelSide };
 
 // ── Constants ───────────────────────────────────────────────────────────────────
 
 /** Pixels of drag before the resize is considered "real" (prevents accidental clicks). */
 const RESIZE_DRAG_THRESHOLD_PX = 5;
-
-// ── Types ───────────────────────────────────────────────────────────────────────
-
-export interface ResizablePanelConstraints {
-  min: number;
-  max: number;
-  default: number;
-}
-
-export type ResizablePanelSide = "left" | "right";
-
-interface UseResizablePanelOptions {
-  side: ResizablePanelSide;
-  constraints: ResizablePanelConstraints;
-  currentWidth: number;
-  onWidthChange: (width: number) => void;
-  onCollapse: () => void;
-  /** CSS variable name to set during drag (for live preview). */
-  cssVariableName?: string;
-  /** Called when actual resize begins (after threshold). */
-  onResizeStart?: () => void;
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────────
-
-function clampWidth(width: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, width));
-}
 
 // ── Hook ────────────────────────────────────────────────────────────────────────
 
@@ -75,17 +59,10 @@ export function useResizablePanel({
 
       if (Math.abs(deltaX) > RESIZE_DRAG_THRESHOLD_PX) {
         const widthDelta = side === "right" ? deltaX : -deltaX;
-        const clamped = clampWidth(
-          startWidth + widthDelta,
-          constraints.min,
-          constraints.max,
-        );
+        const clamped = clampWidth(startWidth + widthDelta, constraints.min, constraints.max);
 
         if (cssVariableName !== undefined) {
-          document.documentElement.style.setProperty(
-            cssVariableName,
-            `${clamped}px`,
-          );
+          document.documentElement.style.setProperty(cssVariableName, `${clamped}px`);
         }
       }
     },
@@ -114,11 +91,7 @@ export function useResizablePanel({
         onCollapse();
       } else {
         const widthDelta = side === "right" ? deltaX : -deltaX;
-        const finalWidth = clampWidth(
-          startWidth + widthDelta,
-          constraints.min,
-          constraints.max,
-        );
+        const finalWidth = clampWidth(startWidth + widthDelta, constraints.min, constraints.max);
         onWidthChange(finalWidth);
       }
 

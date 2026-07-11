@@ -19,7 +19,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-2)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <Pill label="Soon" />
       <Pill label="Beta" Icon={IconSparkles} />
       <Pill label="New" />
@@ -32,7 +39,14 @@ export const ContextFeatureFlag: Story = {
   name: "Context: Feature Flag",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--ao-spacing-2)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <span style={{ fontWeight: 600 }}>PDF Export</span>
       <Pill label="Soon" />
     </div>

@@ -22,14 +22,14 @@
 
 .soonBadge {
   background-color: var(--ao-color-amber3);
-  border-radius: var(--ao-border-radius-pill);
+  border-radius: var(--ao-radius-pill);
   color: var(--ao-color-amber11);
   font-size: var(--ao-font-size-xxs);
   font-weight: var(--ao-font-weight-semibold);
   inset-inline-end: -6px;
   letter-spacing: 0.03em;
   line-height: 1;
-  padding: 2px var(--ao-spacing-1);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   position: absolute;
   text-transform: uppercase;
   top: -8px;

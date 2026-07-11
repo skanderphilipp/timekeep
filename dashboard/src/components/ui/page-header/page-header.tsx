@@ -41,7 +41,11 @@ export function PageHeader({ title, description, actions, className }: PageHeade
         <div data-slot="page-header-row" className={styles.headerWithAction}>
           <div data-slot="page-header-content" className={styles.headerContent}>
             <Heading level="h2">{title}</Heading>
-            {description && <Text variant="caption" color="secondary">{description}</Text>}
+            {description && (
+              <Text variant="caption" color="secondary">
+                {description}
+              </Text>
+            )}
           </div>
           <div data-slot="page-header-actions" className={styles.actions}>
             {actions}
@@ -50,7 +54,11 @@ export function PageHeader({ title, description, actions, className }: PageHeade
       ) : (
         <>
           <Heading level="h2">{title}</Heading>
-          {description && <Text variant="caption" color="secondary">{description}</Text>}
+          {description && (
+            <Text variant="caption" color="secondary">
+              {description}
+            </Text>
+          )}
         </>
       )}
     </Section>

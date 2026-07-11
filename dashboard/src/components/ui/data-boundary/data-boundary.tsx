@@ -62,7 +62,15 @@ export function DataBoundary<T>({
 
   // Loading state — only when no data yet (not background refetch)
   if (isLoading && data === undefined) {
-    return <>{loadingFallback ?? <Section><Spinner /></Section>}</>;
+    return (
+      <>
+        {loadingFallback ?? (
+          <Section>
+            <Spinner />
+          </Section>
+        )}
+      </>
+    );
   }
 
   // Empty state

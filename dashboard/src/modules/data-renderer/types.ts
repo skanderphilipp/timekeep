@@ -16,7 +16,7 @@
  * Used by cell-click routing: clicking a user PIN in the punch table
  * opens user detail, while clicking the punch row opens device detail.
  */
-export type EntityType = "device" | "punch" | "user" | "api_key" | "audit";
+export type { EntityType } from "@/types/entities";
 
 // ── Field types ──────────────────────────────────────────────────────────
 
@@ -121,30 +121,29 @@ export type FieldDefinition<T extends FieldMetadata = FieldMetadata> = {
  * This is the *one* column type that replaces all three current types
  * (`DataTableColumn`, `DataTableColumnDef`, `DataTableColumnV2`).
  */
-export type ColumnDefinition<T extends FieldMetadata = FieldMetadata> =
-  FieldDefinition<T> & {
-    /** Column header text shown in the table. */
-    header: string;
-    /** Unique column identifier. Used for sorting key. */
-    id: string;
-    /** Fixed column width (CSS value, e.g., "120px"). */
-    width?: string;
-    /** Column alignment. */
-    align?: "left" | "center" | "right";
-    /** Whether this column is the row's label/identifier column (renders as Chip). */
-    isLabelIdentifier?: boolean;
-    /** Whether this column is visible in the current view. */
-    isVisible?: boolean;
-    /** Additional CSS class for cells in this column. */
-    cellClassName?: string;
-    /**
-     * Optional: manual cell renderer. Takes priority over auto-dispatch.
-     * ONLY use for truly custom rendering — prefer `type` + auto-dispatch.
-     *
-     * Receives the row data and an onClick handler.
-     */
-    render?: (row: unknown) => React.ReactNode;
-  };
+export type ColumnDefinition<T extends FieldMetadata = FieldMetadata> = FieldDefinition<T> & {
+  /** Column header text shown in the table. */
+  header: string;
+  /** Unique column identifier. Used for sorting key. */
+  id: string;
+  /** Fixed column width (CSS value, e.g., "120px"). */
+  width?: string;
+  /** Column alignment. */
+  align?: "left" | "center" | "right";
+  /** Whether this column is the row's label/identifier column (renders as Chip). */
+  isLabelIdentifier?: boolean;
+  /** Whether this column is visible in the current view. */
+  isVisible?: boolean;
+  /** Additional CSS class for cells in this column. */
+  cellClassName?: string;
+  /**
+   * Optional: manual cell renderer. Takes priority over auto-dispatch.
+   * ONLY use for truly custom rendering — prefer `type` + auto-dispatch.
+   *
+   * Receives the row data and an onClick handler.
+   */
+  render?: (row: unknown) => React.ReactNode;
+};
 
 // ── Sort state ───────────────────────────────────────────────────────────
 

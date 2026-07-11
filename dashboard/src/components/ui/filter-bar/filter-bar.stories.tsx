@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "storybook/test";
-import { FilterBar } from "./filter-bar";
+import { FilterBar, type ActiveFilter } from "./filter-bar";
 import { FilterInput } from "@/components/ui/filter-input";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Toggle } from "@/components/ui/toggle";
-import type { ActiveFilter } from "./filter-bar";
 
 const sampleFilters: ActiveFilter[] = [
   { key: "device", label: "Device: Main Gate", onRemove: fn() },
@@ -36,9 +35,7 @@ type Story = StoryObj<typeof FilterBar>;
 
 export const Primary: Story = {
   args: {
-    search: (
-      <FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />
-    ),
+    search: <FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />,
     children: (
       <>
         <FilterSelect
@@ -65,19 +62,25 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-8)" }}>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>Simple Search</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          Simple Search
+        </p>
         <FilterBar>
           <FilterInput placeholder="Search…" value="" onChange={fn()} />
         </FilterBar>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With Result Count</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          With Result Count
+        </p>
         <FilterBar resultCount={42}>
           <FilterInput placeholder="Search…" value="" onChange={fn()} />
         </FilterBar>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With Active Filters</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          With Active Filters
+        </p>
         <FilterBar
           search={<FilterInput placeholder="Search by name or PIN…" value="145" onChange={fn()} />}
           activeFilters={sampleFilters}
@@ -85,13 +88,34 @@ export const AllVariants: Story = {
           onClear={fn()}
           resultCount={12}
         >
-          <FilterSelect label="Status" value="check_in" options={[{ value: "", label: "All" }, { value: "check_in", label: "Check In" }]} onChange={fn()} />
+          <FilterSelect
+            label="Status"
+            value="check_in"
+            options={[
+              { value: "", label: "All" },
+              { value: "check_in", label: "Check In" },
+            ]}
+            onChange={fn()}
+          />
         </FilterBar>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>With Column Toggle</p>
+        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          With Column Toggle
+        </p>
         <FilterBar
-          actions={<MultiSelect options={[{ value: "time", label: "Time" }, { value: "employee", label: "Employee" }, { value: "device", label: "Device" }]} values={["time", "employee", "device"]} onChange={fn()} placeholder="Columns" />}
+          actions={
+            <MultiSelect
+              options={[
+                { value: "time", label: "Time" },
+                { value: "employee", label: "Employee" },
+                { value: "device", label: "Device" },
+              ]}
+              values={["time", "employee", "device"]}
+              onChange={fn()}
+              placeholder="Columns"
+            />
+          }
           resultCount={128}
         >
           <FilterInput placeholder="Search…" value="" onChange={fn()} />
@@ -106,7 +130,9 @@ export const ContextPunchesFilter: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <FilterBar
-      search={<FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />}
+      search={
+        <FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />
+      }
       activeFilters={[sampleFilters[0], sampleFilters[1]]}
       hasActiveFilters
       onClear={fn()}

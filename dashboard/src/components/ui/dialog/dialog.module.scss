@@ -1,7 +1,7 @@
 @use "@/styles/mixins" as *;
 
 .backdrop {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--ao-overlay);
   inset: 0;
   position: fixed;
   z-index: 40;
@@ -10,7 +10,7 @@
 .popup {
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-lg);
+  border-radius: var(--ao-radius-lg);
   box-shadow: var(--ao-shadow-md);
   display: flex;
   flex-direction: column;
@@ -28,8 +28,8 @@
   translate: -50% -50%;
 
   /* Bottom sheet on mobile */
-  @media (max-width: 768px) {
-    border-radius: var(--ao-border-radius-lg) var(--ao-border-radius-lg) 0 0;
+  @media (width <= 768px) {
+    border-radius: var(--ao-radius-lg) var(--ao-radius-lg) 0 0;
     bottom: 0;
     left: 0;
     max-height: 90dvh;
@@ -46,7 +46,7 @@
   justify-content: space-between;
   padding: var(--ao-spacing-6) var(--ao-spacing-6) 0;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: var(--ao-spacing-4) var(--ao-spacing-4) 0;
   }
 }
@@ -60,7 +60,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: flex;
@@ -79,7 +79,7 @@
   font-size: var(--ao-font-size-sm);
   padding: var(--ao-spacing-2) var(--ao-spacing-6) 0;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: var(--ao-spacing-2) var(--ao-spacing-4) 0;
   }
 }
@@ -87,7 +87,7 @@
 .content {
   padding: var(--ao-spacing-6);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: var(--ao-spacing-4);
   }
 }

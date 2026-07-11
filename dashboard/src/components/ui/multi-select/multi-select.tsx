@@ -18,11 +18,8 @@ import styles from "./multi-select.module.scss";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type MultiSelectOption = {
-  value: string;
-  label: string;
-  disabled?: boolean;
-};
+export type { MultiSelectOption } from "@/types/options";
+import type { MultiSelectOption } from "@/types/options";
 
 type MultiSelectProps = {
   /** Available options to choose from. */
@@ -69,9 +66,7 @@ export function MultiSelect({
     const availableOptions = options.filter((o) => !values.includes(o.value));
     if (!q) return availableOptions;
     return availableOptions.filter(
-      (opt) =>
-        opt.label.toLowerCase().includes(q) ||
-        opt.value.toLowerCase().includes(q),
+      (opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q),
     );
   }, [options, values, query]);
 
@@ -106,11 +101,7 @@ export function MultiSelect({
         {/* Selected chips */}
         <div data-slot="multi-select-chips" className={styles.chips}>
           {selectedOptions.map((opt) => (
-            <span
-              key={opt.value}
-              data-slot="multi-select-chip"
-              className={styles.chip}
-            >
+            <span key={opt.value} data-slot="multi-select-chip" className={styles.chip}>
               <span className={styles.chipLabel}>{opt.label}</span>
               <span
                 role="button"
@@ -146,19 +137,9 @@ export function MultiSelect({
       </ComboboxPrimitive.Trigger>
 
       <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner
-          sideOffset={4}
-          align="start"
-          className={styles.positioner}
-        >
-          <ComboboxPrimitive.Popup
-            data-slot="multi-select-popup"
-            className={styles.popup}
-          >
-            <ComboboxPrimitive.List
-              data-slot="multi-select-list"
-              className={styles.list}
-            >
+        <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
+          <ComboboxPrimitive.Popup data-slot="multi-select-popup" className={styles.popup}>
+            <ComboboxPrimitive.List data-slot="multi-select-list" className={styles.list}>
               {loading && (
                 <div data-slot="multi-select-loading" className={styles.stateRow}>
                   <Spinner size="sm" />
@@ -166,10 +147,7 @@ export function MultiSelect({
               )}
 
               {!loading && filtered.length === 0 && (
-                <ComboboxPrimitive.Empty
-                  data-slot="multi-select-empty"
-                  className={styles.stateRow}
-                >
+                <ComboboxPrimitive.Empty data-slot="multi-select-empty" className={styles.stateRow}>
                   <span className={styles.emptyText}>{resolvedEmpty}</span>
                 </ComboboxPrimitive.Empty>
               )}

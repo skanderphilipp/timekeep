@@ -12,10 +12,7 @@ type TimestampFieldDisplayProps = {
  *
  * Supports format variants: "iso", "relative", "date-only", "time-only".
  */
-export function TimestampFieldDisplay({
-  value,
-  metadata,
-}: TimestampFieldDisplayProps) {
+export function TimestampFieldDisplay({ value, metadata }: TimestampFieldDisplayProps) {
   if (value == null || value === 0) {
     return (
       <Text variant="body" color="tertiary">

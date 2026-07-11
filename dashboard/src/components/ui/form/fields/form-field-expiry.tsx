@@ -30,7 +30,9 @@ export function FormFieldExpiry({
           control={form.control}
           render={({ field: controllerField }) => (
             <ExpiryPicker
-              value={(controllerField.value as ExpiryValue) ?? { preset: "never", customDate: null }}
+              value={
+                (controllerField.value as ExpiryValue) ?? { preset: "never", customDate: null }
+              }
               onChange={controllerField.onChange}
             />
           )}

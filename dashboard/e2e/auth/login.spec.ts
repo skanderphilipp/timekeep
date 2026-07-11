@@ -9,8 +9,7 @@ import { test, expect, type Page } from "@playwright/test";
 // ── API Mock Helpers ──────────────────────────────────────────────────────────
 
 const VALID_CREDENTIALS = { username: "admin", password: "admin" };
-const MOCK_JWT =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30._test_";
+const MOCK_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30._test_";
 
 /** Sets up all API mocks on the given page. */
 async function mockApi(page: Page) {
@@ -78,14 +77,10 @@ test.describe("Authentication", () => {
     await expect(page).toHaveURL(/\/login/);
 
     // Login form should be visible
-    await expect(
-      page.getByRole("heading", { name: /sign in/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
   });
 
-  test("logins with valid credentials and redirects to dashboard", async ({
-    page,
-  }) => {
+  test("logins with valid credentials and redirects to dashboard", async ({ page }) => {
     await mockApi(page);
     await page.goto("/login");
 

@@ -11,12 +11,7 @@ type FilterDateRangeProps = {
 /**
  * Filter bar date field — ISO string ↔ Date bridging layer over DatePicker.
  */
-export function FilterDateRange({
-  label,
-  value,
-  onChange,
-  className,
-}: FilterDateRangeProps) {
+export function FilterDateRange({ label, value, onChange, className }: FilterDateRangeProps) {
   const dateValue = value ? fromDateString(value) : null;
 
   const handleChange = (date: Date | null) => {

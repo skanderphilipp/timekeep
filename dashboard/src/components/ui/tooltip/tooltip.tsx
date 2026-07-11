@@ -24,10 +24,7 @@ export function TooltipComponent({
       </Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Positioner data-slot="tooltip-positioner" side={side} sideOffset={6}>
-          <Tooltip.Popup
-            data-slot="tooltip-popup"
-            className={clsx(styles.popup, className)}
-          >
+          <Tooltip.Popup data-slot="tooltip-popup" className={clsx(styles.popup, className)}>
             {content}
             <Tooltip.Arrow data-slot="tooltip-arrow" className={styles.arrow} />
           </Tooltip.Popup>

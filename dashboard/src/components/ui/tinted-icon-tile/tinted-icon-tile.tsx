@@ -7,13 +7,7 @@ import styles from "./tinted-icon-tile.module.scss";
  * Color hint for the tinted tile background and border.
  * Maps to our semantic color tokens.
  */
-export type TintedIconTileColor =
-  | "accent"
-  | "red"
-  | "green"
-  | "amber"
-  | "blue"
-  | "neutral";
+export type TintedIconTileColor = "accent" | "red" | "green" | "amber" | "blue" | "neutral";
 
 const COLOR_CLASS: Record<TintedIconTileColor, string> = {
   accent: styles.accent,

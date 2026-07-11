@@ -17,10 +17,7 @@ export function FieldInputContainer({
   className?: string;
 }) {
   return (
-    <div
-      data-slot="field-input-container"
-      className={clsx(styles.container, className)}
-    >
+    <div data-slot="field-input-container" className={clsx(styles.container, className)}>
       {children}
     </div>
   );

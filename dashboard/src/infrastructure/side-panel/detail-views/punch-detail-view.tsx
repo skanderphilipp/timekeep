@@ -46,7 +46,9 @@ export function PunchDetailView({ punchId }: PunchDetailViewProps) {
     return (
       <EmptyState
         title={_(msg`Punch Not Found`)}
-        description={_(msg`This punch record may have been scrolled out of view. Try searching by the punch ID.`)}
+        description={_(
+          msg`This punch record may have been scrolled out of view. Try searching by the punch ID.`,
+        )}
       />
     );
   }
@@ -59,9 +61,7 @@ export function PunchDetailView({ punchId }: PunchDetailViewProps) {
     <>
       <DetailGrid>
         <DetailItem label={_(msg`Employee`)}>
-          <Text variant="body">
-            {punch.employee_name ?? punch.user_pin}
-          </Text>
+          <Text variant="body">{punch.employee_name ?? punch.user_pin}</Text>
           {punch.employee_name && (
             <Text variant="caption" color="tertiary">
               PIN: {punch.user_pin}
@@ -70,18 +70,23 @@ export function PunchDetailView({ punchId }: PunchDetailViewProps) {
         </DetailItem>
 
         <DetailItem label={_(msg`Time`)}>
-          <Text variant="body">
-            {time.toLocaleTimeString()}
-          </Text>
+          <Text variant="body">{time.toLocaleTimeString()}</Text>
           <Text variant="caption" color="tertiary">
-            {time.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            {time.toLocaleDateString(undefined, {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </Text>
         </DetailItem>
 
         <DetailItem label={_(msg`Status`)}>
           <Badge
             variant={
-              punch.status === "check_in" || punch.status === "overtime_in" || punch.status === "break_in"
+              punch.status === "check_in" ||
+              punch.status === "overtime_in" ||
+              punch.status === "break_in"
                 ? "success"
                 : punch.status === "break_out" || punch.status === "overtime_out"
                   ? "warning"
@@ -93,15 +98,11 @@ export function PunchDetailView({ punchId }: PunchDetailViewProps) {
         </DetailItem>
 
         <DetailItem label={_(msg`Method`)}>
-          <Text variant="body">
-            {verifyLabel?.label ?? punch.verify_mode}
-          </Text>
+          <Text variant="body">{verifyLabel?.label ?? punch.verify_mode}</Text>
         </DetailItem>
 
         <DetailItem label={_(msg`Device`)}>
-          <Text variant="body">
-            {punch.device_label ?? punch.device_sn}
-          </Text>
+          <Text variant="body">{punch.device_label ?? punch.device_sn}</Text>
           {punch.device_label && (
             <Text variant="caption" color="tertiary">
               SN: {punch.device_sn}

@@ -46,7 +46,13 @@ export const HorizontalBar: Story = {
   name: "Horizontal (Week-over-Week)",
   render: () => (
     <Chart title="Weekly Hours" description="Total hours per week.">
-      <BarChart data={weeklyData} layout="horizontal" bars={[{ dataKey: "hours", fill: "var(--ao-color-green9)", name: "Total Hours" }]} xKey="week" height={250} />
+      <BarChart
+        data={weeklyData}
+        layout="horizontal"
+        bars={[{ dataKey: "hours", fill: "var(--ao-color-green9)", name: "Total Hours" }]}
+        xKey="week"
+        height={250}
+      />
     </Chart>
   ),
 };
@@ -59,7 +65,12 @@ export const StackedBar: Story = {
         data={dailyHoursData}
         bars={[
           { dataKey: "regular", fill: "var(--ao-color-green9)", stackId: "hours", name: "Regular" },
-          { dataKey: "overtime", fill: "var(--ao-accent-accent9)", stackId: "hours", name: "Overtime" },
+          {
+            dataKey: "overtime",
+            fill: "var(--ao-accent-accent9)",
+            stackId: "hours",
+            name: "Overtime",
+          },
         ]}
         xKey="date"
         grid
@@ -73,7 +84,12 @@ export const WithoutGrid: Story = {
   name: "Without Grid",
   render: () => (
     <Chart title="Without Grid">
-      <BarChart data={weeklyData} bars={[{ dataKey: "hours", fill: "var(--ao-color-green9)" }]} xKey="week" height={200} />
+      <BarChart
+        data={weeklyData}
+        bars={[{ dataKey: "hours", fill: "var(--ao-color-green9)" }]}
+        xKey="week"
+        height={200}
+      />
     </Chart>
   ),
 };

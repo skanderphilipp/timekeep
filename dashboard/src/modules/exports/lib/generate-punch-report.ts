@@ -157,11 +157,7 @@ function drawHeader(
   doc.setFontSize(8);
   doc.setTextColor(...LIGHT_GRAY);
   doc.setFont("helvetica", "normal");
-  doc.text(
-    `${labels.generated}${formatDateTime(generatedAt)}`,
-    MARGIN + 7,
-    y,
-  );
+  doc.text(`${labels.generated}${formatDateTime(generatedAt)}`, MARGIN + 7, y);
 
   return y + 4;
 }
@@ -311,11 +307,7 @@ function drawPunchTable(
       doc.setFontSize(7);
       doc.setTextColor(...LIGHT_GRAY);
       doc.setFont("helvetica", "normal");
-      doc.text(
-        labels.confidential,
-        MARGIN,
-        pageHeight - 8,
-      );
+      doc.text(labels.confidential, MARGIN, pageHeight - 8);
     },
   });
 }

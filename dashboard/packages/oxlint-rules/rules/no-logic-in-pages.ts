@@ -1,6 +1,6 @@
-import { defineRule } from '@oxlint/plugins';
+import { defineRule } from "@oxlint/plugins";
 
-export const RULE_NAME = 'no-logic-in-pages';
+export const RULE_NAME = "no-logic-in-pages";
 
 /**
  * Pages must be thin composites — zero business logic, zero hooks
@@ -17,20 +17,20 @@ export const RULE_NAME = 'no-logic-in-pages';
  */
 
 const FORBIDDEN_REACT_HOOKS = new Set([
-  'useState',
-  'useMemo',
-  'useCallback',
-  'useEffect',
-  'useRef',
-  'useReducer',
-  'useImperativeHandle',
-  'useLayoutEffect',
-  'useInsertionEffect',
-  'useDeferredValue',
-  'useTransition',
-  'useId',
-  'useDebugValue',
-  'useSyncExternalStore',
+  "useState",
+  "useMemo",
+  "useCallback",
+  "useEffect",
+  "useRef",
+  "useReducer",
+  "useImperativeHandle",
+  "useLayoutEffect",
+  "useInsertionEffect",
+  "useDeferredValue",
+  "useTransition",
+  "useId",
+  "useDebugValue",
+  "useSyncExternalStore",
 ]);
 
 /** Allowed singleton — the page's own orchestration hook. */
@@ -41,28 +41,24 @@ const isPageOwnHook = (hookName: string, filename: string): boolean => {
   const moduleName = match[1];
 
   // The hook file should be in the same module's hooks/ dir
-  const hookImportPath = new RegExp(
-    `modules/${moduleName}/hooks/use-[a-z]`,
-    'i',
-  );
+  const hookImportPath = new RegExp(`modules/${moduleName}/hooks/use-[a-z]`, "i");
   return hookImportPath.test(filename + hookName);
 };
 
-const isPageFile = (filename: string): boolean =>
-  /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
+const isPageFile = (filename: string): boolean => /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
 
 export const rule = defineRule({
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
       description:
-        'Pages must be thin composites. No useState, useMemo, useCallback, useEffect, or custom hooks (except useLingui and ONE page-orchestration hook) allowed in page files.',
+        "Pages must be thin composites. No useState, useMemo, useCallback, useEffect, or custom hooks (except useLingui and ONE page-orchestration hook) allowed in page files.",
     },
     messages: {
       forbiddenHook:
         'Hook "{{ name }}" is forbidden in page files. Pages must be thin composites — extract this into a hook in modules/<name>/hooks/. Only useLingui and a single page orchestration hook are permitted.',
       tooManyPageHooks:
-        'Page uses {{ count }} custom hooks. Pages may only call useLingui + ONE page orchestration hook. Extract remaining logic into sub-hooks.',
+        "Page uses {{ count }} custom hooks. Pages may only call useLingui + ONE page orchestration hook. Extract remaining logic into sub-hooks.",
     },
     schema: [],
   },
@@ -81,7 +77,7 @@ export const rule = defineRule({
 
         // Get the function name being called
         let name: string | null = null;
-        if (callee.type === 'Identifier') {
+        if (callee.type === "Identifier") {
           name = callee.name;
         }
 
@@ -91,25 +87,25 @@ export const rule = defineRule({
         if (FORBIDDEN_REACT_HOOKS.has(name)) {
           context.report({
             node,
-            messageId: 'forbiddenHook',
+            messageId: "forbiddenHook",
             data: { name },
           });
           return;
         }
 
         // Track custom hooks (useXxx pattern)
-        if (/^use[A-Z]/.test(name) && name !== 'useLingui') {
+        if (/^use[A-Z]/.test(name) && name !== "useLingui") {
           customHooks.add(name);
         }
       },
 
       // After the file is processed, check custom hook count
-      'Program:exit': () => {
+      "Program:exit": () => {
         if (customHooks.size > 1) {
           // Use the first node's loc for reporting (approximate)
           context.report({
             node: (context as any).sourceCode?.ast ?? {},
-            messageId: 'tooManyPageHooks',
+            messageId: "tooManyPageHooks",
             data: { count: customHooks.size },
           });
         }

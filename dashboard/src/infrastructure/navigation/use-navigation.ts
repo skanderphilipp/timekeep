@@ -71,7 +71,8 @@ export function useNavigation(): ResolvedNavItem[] {
       "nav.settings.system": () => _(/*i18n*/ { id: "nav.settings.system", message: "System" }),
       "nav.settings.users": () => _(/*i18n*/ { id: "nav.settings.users", message: "Users" }),
       "nav.settings.apiKeys": () => _(/*i18n*/ { id: "nav.settings.apiKeys", message: "API Keys" }),
-      "nav.settings.endpoints": () => _(/*i18n*/ { id: "nav.settings.endpoints", message: "Endpoints" }),
+      "nav.settings.endpoints": () =>
+        _(/*i18n*/ { id: "nav.settings.endpoints", message: "Endpoints" }),
       "nav.settings.audit": () => _(/*i18n*/ { id: "nav.settings.audit", message: "Audit Log" }),
     };
 

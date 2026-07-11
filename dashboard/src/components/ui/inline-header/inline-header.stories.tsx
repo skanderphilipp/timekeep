@@ -24,7 +24,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <InlineHeader icon={<IconDeviceDesktop size={20} />} title="Main Gate">
         <Badge variant="success">Online</Badge>
       </InlineHeader>
@@ -42,7 +49,13 @@ export const ContextDeviceCard: Story = {
   name: "Context: Device Card Header",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", border: "1px solid var(--ao-border-secondary)", borderRadius: "var(--ao-radius-md)" }}>
+    <div
+      style={{
+        padding: "var(--ao-spacing-4)",
+        border: "1px solid var(--ao-border-color-light)",
+        borderRadius: "var(--ao-radius-md)",
+      }}
+    >
       <InlineHeader icon={<IconDeviceDesktop size={20} />} title="Main Gate">
         <Badge variant="success">Connected</Badge>
       </InlineHeader>

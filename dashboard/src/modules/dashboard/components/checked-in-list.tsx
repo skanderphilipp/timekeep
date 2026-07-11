@@ -58,7 +58,10 @@ export function CheckedInList({ employees, onUserClick }: CheckedInListProps) {
                 {emp.employee_name ?? emp.user_pin}
               </Text>
               <Text variant="caption" color="tertiary">
-                {new Date(emp.check_in_time * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(emp.check_in_time * 1000).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
                 {" · "}
                 {emp.device_label ?? emp.device_sn}
               </Text>

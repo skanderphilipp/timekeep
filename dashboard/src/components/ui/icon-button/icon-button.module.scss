@@ -4,13 +4,15 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
   justify-content: center;
-  transition: background 0.1s ease, color 0.1s ease;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
 
   &:hover:not(:disabled) {
     background: var(--ao-background-tertiary);
@@ -27,7 +29,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--ao-accent-accent8);
+    outline: 2px solid var(--ao-focus-ring);
     outline-offset: 2px;
   }
 }

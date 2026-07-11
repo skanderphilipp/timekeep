@@ -2,7 +2,7 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: inline-flex;
   gap: var(--ao-spacing-2);
   height: 32px;
@@ -10,7 +10,7 @@
   transition: border-color 0.15s ease;
 
   &:focus-within {
-    border-color: var(--ao-accent-accent8);
+    border-color: var(--ao-focus-ring);
   }
 }
 

@@ -26,9 +26,7 @@ export function BooleanCell({ value }: BooleanCellProps) {
   return (
     <div className={styles.container}>
       {isTrue ? <IconCheck size={14} /> : <IconX size={14} />}
-      <span className={styles.label}>
-        {isTrue ? _(msg`True`) : _(msg`False`)}
-      </span>
+      <span className={styles.label}>{isTrue ? _(msg`True`) : _(msg`False`)}</span>
     </div>
   );
 }

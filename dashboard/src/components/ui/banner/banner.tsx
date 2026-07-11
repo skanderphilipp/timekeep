@@ -1,5 +1,11 @@
 import { clsx } from "clsx";
-import { IconInfoCircle, IconCheck, IconAlertTriangle, IconX, type ReactNode } from "@tabler/icons-react";
+import {
+  IconInfoCircle,
+  IconCheck,
+  IconAlertTriangle,
+  IconX,
+  type ReactNode,
+} from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
@@ -20,13 +26,7 @@ const iconMap = {
   danger: IconX,
 };
 
-export function Banner({
-  variant = "info",
-  title,
-  children,
-  onDismiss,
-  className,
-}: BannerProps) {
+export function Banner({ variant = "info", title, children, onDismiss, className }: BannerProps) {
   const { _ } = useLingui();
   const Icon = iconMap[variant];
 
@@ -41,8 +41,14 @@ export function Banner({
         <Icon size={18} />
       </span>
       <div data-slot="banner-body" className={styles.body}>
-        {title && <span data-slot="banner-title" className={styles.title}>{title}</span>}
-        <span data-slot="banner-text" className={styles.text}>{children}</span>
+        {title && (
+          <span data-slot="banner-title" className={styles.title}>
+            {title}
+          </span>
+        )}
+        <span data-slot="banner-text" className={styles.text}>
+          {children}
+        </span>
       </div>
       {onDismiss && (
         <button

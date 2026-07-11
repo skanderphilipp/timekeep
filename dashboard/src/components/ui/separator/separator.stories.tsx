@@ -39,13 +39,28 @@ export const ContextSidePanel: Story = {
   name: "Context: Side Panel",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 300, border: "1px solid var(--ao-border-secondary)", borderRadius: "var(--ao-radius-md)" }}>
-      <Text variant="body" weight="medium">Omar Khalid</Text>
-      <Text variant="caption" color="tertiary">PIN 147</Text>
+    <div
+      style={{
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 300,
+        border: "1px solid var(--ao-border-color-light)",
+        borderRadius: "var(--ao-radius-md)",
+      }}
+    >
+      <Text variant="body" weight="medium">
+        Omar Khalid
+      </Text>
+      <Text variant="caption" color="tertiary">
+        PIN 147
+      </Text>
       <Separator />
-      <Text variant="caption" color="tertiary">Today's Punches</Text>
+      <Text variant="caption" color="tertiary">
+        Today's Punches
+      </Text>
       <Separator />
-      <Text variant="caption" color="tertiary">Anomalies: 3</Text>
+      <Text variant="caption" color="tertiary">
+        Anomalies: 3
+      </Text>
     </div>
   ),
 };

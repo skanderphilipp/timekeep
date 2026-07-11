@@ -12,15 +12,11 @@ import type { ComponentProps } from "react";
 // we mock the nivo components to render a plain <svg> with data-testid.
 
 vi.mock("@nivo/bar", () => ({
-  ResponsiveBar: (_props: Record<string, unknown>) => (
-    <svg data-testid="nivo-bar" />
-  ),
+  ResponsiveBar: (_props: Record<string, unknown>) => <svg data-testid="nivo-bar" />,
 }));
 
 vi.mock("@nivo/line", () => ({
-  ResponsiveLine: (_props: Record<string, unknown>) => (
-    <svg data-testid="nivo-line" />
-  ),
+  ResponsiveLine: (_props: Record<string, unknown>) => <svg data-testid="nivo-line" />,
 }));
 
 vi.mock("@nivo/pie", () => ({
@@ -34,7 +30,9 @@ import { LineChart } from "./LineChart";
 import { PieChart } from "./PieChart";
 import { Chart } from "./chart";
 
-function ChartWrapper(props: ComponentProps<typeof Chart>) {
+type ChartWrapperProps = ComponentProps<typeof Chart>;
+
+function ChartWrapper(props: ChartWrapperProps) {
   return (
     <I18nProvider i18n={i18n}>
       <Chart {...props} />
@@ -54,8 +52,8 @@ const lineData = [
 ];
 
 const pieData = [
-  { name: "Full", value: 195, color: "#30a46c" },
-  { name: "Half", value: 30, color: "#f59e0b" },
+  { name: "Full", value: 195, color: "var(--ao-chart-positive)" },
+  { name: "Half", value: 30, color: "var(--ao-chart-warning)" },
 ];
 
 describe("Chart components", () => {
@@ -72,9 +70,7 @@ describe("Chart components", () => {
     });
 
     it("renders the nivo SVG inside the container", () => {
-      render(
-        <BarChart data={barData} bars={[{ dataKey: "count" }]} xKey="hour" height={300} />,
-      );
+      render(<BarChart data={barData} bars={[{ dataKey: "count" }]} xKey="hour" height={300} />);
       expect(screen.getByTestId("nivo-bar")).toBeDefined();
     });
   });
@@ -89,9 +85,7 @@ describe("Chart components", () => {
     });
 
     it("renders the nivo SVG inside the container", () => {
-      render(
-        <LineChart data={lineData} lines={[{ dataKey: "rate" }]} xKey="month" height={300} />,
-      );
+      render(<LineChart data={lineData} lines={[{ dataKey: "rate" }]} xKey="month" height={300} />);
       expect(screen.getByTestId("nivo-line")).toBeDefined();
     });
   });

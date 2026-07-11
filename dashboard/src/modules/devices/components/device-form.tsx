@@ -16,8 +16,7 @@ import { createDeviceFormDef } from "../schemas/device-form.schema";
  */
 export function DeviceForm() {
   const { _ } = useLingui();
-  const { form, isEditing, isLoadingDevice, isSaving, handleSubmit } =
-    useDeviceForm();
+  const { form, isEditing, isLoadingDevice, isSaving, handleSubmit } = useDeviceForm();
 
   // Memoize the form schema definition (labels are i18n'd)
   const formSchema = createDeviceFormDef(_);

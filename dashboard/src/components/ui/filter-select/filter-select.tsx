@@ -44,8 +44,7 @@ export function FilterSelect({
     suffix: o.suffix,
   }));
 
-  const selectedLabel =
-    options.find((o) => o.value === value)?.label;
+  const selectedLabel = options.find((o) => o.value === value)?.label;
 
   return (
     <Combobox

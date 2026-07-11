@@ -1,12 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import {
-  PageBar,
-  PageLayout,
-  PageBody,
-  Section,
-} from "@/components/ui";
+import { PageBar, PageLayout, PageBody, Section } from "@/components/ui";
 import { DeviceForm } from "../components/device-form";
 import { useDeviceForm } from "../hooks/use-device-form";
 
@@ -18,9 +13,7 @@ export function DeviceFormPage() {
     <PageLayout>
       <PageBar
         title={
-          isEditing
-            ? `${_(msg`Edit`)}: ${form.watch("label") || deviceSn}`
-            : _(msg`Add Device`)
+          isEditing ? `${_(msg`Edit`)}: ${form.watch("label") || deviceSn}` : _(msg`Add Device`)
         }
         description={
           isEditing

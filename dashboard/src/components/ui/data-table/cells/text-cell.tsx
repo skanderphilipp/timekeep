@@ -32,9 +32,5 @@ export function TextCell({ text, clickable, onClick, className }: TextCellProps)
     );
   }
 
-  return (
-    <span className={clsx(styles.text, className)}>
-      {text}
-    </span>
-  );
+  return <span className={clsx(styles.text, className)}>{text}</span>;
 }

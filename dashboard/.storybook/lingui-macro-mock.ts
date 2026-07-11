@@ -22,10 +22,7 @@ import type { MessageDescriptor } from "@lingui/core";
  * @example
  *   msg`Soon`  →  { id: "Soon" }
  */
-export function msg(
-  strings: TemplateStringsArray,
-  ...expressions: unknown[]
-): MessageDescriptor {
+export function msg(strings: TemplateStringsArray, ...expressions: unknown[]): MessageDescriptor {
   return {
     id: String.raw({ raw: strings as unknown as readonly string[] }, ...expressions),
   };
@@ -34,10 +31,7 @@ export function msg(
 /**
  * Stand-in for the `t` macro (if used). Same shape as `msg`.
  */
-export function t(
-  strings: TemplateStringsArray,
-  ...expressions: unknown[]
-): MessageDescriptor {
+export function t(strings: TemplateStringsArray, ...expressions: unknown[]): MessageDescriptor {
   return {
     id: String.raw({ raw: strings as unknown as readonly string[] }, ...expressions),
   };

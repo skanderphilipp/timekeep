@@ -36,7 +36,10 @@ export function useAttendancePresets(): DateRangePreset[] {
       {
         key: "last30",
         label: () => _(msg`Last 30 days`),
-        getRange: () => ({ from: new Date(todayStart.getTime() - 29 * 86_400_000), to: todayStart }),
+        getRange: () => ({
+          from: new Date(todayStart.getTime() - 29 * 86_400_000),
+          to: todayStart,
+        }),
       },
       {
         key: "thisMonth",

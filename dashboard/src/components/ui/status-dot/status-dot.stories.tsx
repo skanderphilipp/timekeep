@@ -31,7 +31,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        alignItems: "center",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
         <StatusDot status="online" />
         <Text variant="body">Online</Text>
@@ -52,7 +59,15 @@ export const ContextDeviceStatus: Story = {
   name: "Context: Device Status Bar",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)", background: "var(--ao-background-secondary)", borderRadius: "var(--ao-radius-md)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+        background: "var(--ao-background-secondary)",
+        borderRadius: "var(--ao-radius-md)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
         <StatusDot status="online" />
         <Text variant="body">Main Gate</Text>

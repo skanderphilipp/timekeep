@@ -125,11 +125,7 @@ function CalendarBodyDay({
       tabIndex={onClick ? 0 : undefined}
     >
       <div className={styles.dayHeader}>
-        <span
-          className={clsx(styles.dayNumber, day.isToday && styles.today)}
-        >
-          {day.day}
-        </span>
+        <span className={clsx(styles.dayNumber, day.isToday && styles.today)}>{day.day}</span>
       </div>
       <div className={styles.dayContent}>{children}</div>
     </div>
@@ -148,10 +144,7 @@ export function CalendarMonth({
   className,
 }: CalendarMonthProps) {
   const { _ } = useLingui();
-  const days = useMemo(
-    () => generateDays(year, month, weekStartsOn),
-    [year, month, weekStartsOn],
-  );
+  const days = useMemo(() => generateDays(year, month, weekStartsOn), [year, month, weekStartsOn]);
 
   // Split 42 days into 6 weeks
   const weeks: CalendarDay[][] = [];
@@ -162,7 +155,13 @@ export function CalendarMonth({
   // Reorder labels to match weekStartsOn
   const labels = useMemo(() => {
     const base = weekdayLabels ?? [
-      _(msg`Sun`), _(msg`Mon`), _(msg`Tue`), _(msg`Wed`), _(msg`Thu`), _(msg`Fri`), _(msg`Sat`),
+      _(msg`Sun`),
+      _(msg`Mon`),
+      _(msg`Tue`),
+      _(msg`Wed`),
+      _(msg`Thu`),
+      _(msg`Fri`),
+      _(msg`Sat`),
     ];
     return [...base.slice(weekStartsOn), ...base.slice(0, weekStartsOn)];
   }, [weekdayLabels, weekStartsOn, _]);
@@ -179,17 +178,9 @@ export function CalendarMonth({
       {/* Body: 6 weeks */}
       <div data-slot="calendar-body" className={styles.body}>
         {weeks.map((week, wi) => (
-          <div
-            key={`week-${wi}`}
-            data-slot="calendar-week"
-            className={styles.week}
-          >
+          <div key={`week-${wi}`} data-slot="calendar-week" className={styles.week}>
             {week.map((day) => (
-              <CalendarBodyDay
-                key={day.key}
-                day={day}
-                onClick={onDayClick}
-              >
+              <CalendarBodyDay key={day.key} day={day} onClick={onDayClick}>
                 {renderDay?.(day)}
               </CalendarBodyDay>
             ))}

@@ -66,9 +66,7 @@ export function UserDetailView({ userPin }: UserDetailViewProps) {
         >
           {_(msg`User ID`)}
         </dt>
-        <dd style={{ margin: "0 0 16px 0", fontFamily: "monospace" }}>
-          {userPin}
-        </dd>
+        <dd style={{ margin: "0 0 16px 0", fontFamily: "monospace" }}>{userPin}</dd>
 
         <dt
           style={{

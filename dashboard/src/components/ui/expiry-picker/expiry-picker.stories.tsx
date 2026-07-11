@@ -23,10 +23,25 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
-      <ExpiryPicker label="No expiry" value={{ preset: "never", customDate: null }} onChange={fn()} />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
+      <ExpiryPicker
+        label="No expiry"
+        value={{ preset: "never", customDate: null }}
+        onChange={fn()}
+      />
       <ExpiryPicker label="30 days" value={{ preset: "30d", customDate: null }} onChange={fn()} />
-      <ExpiryPicker label="Custom date" value={{ preset: "custom", customDate: new Date("2026-12-31") }} onChange={fn()} />
+      <ExpiryPicker
+        label="Custom date"
+        value={{ preset: "custom", customDate: new Date("2026-12-31") }}
+        onChange={fn()}
+      />
     </div>
   ),
 };

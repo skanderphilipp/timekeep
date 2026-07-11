@@ -24,20 +24,20 @@
 
 .switcher {
   background: var(--ao-background-secondary);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   display: flex;
-  padding: 2px;
+  padding: var(--ao-spacing-0_5);
 }
 
 .switcherButton {
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
-  padding: 4px var(--ao-spacing-2);
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
   transition: all 0.15s ease;
 
   &:hover {
@@ -82,10 +82,9 @@
 .chip {
   align-items: center;
   border: 1px solid var(--ao-accent-accent5);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   box-sizing: border-box;
   color: var(--ao-color-blue11);
-  column-gap: 0;
   cursor: default;
   display: inline-flex;
   flex-direction: row;
@@ -122,7 +121,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: inherit;
   cursor: pointer;
   display: flex;
@@ -158,11 +157,11 @@
 .addButton {
   background: none;
   border: 1px dashed var(--ao-border-color-medium);
-  border-radius: var(--ao-border-radius-sm);
+  border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-tertiary);
   cursor: pointer;
   font-size: var(--ao-font-size-xs);
-  padding: 2px var(--ao-spacing-1);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   transition: all 0.15s ease;
 
   &:hover {

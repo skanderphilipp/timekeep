@@ -28,18 +28,34 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-16)", justifyContent: "center", flexWrap: "wrap" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-16)",
+        justifyContent: "center",
+        flexWrap: "wrap",
+      }}
+    >
       <TooltipComponent content="Tooltip on top" side="top">
-        <Button variant="secondary" size="sm">Top</Button>
+        <Button variant="secondary" size="sm">
+          Top
+        </Button>
       </TooltipComponent>
       <TooltipComponent content="Tooltip on bottom" side="bottom">
-        <Button variant="secondary" size="sm">Bottom</Button>
+        <Button variant="secondary" size="sm">
+          Bottom
+        </Button>
       </TooltipComponent>
       <TooltipComponent content="Tooltip on left" side="left">
-        <Button variant="secondary" size="sm">Left</Button>
+        <Button variant="secondary" size="sm">
+          Left
+        </Button>
       </TooltipComponent>
       <TooltipComponent content="Tooltip on right" side="right">
-        <Button variant="secondary" size="sm">Right</Button>
+        <Button variant="secondary" size="sm">
+          Right
+        </Button>
       </TooltipComponent>
     </div>
   ),
@@ -51,7 +67,15 @@ export const ContextTruncatedText: Story = {
   render: () => (
     <div style={{ padding: "var(--ao-spacing-16)", display: "flex", justifyContent: "center" }}>
       <TooltipComponent content="CQZ7232960836 — SpeedFace-V5L [TI] · Firmware Ver 8.45">
-        <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>
+        <span
+          style={{
+            maxWidth: 120,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            display: "inline-block",
+          }}
+        >
           CQZ7232960836 — SpeedFace-V5L...
         </span>
       </TooltipComponent>

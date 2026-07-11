@@ -4,14 +4,7 @@
  * Adapted from Reaktly's snack-bar-manager pattern.
  * Centralized state via React Context. Stack multiple toasts. Auto-dismiss.
  */
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  type ReactNode,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode, useEffect } from "react";
 import { clsx } from "clsx";
 import { IconX, IconCheck, IconAlertTriangle, IconInfoCircle } from "@tabler/icons-react";
 import { useLingui } from "@lingui/react";
@@ -51,7 +44,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((message: string, variant: ToastVariant) => {
     const id = `toast-${++idCounter.current}-${Date.now()}`;
-    setToasts((prev) => [...prev, { id, message, variant, duration: variant === "error" ? 8000 : 4000 }]);
+    setToasts((prev) => [
+      ...prev,
+      { id, message, variant, duration: variant === "error" ? 8000 : 4000 },
+    ]);
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -101,7 +97,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       role="alert"
     >
       <Icon data-slot="toast-icon" size={18} className={styles.icon} />
-      <span data-slot="toast-message" className={styles.message}>{toast.message}</span>
+      <span data-slot="toast-message" className={styles.message}>
+        {toast.message}
+      </span>
       <button
         data-slot="toast-dismiss"
         className={styles.dismiss}

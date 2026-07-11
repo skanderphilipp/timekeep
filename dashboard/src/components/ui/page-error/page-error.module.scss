@@ -10,7 +10,7 @@
 }
 
 .iconWrapper {
-  color: var(--ao-color-accent-9);
+  color: var(--ao-accent-accent9);
   opacity: 0.6;
   margin-bottom: var(--ao-spacing-1);
 }
@@ -18,13 +18,13 @@
 .title {
   font-size: var(--ao-font-size-lg);
   font-weight: var(--ao-font-weight-semibold);
-  color: var(--ao-color-text-primary);
+  color: var(--ao-font-color-primary);
   margin: 0;
 }
 
 .description {
   font-size: var(--ao-font-size-sm);
-  color: var(--ao-color-text-tertiary);
+  color: var(--ao-font-color-tertiary);
   max-width: 420px;
   line-height: var(--ao-line-height-relaxed);
   margin: 0;

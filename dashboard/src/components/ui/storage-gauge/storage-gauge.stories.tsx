@@ -21,7 +21,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-6)", flexWrap: "wrap", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--ao-spacing-6)",
+        flexWrap: "wrap",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <StorageGauge percentage={25} current={25000} capacity={100000} label="Safe" />
       <StorageGauge percentage={65} current={65000} capacity={100000} label="Warning" />
       <StorageGauge percentage={90} current={90000} capacity={100000} label="Critical" />

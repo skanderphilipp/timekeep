@@ -14,7 +14,11 @@ type CardContentProps = CardProps;
 
 export function Card({ children, className, clickable, ...props }: CardProps) {
   return (
-    <div data-slot="card" className={clsx(styles.card, clickable && styles.clickable, className)} {...props}>
+    <div
+      data-slot="card"
+      className={clsx(styles.card, clickable && styles.clickable, className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -46,11 +50,7 @@ function CardHeader({ title, subtitle, action }: CardHeaderProps) {
 
 function CardContent({ children, className, ...props }: CardContentProps) {
   return (
-    <div
-      data-slot="card-content"
-      className={clsx(styles.content, className)}
-      {...props}
-    >
+    <div data-slot="card-content" className={clsx(styles.content, className)} {...props}>
       {children}
     </div>
   );

@@ -22,7 +22,12 @@ const columns: DataTableColumn<EmployeeRow>[] = [
     header: "Attendance",
     sortable: true,
     cell: (r) => (
-      <span style={{ color: r.attendance >= 90 ? "var(--ao-font-color-success)" : "var(--ao-font-color-warning)" }}>
+      <span
+        style={{
+          color:
+            r.attendance >= 90 ? "var(--ao-status-success-text)" : "var(--ao-status-warning-text)",
+        }}
+      >
         {r.attendance}%
       </span>
     ),
@@ -30,16 +35,61 @@ const columns: DataTableColumn<EmployeeRow>[] = [
   {
     id: "status",
     header: "Status",
-    cell: (r) => <Tag text={r.status === "active" ? "Active" : "Inactive"} color={r.status === "active" ? "green" : "gray"} />,
+    cell: (r) => (
+      <Tag
+        text={r.status === "active" ? "Active" : "Inactive"}
+        color={r.status === "active" ? "green" : "gray"}
+      />
+    ),
   },
 ];
 
 const sampleData: EmployeeRow[] = [
-  { id: "1", name: "Ahmed Al-Sabah", pin: "145", department: "Operations", attendance: 100, status: "active", hasAnomalies: false },
-  { id: "2", name: "Fatima Hassan", pin: "146", department: "Operations", attendance: 95, status: "active", hasAnomalies: false },
-  { id: "3", name: "Omar Khalid", pin: "147", department: "Warehouse", attendance: 72, status: "active", hasAnomalies: true },
-  { id: "4", name: "Layla Noor", pin: "148", department: "Admin", attendance: 98, status: "active", hasAnomalies: false },
-  { id: "5", name: "Bilal Mahmoud", pin: "149", department: "Warehouse", attendance: 0, status: "inactive", hasAnomalies: false },
+  {
+    id: "1",
+    name: "Ahmed Al-Sabah",
+    pin: "145",
+    department: "Operations",
+    attendance: 100,
+    status: "active",
+    hasAnomalies: false,
+  },
+  {
+    id: "2",
+    name: "Fatima Hassan",
+    pin: "146",
+    department: "Operations",
+    attendance: 95,
+    status: "active",
+    hasAnomalies: false,
+  },
+  {
+    id: "3",
+    name: "Omar Khalid",
+    pin: "147",
+    department: "Warehouse",
+    attendance: 72,
+    status: "active",
+    hasAnomalies: true,
+  },
+  {
+    id: "4",
+    name: "Layla Noor",
+    pin: "148",
+    department: "Admin",
+    attendance: 98,
+    status: "active",
+    hasAnomalies: false,
+  },
+  {
+    id: "5",
+    name: "Bilal Mahmoud",
+    pin: "149",
+    department: "Warehouse",
+    attendance: 0,
+    status: "inactive",
+    hasAnomalies: false,
+  },
 ];
 
 const meta: Meta<typeof DataTable<EmployeeRow>> = {
@@ -66,8 +116,23 @@ export const AllVariants: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)" }}>
-      <DataTable columns={columns} data={sampleData} getRowKey={(r) => r.id} sortState={{ column: "name", direction: "asc" }} onSortChange={fn()} />
-      <DataTable columns={columns} data={[]} getRowKey={(r) => r.id} emptyState={<p style={{ padding: 16, color: "var(--ao-font-color-tertiary)", textAlign: "center" }}>No employees found.</p>} />
+      <DataTable
+        columns={columns}
+        data={sampleData}
+        getRowKey={(r) => r.id}
+        sortState={{ column: "name", direction: "asc" }}
+        onSortChange={fn()}
+      />
+      <DataTable
+        columns={columns}
+        data={[]}
+        getRowKey={(r) => r.id}
+        emptyState={
+          <p style={{ padding: 16, color: "var(--ao-font-color-tertiary)", textAlign: "center" }}>
+            No employees found.
+          </p>
+        }
+      />
       <DataTable columns={columns} data={[]} getRowKey={(r) => r.id} isLoading />
     </div>
   ),

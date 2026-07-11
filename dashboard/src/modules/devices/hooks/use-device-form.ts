@@ -10,10 +10,7 @@ import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import { useZodForm } from "@/lib/form";
 import { createDevice, fetchDevice, updateDevice, type DeviceConfig } from "@/lib/api";
 import { useToast } from "@/infrastructure/toast/toast";
-import {
-  createDeviceFormSchema,
-  type DeviceFormValues,
-} from "../schemas/device-form.schema";
+import { createDeviceFormSchema, type DeviceFormValues } from "../schemas/device-form.schema";
 
 /**
  * Device form state + mutation hook.
@@ -66,14 +63,10 @@ export function useDeviceForm() {
   // Create/update mutation
   const saveMutation = useMutation({
     mutationFn: (data: DeviceFormValues) =>
-      isEditing
-        ? updateDevice(sn!, data as DeviceConfig)
-        : createDevice(data as DeviceConfig),
+      isEditing ? updateDevice(sn!, data as DeviceConfig) : createDevice(data as DeviceConfig),
     onSuccess: () => {
       toast.success(
-        isEditing
-          ? _(msg`Device updated successfully.`)
-          : _(msg`Device added successfully.`),
+        isEditing ? _(msg`Device updated successfully.`) : _(msg`Device added successfully.`),
       );
       navigate(AppRoute.devices.list);
     },

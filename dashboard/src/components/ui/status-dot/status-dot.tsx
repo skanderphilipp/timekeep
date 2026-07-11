@@ -9,12 +9,7 @@ type StatusDotProps = {
   className?: string;
 };
 
-export function StatusDot({
-  status,
-  size = "sm",
-  pulsing = false,
-  className,
-}: StatusDotProps) {
+export function StatusDot({ status, size = "sm", pulsing = false, className }: StatusDotProps) {
   return (
     <span
       data-slot="status-dot"

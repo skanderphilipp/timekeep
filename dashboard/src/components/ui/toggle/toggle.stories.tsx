@@ -27,7 +27,14 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-4)",
+        padding: "var(--ao-spacing-4)",
+      }}
+    >
       <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
         <Toggle checked label="Show only anomalies" />
         <span>Checked with label</span>
@@ -52,7 +59,14 @@ export const ContextAnomalyFilter: Story = {
   name: "Context: Anomaly Filter",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", display: "flex", alignItems: "center", gap: "var(--ao-spacing-3)" }}>
+    <div
+      style={{
+        padding: "var(--ao-spacing-4)",
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--ao-spacing-3)",
+      }}
+    >
       <Toggle checked label="Show only anomalies" />
       <span style={{ color: "var(--ao-font-color-secondary)", fontSize: 14 }}>
         3 anomalies detected

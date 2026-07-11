@@ -91,7 +91,10 @@ export function DataTable<T, K extends string = string>({
   const isClickable = !!onRowClick;
 
   return (
-    <div data-slot="data-table" className={clsx(styles.wrapper, stickyHeader && styles.stickyHeader, className)}>
+    <div
+      data-slot="data-table"
+      className={clsx(styles.wrapper, stickyHeader && styles.stickyHeader, className)}
+    >
       <table data-slot="data-table-element" className={styles.table}>
         <thead data-slot="data-table-head">
           <tr data-slot="data-table-head-row">
@@ -121,13 +124,8 @@ export function DataTable<T, K extends string = string>({
                       : undefined
                   }
                   tabIndex={canSort ? 0 : undefined}
-                  role="columnheader"
                   aria-sort={
-                    sortDir === "asc"
-                      ? "ascending"
-                      : sortDir === "desc"
-                        ? "descending"
-                        : undefined
+                    sortDir === "asc" ? "ascending" : sortDir === "desc" ? "descending" : undefined
                   }
                 >
                   <span data-slot="data-table-th-content" className={styles.thContent}>
@@ -152,19 +150,17 @@ export function DataTable<T, K extends string = string>({
               </tr>
             ))}
 
-          {!isLoading &&
-            data.length === 0 &&
-            emptyState && (
-              <tr data-slot="data-table-empty-row">
-                <td
-                  data-slot="data-table-empty-cell"
-                  colSpan={columns.length}
-                  className={styles.emptyCell}
-                >
-                  {emptyState}
-                </td>
-              </tr>
-            )}
+          {!isLoading && data.length === 0 && emptyState && (
+            <tr data-slot="data-table-empty-row">
+              <td
+                data-slot="data-table-empty-cell"
+                colSpan={columns.length}
+                className={styles.emptyCell}
+              >
+                {emptyState}
+              </td>
+            </tr>
+          )}
 
           {!isLoading &&
             data.map((row) => (
@@ -193,11 +189,7 @@ export function DataTable<T, K extends string = string>({
                     data-column={col.id}
                     className={col.cellClassName}
                   >
-                    {col.cell
-                      ? col.cell(row)
-                      : col.accessor
-                        ? col.accessor(row)
-                        : null}
+                    {col.cell ? col.cell(row) : col.accessor ? col.accessor(row) : null}
                   </td>
                 ))}
               </tr>
