@@ -541,6 +541,10 @@ pub(crate) async fn update_settings(
 ) -> Result<Json<ApiEnvelope<SystemSettingsResponse>>, AppError> {
     let mut current = state.storage.get_system_settings().await?;
 
+    // Track what changed for the domain event
+    let mut changed: Vec<String> = Vec::new();
+    let wp_changed = body.work_policy.is_some();
+
     if let Some(v) = body.poll_interval_secs {
         if v < 5 {
             return Err(AppError::validation("poll_interval_secs must be >= 5"));
@@ -572,6 +576,22 @@ pub(crate) async fn update_settings(
     }
 
     state.storage.upsert_system_settings(&current).await?;
+
+    // Publish settings-changed domain event for audit trail
+    if body.poll_interval_secs.is_some() {
+        changed.push("poll_interval_secs".into());
+    }
+    if body.auto_discover.is_some() {
+        changed.push("auto_discover".into());
+    }
+    if wp_changed {
+        changed.push("work_policy".into());
+    }
+    if !changed.is_empty() {
+        state
+            .event_bus
+            .publish(timekeep_core::DomainEvent::SettingsChanged { changed_fields: changed });
+    }
 
     Ok(Json(ApiEnvelope::success(SystemSettingsResponse::from(&current))))
 }

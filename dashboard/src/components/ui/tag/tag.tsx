@@ -1,13 +1,11 @@
 import { clsx } from "clsx";
 import { type Icon as TablerIcon, IconX } from "@tabler/icons-react";
+import { type ReactNode } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import styles from "./tag.module.scss";
 
-/**
- * Color palette for tags, mapped to our semantic status colors.
- */
 import type { StatusColor } from "@/types/status-color";
 
 export type TagColor = StatusColor;
@@ -15,18 +13,11 @@ export type TagColor = StatusColor;
 export type TagVariant = "solid" | "outline";
 export type TagWeight = "regular" | "medium";
 
-const COLOR_CLASS: Record<TagColor, string> = {
-  gray: styles.gray,
-  red: styles.red,
-  green: styles.green,
-  amber: styles.amber,
-  blue: styles.blue,
-  accent: styles.accent,
-};
-
 export type TagProps = {
   /** Display text. */
   text: string;
+  /** Optional secondary value (e.g., "is: active" in filter chips). */
+  value?: ReactNode;
   /** Color theme. */
   color?: TagColor;
   /** Visual style. */
@@ -41,19 +32,28 @@ export type TagProps = {
   dismissible?: boolean;
   /** Called when the dismiss button is clicked. */
   onRemove?: () => void;
+  /** Disabled state. */
+  disabled?: boolean;
   className?: string;
 };
 
 /**
- * Compact color-coded tag for categorisation and filtering.
+ * Tag — compact color-coded label for categorisation, filtering, and chips.
  *
- * Supports solid (filled) and outline variants across our semantic
- * color palette. Can be rendered as a `<span>`, an interactive
- * `<button>` when `onClick` is provided, or a dismissible badge
- * when `dismissible` is set.
+ * Open UI alignment: "Tag" is the W3C name for content labels, filter chips,
+ * and attribute badges. This single component replaces four former independent
+ * implementations (MultiSelect chips, FilterDropdown chips, FilterBar chips,
+ * ViewBar chips).
+ *
+ * Modes:
+ * - **Default**: `<span>` with semantic color (solid/outline).
+ * - **Interactive**: `<button>` when `onClick` is provided.
+ * - **Dismissible**: trailing X button when `dismissible` + `onRemove`.
+ * - **With value**: secondary text after the label (e.g., filter values).
  */
 export function Tag({
   text,
+  value,
   color = "gray",
   variant = "solid",
   weight = "regular",
@@ -61,18 +61,28 @@ export function Tag({
   onClick,
   dismissible = false,
   onRemove,
+  disabled = false,
   className,
 }: TagProps) {
   const { _ } = useLingui();
+
   const classNames = clsx(
     styles.tag,
-    COLOR_CLASS[color],
-    styles[variant],
-    weight === "medium" && styles.medium,
     onClick && styles.interactive,
     dismissible && styles.dismissible,
     className,
   );
+
+  const sharedAttrs = {
+    "data-slot": "tag",
+    "data-color": color,
+    "data-variant": variant,
+    "data-weight": weight,
+    "data-interactive": onClick ? true : undefined,
+    "data-dismissible": dismissible || undefined,
+    "data-disabled": disabled || undefined,
+    className: classNames,
+  };
 
   const content = (
     <>
@@ -82,6 +92,7 @@ export function Tag({
         </span>
       )}
       <span className={styles.label}>{text}</span>
+      {value && <span className={styles.value}>{value}</span>}
     </>
   );
 
@@ -89,6 +100,7 @@ export function Tag({
     <button
       type="button"
       className={styles.dismiss}
+      disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
         onRemove();
@@ -99,19 +111,21 @@ export function Tag({
     </button>
   );
 
-  const TagComponent = onClick ? "button" : "span";
-  const extraProps = onClick ? { type: "button" as const, onClick } : {};
+  if (onClick) {
+    return (
+      <button type="button" {...sharedAttrs} onClick={onClick} disabled={disabled}>
+        {content}
+        {dismissButton}
+      </button>
+    );
+  }
 
   return (
-    <TagComponent
-      data-slot="tag"
-      data-color={color}
-      data-variant={variant}
-      className={classNames}
-      {...extraProps}
-    >
+    <span {...sharedAttrs}>
       {content}
       {dismissButton}
-    </TagComponent>
+    </span>
   );
 }
+
+Tag.displayName = "Tag";

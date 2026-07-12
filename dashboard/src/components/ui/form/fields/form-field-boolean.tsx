@@ -2,7 +2,7 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 
 import { FormField } from "@/components/ui/form/form-field";
 import { FieldInputContainer } from "@/components/ui/form/field-input-container";
-import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
 import type { FormBooleanFieldDef } from "@/components/ui/form/form-field-def";
 
 export function FormFieldBoolean({
@@ -29,10 +29,10 @@ export function FormFieldBoolean({
           name={field.name}
           control={form.control}
           render={({ field: controllerField }) => (
-            <Toggle
+            <Switch
               id={inputId}
               checked={controllerField.value === true}
-              onChange={(checked) => controllerField.onChange(checked)}
+              onCheckedChange={(checked) => controllerField.onChange(checked)}
               label={field.description ?? field.label}
               disabled={field.disabled}
             />

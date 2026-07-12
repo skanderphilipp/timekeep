@@ -15,7 +15,7 @@
   background: var(--ao-accent-accent9);
   border-radius: var(--ao-radius-full);
   height: 100%;
-  transition: width 0.3s ease;
+  transition: width duration(normal) ease;
 }
 
 .label {
@@ -27,11 +27,11 @@
 // ── Sizes ──────────────────────────────────────────────────────────────────────
 
 .sm .track {
-  height: 4px;
+  height: var(--ao-spacing-1);
 }
 
 .md .track {
-  height: 8px;
+  height: var(--ao-spacing-2);
 }
 
 // ── Variants ───────────────────────────────────────────────────────────────────

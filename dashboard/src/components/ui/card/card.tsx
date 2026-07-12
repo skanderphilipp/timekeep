@@ -69,6 +69,11 @@ function CardFooter({ children, className }: CardFooterProps) {
   );
 }
 
+Card.displayName = "Card";
+CardHeader.displayName = "Card.Header";
+CardContent.displayName = "Card.Content";
+CardFooter.displayName = "Card.Footer";
+
 Card.Header = CardHeader;
 Card.Content = CardContent;
 Card.Footer = CardFooter;

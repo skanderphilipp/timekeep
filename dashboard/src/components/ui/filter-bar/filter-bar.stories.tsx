@@ -4,7 +4,7 @@ import { FilterBar, type ActiveFilter } from "./filter-bar";
 import { FilterInput } from "@/components/ui/filter-input";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
 
 const sampleFilters: ActiveFilter[] = [
   { key: "device", label: "Device: Main Gate", onRemove: fn() },
@@ -160,7 +160,7 @@ export const ContextPunchesFilter: Story = {
         ]}
         onChange={fn()}
       />
-      <Toggle checked={false} label="Show only anomalies" onChange={fn()} />
+      <Switch checked={false} label="Show only anomalies" onCheckedChange={fn()} />
     </FilterBar>
   ),
 };

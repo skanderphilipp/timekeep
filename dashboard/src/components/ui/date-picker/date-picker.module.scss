@@ -13,12 +13,12 @@
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  min-height: 36px;
-  min-width: 160px;
+  min-height: var(--ao-spacing-9);
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-8));
   padding: 0 var(--ao-spacing-3);
   transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    border-color duration(fast) ease,
+    box-shadow duration(fast) ease;
   user-select: none;
 
   &:hover {
@@ -106,7 +106,7 @@
     font-family: var(--ao-font-family);
     font-size: var(--ao-font-size-sm);
     padding: var(--ao-spacing-2) var(--ao-spacing-3) var(--ao-spacing-3);
-    width: 280px;
+    width: calc(var(--ao-spacing-32) * 2 + var(--ao-spacing-6));
   }
 
   .react-datepicker__header {
@@ -135,11 +135,11 @@
     display: flex;
     font-size: var(--ao-font-size-xs);
     font-weight: var(--ao-font-weight-medium);
-    height: 32px;
+    height: var(--ao-spacing-8);
     justify-content: center;
     margin: 0;
     text-transform: uppercase;
-    width: 36px;
+    width: var(--ao-spacing-9);
   }
 
   .react-datepicker__week {
@@ -154,14 +154,14 @@
     cursor: pointer;
     display: flex;
     font-size: var(--ao-font-size-sm);
-    height: 36px;
+    height: var(--ao-spacing-9);
     justify-content: center;
     line-height: 1;
     margin: 0;
     transition:
-      background 0.1s ease,
-      color 0.1s ease;
-    width: 36px;
+      background duration(instant) ease,
+      color duration(instant) ease;
+    width: var(--ao-spacing-9);
 
     &:hover:not([aria-disabled="true"]) {
       background: var(--ao-background-secondary);
@@ -217,13 +217,13 @@
     &::after {
       background: var(--ao-accent-accent9);
       border-radius: 50%;
-      bottom: 2px;
+      bottom: var(--ao-spacing-0_5);
       content: "";
-      height: 3px;
+      height: var(--ao-spacing-1);
       left: 50%;
       position: absolute;
       transform: translateX(-50%);
-      width: 3px;
+      width: var(--ao-spacing-1);
     }
   }
 
@@ -252,15 +252,15 @@
     align-items: center;
     background: transparent;
     border: none;
-    border-radius: var(--ao-radius-sm);
+    border-radius: var(--ao-radius-md);
     cursor: pointer;
     display: flex;
-    height: 28px;
+    height: var(--ao-spacing-7);
     justify-content: center;
     padding: 0;
     position: absolute;
-    top: 12px;
-    width: 28px;
+    top: var(--ao-spacing-3);
+    width: var(--ao-spacing-7);
 
     &:hover {
       background: var(--ao-background-secondary);
@@ -278,7 +278,7 @@
   .react-datepicker__navigation-icon::before {
     border-color: var(--ao-font-color-secondary);
     border-style: solid;
-    border-width: 2px 2px 0 0;
+    border-width: var(--ao-spacing-0_5) var(--ao-spacing-0_5) 0 0;
   }
 
   .react-datepicker__triangle,

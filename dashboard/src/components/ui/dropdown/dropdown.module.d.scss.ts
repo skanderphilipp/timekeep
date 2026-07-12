@@ -3,5 +3,6 @@ declare const classNames: {
   readonly positioner: "positioner";
   readonly popup: "popup";
   readonly matchWidth: "matchWidth";
+  readonly content: "content";
 };
 export = classNames;

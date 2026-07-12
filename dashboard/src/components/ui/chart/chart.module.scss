@@ -1,6 +1,5 @@
 .chart {
   background: transparent;
-  overflow: hidden;
 }
 
 .header {
@@ -23,9 +22,17 @@
 
 .body {
   background: var(--ao-background-secondary);
-  min-height: 200px;
+  min-height: calc(var(--ao-spacing-32) + var(--ao-spacing-18));
   padding: var(--ao-spacing-4);
   position: relative;
+
+  /* Nivo renders SVGs inside a position:relative container within the
+     auto-sizer's zero-width div. The global svg { max-width: 100% } reset
+     would compute to 0px (100% of the 0px-wide containing block), making
+     the entire chart invisible. Override to allow the SVG's intrinsic width. */
+  svg {
+    max-width: none;
+  }
 }
 
 .stateOverlay {
@@ -33,7 +40,7 @@
   display: flex;
   inset: 0;
   justify-content: center;
-  min-height: 200px;
+  min-height: calc(var(--ao-spacing-32) + var(--ao-spacing-18));
 }
 
 .footer {

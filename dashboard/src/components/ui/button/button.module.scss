@@ -1,118 +1,158 @@
 @use "@/styles/mixins" as *;
 
+// ── Twenty UI Alignment — Button ──────────────────────────────────────────
+// See: SCSS-VISUAL-STANDARDS.md §6.1
+//
+// Key changes from old SCSS:
+//   1. State selectors use [data-*] attributes (not CSS classes)
+//   2. Height: md=32px (was 40px), sm=24px (was 32px)
+//   3. Border-radius: var(--ao-radius-md) (was var(--ao-radius-sm))
+//   4. Padding: 0 var(--ao-spacing-2) (was var(--ao-spacing-4))
+//   5. Gap: var(--ao-spacing-1) (was var(--ao-spacing-2))
+//   6. Disabled: explicit color tokens (was opacity: 0.5)
+//   7. Focus: outline + optional double-ring (was box-shadow only)
+//   8. Transitions: duration(fast) (was hardcoded 0.15s)
+
 .button {
   align-items: center;
   background: var(--btn-bg, transparent);
   border: 1px solid var(--btn-border-color, transparent);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--btn-color, var(--ao-font-color-primary));
   cursor: pointer;
   display: inline-flex;
+  flex-shrink: 0;
   font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
-  gap: var(--ao-spacing-2);
-  justify-content: center;
+  gap: var(--ao-spacing-1);
+  justify-content: flex-start;
   line-height: 1;
-  padding: 0 var(--ao-spacing-4);
+  padding: 0 var(--ao-spacing-2);
   text-decoration: none;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    opacity 0.15s ease;
+    background duration(fast) ease,
+    border-color duration(fast) ease,
+    color duration(fast) ease;
   user-select: none;
   white-space: nowrap;
 
   @include focus-ring;
 }
 
-// ── Sizes ────────────────────────────────────────────────────────────────────
+// ── Sizes ──────────────────────────────────────────────────────────────────
 
-.sm {
-  font-size: var(--ao-font-size-sm);
-  height: 32px;
-  padding: 0 var(--ao-spacing-3);
+.button[data-size="sm"] {
+  font-size: var(--ao-font-size-xs);
+  height: var(--ao-spacing-6);
 }
 
-.md {
-  font-size: var(--ao-font-size-md);
-  height: 40px;
+.button[data-size="md"] {
+  height: var(--ao-spacing-8);
 }
 
-// ── Variants ─────────────────────────────────────────────────────────────────
+// ── Variant: Primary ───────────────────────────────────────────────────────
 
-.primary {
+.button[data-variant="primary"] {
   --btn-bg: var(--ao-accent-accent9);
   --btn-color: var(--ao-font-color-inverted);
   --btn-border-color: var(--ao-accent-accent9);
 
-  &:hover {
+  &:hover:not([data-disabled]) {
     --btn-bg: var(--ao-accent-accent10);
   }
 
-  &:active {
+  &:active:not([data-disabled]) {
     --btn-bg: var(--ao-accent-accent11);
   }
+
+  // Double-ring focus for solid buttons
+  @include focus-ring-enhanced($glow-color: var(--ao-accent-accent5));
 }
 
-.secondary {
-  --btn-border-color: var(--ao-border-color-medium);
+// ── Variant: Secondary ─────────────────────────────────────────────────────
 
-  &:hover {
+.button[data-variant="secondary"] {
+  --btn-bg: var(--ao-background-transparent-lighter);
+  --btn-border-color: var(--ao-background-transparent-medium);
+  --btn-color: var(--ao-font-color-secondary);
+
+  &:hover:not([data-disabled]) {
     --btn-bg: var(--ao-background-secondary);
   }
 
-  &:active {
+  &:active:not([data-disabled]) {
     --btn-bg: var(--ao-background-tertiary);
   }
 }
 
-.ghost {
-  &:hover {
-    --btn-bg: var(--ao-background-secondary);
+// ── Variant: Ghost ─────────────────────────────────────────────────────────
+
+.button[data-variant="ghost"] {
+  --btn-color: var(--ao-font-color-secondary);
+
+  &:hover:not([data-disabled]) {
+    --btn-bg: var(--ao-background-transparent-light);
   }
 
-  &:active {
-    --btn-bg: var(--ao-background-tertiary);
+  &:active:not([data-disabled]) {
+    --btn-bg: var(--ao-background-transparent-medium);
   }
 }
 
-.danger {
+// ── Variant: Danger ────────────────────────────────────────────────────────
+
+.button[data-variant="danger"] {
   --btn-bg: var(--ao-color-red9);
   --btn-color: var(--ao-font-color-inverted);
   --btn-border-color: var(--ao-color-red9);
 
-  &:hover {
+  &:hover:not([data-disabled]) {
     --btn-bg: var(--ao-color-red10);
   }
 
-  &:active {
+  &:active:not([data-disabled]) {
     --btn-bg: var(--ao-color-red11);
   }
+
+  @include focus-ring-enhanced($color: var(--ao-color-red9), $glow-color: var(--ao-color-red5));
 }
 
-// ── States ───────────────────────────────────────────────────────────────────
+// ── State: Disabled ────────────────────────────────────────────────────────
+// Explicit color tokens — never use opacity for disabled.
 
-.disabled,
-.loading {
+.button[data-disabled] {
+  --btn-bg: var(--ao-background-secondary);
+  --btn-color: var(--ao-font-color-extraLight);
+  --btn-border-color: transparent;
   cursor: not-allowed;
-  opacity: 0.5;
   pointer-events: none;
 }
 
-.fullWidth {
+// ── State: Loading ─────────────────────────────────────────────────────────
+
+.button[data-loading] {
+  cursor: wait;
+  pointer-events: none;
+}
+
+// ── Modifier: Full width ───────────────────────────────────────────────────
+
+.button[data-full-width] {
+  justify-content: center;
   width: 100%;
 }
 
-// ── Children ─────────────────────────────────────────────────────────────────
+// ── Children ───────────────────────────────────────────────────────────────
 
 .spinner {
-  animation: spin 0.8s linear infinite;
-  border: 2px solid currentcolor;
-  border-radius: 50%;
+  animation: button-spin 0.8s linear infinite;
+  border: var(--ao-spacing-0_5) solid currentcolor;
+  border-radius: var(--ao-radius-full);
   border-right-color: transparent;
   display: inline-block;
-  height: 14px;
-  width: 14px;
+  height: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
+  width: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
 }
 
 .icon {
@@ -121,7 +161,7 @@
   flex-shrink: 0;
 }
 
-@keyframes spin {
+@keyframes button-spin {
   to {
     transform: rotate(360deg);
   }

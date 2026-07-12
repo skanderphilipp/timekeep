@@ -1,8 +1,13 @@
+@use "@/styles/mixins" as *;
+
 // ── Shared Dropdown / Popup Patterns ────────────────────────────────────────
-// Used by: combobox, multi-select
-// Provides the positioner, popup surface, scrollable list, selectable items,
-// item indicators, and loading/empty state rows shared between dropdown-like
-// components.
+// Twenty UI alignment (2026-07-12). See: SCSS-VISUAL-STANDARDS.md §6.6
+//
+// Key changes:
+//   1. Item border-radius: concentric with container (calc(md - spacing-1))
+//   2. Item height: content-box pattern (32px - 2*padding)
+//   3. Item hover: transparent-light background
+//   4. Item disabled: explicit color, no opacity
 
 .positioner {
   z-index: 50;
@@ -28,24 +33,26 @@
 
 .item {
   align-items: center;
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-primary);
+  border-radius: calc(var(--ao-radius-md) - var(--ao-spacing-1));
+  box-sizing: content-box;
+  color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: flex;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
+  height: calc(32px - 2 * var(--ao-spacing-2));
   outline: none;
-  padding: var(--ao-spacing-1_5) var(--ao-spacing-2);
+  padding: var(--ao-spacing-2) var(--ao-spacing-1);
+  transition: background duration(fast) ease;
   user-select: none;
 
   &[data-highlighted] {
-    background: var(--ao-accent-accent5);
+    background: var(--ao-background-transparent-light);
   }
 
   &[data-disabled] {
-    color: var(--ao-font-color-disabled);
+    color: var(--ao-font-color-extraLight);
     cursor: not-allowed;
-    opacity: 0.5;
   }
 }
 

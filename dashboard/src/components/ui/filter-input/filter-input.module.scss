@@ -5,10 +5,10 @@
   border-radius: var(--ao-radius-sm);
   display: inline-flex;
   gap: var(--ao-spacing-2);
-  height: 36px;
+  height: var(--ao-spacing-9);
   padding: 0 var(--ao-spacing-2);
-  transition: border-color 0.15s ease;
-  width: 180px;
+  transition: border-color duration(fast) ease;
+  width: calc(var(--ao-spacing-32) + var(--ao-spacing-13));
 
   &:focus-within {
     border-color: var(--ao-focus-ring);
@@ -45,9 +45,9 @@
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  height: 18px;
+  height: calc(var(--ao-spacing-4) + var(--ao-spacing-0_5));
   justify-content: center;
-  width: 18px;
+  width: calc(var(--ao-spacing-4) + var(--ao-spacing-0_5));
 
   &:hover {
     background: var(--ao-background-secondary);

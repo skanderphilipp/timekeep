@@ -17,6 +17,8 @@ import { IconFilter, IconX, IconArrowLeft } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
+import { Tag } from "@/components/ui/tag";
+
 import styles from "./filter-dropdown.module.scss";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -156,17 +158,14 @@ export function FilterDropdown({
       {activeFilters && activeFilters.length > 0 && (
         <div className={styles.chips}>
           {activeFilters.map((chip) => (
-            <span key={chip.key} className={styles.chip}>
-              <span className={styles.chipLabel}>{chip.label}</span>
-              <button
-                type="button"
-                className={styles.chipRemove}
-                onClick={chip.onRemove}
-                aria-label={_(msg`Remove ${chip.label} filter`)}
-              >
-                <IconX size={10} />
-              </button>
-            </span>
+            <Tag
+              key={chip.key}
+              text={chip.label}
+              color="gray"
+              variant="outline"
+              dismissible
+              onRemove={chip.onRemove}
+            />
           ))}
         </div>
       )}

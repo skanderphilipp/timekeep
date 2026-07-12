@@ -16,7 +16,7 @@ import {
   FilterInput,
   FilterSelect,
   DatePicker,
-  Toggle,
+  Switch,
   Banner,
   MultiSelect,
   type FilterField,
@@ -104,9 +104,9 @@ export function PunchQueryView() {
       label: _(msg`Anomalies only`),
       icon: <IconAlertTriangle size={14} />,
       renderValueSelector: () => (
-        <Toggle
+        <Switch
           checked={page.anomaliesOnly}
-          onChange={page.handleAnomaliesOnlyToggle}
+          onCheckedChange={page.handleAnomaliesOnlyToggle}
           label={_(msg`Show only anomalous punches`)}
         />
       ),

@@ -58,8 +58,8 @@ th {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--ao-focus-ring);
-    outline-offset: -2px;
+    outline: var(--ao-spacing-0_5) solid var(--ao-focus-ring);
+    outline-offset: calc(var(--ao-spacing-0_5) * -1);
   }
 }
 
@@ -73,7 +73,7 @@ th {
   color: var(--ao-font-color-tertiary);
   flex-shrink: 0;
   opacity: 0;
-  transition: opacity 0.1s ease;
+  transition: opacity duration(instant) ease;
 }
 
 th:hover .sortIcon {
@@ -91,8 +91,8 @@ th:hover .sortIcon {
   cursor: pointer;
 
   &:focus-visible {
-    outline: 2px solid var(--ao-focus-ring);
-    outline-offset: -2px;
+    outline: var(--ao-spacing-0_5) solid var(--ao-focus-ring);
+    outline-offset: calc(var(--ao-spacing-0_5) * -1);
   }
 }
 

@@ -21,13 +21,17 @@ type IconButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label" | "children">;
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ children, size = "md", accent = "secondary", className, ...rest }, ref) => {
+  ({ children, size = "md", accent = "secondary", className, disabled, ...rest }, ref) => {
     return (
       <button
         ref={ref}
         data-slot="icon-button"
-        className={clsx(styles.button, styles[size], styles[accent], className)}
+        data-variant={accent}
+        data-size={size}
+        data-disabled={disabled || undefined}
+        className={clsx(styles.button, className)}
         type="button"
+        disabled={disabled}
         {...rest}
       >
         {children}

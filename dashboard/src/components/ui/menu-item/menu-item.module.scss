@@ -1,52 +1,62 @@
 @use "@/styles/mixins" as *;
 
+// ── Twenty UI Alignment — MenuItem ────────────────────────────────────────
+// Unified menu item supporting both button and link modes.
+// SCSS-VISUAL-STANDARDS.md §6.6
+//
+// Key changes:
+//   1. border-radius: concentric (calc(md - spacing-1))
+//   2. Hover bg: transparent-light (Twenty pattern)
+//   3. Disabled: explicit color, no opacity
+//   4. Transition: duration(fast)
+
 .item {
   align-items: center;
-  background: none;
   border: none;
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-primary);
+  border-radius: calc(var(--ao-radius-md) - var(--ao-spacing-1));
+  color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: flex;
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  min-height: 32px;
-  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  min-height: var(--ao-spacing-8);
+  padding: var(--ao-spacing-2) var(--ao-spacing-1);
   text-align: start;
-  transition: background 0.08s ease;
+  text-decoration: none;
+  transition: background duration(fast) ease;
   width: 100%;
 
-  &:hover:not(:disabled) {
-    background: var(--ao-background-tertiary);
+  &:hover:not([data-disabled]) {
+    background: var(--ao-background-transparent-light);
   }
 
-  &:focus-visible {
-    background: var(--ao-background-tertiary);
-    outline: none;
-  }
+  @include focus-ring;
 
-  &:active:not(:disabled) {
-    background: var(--ao-accent-accent3);
+  &:active:not([data-disabled]) {
+    background: var(--ao-background-transparent-medium);
   }
 }
 
-// ── Variants ───────────────────────────────────────────────────────────────────
+// ── Variants ───────────────────────────────────────────────────────────────
 
-.danger {
-  color: var(--ao-color-red11);
+.item[data-variant="danger"] {
+  color: var(--ao-font-color-danger);
 
-  &:hover:not(:disabled) {
+  &:hover:not([data-disabled]) {
     background: var(--ao-color-red3);
   }
 }
 
-.disabled {
+// ── State: Disabled ────────────────────────────────────────────────────────
+
+.item[data-disabled] {
+  color: var(--ao-font-color-extraLight);
   cursor: not-allowed;
-  opacity: 0.4;
+  pointer-events: none;
 }
 
-// ── Sub-elements ───────────────────────────────────────────────────────────────
+// ── Sub-elements ───────────────────────────────────────────────────────────
 
 .leftIcon {
   align-items: center;
@@ -55,8 +65,8 @@
   flex-shrink: 0;
 
   svg {
-    height: 16px;
-    width: 16px;
+    height: var(--ao-spacing-4);
+    width: var(--ao-spacing-4);
   }
 }
 
@@ -80,16 +90,10 @@
   color: var(--ao-font-color-tertiary);
   font-size: var(--ao-font-size-xs);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
 }
 
-.rightIcon {
+.chevron {
   align-items: center;
   color: var(--ao-font-color-tertiary);
   display: flex;
-
-  svg {
-    height: 14px;
-    width: 14px;
-  }
 }

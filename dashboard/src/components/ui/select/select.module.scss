@@ -1,5 +1,15 @@
+@use "@/styles/mixins" as *;
 @use "@/styles/form-control-base" as *;
 @use "@/styles/dropdown-base" as *;
+
+// ── Twenty UI Alignment — Select ──────────────────────────────────────────
+// See: SCSS-VISUAL-STANDARDS.md §6.6
+//
+// Key changes:
+//   1. Height: 32px (was 40px)
+//   2. border-radius: var(--ao-radius-md) (was sm)
+//   3. Focus: border-color only, no box-shadow
+//   4. Disabled: explicit colors, no opacity
 
 /* ── Trigger ── */
 
@@ -7,24 +17,23 @@
   align-items: center;
   background-color: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-primary);
   cursor: pointer;
   display: flex;
   font-family: var(--ao-font-family);
-  font-size: var(--ao-font-size-md);
+  font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  height: 40px;
+  height: var(--ao-spacing-8);
   justify-content: space-between;
   outline: none;
   padding-inline: var(--ao-spacing-3);
-  transition: border-color 0.15s ease;
+  transition: border-color duration(fast) ease;
   user-select: none;
   width: 100%;
 
   &:focus-visible {
     border-color: var(--ao-accent-accent9);
-    box-shadow: 0 0 0 2px var(--ao-focus-ring);
   }
 
   &[data-popup-open] {
@@ -33,9 +42,8 @@
 
   &:disabled {
     background-color: var(--ao-background-secondary);
-    color: var(--ao-font-color-disabled);
+    color: var(--ao-font-color-extraLight);
     cursor: not-allowed;
-    opacity: 0.5;
   }
 }
 
@@ -44,7 +52,6 @@
 
   &:focus-visible {
     border-color: var(--ao-color-red9);
-    box-shadow: 0 0 0 2px var(--ao-color-red5);
   }
 }
 
@@ -54,7 +61,7 @@
   white-space: nowrap;
 
   &[data-placeholder] {
-    color: var(--ao-font-color-tertiary);
+    color: var(--ao-font-color-light);
   }
 }
 
@@ -62,22 +69,22 @@
   color: var(--ao-font-color-tertiary);
   display: flex;
   flex-shrink: 0;
-  transition: transform 0.15s ease;
+  transition: transform duration(fast) ease;
 
   [data-popup-open] & {
     transform: rotate(180deg);
   }
 }
 
-/* ── Popup (overrides dropdown-base: tighter min-width, auto scroll) ── */
+/* ── Popup ── */
 
 .popup {
-  min-width: var(--anchor-width, 160px);
+  min-width: var(--anchor-width, calc(var(--ao-spacing-32) + var(--ao-spacing-8)));
   overflow-y: auto;
   padding: var(--ao-spacing-1);
 }
 
-/* ── List (overrides dropdown-base: no extra padding, no max-height) ── */
+/* ── List ── */
 
 .list {
   padding: 0;

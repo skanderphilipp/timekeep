@@ -25,18 +25,18 @@
 
 .sm {
   font-size: var(--ao-font-size-xxs);
-  height: 24px;
-  width: 24px;
+  height: var(--ao-spacing-6);
+  width: var(--ao-spacing-6);
 }
 
 .md {
   font-size: var(--ao-font-size-xs);
-  height: 32px;
-  width: 32px;
+  height: var(--ao-spacing-8);
+  width: var(--ao-spacing-8);
 }
 
 .lg {
   font-size: var(--ao-font-size-md);
-  height: 40px;
-  width: 40px;
+  height: var(--ao-spacing-10);
+  width: var(--ao-spacing-10);
 }

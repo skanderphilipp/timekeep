@@ -28,7 +28,7 @@
 
 .required {
   color: var(--ao-color-red11);
-  margin-inline-start: 2px;
+  margin-inline-start: var(--ao-spacing-0_5);
 }
 
 .error {

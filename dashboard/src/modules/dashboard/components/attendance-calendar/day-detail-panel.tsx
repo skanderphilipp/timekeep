@@ -1,13 +1,24 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { Heading, Text, ListItem, type CalendarDay } from "@/components/ui";
+import { Heading, Text, ListItem, type CalendarDayData } from "@/components/ui";
 import { type Punch } from "@/modules/punches/hooks/use-punch-data";
 
 type DayDetailPanelProps = {
-  day: CalendarDay;
+  day: CalendarDayData;
   punches: Punch[];
 };
+
+function formatDateTitle(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y!, m! - 1, d!);
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 /**
  * Side panel content for a single calendar day's punch records.
@@ -18,12 +29,7 @@ type DayDetailPanelProps = {
 export function DayDetailPanel({ day, punches }: DayDetailPanelProps) {
   const { _ } = useLingui();
 
-  const title = day.date.toLocaleDateString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const title = formatDateTitle(day.date);
 
   if (punches.length === 0) {
     return (

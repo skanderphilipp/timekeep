@@ -8,7 +8,5 @@ declare const classNames: {
   readonly count: "count";
   readonly clear: "clear";
   readonly chips: "chips";
-  readonly chip: "chip";
-  readonly chipLabel: "chipLabel";
 };
 export = classNames;

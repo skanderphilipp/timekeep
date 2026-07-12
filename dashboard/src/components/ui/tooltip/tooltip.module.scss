@@ -9,7 +9,7 @@
   font-size: var(--ao-font-size-xs);
   font-weight: var(--ao-font-weight-medium);
   line-height: 1.4;
-  max-width: 240px;
+  max-width: var(--ao-spacing-30);
   padding: var(--ao-spacing-1) var(--ao-spacing-2);
   z-index: 50;
 }

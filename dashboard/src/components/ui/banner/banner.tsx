@@ -64,3 +64,5 @@ export function Banner({ variant = "info", title, children, onDismiss, className
     </div>
   );
 }
+
+Banner.displayName = "Banner";

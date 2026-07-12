@@ -18,6 +18,12 @@ export type LineChartProps = {
   xKey: string;
   height?: number;
   grid?: boolean;
+  /**
+   * Called when a data point is clicked.
+   * Receives the original data row.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClick?: (row: Record<string, any>) => void;
 };
 
 function toSeries(data: Record<string, unknown>[], lines: LineDef[], xKey: string) {
@@ -30,7 +36,7 @@ function toSeries(data: Record<string, unknown>[], lines: LineDef[], xKey: strin
   }));
 }
 
-export function LineChart({ data, lines, xKey, height = 300, grid = false }: LineChartProps) {
+export function LineChart({ data, lines, xKey, height = 300, grid = false, onClick }: LineChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
 
   const series = toSeries(data, lines, xKey);
@@ -61,6 +67,16 @@ export function LineChart({ data, lines, xKey, height = 300, grid = false }: Lin
         areaOpacity={0.15}
         animate={false}
         lineWidth={2}
+        // ── Interaction ────────────────────────────────────────
+        isInteractive={!!onClick || true}
+        onClick={(point) => {
+          if (!onClick) return;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const pt = point as any;
+          const xVal = pt?.data?.x ?? pt?.x;
+          const row = data.find((d) => String(d[xKey]) === String(xVal));
+          if (row) onClick(row);
+        }}
       />
     </div>
   );

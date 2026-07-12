@@ -1,18 +1,27 @@
+// ── Twenty UI Alignment — SearchInput ─────────────────────────────────────
+// See: SCSS-VISUAL-STANDARDS.md §6.5
+//
+// Key changes:
+//   1. border-radius: var(--ao-radius-md) (was sm)
+//   2. Background: transparent-lighter (was primary / flat white)
+//   3. Focus: border-color only, no box-shadow ring
+//   4. Width: 100% flex (was fixed 220px)
+//   5. Placeholder: weight medium, color light
+
 .wrapper {
   align-items: center;
-  background: var(--ao-background-primary);
+  background: var(--ao-background-transparent-lighter);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   display: inline-flex;
   gap: var(--ao-spacing-2);
-  height: 32px;
+  height: var(--ao-spacing-8);
   padding: 0 var(--ao-spacing-2);
-  transition: border-color 0.15s ease;
-  width: 220px;
+  transition: border-color duration(fast) ease;
+  width: 100%;
 
   &:focus-within {
-    border-color: var(--ao-focus-ring);
-    box-shadow: 0 0 0 1px var(--ao-focus-ring);
+    border-color: var(--ao-accent-accent9);
   }
 }
 
@@ -33,7 +42,8 @@
   outline: none;
 
   &::placeholder {
-    color: var(--ao-font-color-tertiary);
+    color: var(--ao-font-color-light);
+    font-weight: var(--ao-font-weight-medium);
   }
 }
 
@@ -46,12 +56,12 @@
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  height: 20px;
+  height: var(--ao-spacing-5);
   justify-content: center;
-  width: 20px;
+  width: var(--ao-spacing-5);
 
   &:hover {
-    background: var(--ao-background-secondary);
+    background: var(--ao-background-transparent-light);
     color: var(--ao-font-color-primary);
   }
 }

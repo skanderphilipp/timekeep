@@ -98,7 +98,9 @@ export function Dropdown({
                     />
                   }
                 >
-                  <MenuCloseContext.Provider value={close}>{children}</MenuCloseContext.Provider>
+                  <div data-slot="dropdown-content" className={styles.content}>
+                    <MenuCloseContext.Provider value={close}>{children}</MenuCloseContext.Provider>
+                  </div>
                 </Popover.Popup>
               </Popover.Positioner>
             </Popover.Portal>
@@ -108,3 +110,5 @@ export function Dropdown({
     </DropdownContext.Provider>
   );
 }
+
+Dropdown.displayName = "Dropdown";

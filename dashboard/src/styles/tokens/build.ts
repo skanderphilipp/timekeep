@@ -30,8 +30,8 @@ const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 function pick(palette: Record<string, string>, prefix: string): ColorScale {
   const scale: ColorScale = {};
   for (const step of STEPS) {
-    const value = palette[`${prefix}${step}`];
-    if (!value) throw new Error(`Missing Radix color: ${prefix}${step}`);
+    const value = palette[prefix + String(step)];
+    if (!value) throw new Error("Missing Radix color: " + prefix + String(step));
     scale[step] = value;
   }
   return scale;
@@ -40,7 +40,7 @@ function pick(palette: Record<string, string>, prefix: string): ColorScale {
 type ScaleSet = { light: ColorScale; dark: ColorScale };
 
 function radixScale(name: keyof typeof RadixColors & string): ScaleSet {
-  const dark = `${name}Dark` as keyof typeof RadixColors;
+  const dark = (name + "Dark") as keyof typeof RadixColors;
   return {
     light: pick(RadixColors[name] as Record<string, string>, name),
     dark: pick(RadixColors[dark] as Record<string, string>, name),
@@ -48,11 +48,33 @@ function radixScale(name: keyof typeof RadixColors & string): ScaleSet {
 }
 
 function radixScaleP3(name: keyof typeof RadixColors & string): ScaleSet {
-  const p3 = `${name}P3` as keyof typeof RadixColors;
-  const darkP3 = `${name}DarkP3` as keyof typeof RadixColors;
+  const p3 = (name + "P3") as keyof typeof RadixColors;
+  const darkP3 = (name + "DarkP3") as keyof typeof RadixColors;
   return {
     light: pick(RadixColors[p3] as Record<string, string>, name),
     dark: pick(RadixColors[darkP3] as Record<string, string>, name),
+  };
+}
+
+// ── Alpha scales (transparent backgrounds, overlays) ─────────────────────
+// Radix exports pre-computed alpha variants (grayA, grayDarkA, grayP3A, …).
+// These are color(display-p3 r g b / a) for P3A and rgba() for plain A.
+
+function radixAlphaScale(name: keyof typeof RadixColors & string): ScaleSet {
+  const alpha = (name + "A") as keyof typeof RadixColors;
+  const darkAlpha = (name + "DarkA") as keyof typeof RadixColors;
+  return {
+    light: pick(RadixColors[alpha] as Record<string, string>, name + "A"),
+    dark: pick(RadixColors[darkAlpha] as Record<string, string>, name + "A"),
+  };
+}
+
+function radixAlphaScaleP3(name: keyof typeof RadixColors & string): ScaleSet {
+  const p3Alpha = (name + "P3A") as keyof typeof RadixColors;
+  const darkP3Alpha = (name + "DarkP3A") as keyof typeof RadixColors;
+  return {
+    light: pick(RadixColors[p3Alpha] as Record<string, string>, name + "A"),
+    dark: pick(RadixColors[darkP3Alpha] as Record<string, string>, name + "A"),
   };
 }
 
@@ -63,6 +85,10 @@ type Palette = {
   green: ColorScale;
   amber: ColorScale;
   blue: ColorScale;
+};
+
+type AlphaPalette = {
+  gray: ColorScale;
 };
 
 const srgb = {
@@ -83,6 +109,14 @@ const p3 = {
   blue: radixScaleP3("blue"),
 };
 
+const srgbAlpha = {
+  gray: radixAlphaScale("gray"),
+};
+
+const p3Alpha = {
+  gray: radixAlphaScaleP3("gray"),
+};
+
 function paletteFor(source: typeof srgb, theme: Theme): Palette {
   return {
     gray: source.gray[theme],
@@ -94,11 +128,17 @@ function paletteFor(source: typeof srgb, theme: Theme): Palette {
   };
 }
 
+function alphaPaletteFor(source: typeof srgbAlpha, theme: Theme): AlphaPalette {
+  return {
+    gray: source.gray[theme],
+  };
+}
+
 // ── Token generators ──────────────────────────────────────────────────────
 
 function scaleTokens(prefix: string, scale: ColorScale): TokenDef {
   const tokens: TokenDef = {};
-  for (const step of STEPS) tokens[`${prefix}${step}`] = scale[step];
+  for (const step of STEPS) tokens[prefix + String(step)] = scale[step];
   return tokens;
 }
 
@@ -109,16 +149,16 @@ function scaleTokens(prefix: string, scale: ColorScale): TokenDef {
  */
 function statusTokens(name: string, scale: ColorScale): TokenDef {
   return {
-    [`--ao-status-${name}-bg`]: scale[3],
-    [`--ao-status-${name}-bg-hover`]: scale[4],
-    [`--ao-status-${name}-border`]: scale[7],
-    [`--ao-status-${name}-solid`]: scale[9],
-    [`--ao-status-${name}-solid-hover`]: scale[10],
-    [`--ao-status-${name}-text`]: scale[11],
+    ["--ao-status-" + name + "-bg"]: scale[3],
+    ["--ao-status-" + name + "-bg-hover"]: scale[4],
+    ["--ao-status-" + name + "-border"]: scale[7],
+    ["--ao-status-" + name + "-solid"]: scale[9],
+    ["--ao-status-" + name + "-solid-hover"]: scale[10],
+    ["--ao-status-" + name + "-text"]: scale[11],
   };
 }
 
-function colorTokens(theme: Theme, c: Palette): TokenDef {
+function colorTokens(theme: Theme, c: Palette, a: AlphaPalette): TokenDef {
   return {
     // Full scales — any step 1-12 is a valid token.
     ...scaleTokens("--ao-color-gray", c.gray),
@@ -134,11 +174,23 @@ function colorTokens(theme: Theme, c: Palette): TokenDef {
     "--ao-background-tertiary": c.gray[5],
     "--ao-background-page": c.gray[2],
 
+    // Transparent backgrounds (Twenty UI alignment — §5.1 of SCSS-VISUAL-STANDARDS.md)
+    "--ao-background-transparent-lighter": a.gray[1],
+    "--ao-background-transparent-light": a.gray[2],
+    "--ao-background-transparent-medium": a.gray[5],
+    "--ao-background-transparent-strong": a.gray[7],
+    "--ao-background-transparent-primary":
+      theme === "light" ? "rgba(255, 255, 255, 0.55)" : "rgba(0, 0, 0, 0.55)",
+
     // Text
     "--ao-font-color-primary": c.gray[12],
     "--ao-font-color-secondary": c.gray[11],
     "--ao-font-color-tertiary": c.gray[10],
+    "--ao-font-color-light": c.gray[8],
+    "--ao-font-color-extraLight": c.gray[7],
     "--ao-font-color-disabled": c.gray[8],
+    // Danger text (Twenty UI alignment)
+    "--ao-font-color-danger": c.red[9],
     // Text placed on solid step-9 backgrounds (buttons, badges).
     "--ao-font-color-inverted": "#ffffff",
 
@@ -218,6 +270,14 @@ function staticTokens(): TokenDef {
     "--ao-line-height-heading": "1.25",
     "--ao-line-height-body": "1.5",
     "--ao-line-height-relaxed": "1.7",
+
+    // Animation durations (Twenty UI alignment — §5.3)
+    // Unitless numbers — use the duration() SCSS function to convert to seconds.
+    "--ao-animation-duration-instant": "0.075",
+    "--ao-animation-duration-fast": "0.15",
+    "--ao-animation-duration-normal": "0.3",
+    "--ao-animation-duration-slow": "1.5",
+
     "--ao-radius-xs": "2px",
     "--ao-radius-sm": "4px",
     "--ao-radius-md": "8px",
@@ -267,15 +327,15 @@ function staticTokens(): TokenDef {
 
 function tokensToCSS(tokens: TokenDef): string {
   return Object.entries(tokens)
-    .map(([k, v]) => `  ${k}: ${v};`)
+    .map(([k, v]) => "  " + k + ": " + v + ";")
     .join("\n");
 }
 
 function dualDeclarations(hex: TokenDef, wide: TokenDef): string {
   const lines: string[] = [];
   for (const key of Object.keys(hex)) {
-    lines.push(`  ${key}: ${hex[key]};`);
-    if (wide[key] && wide[key] !== hex[key]) lines.push(`  ${key}: ${wide[key]};`);
+    lines.push("  " + key + ": " + hex[key] + ";");
+    if (wide[key] && wide[key] !== hex[key]) lines.push("  " + key + ": " + wide[key] + ";");
   }
   return lines.join("\n");
 }
@@ -285,26 +345,12 @@ export function generateThemeCSS(): string {
   const themed = (theme: Theme) => {
     const chart = chartTokens(paletteFor(srgb, theme));
     return dualDeclarations(
-      { ...colorTokens(theme, paletteFor(srgb, theme)), ...chart },
-      { ...colorTokens(theme, paletteFor(p3, theme)), ...chart },
+      { ...colorTokens(theme, paletteFor(srgb, theme), alphaPaletteFor(srgbAlpha, theme)), ...chart },
+      { ...colorTokens(theme, paletteFor(p3, theme), alphaPaletteFor(p3Alpha, theme)), ...chart },
     );
   };
 
   const staticT = tokensToCSS(staticTokens());
 
-  return `/* Generated by tokens/build.ts — do not edit directly */
-/* Strategy: sRGB hex fallback → P3 override */
-/* Browsers supporting color(display-p3) use wide-gamut; others use hex */
-
-/* Light theme (default) */
-:root, .light {
-${themed("light")}
-${staticT}
-}
-
-/* Dark theme */
-.dark {
-${themed("dark")}
-${staticT}
-}`;
+  return "/* Generated by tokens/build.ts — do not edit directly */\n/* Strategy: sRGB hex fallback → P3 override */\n/* Browsers supporting color(display-p3) use wide-gamut; others use hex */\n\n/* Light theme (default) */\n:root, .light {\n" + themed("light") + "\n" + staticT + "\n}\n\n/* Dark theme */\n.dark {\n" + themed("dark") + "\n" + staticT + "\n}";
 }

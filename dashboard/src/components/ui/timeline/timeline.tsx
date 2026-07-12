@@ -1,11 +1,13 @@
 import { type ReactNode } from "react";
 import { clsx } from "clsx";
 
+import { Badge } from "../badge";
+
 import styles from "./timeline.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type TimelineBlockColor = "default" | "present" | "warning" | "overtime";
+type TimelineBlockColor = "present" | "warning" | "overtime" | "default";
 
 type TimelineBlockData = {
   /** Start position as percentage of the full timeline width (0-100). */
@@ -18,12 +20,24 @@ type TimelineBlockData = {
   title?: string;
 };
 
-/** Maps semantic color variants to SCSS module classes. */
-const BLOCK_COLORS: Record<TimelineBlockColor, string> = {
-  default: styles.blockDefault,
+/** Maps semantic color variants to SCSS module classes for the bar track blocks. */
+const BLOCK_STYLES: Record<TimelineBlockColor, string> = {
   present: styles.blockPresent,
   warning: styles.blockWarning,
   overtime: styles.blockOvertime,
+  default: styles.blockDefault,
+};
+
+/**
+ * Maps timeline legend colors to Badge variants + dot status values.
+ * Present → green success badge with online dot.
+ * Warning/Break → amber warning badge with warning dot.
+ * Overtime → blue info badge with online dot.
+ */
+const LEGEND_BADGE: Record<string, { variant: "success" | "warning" | "info"; dot: "online" | "warning" }> = {
+  present: { variant: "success", dot: "online" },
+  warning: { variant: "warning", dot: "warning" },
+  overtime: { variant: "info", dot: "online" },
 };
 
 type TimelineRowData = {
@@ -41,11 +55,11 @@ type TimelineRowData = {
 type TimelineProps = {
   /** Header label (e.g., "Employee"). */
   headerLabel: string;
-  /** Hour labels to display (e.g., ["00:00", "01:00", ...]). */
+  /** Hour labels to display (e.g., ["06:00", "08:00", ...]). */
   hourMarkers: string[];
   /** Timeline rows. */
   rows: TimelineRowData[];
-  /** Legend items: color variant + translated label. */
+  /** Legend items: color variant + translated label. Badge component used internally. */
   legendItems?: Array<{ color: TimelineBlockColor; label: string }>;
   /** Shown when rows is empty. */
   emptyState?: ReactNode;
@@ -75,9 +89,7 @@ function TimelineHeader({ label, markers }: { label: string; markers: string[] }
   );
 }
 
-type TimelineRowProps = TimelineRowData;
-
-function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowProps) {
+function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowData) {
   const isClickable = !!onClick;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -105,7 +117,7 @@ function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowProps) {
         {blocks.map((block, i) => (
           <div
             key={i}
-            className={clsx(styles.block, BLOCK_COLORS[block.color])}
+            className={clsx(styles.block, BLOCK_STYLES[block.color])}
             style={{ left: `${block.left}%`, width: `${block.width}%` }}
             title={block.title}
           />
@@ -114,8 +126,6 @@ function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowProps) {
     </div>
   );
 }
-
-// ── Loading State ──────────────────────────────────────────────────────────────
 
 function TimelineSkeleton({ height = 200 }: { height?: number }) {
   return (
@@ -133,20 +143,25 @@ function TimelineSkeleton({ height = 200 }: { height?: number }) {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 /**
- * Horizontal timeline visualization for daily attendance data.
+ * Horizontal timeline for daily attendance blocks.
  *
- * Displays employee rows with color-coded time blocks spanning a 24-hour bar.
- * Supports clickable rows, a legend, empty/loading states, and hour markers.
+ * Each row = one employee. Colored blocks span the 24-hour bar.
+ * Legend reuses the `<Badge>` component with `dot` for consistent status dots.
  *
  * @example
  * ```tsx
  * <Timeline
  *   headerLabel={_(msg`Employee`)}
- *   hourMarkers={["00:00", "01:00", ...]}
+ *   hourMarkers={["06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00"]}
  *   rows={[
- *     { id: "1", name: "Alice", subLabel: "123", blocks: [{ left: 10, width: 20, colorClass: styles.present, title: "Check In" }] }
+ *     { id: "1", name: "Alice", subLabel: "PIN 123",
+ *       blocks: [{ left: 32, width: 37, color: "present", title: "07:42–17:02" }] }
  *   ]}
- *   legend={<TimelineLegend items={...} />}
+ *   legendItems={[
+ *     { color: "present", label: "Present" },
+ *     { color: "warning", label: "Break" },
+ *     { color: "overtime", label: "Overtime" },
+ *   ]}
  * />
  * ```
  */
@@ -185,12 +200,18 @@ export function Timeline({
 
       {legendItems && legendItems.length > 0 && (
         <div data-slot="timeline-legend" className={styles.legend}>
-          {legendItems.map((item) => (
-            <span key={item.color}>
-              <span className={clsx(styles.legendDot, BLOCK_COLORS[item.color])} />
-              <span className={styles.legendLabel}>{item.label}</span>
-            </span>
-          ))}
+          {legendItems.map((item) => {
+            const badge = LEGEND_BADGE[item.color];
+            return badge ? (
+              <Badge key={item.color} variant={badge.variant} dot={badge.dot} size="sm">
+                {item.label}
+              </Badge>
+            ) : (
+              <span key={item.color} className={styles.legendLabel}>
+                {item.label}
+              </span>
+            );
+          })}
         </div>
       )}
     </div>

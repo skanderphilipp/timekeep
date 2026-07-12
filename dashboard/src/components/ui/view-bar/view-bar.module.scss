@@ -9,7 +9,7 @@
 .topBar {
   align-items: center;
   display: flex;
-  height: 40px;
+  height: var(--ao-spacing-10);
   justify-content: space-between;
   padding: 0 var(--ao-spacing-2);
 }
@@ -65,7 +65,7 @@
   border-top: 1px solid var(--ao-border-color-light);
   display: flex;
   justify-content: space-between;
-  min-height: 32px;
+  min-height: var(--ao-spacing-8);
   padding: var(--ao-spacing-1) var(--ao-spacing-2);
 }
 
@@ -75,66 +75,6 @@
   flex-wrap: wrap;
   gap: var(--ao-spacing-1);
   overflow-x: hidden;
-}
-
-/* ── Chips ───────────────────────────────────────────────────────────────────── */
-
-.chip {
-  align-items: center;
-  border: 1px solid var(--ao-accent-accent5);
-  border-radius: var(--ao-radius-sm);
-  box-sizing: border-box;
-  color: var(--ao-color-blue11);
-  cursor: default;
-  display: inline-flex;
-  flex-direction: row;
-  flex-shrink: 0;
-  font-size: var(--ao-font-size-sm);
-  font-weight: var(--ao-font-weight-medium);
-  gap: var(--ao-spacing-1);
-  height: 24px;
-  padding: var(--ao-spacing-0_5);
-  padding-inline-start: var(--ao-spacing-1);
-  user-select: none;
-  white-space: nowrap;
-}
-
-.sortChip {
-  background: var(--ao-accent-accent3);
-}
-
-.filterChip {
-  background: var(--ao-color-amber3);
-  border-color: var(--ao-color-amber5);
-  color: var(--ao-color-amber11);
-}
-
-.chipLabel {
-  font-weight: var(--ao-font-weight-medium);
-}
-
-.chipValue {
-  font-weight: var(--ao-font-weight-regular);
-}
-
-.chipRemove {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-sm);
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  height: 18px;
-  justify-content: center;
-  margin: 0;
-  opacity: 0.7;
-  padding: 0;
-  width: 18px;
-
-  &:hover {
-    opacity: 1;
-  }
 }
 
 /* ── Separator ───────────────────────────────────────────────────────────────── */
@@ -162,7 +102,7 @@
   cursor: pointer;
   font-size: var(--ao-font-size-xs);
   padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
-  transition: all 0.15s ease;
+  transition: all duration(fast) ease;
 
   &:hover {
     border-color: var(--ao-accent-accent7);

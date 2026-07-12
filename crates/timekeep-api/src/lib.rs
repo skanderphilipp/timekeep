@@ -313,6 +313,8 @@ pub fn management_router(
         // Employee work-day queries (viewer can view attendance)
         .route("/api/employees/{pin}/work-days", get(employees::employee_work_days))
         .route("/api/employees/{pin}/summary", get(employees::employee_summary))
+        .route("/api/employees/{pin}/monthly", get(employees::employee_monthly_trend))
+        .route("/api/employees/{pin}/calendar", get(employees::employee_calendar))
         .route("/api/employees", get(employees::list_employees))
         .route("/api/employees/{id}", get(employees::get_employee))
         // Enhanced dashboard quick stats
@@ -515,10 +517,30 @@ pub(crate) async fn perform_setup(
         .await
         .map_err(|e| AppError::Internal(format!("failed to create admin user: {e}")))?;
 
+    // Seed default system settings so the engine + attendance queries work
+    // without requiring the admin to manually configure settings first.
+    match state.storage.upsert_system_settings(&timekeep_core::SystemSettings::default()).await {
+        Ok(()) => {
+            tracing::info!("default system settings seeded");
+        },
+        Err(e) => {
+            // Non-critical: the system falls back to defaults at query time.
+            // Log a warning so the operator knows to configure manually.
+            tracing::warn!(error = %e, "failed to seed default system settings — configure via PUT /api/settings");
+        },
+    }
+
     tracing::info!(
         username = %user.username,
         "initial admin user created via setup endpoint"
     );
+
+    // Publish setup domain event for audit trail
+    state
+        .event_bus
+        .publish(timekeep_core::DomainEvent::SetupCompleted {
+            admin_username: user.username.clone(),
+        });
 
     // Issue JWT for immediate login
     let token = create_token(&user.username, user.role, &state.jwt_secret)
@@ -1530,12 +1552,14 @@ pub(crate) async fn report_summary(
     State(state): State<AppState>,
     Query(params): Query<ReportSummaryQuery>,
 ) -> Result<Json<ApiEnvelope<ReportSummaryResponse>>, AppError> {
-    use timekeep_core::PunchStatus;
+    use crate::response::status_distribution_to_response;
+    use timekeep_core::{AttendanceCalculator, PunchStatus};
 
     let now = jiff::Timestamp::now();
     let settings = state.storage.get_system_settings().await?;
     let policy = &settings.work_policy;
 
+    // 1. Resolve date range
     let day_start = {
         let z = now.to_zoned(jiff::tz::TimeZone::UTC);
         jiff::civil::DateTime::from_parts(
@@ -1554,12 +1578,13 @@ pub(crate) async fn report_summary(
 
     let from_date = date_from.to_zoned(jiff::tz::TimeZone::UTC).datetime().date();
     let to_date = date_to.to_zoned(jiff::tz::TimeZone::UTC).datetime().date();
-    let work_days = policy.count_working_days(from_date, to_date);
+    let work_days_count = policy.count_working_days(from_date, to_date);
 
+    // 2. Fetch raw data
     let filter = PunchFilter { since: Some(date_from), until: Some(date_to), ..Default::default() };
     let punches = state.storage.query_punches(&filter).await?;
 
-    // ── Basic counts ──
+    // 3. Basic counts
     let mut check_ins: u64 = 0;
     let mut check_outs: u64 = 0;
     let mut break_outs: u64 = 0;
@@ -1593,263 +1618,43 @@ pub(crate) async fn report_summary(
         *day_counts.entry(day_ts).or_insert(0u64) += 1;
     }
 
-    // ── Employee-day grouping for KPIs ──
-    let mut emp_days: std::collections::HashMap<(String, i64), Vec<(i64, String)>> =
-        std::collections::HashMap::new();
     let mut emp_names: std::collections::HashMap<String, String> = std::collections::HashMap::new();
-
     for p in &punches {
-        let day_ts = {
-            let z = p.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
-            jiff::civil::DateTime::from_parts(
-                z.datetime().date(),
-                jiff::civil::Time::new(0, 0, 0, 0).unwrap(),
-            )
-            .to_zoned(jiff::tz::TimeZone::UTC)
-            .unwrap()
-            .timestamp()
-            .as_second()
-        };
-        let status_name = punch_status_name(&p.status);
-        emp_days
-            .entry((p.user_pin.clone(), day_ts))
-            .or_default()
-            .push((p.timestamp.as_second(), status_name));
         if let Some(ref name) = p.employee_name {
             emp_names.entry(p.user_pin.clone()).or_insert(name.clone());
         }
     }
 
-    // ── Daily hours breakdown ──
-    let mut daily_hours_map: std::collections::BTreeMap<i64, (i64, i64)> =
-        std::collections::BTreeMap::new();
-    for ((_pin, day), events) in &emp_days {
-        let mut sorted: Vec<&(i64, String)> = events.iter().collect();
-        sorted.sort_by_key(|(ts, _)| *ts);
-        let _regular_secs: i64 = 0;
-        let mut check_in_ts: Option<i64> = None;
-        for (ts, status) in &sorted {
-            match status.as_str() {
-                "check_in" | "break_in" | "overtime_in" => {
-                    check_in_ts = Some(*ts);
-                },
-                "check_out" | "break_out" | "overtime_out" => {
-                    if let Some(ci) = check_in_ts.take() {
-                        let dur = ts - ci;
-                        if dur > 0 && dur < 86_400 {
-                            let is_overtime = status.as_str() == "overtime_out";
-                            if is_overtime {
-                                let entry = daily_hours_map.entry(*day).or_default();
-                                entry.1 += dur;
-                            } else {
-                                let entry = daily_hours_map.entry(*day).or_default();
-                                entry.0 += dur;
-                            }
-                        }
-                    }
-                },
-                _ => {},
-            }
-        }
-    }
-    let daily_hours: Vec<DailyHoursBreakdown> = daily_hours_map
-        .into_iter()
-        .map(|(date, (reg, ot))| DailyHoursBreakdown {
-            date,
-            regular_seconds: reg,
-            overtime_seconds: ot,
+    // 4. Pure domain computation
+    let work_days = AttendanceCalculator::compute_work_days(&punches, policy);
+    let daily_hours = AttendanceCalculator::aggregate_daily_hours(&work_days);
+    let weekly_hours = AttendanceCalculator::aggregate_weekly_hours(&daily_hours);
+    let status_dist =
+        AttendanceCalculator::compute_status_distribution(&work_days, policy, from_date, to_date);
+    let employees_kpi =
+        AttendanceCalculator::compute_employee_kpis(&work_days, policy, from_date, to_date);
+
+    // 5. Map to DTOs
+    let daily_hours_dto: Vec<DailyHoursBreakdown> =
+        daily_hours.iter().map(DailyHoursBreakdown::from).collect();
+    let weekly_hours_dto: Vec<WeeklyHours> = weekly_hours.iter().map(WeeklyHours::from).collect();
+    let status_dto = status_distribution_to_response(&status_dist);
+
+    let employees: Vec<EmployeeReportKpi> = employees_kpi
+        .iter()
+        .map(|ek| {
+            let mut kpi = EmployeeReportKpi::from(ek);
+            kpi.employee_name = emp_names.get(&ek.user_pin).cloned();
+            kpi
         })
         .collect();
 
-    // ── Weekly hours ──
-    let mut weekly_hours_map: std::collections::BTreeMap<(i16, i8), i64> =
-        std::collections::BTreeMap::new();
-    for dh in &daily_hours {
-        if let Ok(ts) = jiff::Timestamp::from_second(dh.date) {
-            let z = ts.to_zoned(jiff::tz::TimeZone::UTC);
-            let iso = z.datetime().date().iso_week_date();
-            let key = (iso.year(), iso.week());
-            *weekly_hours_map.entry(key).or_default() += dh.regular_seconds + dh.overtime_seconds;
-        }
-    }
-    let weekly_hours: Vec<WeeklyHours> = weekly_hours_map
-        .into_iter()
-        .map(|((year, week), total_seconds)| WeeklyHours { week, year, total_seconds })
-        .collect();
-
-    // ── Per-employee KPIs & status distribution ──
-    let pins: Vec<String> = users.iter().map(|s| s.to_string()).collect();
-    let mut emp_stats: std::collections::HashMap<String, (u32, u32, u32, i64, i64, u32)> =
-        std::collections::HashMap::new();
-    let mut full_days: u64 = 0;
-    let mut half_days: u64 = 0;
-    let mut absent_days: u64 = 0;
-
-    for pin in &pins {
-        let mut days_present: u32 = 0;
-        let mut days_absent: u32 = 0;
-        let mut days_late: u32 = 0;
-        let mut total_regular: i64 = 0;
-        let mut total_overtime: i64 = 0;
-        let mut _anomaly_count: u32 = 0;
-        let mut days_with_hours: u32 = 0;
-
-        // Check each working day in the range
-        let mut cursor = from_date;
-        loop {
-            if cursor > to_date {
-                break;
-            }
-            let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
-            if policy.is_working_day(weekday) {
-                let day_start_ts = jiff::civil::DateTime::from_parts(
-                    cursor,
-                    jiff::civil::Time::new(0, 0, 0, 0).unwrap(),
-                )
-                .to_zoned(jiff::tz::TimeZone::UTC)
-                .unwrap()
-                .timestamp()
-                .as_second();
-
-                let day_events = emp_days.get(&(pin.clone(), day_start_ts));
-                if let Some(events) = day_events {
-                    if !events.is_empty() {
-                        let mut sorted: Vec<&(i64, String)> = events.iter().collect();
-                        sorted.sort_by_key(|(ts, _)| *ts);
-
-                        let mut day_regular: i64 = 0;
-                        let mut day_overtime: i64 = 0;
-                        let mut check_in_ts: Option<i64> = None;
-                        let first_check_in = sorted
-                            .iter()
-                            .find(|(_, s)| s.as_str() == "check_in")
-                            .map(|(ts, _)| *ts);
-
-                        for (ts, status) in &sorted {
-                            match status.as_str() {
-                                "check_in" | "break_in" => check_in_ts = Some(*ts),
-                                "check_out" | "break_out" => {
-                                    if let Some(ci) = check_in_ts.take() {
-                                        let dur = ts - ci;
-                                        if dur > 0 && dur < 86_400 {
-                                            day_regular += dur;
-                                        }
-                                    } else {
-                                        _anomaly_count += 1;
-                                    }
-                                },
-                                "overtime_in" => check_in_ts = Some(*ts),
-                                "overtime_out" => {
-                                    if let Some(ci) = check_in_ts.take() {
-                                        let dur = ts - ci;
-                                        if dur > 0 && dur < 86_400 {
-                                            day_overtime += dur;
-                                        }
-                                    }
-                                },
-                                _ => {},
-                            }
-                        }
-
-                        total_regular += day_regular;
-                        total_overtime += day_overtime;
-                        days_present += 1;
-                        days_with_hours += 1;
-
-                        if day_regular >= policy.min_seconds_for_present {
-                            full_days += 1;
-                        } else {
-                            half_days += 1;
-                        }
-
-                        // Late detection
-                        if let Some(fci) = first_check_in
-                            && let Ok(ts) = jiff::Timestamp::from_second(fci)
-                        {
-                            let arrival = ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().time();
-                            if policy.is_late(arrival) {
-                                days_late += 1;
-                            }
-                        }
-                    } else {
-                        days_absent += 1;
-                        absent_days += 1;
-                    }
-                } else {
-                    days_absent += 1;
-                    absent_days += 1;
-                }
-            }
-            cursor = match cursor.tomorrow() {
-                Ok(d) => d,
-                Err(_) => break,
-            };
-        }
-
-        emp_stats.insert(
-            pin.clone(),
-            (days_present, days_absent, days_late, total_regular, total_overtime, days_with_hours),
-        );
-    }
-
-    let mut employees: Vec<EmployeeReportKpi> = emp_stats
-        .into_iter()
-        .map(|(pin, (present_d, absent_d, late_d, reg, ot, days_h))| EmployeeReportKpi {
-            user_pin: pin.clone(),
-            employee_name: emp_names.get(&pin).cloned(),
-            days_present: present_d,
-            days_absent: absent_d,
-            days_late: late_d,
-            avg_seconds_per_day: if days_h > 0 { reg / days_h as i64 } else { 0 },
-            overtime_seconds: ot,
-            anomaly_count: 0, // TODO: Use AttendanceCalculator for anomaly detection
-        })
-        .collect();
-    employees.sort_by_key(|e| -(e.anomaly_count as i64));
-
-    // ── Aggregate KPIs ──
-    let avg_seconds_per_day = if !employees.is_empty() && work_days > 0 {
+    let avg_seconds_per_day = if !employees.is_empty() && work_days_count > 0 {
         employees.iter().map(|e| e.avg_seconds_per_day).sum::<i64>() / employees.len() as i64
     } else {
         0
     };
     let overtime_seconds = employees.iter().map(|e| e.overtime_seconds).sum();
-    let total_employee_days = full_days + half_days + absent_days;
-    let absence_rate = if total_employee_days > 0 {
-        absent_days as f64 / total_employee_days as f64 * 100.0
-    } else {
-        0.0
-    };
-
-    let status_distribution = vec![
-        AttendanceDistribution {
-            status: "full".into(),
-            count: full_days,
-            percentage: if total_employee_days > 0 {
-                full_days as f64 / total_employee_days as f64 * 100.0
-            } else {
-                0.0
-            },
-        },
-        AttendanceDistribution {
-            status: "half".into(),
-            count: half_days,
-            percentage: if total_employee_days > 0 {
-                half_days as f64 / total_employee_days as f64 * 100.0
-            } else {
-                0.0
-            },
-        },
-        AttendanceDistribution {
-            status: "absent".into(),
-            count: absent_days,
-            percentage: if total_employee_days > 0 {
-                absent_days as f64 / total_employee_days as f64 * 100.0
-            } else {
-                0.0
-            },
-        },
-    ];
 
     let daily_breakdown: Vec<DailyBreakdown> =
         day_counts.into_iter().map(|(date, count)| DailyBreakdown { date, count }).collect();
@@ -1865,13 +1670,13 @@ pub(crate) async fn report_summary(
         overtime_ins,
         overtime_outs,
         unique_users: users.len() as u64,
-        work_days,
+        work_days: work_days_count,
         avg_seconds_per_day,
         overtime_seconds,
-        absence_rate,
-        daily_hours,
-        weekly_hours,
-        status_distribution,
+        absence_rate: status_dist.absence_rate_pct(),
+        daily_hours: daily_hours_dto,
+        weekly_hours: weekly_hours_dto,
+        status_distribution: status_dto,
         employees,
         daily_breakdown,
     };

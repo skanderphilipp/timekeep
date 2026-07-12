@@ -1,3 +1,16 @@
+@use "@/styles/mixins" as *;
+
+// ── Twenty UI Alignment — Tag ─────────────────────────────────────────────
+// Open UI: "Tag" — content labels, filter chips, attribute badges.
+// Replaces former standalone Chip component.
+// SCSS-VISUAL-STANDARDS.md
+//
+// Key changes:
+//   1. Data attributes for state (was CSS classes)
+//   2. Duration tokens for transitions
+//   3. Explicit disabled state
+//   4. Removable chip pattern (dismiss button)
+
 .tag {
   align-items: center;
   border: 1px solid transparent;
@@ -12,17 +25,17 @@
   white-space: nowrap;
 }
 
-/* ── Font weight ── */
+// ── Font weight ────────────────────────────────────────────────────────────
 
-.medium {
+.tag[data-weight="medium"] {
   font-weight: var(--ao-font-weight-medium);
 }
 
-/* ── Interactive ── */
+// ── Interactive ────────────────────────────────────────────────────────────
 
-.interactive {
+.tag[data-interactive] {
   cursor: pointer;
-  transition: opacity 0.1s ease;
+  transition: opacity duration(fast) ease;
 
   &:hover {
     opacity: 0.85;
@@ -33,7 +46,7 @@
   }
 }
 
-/* ── Icon ── */
+// ── Icon ───────────────────────────────────────────────────────────────────
 
 .icon {
   align-items: center;
@@ -41,85 +54,99 @@
   flex-shrink: 0;
 }
 
-/* ── Solid variant (filled background) ── */
+.label {
+  font-weight: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-.solid {
-  &.gray {
+.value {
+  font-weight: var(--ao-font-weight-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Solid variant ──────────────────────────────────────────────────────────
+
+.tag[data-variant="solid"] {
+  &[data-color="gray"] {
     background-color: var(--ao-background-tertiary);
     border-color: var(--ao-border-color-medium);
     color: var(--ao-font-color-secondary);
   }
 
-  &.red {
+  &[data-color="red"] {
     background-color: var(--ao-color-red3);
     border-color: var(--ao-color-red5);
     color: var(--ao-color-red11);
   }
 
-  &.green {
+  &[data-color="green"] {
     background-color: var(--ao-color-green3);
     border-color: var(--ao-color-green5);
     color: var(--ao-color-green11);
   }
 
-  &.amber {
+  &[data-color="amber"] {
     background-color: var(--ao-color-amber3);
     border-color: var(--ao-color-amber5);
     color: var(--ao-color-amber11);
   }
 
-  &.blue {
+  &[data-color="blue"] {
     background-color: var(--ao-color-blue3);
     border-color: var(--ao-color-blue5);
     color: var(--ao-color-blue11);
   }
 
-  &.accent {
+  &[data-color="accent"] {
     background-color: var(--ao-accent-accent3);
     border-color: var(--ao-accent-accent5);
     color: var(--ao-accent-accent11);
   }
 }
 
-/* ── Outline variant (transparent background + colored border) ── */
+// ── Outline variant ────────────────────────────────────────────────────────
 
-.outline {
+.tag[data-variant="outline"] {
   background-color: transparent;
 
-  &.gray {
+  &[data-color="gray"] {
     border-color: var(--ao-border-color-medium);
     color: var(--ao-font-color-secondary);
   }
 
-  &.red {
+  &[data-color="red"] {
     border-color: var(--ao-color-red5);
     color: var(--ao-color-red9);
   }
 
-  &.green {
+  &[data-color="green"] {
     border-color: var(--ao-color-green5);
     color: var(--ao-color-green9);
   }
 
-  &.amber {
+  &[data-color="amber"] {
     border-color: var(--ao-color-amber5);
     color: var(--ao-color-amber9);
   }
 
-  &.blue {
+  &[data-color="blue"] {
     border-color: var(--ao-color-blue5);
     color: var(--ao-color-blue9);
   }
 
-  &.accent {
+  &[data-color="accent"] {
     border-color: var(--ao-accent-accent5);
     color: var(--ao-accent-accent9);
   }
 }
 
-/* ── Dismissible ── */
+// ── Dismiss button ─────────────────────────────────────────────────────────
 
-.dismissible {
+.tag[data-dismissible] {
   padding-inline-end: var(--ao-spacing-0_5);
 }
 
@@ -132,13 +159,20 @@
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  height: 14px;
+  height: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
   justify-content: center;
   opacity: 0.7;
   padding: 0;
-  width: 14px;
+  width: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
 
   &:hover {
     opacity: 1;
   }
+}
+
+// ── Disabled ───────────────────────────────────────────────────────────────
+
+.tag[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
 }

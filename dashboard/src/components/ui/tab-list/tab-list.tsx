@@ -1,112 +1,152 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { clsx } from "clsx";
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 
 import styles from "./tab-list.module.scss";
 
-// ── Context ────────────────────────────────────────────────────────────────────
+// ── Tabs (Root) ─────────────────────────────────────────────────────────────────
 
-type TabContextType = {
-  activeTab: string;
-  setActiveTab: (id: string) => void;
-};
-
-const TabContext = createContext<TabContextType | null>(null);
-
-function useTabContext() {
-  const ctx = useContext(TabContext);
-  if (!ctx) throw new Error("Tab components must be used within <TabList>");
-  return ctx;
-}
-
-// ── TabList (container) ────────────────────────────────────────────────────────
-
-type TabListProps = {
+type TabsProps = {
   children: ReactNode;
-  defaultTab?: string;
-  activeTab?: string;
-  onTabChange?: (id: string) => void;
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  orientation?: "horizontal" | "vertical";
   className?: string;
 };
 
-export function TabList({
+/**
+ * Tabs — accessible tab container built on @base-ui/react Tabs.
+ *
+ * Automatically wraps `<Tab>` children in a `<Tabs.List>` with an active
+ * underline `<Tabs.Indicator>`. `<TabPanel>` children render after the list.
+ *
+ * @example
+ * <Tabs defaultValue="overview">
+ *   <Tab value="overview">Overview</Tab>
+ *   <Tab value="details">Details</Tab>
+ *   <TabPanel value="overview">Overview content</TabPanel>
+ *   <TabPanel value="details">Details content</TabPanel>
+ * </Tabs>
+ */
+export function Tabs({
   children,
-  defaultTab,
-  activeTab: controlledTab,
-  onTabChange,
+  defaultValue,
+  value,
+  onValueChange,
+  orientation = "horizontal",
   className,
-}: TabListProps) {
-  const [internalTab, setInternalTab] = useState(defaultTab ?? "");
-  const activeTab = controlledTab ?? internalTab;
+}: TabsProps) {
+  const tabs: ReactNode[] = [];
+  const panels: ReactNode[] = [];
 
-  const setActiveTab = useCallback(
-    (id: string) => {
-      if (!controlledTab) setInternalTab(id);
-      onTabChange?.(id);
-    },
-    [controlledTab, onTabChange],
-  );
+  // Separate <Tab> children into the list, everything else into panels
+  childrenToSlots(children, tabs, panels);
 
   return (
-    <TabContext.Provider value={{ activeTab, setActiveTab }}>
-      <div data-slot="tab-list" className={clsx(styles.list, className)} role="tablist">
-        {children}
-      </div>
-    </TabContext.Provider>
+    <TabsPrimitive.Root
+      data-slot="tabs"
+      defaultValue={defaultValue}
+      value={value}
+      onValueChange={onValueChange}
+      orientation={orientation}
+      className={clsx(styles.root, className)}
+    >
+      <TabsPrimitive.List data-slot="tabs-list" className={styles.list}>
+        {tabs}
+        <TabsPrimitive.Indicator data-slot="tabs-indicator" className={styles.indicator} />
+      </TabsPrimitive.List>
+      {panels}
+    </TabsPrimitive.Root>
   );
 }
 
-// ── Tab (trigger) ──────────────────────────────────────────────────────────────
+Tabs.displayName = "Tabs";
+
+// ── Tab ────────────────────────────────────────────────────────────────────────
 
 type TabProps = {
-  id: string;
+  value: string;
   children: ReactNode;
   disabled?: boolean;
   className?: string;
 };
 
-export function Tab({ id, children, disabled, className }: TabProps) {
-  const { activeTab, setActiveTab } = useTabContext();
-  const isActive = activeTab === id;
-
+export function Tab({ value, disabled, className, children }: TabProps) {
   return (
-    <button
+    <TabsPrimitive.Tab
       data-slot="tab"
-      data-active={isActive || undefined}
-      className={clsx(styles.tab, isActive && styles.tabActive, className)}
-      onClick={() => setActiveTab(id)}
+      value={value}
       disabled={disabled}
-      role="tab"
-      aria-selected={isActive}
-      aria-controls={`tabpanel-${id}`}
-      type="button"
+      className={clsx(styles.tab, className)}
     >
       {children}
-    </button>
+    </TabsPrimitive.Tab>
   );
 }
 
-// ── TabPanel (content) ─────────────────────────────────────────────────────────
+Tab.displayName = "Tab";
+
+// ── TabPanel ────────────────────────────────────────────────────────────────────
 
 type TabPanelProps = {
-  id: string;
+  value: string;
   children: ReactNode;
   className?: string;
 };
 
-export function TabPanel({ id, children, className }: TabPanelProps) {
-  const { activeTab } = useTabContext();
-  const isActive = activeTab === id;
-
+export function TabPanel({ value, className, children }: TabPanelProps) {
   return (
-    <div
+    <TabsPrimitive.Panel
       data-slot="tab-panel"
-      className={clsx(styles.panel, isActive && styles.panelActive, className)}
-      role="tabpanel"
-      id={`tabpanel-${id}`}
-      aria-labelledby={id}
-      hidden={!isActive}
+      value={value}
+      className={clsx(styles.panel, className)}
     >
       {children}
-    </div>
+    </TabsPrimitive.Panel>
+  );
+}
+
+TabPanel.displayName = "TabPanel";
+
+// ── Backward compatibility ─────────────────────────────────────────────────────
+
+export { Tabs as TabList };
+
+// ── Helpers ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Separates React children into tab triggers and panel content.
+ *
+ * Children whose `type` is the `Tab` function component go into `tabs`;
+ * everything else (including `<TabPanel>`, text nodes, fragments) goes into
+ * `panels`. Non-element children (null, booleans) are skipped.
+ */
+function childrenToSlots(
+  children: ReactNode,
+  tabs: ReactNode[],
+  panels: ReactNode[],
+): void {
+  const kids = Array.isArray(children)
+    ? children
+    : children != null
+      ? [children]
+      : [];
+  for (const child of kids) {
+    if (child == null || child === false || child === "") continue;
+    if (isTabElement(child)) {
+      tabs.push(child);
+    } else {
+      panels.push(child);
+    }
+  }
+}
+
+function isTabElement(child: unknown): boolean {
+  return (
+    typeof child === "object" &&
+    child !== null &&
+    "type" in child &&
+    (child as { type: unknown }).type === Tab
   );
 }

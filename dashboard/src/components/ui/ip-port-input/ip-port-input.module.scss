@@ -25,9 +25,9 @@
   font-family: var(--ao-font-family-mono);
   font-size: var(--ao-font-size-md);
   font-weight: var(--ao-font-weight-bold);
-  height: 40px;
+  height: var(--ao-spacing-10);
   justify-content: center;
-  min-width: 20px;
+  min-width: var(--ao-spacing-5);
   padding: 0 var(--ao-spacing-1);
   user-select: none;
 }
@@ -35,7 +35,7 @@
 .portField {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
-  max-width: 100px;
+  max-width: var(--ao-spacing-25);
 }
 
 .ipInput {

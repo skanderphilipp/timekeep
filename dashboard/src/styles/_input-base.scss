@@ -1,23 +1,30 @@
+@use "@/styles/mixins" as *;
+
 // ── Shared Text Input Base ──────────────────────────────────────────────────
-// Used by: input, ip-input, port-input, expiry-picker (mixin), ip-port-input (mixin)
-// Provides the standard bordered text input with focus, disabled, and error
-// states. Use the `.input` class for standard full-width form inputs, or
-// `@include input-base` for components that need a custom class name.
+// Twenty UI alignment (2026-07-12). See: SCSS-VISUAL-STANDARDS.md §6.7
+//
+// Key changes:
+//   1. Height: 32px (was 40px)
+//   2. border-radius: var(--ao-radius-md) (was sm)
+//   3. Focus: border-color only, no box-shadow
+//   4. Placeholder: weight medium, color light
+//   5. Disabled: explicit colors, no opacity
 
 @mixin input-base {
   background-color: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-primary);
   font-family: var(--ao-font-family);
-  font-size: var(--ao-font-size-md);
-  height: 40px;
+  font-size: var(--ao-font-size-sm);
+  height: 32px;
   outline: none;
   padding: 0 var(--ao-spacing-3);
-  transition: border-color 0.15s ease;
+  transition: border-color duration(fast) ease;
 
   &::placeholder {
-    color: var(--ao-font-color-tertiary);
+    color: var(--ao-font-color-light);
+    font-weight: var(--ao-font-weight-medium);
   }
 
   &:focus {
@@ -26,7 +33,7 @@
 
   &:disabled {
     background-color: var(--ao-background-secondary);
-    color: var(--ao-font-color-disabled);
+    color: var(--ao-font-color-extraLight);
     cursor: not-allowed;
   }
 }

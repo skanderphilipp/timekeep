@@ -19,6 +19,8 @@
 export { ActionGroup } from "./action-group";
 export { Avatar } from "./avatar";
 export { Badge } from "./badge";
+export { Breadcrumb } from "./breadcrumb";
+export type { BreadcrumbSegment } from "./breadcrumb";
 export { Banner } from "./banner";
 export { Button } from "./button";
 export type { ButtonProps } from "./button";
@@ -87,7 +89,7 @@ export type { MetricCardColor } from "./metric-card";
 export { MultiSelect } from "./multi-select";
 export type { MultiSelectOption } from "./multi-select";
 export { PageBar } from "./page-bar";
-export type { BreadcrumbSegment } from "./page-bar";
+
 export { PageBody } from "./page-body";
 export { PageHeader } from "./page-header";
 export { PageLayout } from "./page-layout";
@@ -100,11 +102,11 @@ export { Separator } from "./separator";
 export { Skeleton, SkeletonLines } from "./skeleton";
 export { Spinner } from "./spinner";
 export { StatusDot } from "./status-dot";
-export { TabList, Tab, TabPanel } from "./tab-list";
+export { Tabs, TabList, Tab, TabPanel } from "./tab-list";
 export { Text } from "./text";
 export type { TextVariant, TextColor, TextElement } from "./text";
 export { TextArea } from "./text-area";
-export { Toggle } from "./toggle";
+export { Switch } from "./switch";
 export { Tooltip } from "./tooltip";
 export { VisuallyHidden } from "./visually-hidden";
 
@@ -138,7 +140,7 @@ export type { TimelineBlockData, TimelineRowData } from "./timeline";
 export { AvatarGroup } from "./avatar-group";
 export type { AvatarGroupProps } from "./avatar-group";
 export { CalendarMonth } from "./calendar-month";
-export type { CalendarMonthProps, CalendarDay } from "./calendar-month";
+export type { CalendarMonthProps, CalendarDayData, CalendarDayStatus } from "./calendar-month";
 export { ViewBar } from "./view-bar";
 export type { ViewBarProps, ViewType, ViewBarFilterChip, SortChip } from "./view-bar";
 

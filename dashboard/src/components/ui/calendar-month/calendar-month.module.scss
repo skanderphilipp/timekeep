@@ -2,28 +2,30 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  min-width: 1000px;
+  min-width: calc(var(--ao-spacing-30) * 8 + var(--ao-spacing-10));
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────────── */
 
 .header {
   display: flex;
-  height: 24px;
+  height: var(--ao-spacing-6);
   width: 100%;
 }
 
 .headerDay {
   color: var(--ao-font-color-tertiary);
   display: flex;
-  font-size: var(--ao-font-size-sm);
-  height: 24px;
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  height: var(--ao-spacing-6);
   justify-content: flex-end;
   padding: 0 var(--ao-spacing-1);
+  text-transform: uppercase;
   width: calc(100% / 7);
 }
 
-/* ── Body ────────────────────────────────────────────────────────────────────── */
+/* ── Body Grid ───────────────────────────────────────────────────────────────── */
 
 .body {
   border: 1px solid var(--ao-border-color-light);
@@ -46,38 +48,32 @@
 
 /* ── Day Cell ────────────────────────────────────────────────────────────────── */
 
-.bodyDay {
+.dayCell {
   display: flex;
   flex-direction: column;
-  min-height: 122px;
+  gap: var(--ao-spacing-0_5);
+  min-height: calc(var(--ao-spacing-30) + var(--ao-spacing-0_5));
   min-width: 0;
   padding: var(--ao-spacing-1);
+  position: relative;
   width: calc(100% / 7);
 
   &:not(:last-child) {
     border-right: 1px solid var(--ao-border-color-light);
   }
-}
 
-.otherMonth {
-  background: var(--ao-background-secondary);
-  color: var(--ao-font-color-tertiary);
-}
+  /* Keyboard focus ring */
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ao-color-blue9);
+    outline: none;
+    z-index: 1;
+  }
 
-.weekend {
-  background: var(--ao-background-secondary);
-}
-
-/* ── Day Header ──────────────────────────────────────────────────────────────── */
-
-.dayHeader {
-  align-items: center;
-  display: flex;
-  flex-direction: row;
-  height: 24px;
-  justify-content: space-between;
-  margin-left: auto;
-  width: 100%;
+  /* Selected day ring */
+  &.selected {
+    box-shadow: inset 0 0 0 2px var(--ao-color-blue9);
+    z-index: 1;
+  }
 }
 
 .dayNumber {
@@ -87,26 +83,69 @@
   display: flex;
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-regular);
+  height: var(--ao-spacing-5);
   justify-content: center;
-  line-height: 140%;
-  margin-inline-start: auto;
-  padding: var(--ao-spacing-0_5);
-  width: 20px;
+  line-height: 1;
+  margin-left: auto;
+  width: var(--ao-spacing-5);
 }
 
 .today {
   background: var(--ao-color-blue9);
   border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-inverted);
-  font-weight: var(--ao-font-weight-medium);
+  font-weight: var(--ao-font-weight-semibold);
 }
 
-/* ── Day Content ─────────────────────────────────────────────────────────────── */
+/* ── Hours label ──────────────────────────────────────────────────────────────── */
 
-.dayContent {
+.hours {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  text-align: center;
+}
+
+/* ── Other month (adjacent months in the 6-week grid) ─────────────────────────── */
+
+.otherMonth {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Status Colors ────────────────────────────────────────────────────────────── */
+
+.statusFull {
+  background: var(--ao-color-green3);
+}
+
+.statusHalf {
+  background: var(--ao-color-blue3);
+}
+
+.statusLate {
+  background: var(--ao-color-amber3);
+}
+
+.statusAbsent {
+  background: var(--ao-color-red3);
+}
+
+.statusWeekend {
+  background: var(--ao-background-secondary);
+}
+
+/* ── State Overlays ───────────────────────────────────────────────────────────── */
+
+.stateOverlay {
+  align-items: center;
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--ao-spacing-0_5);
-  min-height: 60px;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────────── */
+
+.footer {
+  padding: var(--ao-spacing-2) 0 0;
 }

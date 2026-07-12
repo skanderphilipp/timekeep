@@ -6,7 +6,7 @@
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
   line-height: 1.5;
-  min-height: 80px;
+  min-height: var(--ao-spacing-20);
   outline: none;
   padding: var(--ao-spacing-2);
   resize: vertical;

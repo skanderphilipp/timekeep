@@ -16,7 +16,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <label
         data-slot="checkbox"
-        className={clsx(styles.label, disabled && styles.disabled, className)}
+        data-disabled={disabled || undefined}
+        className={clsx(styles.label, className)}
         htmlFor={checkboxId}
       >
         <input

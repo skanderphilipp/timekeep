@@ -1,44 +1,48 @@
 import { clsx } from "clsx";
 import { type ReactNode, useContext, createContext } from "react";
+import { Link } from "react-router-dom";
+import { IconChevronRight } from "@tabler/icons-react";
 
 import styles from "./menu-item.module.scss";
 
 /**
  * Optional context so MenuItem can close its parent dropdown automatically.
- * If no provider exists, MenuItem acts as a standalone button.
+ * If no provider exists, MenuItem acts as a standalone button/link.
  */
 export type CloseDropdownFn = () => void;
 const MenuCloseContext = createContext<CloseDropdownFn | null>(null);
 export { MenuCloseContext };
 
 /**
- * Base menu item — the building block for dropdowns, context menus, and
- * command palettes.
+ * MenuItem — universal menu row supporting button and link modes.
  *
- * Every sub-element has a `data-slot` attribute following Reaktly's
- * convention for grep-based debugging and E2E selectors.
+ * Open UI alignment: maps to `<menuitem>` (W3C Menu proposal).
+ * Twenty UI alignment: transparent-light hover, concentric radius, outline focus.
  *
- * When wrapped in a `<Dropdown>`, clicking the item automatically closes
- * the dropdown. Standalone usage (outside a dropdown) skips auto-close.
+ * When `to` is provided, renders a `<Link>` with auto-trailing chevron.
+ * When `to` is omitted, renders a `<button>`.
+ * When wrapped in a `<Dropdown>`, clicking auto-closes the dropdown.
  */
 type MenuItemProps = {
-  /** Icon rendered at the leading edge (left in LTR, right in RTL). */
+  /** Icon rendered at the leading edge. */
   leftIcon?: ReactNode;
   /** Primary text label. */
   label: string;
   /** Icon or content at the trailing edge. */
   rightIcon?: ReactNode;
-  /** Keyboard shortcut hint (e.g. "⌘K"). Displayed muted. */
+  /** Keyboard shortcut hint (e.g. "⌘K"). */
   hotkey?: string;
-  /** Click handler. Dropdown auto-closes after execution. */
+  /** Click handler (button mode). */
   onClick?: () => void;
-  /** Disabled state — prevents clicks and dims visuals. */
+  /** Route path — switches to link mode with auto chevron. */
+  to?: string;
+  /** Disabled state. */
   disabled?: boolean;
   /** Visual variant. */
   variant?: "default" | "danger";
   /** Additional CSS class. */
   className?: string;
-  /** Hover handler (e.g., for keyboard-nav hover sync). */
+  /** Hover handler (for keyboard-nav sync). */
   onMouseEnter?: () => void;
 };
 
@@ -48,6 +52,7 @@ export function MenuItem({
   rightIcon,
   hotkey,
   onClick,
+  to,
   disabled = false,
   variant = "default",
   className,
@@ -61,15 +66,74 @@ export function MenuItem({
     closeDropdown?.();
   };
 
+  const sharedAttrs = {
+    "data-slot": "menu-item",
+    "data-variant": variant,
+    "data-disabled": disabled || undefined,
+    className: clsx(styles.item, className),
+    onMouseEnter,
+    role: "menuitem" as const,
+  };
+
+  const leadingIcon = leftIcon && (
+    <span data-slot="menu-item-left-icon" className={styles.leftIcon}>
+      {leftIcon}
+    </span>
+  );
+
+  const labelEl = (
+    <span data-slot="menu-item-label" className={styles.label}>
+      {label}
+    </span>
+  );
+
+  const trailingSlot = (
+    <span data-slot="menu-item-right-slot" className={styles.rightSlot}>
+      {hotkey && (
+        <span data-slot="menu-item-hotkey" className={styles.hotkey}>
+          {hotkey}
+        </span>
+      )}
+      {rightIcon && (
+        <span data-slot="menu-item-right-icon" className={styles.rightIcon}>
+          {rightIcon}
+        </span>
+      )}
+      {to && !rightIcon && (
+        <IconChevronRight data-slot="menu-item-chevron" size={14} className={styles.chevron} />
+      )}
+    </span>
+  );
+
+  // ── Link mode ────────────────────────────────────────────────────────────
+
+  if (to && !disabled) {
+    return (
+      <Link {...sharedAttrs} to={to} onClick={closeDropdown ?? undefined}>
+        {leadingIcon}
+        {labelEl}
+        {trailingSlot}
+      </Link>
+    );
+  }
+
+  if (to && disabled) {
+    return (
+      <span {...sharedAttrs} aria-disabled="true">
+        {leadingIcon}
+        {labelEl}
+        {trailingSlot}
+      </span>
+    );
+  }
+
+  // ── Button mode ──────────────────────────────────────────────────────────
+
   return (
     <button
-      data-slot="menu-item"
-      data-variant={variant}
-      className={clsx(styles.item, styles[variant], disabled && styles.disabled, className)}
+      {...sharedAttrs}
       onClick={handleClick}
-      onMouseEnter={onMouseEnter}
       disabled={disabled}
-      role="menuitem"
       type="button"
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -78,26 +142,11 @@ export function MenuItem({
         }
       }}
     >
-      {leftIcon && (
-        <span data-slot="menu-item-left-icon" className={styles.leftIcon}>
-          {leftIcon}
-        </span>
-      )}
-      <span data-slot="menu-item-label" className={styles.label}>
-        {label}
-      </span>
-      <span data-slot="menu-item-right-slot" className={styles.rightSlot}>
-        {hotkey && (
-          <span data-slot="menu-item-hotkey" className={styles.hotkey}>
-            {hotkey}
-          </span>
-        )}
-        {rightIcon && (
-          <span data-slot="menu-item-right-icon" className={styles.rightIcon}>
-            {rightIcon}
-          </span>
-        )}
-      </span>
+      {leadingIcon}
+      {labelEl}
+      {trailingSlot}
     </button>
   );
 }
+
+MenuItem.displayName = "MenuItem";

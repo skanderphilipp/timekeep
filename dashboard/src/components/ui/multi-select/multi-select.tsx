@@ -8,11 +8,12 @@
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { clsx } from "clsx";
 import { useState, useMemo, useCallback } from "react";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
 import { Spinner } from "@/components/ui/spinner";
+import { Tag } from "@/components/ui/tag";
 
 import styles from "./multi-select.module.scss";
 
@@ -101,29 +102,14 @@ export function MultiSelect({
         {/* Selected chips */}
         <div data-slot="multi-select-chips" className={styles.chips}>
           {selectedOptions.map((opt) => (
-            <span key={opt.value} data-slot="multi-select-chip" className={styles.chip}>
-              <span className={styles.chipLabel}>{opt.label}</span>
-              <span
-                role="button"
-                tabIndex={0}
-                data-slot="multi-select-chip-remove"
-                className={styles.chipRemove}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeValue(opt.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    removeValue(opt.value);
-                  }
-                }}
-                aria-label={`Remove ${opt.label}`}
-              >
-                <IconX size={10} />
-              </span>
-            </span>
+            <Tag
+              key={opt.value}
+              text={opt.label}
+              color="accent"
+              variant="solid"
+              dismissible
+              onRemove={() => removeValue(opt.value)}
+            />
           ))}
 
           {/* Search input within the trigger */}

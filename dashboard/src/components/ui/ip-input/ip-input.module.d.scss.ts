@@ -5,8 +5,5 @@ declare const classNames: {
   readonly required: "required";
   readonly error: "error";
   readonly helper: "helper";
-  readonly input: "input";
-  readonly inputError: "inputError";
-  readonly inputWrapper: "inputWrapper";
 };
 export = classNames;

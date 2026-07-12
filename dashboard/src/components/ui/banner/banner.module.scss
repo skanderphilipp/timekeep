@@ -38,10 +38,10 @@
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  height: 24px;
+  height: var(--ao-spacing-6);
   justify-content: center;
   opacity: 0.6;
-  width: 24px;
+  width: var(--ao-spacing-6);
 
   &:hover {
     opacity: 1;

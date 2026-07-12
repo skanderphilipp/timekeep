@@ -1,8 +1,10 @@
-import { type ReactNode } from "react";
-import { IconX, IconArrowsSort } from "@tabler/icons-react";
+import { IconArrowsSort } from "@tabler/icons-react";
+import type { Icon as TablerIcon } from "@tabler/icons-react";
 import { clsx } from "clsx";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
+
+import { Tag } from "@/components/ui/tag";
 
 import styles from "./view-bar.module.scss";
 
@@ -14,14 +16,14 @@ export type FilterChip = {
   id: string;
   label: string;
   value: string;
-  icon?: ReactNode;
+  icon?: TablerIcon;
 };
 
 export type SortChip = {
   id: string;
   label: string;
   value: string;
-  icon?: ReactNode;
+  icon?: TablerIcon;
 };
 
 export type ViewBarProps = {
@@ -104,26 +106,16 @@ function ChipRow({
         {/* Sort chips */}
         {hasSorts &&
           sorts.map((sort) => (
-            <span
+            <Tag
               key={`sort-${sort.id}`}
-              data-slot="sort-chip"
-              className={clsx(styles.chip, styles.sortChip)}
-            >
-              {sort.icon ?? <IconArrowsSort size={12} />}
-              <span className={styles.chipLabel}>{sort.label}</span>
-              <span className={styles.chipValue}>{sort.value}</span>
-              <button
-                type="button"
-                className={styles.chipRemove}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveSort?.(sort.id);
-                }}
-                aria-label={_(msg`Remove sort ${sort.label}`)}
-              >
-                <IconX size={12} />
-              </button>
-            </span>
+              text={sort.label}
+              value={sort.value}
+              Icon={sort.icon ?? IconArrowsSort}
+              color="blue"
+              variant="solid"
+              dismissible
+              onRemove={() => onRemoveSort?.(sort.id)}
+            />
           ))}
 
         {/* Separator between sort and filter chips */}
@@ -132,25 +124,15 @@ function ChipRow({
         {/* Filter chips */}
         {hasFilters &&
           filters.map((filter) => (
-            <span
+            <Tag
               key={`filter-${filter.id}`}
-              data-slot="filter-chip"
-              className={clsx(styles.chip, styles.filterChip)}
-            >
-              <span className={styles.chipLabel}>{filter.label}</span>
-              <span className={styles.chipValue}>{filter.value}</span>
-              <button
-                type="button"
-                className={styles.chipRemove}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFilter?.(filter.id);
-                }}
-                aria-label={_(msg`Remove filter ${filter.label}`)}
-              >
-                <IconX size={12} />
-              </button>
-            </span>
+              text={filter.label}
+              value={filter.value}
+              color="amber"
+              variant="solid"
+              dismissible
+              onRemove={() => onRemoveFilter?.(filter.id)}
+            />
           ))}
       </div>
 

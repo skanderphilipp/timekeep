@@ -9,9 +9,6 @@ declare const classNames: {
   readonly emptyText: "emptyText";
   readonly trigger: "trigger";
   readonly chips: "chips";
-  readonly chip: "chip";
-  readonly chipLabel: "chipLabel";
-  readonly chipRemove: "chipRemove";
   readonly input: "input";
 };
 export = classNames;

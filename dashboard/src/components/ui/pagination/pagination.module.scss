@@ -14,11 +14,11 @@
   cursor: pointer;
   display: flex;
   font-size: var(--ao-font-size-sm);
-  height: 36px;
+  height: var(--ao-spacing-9);
   justify-content: center;
-  min-width: 36px;
+  min-width: var(--ao-spacing-9);
   padding: 0 var(--ao-spacing-2);
-  transition: background 0.1s ease;
+  transition: background duration(instant) ease;
 
   &:hover:not(:disabled) {
     background: var(--ao-background-secondary);
@@ -46,7 +46,7 @@
   align-items: center;
   color: var(--ao-font-color-tertiary);
   display: flex;
-  height: 36px;
+  height: var(--ao-spacing-9);
   justify-content: center;
-  width: 36px;
+  width: var(--ao-spacing-9);
 }

@@ -2,12 +2,17 @@
 //!
 //! This service is stateless. It takes raw punches and a work policy,
 //! applies the domain rules (pairing, hour computation, anomaly detection),
-//! and returns `WorkDay` aggregates.
+//! and returns `WorkDay` aggregates. It also provides analytical projections
+//! (daily/weekly hours, KPIs, trends, calendar, today snapshot).
 
 use jiff::civil::Date;
 
 use crate::model::anomaly::Anomaly;
-use crate::model::work_day::WorkDay;
+use crate::model::attendance_analytics::{
+    CalendarDay, CheckedInEmployee, DailyHours, EmployeeKpi, MonthlyTrendPoint, StatusDistribution,
+    TodaySnapshot, WeeklyHours,
+};
+use crate::model::work_day::{DayStatus, WorkDay};
 use crate::model::work_period::{PeriodKind, WorkPeriod};
 use crate::model::work_policy::WorkPolicy;
 use crate::model::{AttendancePunch, PunchStatus};
@@ -68,6 +73,376 @@ impl AttendanceCalculator {
             wd.anomalies = anomalies;
             wd
         })
+    }
+
+    // ── Aggregation ───────────────────────────────────────────────
+
+    /// Group WorkDays by date and sum regular + overtime seconds.
+    ///
+    /// Pure aggregation — no policy decisions. Policy was already applied
+    /// when WorkDays were computed.
+    pub fn aggregate_daily_hours(work_days: &[WorkDay]) -> Vec<DailyHours> {
+        let mut map: std::collections::BTreeMap<Date, (i64, i64)> =
+            std::collections::BTreeMap::new();
+
+        for wd in work_days {
+            let entry = map.entry(wd.date).or_default();
+            entry.0 += wd.net_work_seconds();
+            entry.1 += wd.total_overtime_seconds;
+        }
+
+        map.into_iter()
+            .map(|(date, (reg, ot))| DailyHours {
+                date,
+                regular_seconds: reg,
+                overtime_seconds: ot,
+            })
+            .collect()
+    }
+
+    /// Roll daily hours into ISO weeks.
+    pub fn aggregate_weekly_hours(daily_hours: &[DailyHours]) -> Vec<WeeklyHours> {
+        let mut map: std::collections::BTreeMap<(i16, i8), i64> = std::collections::BTreeMap::new();
+
+        for dh in daily_hours {
+            let iso = dh.date.iso_week_date();
+            let key = (iso.year(), iso.week());
+            *map.entry(key).or_default() += dh.regular_seconds + dh.overtime_seconds;
+        }
+
+        map.into_iter()
+            .map(|((year, week), total_seconds)| WeeklyHours { year, week, total_seconds })
+            .collect()
+    }
+
+    // ── Distribution ───────────────────────────────────────────────
+
+    /// Count work-days by status: Full, Half, Absent.
+    ///
+    /// Iterates over every working day in the range. Days with a matching
+    /// WorkDay are classified as full or half; days without one are absent.
+    pub fn compute_status_distribution(
+        work_days: &[WorkDay],
+        policy: &WorkPolicy,
+        from_date: Date,
+        to_date: Date,
+    ) -> StatusDistribution {
+        // Build a lookup: (user_pin, date) → &WorkDay
+        let mut lookup: std::collections::HashMap<(String, Date), &WorkDay> =
+            std::collections::HashMap::new();
+        for wd in work_days {
+            lookup.insert((wd.user_pin.clone(), wd.date), wd);
+        }
+
+        // Collect unique user pins
+        let pins: Vec<String> = {
+            let mut set: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+            for wd in work_days {
+                set.insert(wd.user_pin.clone());
+            }
+            set.into_iter().collect()
+        };
+
+        let mut full = 0u64;
+        let mut half = 0u64;
+        let mut absent = 0u64;
+
+        for pin in &pins {
+            let mut cursor = from_date;
+            loop {
+                if cursor > to_date {
+                    break;
+                }
+                let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
+                if policy.is_working_day(weekday) {
+                    match lookup.get(&(pin.clone(), cursor)) {
+                        Some(wd) => {
+                            if wd.total_regular_seconds >= policy.min_seconds_for_present {
+                                full += 1;
+                            } else {
+                                half += 1;
+                            }
+                        },
+                        None => absent += 1,
+                    }
+                }
+                cursor = match cursor.tomorrow() {
+                    Ok(d) => d,
+                    Err(_) => break,
+                };
+            }
+        }
+
+        StatusDistribution { full_days: full, half_days: half, absent_days: absent }
+    }
+
+    /// Per-employee attendance KPIs for a date range.
+    pub fn compute_employee_kpis(
+        work_days: &[WorkDay],
+        policy: &WorkPolicy,
+        from_date: Date,
+        to_date: Date,
+    ) -> Vec<EmployeeKpi> {
+        // Group work_days by user_pin
+        let mut by_pin: std::collections::HashMap<String, Vec<&WorkDay>> =
+            std::collections::HashMap::new();
+        for wd in work_days {
+            by_pin.entry(wd.user_pin.clone()).or_default().push(wd);
+        }
+
+        let mut kpis = Vec::new();
+
+        for (pin, days) in &by_pin {
+            let mut days_present: u32 = 0;
+            let mut days_absent: u32 = 0;
+            let mut days_late: u32 = 0;
+            let mut total_regular: i64 = 0;
+            let mut total_overtime: i64 = 0;
+            let mut days_with_hours: u32 = 0;
+
+            // Build a set of dates where this employee has data
+            let mut day_set: std::collections::HashSet<Date> = std::collections::HashSet::new();
+            for wd in days {
+                day_set.insert(wd.date);
+            }
+
+            // Iterate over all working days in range
+            let mut cursor = from_date;
+            loop {
+                if cursor > to_date {
+                    break;
+                }
+                let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
+                if policy.is_working_day(weekday) {
+                    if day_set.contains(&cursor) {
+                        // Find matching WorkDays for this date
+                        let matches: Vec<&&WorkDay> =
+                            days.iter().filter(|wd| wd.date == cursor).collect();
+                        for wd in matches {
+                            total_regular += wd.net_work_seconds();
+                            total_overtime += wd.total_overtime_seconds;
+                            days_with_hours += 1;
+                        }
+                        days_present += 1;
+
+                        // Late detection: check first regular period's check-in time
+                        let is_late = days
+                            .iter()
+                            .filter(|wd| wd.date == cursor)
+                            .any(|wd| wd.status == DayStatus::Late);
+                        if is_late {
+                            days_late += 1;
+                        }
+                    } else {
+                        days_absent += 1;
+                    }
+                }
+                cursor = match cursor.tomorrow() {
+                    Ok(d) => d,
+                    Err(_) => break,
+                };
+            }
+
+            let avg_seconds =
+                if days_with_hours > 0 { total_regular / days_with_hours as i64 } else { 0 };
+
+            kpis.push(EmployeeKpi {
+                user_pin: pin.clone(),
+                days_present,
+                days_absent,
+                days_late,
+                total_regular_seconds: total_regular,
+                total_overtime_seconds: total_overtime,
+                avg_seconds_per_day: avg_seconds,
+            });
+        }
+
+        kpis.sort_by(|a, b| a.user_pin.cmp(&b.user_pin));
+        kpis
+    }
+
+    // ── Trends ─────────────────────────────────────────────────────
+
+    /// Monthly attendance % for the last N months.
+    ///
+    /// For each month: attendance_pct = (days_with_attendance / working_days) * 100
+    pub fn compute_monthly_trend(
+        work_days: &[WorkDay],
+        policy: &WorkPolicy,
+        from_date: Date,
+        to_date: Date,
+    ) -> Vec<MonthlyTrendPoint> {
+        use std::collections::{BTreeMap, HashSet};
+
+        // For each (user, year, month), track unique dates with attendance
+        let mut attendance_by_month: BTreeMap<(i16, i8), HashSet<Date>> = BTreeMap::new();
+        let mut working_days_by_month: BTreeMap<(i16, i8), u32> = BTreeMap::new();
+
+        for wd in work_days {
+            let month_key = (i16::from(wd.date.year()), wd.date.month());
+            attendance_by_month.entry(month_key).or_default().insert(wd.date);
+        }
+
+        // Count working days per month
+        let mut cursor = from_date;
+        loop {
+            if cursor > to_date {
+                break;
+            }
+            let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
+            if policy.is_working_day(weekday) {
+                let month_key = (i16::from(cursor.year()), cursor.month());
+                *working_days_by_month.entry(month_key).or_default() += 1;
+            }
+            cursor = match cursor.tomorrow() {
+                Ok(d) => d,
+                Err(_) => break,
+            };
+        }
+
+        // To compute a meaningful percentage, we need to know how many unique employees
+        // contributed per month. For simplicity, we count unique employee-days vs working days.
+        let mut trend = Vec::new();
+        for ((year, month), working_days) in &working_days_by_month {
+            let attended_days =
+                attendance_by_month.get(&(*year, *month)).map(|s| s.len() as u32).unwrap_or(0);
+
+            let pct = if *working_days > 0 {
+                (attended_days as f64 / *working_days as f64) * 100.0
+            } else {
+                0.0
+            };
+
+            trend.push(MonthlyTrendPoint {
+                year: *year,
+                month: *month,
+                attendance_pct: pct.min(100.0),
+            });
+        }
+
+        trend
+    }
+
+    // ── Projections ─────────────────────────────────────────────────
+
+    /// Project WorkDays onto a calendar month view.
+    ///
+    /// Returns one CalendarDay per calendar day. Weekends get status_code=0.
+    pub fn project_calendar(
+        work_days: &[WorkDay],
+        year: i16,
+        month: i8,
+        policy: &WorkPolicy,
+    ) -> Vec<CalendarDay> {
+        let mut lookup: std::collections::HashMap<Date, &WorkDay> =
+            std::collections::HashMap::new();
+        for wd in work_days {
+            lookup.entry(wd.date).or_insert(wd);
+        }
+
+        // Determine the first and last day of the month
+        let first = Date::new(year, month, 1).expect("valid date");
+
+        // We'll iterate from the 1st until the month changes
+        let mut days = Vec::new();
+        let mut cursor = first;
+        loop {
+            let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
+            let is_working = policy.is_working_day(weekday);
+
+            let (status_code, hours) = if !is_working {
+                (0, None)
+            } else if let Some(wd) = lookup.get(&cursor) {
+                let code = match wd.status {
+                    DayStatus::Present => {
+                        if wd.total_regular_seconds >= policy.min_seconds_for_present {
+                            4
+                        } else {
+                            3
+                        }
+                    },
+                    DayStatus::Late | DayStatus::EarlyLeave => {
+                        if wd.total_regular_seconds >= policy.min_seconds_for_present {
+                            2
+                        } else {
+                            2
+                        }
+                    },
+                    DayStatus::HalfDay => 3,
+                    DayStatus::Absent => 1,
+                    DayStatus::Holiday => 0,
+                };
+                let h = wd.regular_hours_f64() + wd.overtime_hours_f64();
+                (code, Some(h))
+            } else {
+                (1, None) // absent
+            };
+
+            days.push(CalendarDay { date: cursor, status_code, hours, is_working_day: is_working });
+
+            // Move to next day; stop if we've left the month
+            cursor = match cursor.tomorrow() {
+                Ok(d) => {
+                    if d.month() != month {
+                        break;
+                    }
+                    d
+                },
+                Err(_) => break,
+            };
+        }
+
+        days
+    }
+
+    /// Operational snapshot: who's here, who's late, hourly arrival pattern.
+    ///
+    /// This is the "right now" view — different from the analytical summary
+    /// which answers "over time" questions.
+    pub fn project_today_snapshot(
+        work_days: &[WorkDay],
+        punches: &[AttendancePunch],
+        _policy: &WorkPolicy,
+        total_employees: usize,
+    ) -> TodaySnapshot {
+        // Count distinct users with activity today
+        let present_users: std::collections::HashSet<&str> =
+            work_days.iter().map(|d| d.user_pin.as_str()).collect();
+        let present = present_users.len();
+        let absent = total_employees.saturating_sub(present);
+
+        // Late arrivals: first check-in after work_start + threshold
+        let late = work_days.iter().filter(|d| d.status == DayStatus::Late).count();
+        let on_time = present.saturating_sub(late);
+
+        // Currently checked in: open regular periods
+        let currently_checked_in: Vec<CheckedInEmployee> = work_days
+            .iter()
+            .filter(|d| d.is_present_now())
+            .map(|d| CheckedInEmployee {
+                user_pin: d.user_pin.clone(),
+                check_in_epoch: d.first_punch.as_second(),
+            })
+            .collect();
+
+        // Hourly breakdown from raw punches
+        let mut hourly: [u32; 24] = [0; 24];
+        for p in punches {
+            let zoned = p.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
+            let hour = zoned.datetime().time().hour() as usize;
+            if hour < 24 {
+                hourly[hour] += 1;
+            }
+        }
+
+        TodaySnapshot {
+            present,
+            absent,
+            late,
+            on_time,
+            currently_checked_in,
+            hourly_breakdown: hourly,
+        }
     }
 
     // ── Private ────────────────────────────────────────────────────
@@ -451,5 +826,312 @@ mod tests {
         let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
         assert_eq!(work_days.len(), 2);
         assert!(work_days[0].date < work_days[1].date, "should be sorted by date");
+    }
+
+    // ── Aggregation tests ──────────────────────────────────────────
+
+    #[test]
+    fn aggregate_daily_hours_sums_across_users() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("146", d, time(10, 0, 0), PunchStatus::CheckIn),
+            punch_at("146", d, time(14, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 2, "should have 1 work day per user");
+
+        let daily = AttendanceCalculator::aggregate_daily_hours(&work_days);
+        assert_eq!(daily.len(), 1, "both users on same date → one DailyHours");
+        assert_eq!(daily[0].regular_seconds, 8 * 3600 + 4 * 3600);
+        assert_eq!(daily[0].overtime_seconds, 0);
+    }
+
+    #[test]
+    fn aggregate_daily_hours_multiple_dates() {
+        let d1 = date_2026_07_09();
+        let d2 = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d1, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d1, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("145", d2, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d2, time(13, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let daily = AttendanceCalculator::aggregate_daily_hours(&work_days);
+        assert_eq!(daily.len(), 2);
+        assert!(daily[0].date < daily[1].date, "should be sorted by date");
+        assert_eq!(daily[0].regular_seconds, 8 * 3600);
+        assert_eq!(daily[1].regular_seconds, 4 * 3600);
+    }
+
+    #[test]
+    fn aggregate_daily_hours_empty() {
+        let daily = AttendanceCalculator::aggregate_daily_hours(&[]);
+        assert!(daily.is_empty());
+    }
+
+    #[test]
+    fn aggregate_weekly_hours_groups_by_iso_week() {
+        let d1 = Date::new(2026, 7, 6).unwrap();
+        let d2 = Date::new(2026, 7, 10).unwrap();
+
+        let dh = vec![
+            DailyHours { date: d1, regular_seconds: 28800, overtime_seconds: 0 },
+            DailyHours { date: d2, regular_seconds: 14400, overtime_seconds: 3600 },
+        ];
+
+        let weeks = AttendanceCalculator::aggregate_weekly_hours(&dh);
+        assert_eq!(weeks.len(), 1);
+        assert_eq!(weeks[0].year, 2026);
+        assert_eq!(weeks[0].week, 28);
+        assert_eq!(weeks[0].total_seconds, 28800 + 14400 + 3600);
+    }
+
+    #[test]
+    fn aggregate_weekly_hours_empty() {
+        let weeks = AttendanceCalculator::aggregate_weekly_hours(&[]);
+        assert!(weeks.is_empty());
+    }
+
+    // ── Distribution tests ──────────────────────────────────────────
+
+    #[test]
+    fn status_distribution_full_half_absent() {
+        let d1 = Date::new(2026, 7, 6).unwrap();
+        let d2 = Date::new(2026, 7, 7).unwrap();
+        let d3 = Date::new(2026, 7, 8).unwrap();
+
+        let punches = vec![
+            punch_at("145", d1, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d1, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("145", d2, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d2, time(12, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let dist = AttendanceCalculator::compute_status_distribution(&work_days, &policy, d1, d3);
+        assert_eq!(dist.full_days, 1);
+        assert_eq!(dist.half_days, 1);
+        assert_eq!(dist.absent_days, 1);
+    }
+
+    #[test]
+    fn status_distribution_empty_range() {
+        let d = Date::new(2026, 7, 10).unwrap();
+        let policy = WorkPolicy::standard_9to5();
+        let dist = AttendanceCalculator::compute_status_distribution(&[], &policy, d, d);
+        assert_eq!(dist.total_employee_days(), 0);
+    }
+
+    // ── Employee KPI tests ──────────────────────────────────────────
+
+    #[test]
+    fn employee_kpis_for_range() {
+        let d1 = Date::new(2026, 7, 6).unwrap();
+        let d2 = Date::new(2026, 7, 7).unwrap();
+
+        let punches = vec![
+            punch_at("145", d1, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d1, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("146", d2, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("146", d2, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let kpis = AttendanceCalculator::compute_employee_kpis(&work_days, &policy, d1, d2);
+        assert_eq!(kpis.len(), 2);
+
+        let emp145 = kpis.iter().find(|k| k.user_pin == "145").unwrap();
+        assert_eq!(emp145.days_present, 1);
+        assert_eq!(emp145.days_absent, 1);
+        assert_eq!(emp145.days_late, 0);
+
+        let emp146 = kpis.iter().find(|k| k.user_pin == "146").unwrap();
+        assert_eq!(emp146.days_present, 1);
+        assert_eq!(emp146.days_absent, 1);
+    }
+
+    #[test]
+    fn employee_kpis_detects_late() {
+        let d1 = Date::new(2026, 7, 6).unwrap();
+
+        let punches = vec![
+            punch_at("145", d1, time(10, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d1, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let mut policy = WorkPolicy::standard_9to5();
+        policy.late_threshold_secs = 15 * 60;
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let kpis = AttendanceCalculator::compute_employee_kpis(&work_days, &policy, d1, d1);
+        assert_eq!(kpis.len(), 1);
+        assert_eq!(kpis[0].days_late, 1);
+        assert_eq!(kpis[0].days_present, 1);
+    }
+
+    #[test]
+    fn employee_kpis_empty() {
+        let d = Date::new(2026, 7, 6).unwrap();
+        let policy = WorkPolicy::standard_9to5();
+        let kpis = AttendanceCalculator::compute_employee_kpis(&[], &policy, d, d);
+        assert!(kpis.is_empty());
+    }
+
+    // ── Trend tests ─────────────────────────────────────────────────
+
+    #[test]
+    fn monthly_trend_computes_pct() {
+        let mut punches: Vec<AttendancePunch> = Vec::new();
+        let policy = WorkPolicy::standard_9to5();
+
+        let start = Date::new(2026, 7, 1).unwrap();
+        let end = Date::new(2026, 7, 31).unwrap();
+
+        let mut cursor = start;
+        let mut days_added = 0;
+        loop {
+            if cursor > end || days_added >= 10 {
+                break;
+            }
+            let wd = cursor.weekday().to_monday_zero_offset() as u8 % 7;
+            if policy.is_working_day(wd) {
+                punches.push(punch_at("145", cursor, time(9, 0, 0), PunchStatus::CheckIn));
+                punches.push(punch_at("145", cursor, time(17, 0, 0), PunchStatus::CheckOut));
+                days_added += 1;
+            }
+            cursor = cursor.tomorrow().unwrap();
+        }
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        let trend = AttendanceCalculator::compute_monthly_trend(&work_days, &policy, start, end);
+        assert_eq!(trend.len(), 1);
+        assert_eq!(trend[0].year, 2026);
+        assert_eq!(trend[0].month, 7);
+        assert!((trend[0].attendance_pct - 10.0 / 23.0 * 100.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn monthly_trend_empty() {
+        let start = Date::new(2026, 7, 1).unwrap();
+        let end = Date::new(2026, 7, 31).unwrap();
+        let policy = WorkPolicy::standard_9to5();
+        let trend = AttendanceCalculator::compute_monthly_trend(&[], &policy, start, end);
+        assert!(!trend.is_empty());
+    }
+
+    // ── Calendar projection tests ───────────────────────────────────
+
+    #[test]
+    fn project_calendar_marks_weekends() {
+        let policy = WorkPolicy::standard_9to5();
+        let days = AttendanceCalculator::project_calendar(&[], 2026, 7, &policy);
+
+        assert_eq!(days.len(), 31);
+        let sat = days.iter().find(|d| d.date.weekday().to_monday_zero_offset() == 5).unwrap();
+        assert_eq!(sat.status_code, 0, "weekend should be status 0");
+        assert!(!sat.is_working_day);
+    }
+
+    #[test]
+    fn project_calendar_marks_present_and_absent() {
+        let d = Date::new(2026, 7, 6).unwrap();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let days = AttendanceCalculator::project_calendar(&work_days, 2026, 7, &policy);
+
+        let monday = days.iter().find(|cd| cd.date == d).unwrap();
+        assert_eq!(monday.status_code, 4, "full day present");
+        assert!(monday.hours.is_some());
+
+        let tuesday = Date::new(2026, 7, 7).unwrap();
+        let tue = days.iter().find(|cd| cd.date == tuesday).unwrap();
+        assert_eq!(tue.status_code, 1, "absent");
+    }
+
+    #[test]
+    fn project_calendar_short_month() {
+        let policy = WorkPolicy::standard_9to5();
+        let days = AttendanceCalculator::project_calendar(&[], 2026, 2, &policy);
+        assert_eq!(days.len(), 28);
+    }
+
+    // ── Today snapshot tests ────────────────────────────────────────
+
+    #[test]
+    fn today_snapshot_counts_present_absent() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("146", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("146", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 10);
+        assert_eq!(snap.present, 2);
+        assert_eq!(snap.absent, 8);
+        assert_eq!(snap.late, 0);
+        assert_eq!(snap.on_time, 2);
+        assert!(snap.currently_checked_in.is_empty());
+    }
+
+    #[test]
+    fn today_snapshot_checked_in() {
+        let d = date_2026_07_10();
+        let punches = vec![punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn)];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        assert_eq!(snap.present, 1);
+        assert_eq!(snap.currently_checked_in.len(), 1);
+        assert_eq!(snap.currently_checked_in[0].user_pin, "145");
+    }
+
+    #[test]
+    fn today_snapshot_late_detection() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(10, 30, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let mut policy = WorkPolicy::standard_9to5();
+        policy.late_threshold_secs = 15 * 60;
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        assert_eq!(snap.late, 1);
+        assert_eq!(snap.on_time, 0);
+    }
+
+    #[test]
+    fn today_snapshot_hourly_breakdown() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(9, 30, 0), PunchStatus::CheckOut),
+            punch_at("145", d, time(13, 0, 0), PunchStatus::CheckIn),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        assert_eq!(snap.hourly_breakdown[9], 2);
+        assert_eq!(snap.hourly_breakdown[13], 1);
+        assert_eq!(snap.hourly_breakdown[0], 0);
     }
 }

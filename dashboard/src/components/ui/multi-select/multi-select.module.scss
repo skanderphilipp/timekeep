@@ -7,7 +7,7 @@
   border-radius: var(--ao-radius-sm);
   cursor: text;
   display: flex;
-  min-height: 40px;
+  min-height: var(--ao-spacing-10);
   outline: none;
   padding: var(--ao-spacing-1) var(--ao-spacing-2);
   transition: border-color 0.15s ease;
@@ -15,7 +15,7 @@
 
   &:focus-within {
     border-color: var(--ao-accent-accent9);
-    box-shadow: 0 0 0 2px var(--ao-focus-ring);
+    box-shadow: 0 0 0 var(--ao-spacing-0_5) var(--ao-focus-ring);
   }
 
   &[data-popup-open] {
@@ -41,45 +41,6 @@
   min-width: 0;
 }
 
-.chip {
-  align-items: center;
-  background: var(--ao-accent-accent5);
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-accent-accent11);
-  display: inline-flex;
-  font-size: var(--ao-font-size-xs);
-  font-weight: var(--ao-font-weight-medium);
-  gap: var(--ao-spacing-0_5);
-  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
-  white-space: nowrap;
-
-  &:has([data-disabled]) {
-    opacity: 0.5;
-  }
-}
-
-.chipLabel {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chipRemove {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-xs);
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  opacity: 0.6;
-  padding: 0;
-
-  &:hover {
-    opacity: 1;
-  }
-}
-
 /* ── Input ── */
 
 .input {
@@ -89,7 +50,7 @@
   flex: 1;
   font-family: var(--ao-font-family);
   font-size: var(--ao-font-size-sm);
-  min-width: 80px;
+  min-width: var(--ao-spacing-20);
   outline: none;
   padding: 0;
 
@@ -101,5 +62,5 @@
 /* ── List (max-height override) ── */
 
 .list {
-  max-height: 250px;
+  max-height: calc(var(--ao-spacing-32) * 2 - var(--ao-spacing-1_5));
 }

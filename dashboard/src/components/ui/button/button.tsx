@@ -46,11 +46,6 @@ export function Button(props: ButtonProps) {
 
   const classNames = clsx(
     styles.button,
-    styles[variant],
-    styles[size],
-    fullWidth && styles.fullWidth,
-    isDisabled && styles.disabled,
-    loading && styles.loading,
     className,
   );
 
@@ -82,6 +77,7 @@ export function Button(props: ButtonProps) {
         data-slot="button"
         data-variant={variant}
         data-size={size}
+        data-full-width={fullWidth || undefined}
         className={classNames}
         aria-disabled={isDisabled || undefined}
         tabIndex={isDisabled ? -1 : undefined}
@@ -110,6 +106,7 @@ export function Button(props: ButtonProps) {
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-full-width={fullWidth || undefined}
       data-disabled={isDisabled || undefined}
       data-loading={loading || undefined}
       disabled={isDisabled}
@@ -120,3 +117,5 @@ export function Button(props: ButtonProps) {
     </button>
   );
 }
+
+Button.displayName = "Button";

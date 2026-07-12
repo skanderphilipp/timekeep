@@ -1,4 +1,4 @@
-import { useCallback, type ChangeEvent } from "react";
+import { useCallback } from "react";
 
 import { toDateString } from "@/lib/date";
 
@@ -44,8 +44,8 @@ export function usePunchFilterHandlers(
   );
 
   const handleAnomaliesOnlyToggle = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) =>
-      handleFilterChange({ anomalies_only: e.target.checked ? "true" : undefined }),
+    (checked: boolean) =>
+      handleFilterChange({ anomalies_only: checked ? "true" : undefined }),
     [handleFilterChange],
   );
 

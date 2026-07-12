@@ -1,4 +1,5 @@
 import { ResponsiveBar } from "@nivo/bar";
+import type { BarDatum } from "@nivo/bar";
 
 import { useChartTheme } from "./use-chart-theme";
 
@@ -18,6 +19,12 @@ export type BarChartProps = {
   height?: number;
   layout?: "vertical" | "horizontal";
   grid?: boolean;
+  /**
+   * Called when a bar is clicked.
+   * The callback receives the raw bar data item from the data array.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClick?: (datum: Record<string, any>) => void;
 };
 
 /**
@@ -33,6 +40,7 @@ export function BarChart({
   height = 300,
   layout = "vertical",
   grid = false,
+  onClick,
 }: BarChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
 
@@ -44,7 +52,7 @@ export function BarChart({
   return (
     <div style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveBar
-        data={data}
+        data={data as unknown as readonly BarDatum[]}
         keys={keys}
         indexBy={xKey}
         theme={nivo}
@@ -59,6 +67,15 @@ export function BarChart({
         borderRadius={4}
         enableLabel={false}
         animate={false}
+        // ── Interaction ────────────────────────────────────────
+        isInteractive={!!onClick}
+        onClick={(bar) => {
+          if (!onClick) return;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const indexValue = (bar as any).indexValue as string;
+          const row = data.find((d) => String(d[xKey]) === String(indexValue));
+          if (row) onClick(row);
+        }}
       />
     </div>
   );

@@ -14,5 +14,5 @@
 }
 
 .grid[data-cols="auto"] {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--ao-spacing-30) * 2 + var(--ao-spacing-10)), 1fr));
 }

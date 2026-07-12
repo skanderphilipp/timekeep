@@ -9,7 +9,7 @@ import {
 import { FilterDropdown, type FilterChip, type FilterField } from "./filter-dropdown";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
 
 const deviceOptions = [
   { value: "", label: "All Devices" },
@@ -56,7 +56,7 @@ const fields: FilterField[] = [
     label: "Anomalies only",
     icon: <IconAlertTriangle size={14} />,
     renderValueSelector: () => (
-      <Toggle checked={false} onChange={fn()} label="Show only anomalous punches" />
+      <Switch checked={false} onCheckedChange={fn()} label="Show only anomalous punches" />
     ),
   },
 ];

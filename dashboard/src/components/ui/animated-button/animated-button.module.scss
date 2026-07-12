@@ -26,12 +26,12 @@
   color: var(--ao-color-amber11);
   font-size: var(--ao-font-size-xxs);
   font-weight: var(--ao-font-weight-semibold);
-  inset-inline-end: -6px;
+  inset-inline-end: calc(var(--ao-spacing-1_5) * -1);
   letter-spacing: 0.03em;
   line-height: 1;
   padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
   position: absolute;
   text-transform: uppercase;
-  top: -8px;
+  top: calc(var(--ao-spacing-2) * -1);
   white-space: nowrap;
 }

@@ -18,11 +18,11 @@ const weeklyData = [
 ];
 
 const dailyHoursData = [
-  { date: "Jan 1", regular: 7.5, overtime: 1.0 },
-  { date: "Jan 2", regular: 8.0, overtime: 0.5 },
-  { date: "Jan 3", regular: 7.0, overtime: 2.0 },
-  { date: "Jan 4", regular: 8.0, overtime: 0 },
-  { date: "Jan 5", regular: 7.8, overtime: 0.8 },
+  { date: "Jul 1", regular: 7.5, overtime: 1.0 },
+  { date: "Jul 2", regular: 8.0, overtime: 0.5 },
+  { date: "Jul 3", regular: 7.0, overtime: 2.0 },
+  { date: "Jul 4", regular: 8.0, overtime: 0 },
+  { date: "Jul 5", regular: 7.8, overtime: 0.8 },
 ];
 
 const meta: Meta<typeof BarChart> = {
@@ -34,6 +34,8 @@ const meta: Meta<typeof BarChart> = {
 export default meta;
 type Story = StoryObj<typeof BarChart>;
 
+// ── Primary ───────────────────────────────────────────────────────────────
+
 export const Primary: Story = {
   render: () => (
     <Chart title="Hourly Arrivals" description="Check-ins per hour today.">
@@ -41,6 +43,8 @@ export const Primary: Story = {
     </Chart>
   ),
 };
+
+// ── Variants ──────────────────────────────────────────────────────────────
 
 export const HorizontalBar: Story = {
   name: "Horizontal (Week-over-Week)",
@@ -91,5 +95,80 @@ export const WithoutGrid: Story = {
         height={200}
       />
     </Chart>
+  ),
+};
+
+// ── States ────────────────────────────────────────────────────────────────
+
+export const Loading: Story = {
+  name: "Loading State",
+  render: () => (
+    <Chart title="Hourly Arrivals" description="Fetching today's data…" isLoading>
+      <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" height={250} />
+    </Chart>
+  ),
+};
+
+export const ErrorState: Story = {
+  name: "Error State",
+  render: () => (
+    <Chart
+      title="Hourly Arrivals"
+      description="Could not load data."
+      error={new globalThis.Error("Network request failed — the API may be unreachable.")}
+    >
+      <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" height={250} />
+    </Chart>
+  ),
+};
+
+export const Empty: Story = {
+  name: "Empty State",
+  render: () => (
+    <Chart
+      title="Hourly Arrivals"
+      description="No arrivals recorded yet today."
+      isEmpty
+      emptyMessage="No arrivals yet today"
+    >
+      <BarChart data={[]} bars={[{ dataKey: "count" }]} xKey="hour" height={250} />
+    </Chart>
+  ),
+};
+
+// ── Interaction ───────────────────────────────────────────────────────────
+
+export const WithOnClick: Story = {
+  name: "Interactive (onClick)",
+  render: () => (
+    <Chart title="Hourly Arrivals" description="Click a bar to see the hour.">
+      <BarChart
+        data={arrivalData}
+        bars={[{ dataKey: "count" }]}
+        xKey="hour"
+        height={250}
+        onClick={(datum) => {
+          alert(`${datum.hour}: ${datum.count} arrivals`);
+        }}
+      />
+    </Chart>
+  ),
+};
+
+// ── Responsive ────────────────────────────────────────────────────────────
+
+export const NarrowContainer: Story = {
+  name: "Narrow Container (280px)",
+  render: () => (
+    <div style={{ maxWidth: 280 }}>
+      <Chart title="Hourly Arrivals" description="Fits in a narrow sidebar.">
+        <BarChart
+          data={arrivalData.slice(0, 4)}
+          bars={[{ dataKey: "count" }]}
+          xKey="hour"
+          height={200}
+        />
+      </Chart>
+    </div>
   ),
 };

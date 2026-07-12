@@ -4,7 +4,7 @@
   flex-direction: column;
   gap: var(--ao-spacing-3);
   justify-content: center;
-  min-height: 160px;
+  min-height: calc(var(--ao-spacing-32) + var(--ao-spacing-8));
   padding: var(--ao-spacing-8) var(--ao-spacing-4);
   text-align: center;
 }
@@ -14,9 +14,9 @@
   background-color: var(--ao-background-secondary);
   border-radius: var(--ao-radius-full);
   display: flex;
-  height: 80px;
+  height: var(--ao-spacing-20);
   justify-content: center;
-  width: 80px;
+  width: var(--ao-spacing-20);
 }
 
 .icon {
@@ -36,7 +36,7 @@
   font-size: var(--ao-font-size-sm);
   line-height: 1.5;
   margin: 0;
-  max-width: 320px;
+  max-width: calc(var(--ao-spacing-32) * 2.5);
 }
 
 @keyframes float {
@@ -46,6 +46,6 @@
   }
 
   50% {
-    transform: translateY(-4px);
+    transform: translateY(calc(var(--ao-spacing-1) * -1));
   }
 }

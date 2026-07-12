@@ -3,6 +3,15 @@
 
 @use "sass:map";
 
+
+// ── Animation ────────────────────────────────────────────────────────────────
+// Twenty UI alignment: unitless duration tokens → seconds via calc().
+// Usage: transition: background duration(fast) ease;
+
+@function duration($name) {
+  @return calc(var(--ao-animation-duration-#{$name}) * 1s);
+}
+
 // ── Breakpoints ──────────────────────────────────────────────────────────────
 
 $breakpoint-sm: 576px;
@@ -45,12 +54,23 @@ $breakpoints: (
 
 // ── Focus ────────────────────────────────────────────────────────────────────
 
-/// Standard focus ring using the accent color with smooth animation.
-@mixin focus-ring($size: 2px, $color: var(--ao-focus-ring)) {
+/// Standard focus ring via outline (Twenty UI pattern).
+/// Outline sits outside the element — better for overflow: hidden containers.
+@mixin focus-ring($size: 2px, $color: var(--ao-accent-accent9)) {
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 $size $color;
-    transition: box-shadow 0.15s ease;
+    outline: $size solid $color;
+    outline-offset: 1px;
+    box-shadow: none;
+  }
+}
+
+/// Double-ring focus enhancement for solid buttons (primary/danger).
+/// Combines outline + box-shadow for a punched-out effect.
+@mixin focus-ring-enhanced($size: 2px, $color: var(--ao-accent-accent9), $glow-color: var(--ao-accent-accent5)) {
+  &:focus-visible {
+    outline: $size solid $color;
+    outline-offset: 1px;
+    box-shadow: 0 0 0 3px $glow-color;
   }
 }
 

@@ -6,7 +6,7 @@
 }
 
 .itemContainer {
-  margin-inline-end: -3px;
+  margin-inline-end: calc(var(--ao-spacing-1) * -1);
 
   &:last-child {
     margin-inline-end: 0;

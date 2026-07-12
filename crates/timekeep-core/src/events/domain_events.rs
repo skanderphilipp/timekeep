@@ -70,6 +70,26 @@ pub enum DomainEvent {
 
     /// Device firmware was updated (reported by the device).
     DeviceFirmwareUpdated { device_sn: String, old_version: String, new_version: String },
+
+    // ── Employee lifecycle events ─────────────────────────────
+    /// A new employee was registered in the system.
+    EmployeeCreated { pin: String, name: String },
+    /// An employee was deactivated (soft-delete).
+    EmployeeDeactivated { pin: String },
+    /// An employee was enrolled on a specific device.
+    EmployeeEnrolled { pin: String, device_sn: String },
+
+    // ── Dashboard user events ─────────────────────────────────
+    /// A dashboard user was created (by admin or during setup).
+    DashboardUserCreated { username: String, role: String },
+    /// A dashboard user was deleted.
+    DashboardUserDeleted { username: String },
+
+    // ── System lifecycle events ───────────────────────────────
+    /// Initial setup was completed (first admin created).
+    SetupCompleted { admin_username: String },
+    /// System settings were changed.
+    SettingsChanged { changed_fields: Vec<String> },
 }
 
 impl DomainEvent {
@@ -95,6 +115,13 @@ impl DomainEvent {
             Self::DeviceSyncFailed { .. } => "device_sync_failed",
             Self::DeviceConfigChanged { .. } => "device_config_changed",
             Self::DeviceFirmwareUpdated { .. } => "device_firmware_updated",
+            Self::EmployeeCreated { .. } => "employee_created",
+            Self::EmployeeDeactivated { .. } => "employee_deactivated",
+            Self::EmployeeEnrolled { .. } => "employee_enrolled",
+            Self::DashboardUserCreated { .. } => "dashboard_user_created",
+            Self::DashboardUserDeleted { .. } => "dashboard_user_deleted",
+            Self::SetupCompleted { .. } => "setup_completed",
+            Self::SettingsChanged { .. } => "settings_changed",
         }
     }
 
@@ -118,7 +145,15 @@ impl DomainEvent {
             | Self::DeviceConfigChanged { device_sn, .. }
             | Self::DeviceFirmwareUpdated { device_sn, .. } => Some(device_sn),
             Self::DeviceDiscovered { probe } => Some(&probe.serial_number),
-            Self::EngineStarted { .. } | Self::EngineStopping => None,
+            Self::EmployeeEnrolled { device_sn, .. } => Some(device_sn),
+            Self::EngineStarted { .. }
+            | Self::EngineStopping
+            | Self::EmployeeCreated { .. }
+            | Self::EmployeeDeactivated { .. }
+            | Self::DashboardUserCreated { .. }
+            | Self::DashboardUserDeleted { .. }
+            | Self::SetupCompleted { .. }
+            | Self::SettingsChanged { .. } => None,
         }
     }
 }
@@ -218,6 +253,13 @@ mod tests {
                 old_version: "6.60".into(),
                 new_version: "6.61".into(),
             },
+            DomainEvent::EmployeeCreated { pin: "145".into(), name: "Ahmed".into() },
+            DomainEvent::EmployeeDeactivated { pin: "145".into() },
+            DomainEvent::EmployeeEnrolled { pin: "145".into(), device_sn: "SN001".into() },
+            DomainEvent::DashboardUserCreated { username: "admin".into(), role: "admin".into() },
+            DomainEvent::DashboardUserDeleted { username: "viewer1".into() },
+            DomainEvent::SetupCompleted { admin_username: "admin".into() },
+            DomainEvent::SettingsChanged { changed_fields: vec!["work_policy".into()] },
         ];
 
         for event in &events {
@@ -270,6 +312,21 @@ mod tests {
             }
             .device_sn(),
             Some("SN001")
+        );
+
+        assert_eq!(
+            DomainEvent::EmployeeEnrolled { pin: "145".into(), device_sn: "SN001".into() }
+                .device_sn(),
+            Some("SN001")
+        );
+        assert_eq!(
+            DomainEvent::EmployeeCreated { pin: "145".into(), name: "Ahmed".into() }.device_sn(),
+            None
+        );
+        assert_eq!(DomainEvent::EmployeeDeactivated { pin: "145".into() }.device_sn(), None);
+        assert_eq!(
+            DomainEvent::SetupCompleted { admin_username: "admin".into() }.device_sn(),
+            None
         );
     }
 

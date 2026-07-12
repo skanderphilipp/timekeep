@@ -1,4 +1,5 @@
 pub mod anomaly;
+pub mod attendance_analytics;
 pub mod audit;
 pub mod dashboard_user;
 pub mod device;
@@ -17,6 +18,10 @@ pub mod work_policy;
 
 // Re-export types so they're accessible as `crate::model::Device`, etc.
 pub use anomaly::Anomaly;
+pub use attendance_analytics::{
+    CalendarDay, CheckedInEmployee, DailyHours, EmployeeKpi, MonthlyTrendPoint, StatusDistribution,
+    TodaySnapshot, WeeklyHours,
+};
 pub use audit::{AuditEvent, AuditFilter};
 pub use dashboard_user::DashboardUser;
 pub use device::{Device, DeviceStatus, DeviceVendor};

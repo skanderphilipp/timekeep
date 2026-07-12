@@ -9,9 +9,9 @@
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  height: 32px;
+  height: var(--ao-spacing-8);
   justify-content: space-between;
-  min-width: 130px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-0_5));
   padding: 0 var(--ao-spacing-2);
   transition: border-color 0.15s ease;
 

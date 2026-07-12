@@ -38,10 +38,10 @@
   display: flex;
   flex-shrink: 0;
   font-size: var(--ao-font-size-md);
-  height: 20px;
+  height: var(--ao-spacing-5);
   justify-content: center;
   line-height: 1;
-  width: 20px;
+  width: var(--ao-spacing-5);
 
   &:hover {
     background: var(--ao-background-secondary);

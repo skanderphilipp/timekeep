@@ -4,6 +4,7 @@ import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
+import type { CalendarDayStatus } from "@/components/ui";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -36,11 +37,46 @@ export function statusLabel(status: string, _: (msg: MessageDescriptor) => strin
 }
 
 /**
+ * TODO(ENTERPRISE): Replace with backend AttendanceCalculator output.
+ *
+ * Phase: Backend integration (Phase 3 of chart roadmap)
+ * Impact: Status classification is duplicated from the Rust domain layer.
+ *         Inaccurate when work policy differs from defaults.
+ * Fix: Use GET /api/attendance/by-employee/{pin}/calendar response
+ *       instead of computing locally from raw punches.
+ */
+function classifyDayFromPunches(punches: Punch[]): { status: CalendarDayStatus; hours: number | null } {
+  if (punches.length === 0) return { status: "absent", hours: null };
+
+  let totalSeconds = 0;
+  let checkInTime: number | null = null;
+  const sorted = [...punches].sort((a, b) => a.timestamp - b.timestamp);
+  let hasLate = false;
+
+  for (const p of sorted) {
+    if (p.status === "check_in") {
+      checkInTime = p.timestamp;
+      const d = new Date(p.timestamp * 1000);
+      if (d.getUTCHours() >= 9) hasLate = true;
+    } else if ((p.status === "check_out" || p.status === "break_out") && checkInTime != null) {
+      totalSeconds += p.timestamp - checkInTime;
+      checkInTime = null;
+    }
+  }
+
+  const hours = totalSeconds / 3600;
+
+  if (hasLate) return { status: "late", hours };
+  if (hours >= 4) return { status: "full", hours };
+  if (hours > 0) return { status: "half", hours };
+  return { status: "absent", hours: null };
+}
+
+/**
  * Attendance calendar orchestration hook.
  *
  * Handles month navigation, employee filtering, punch data fetching,
- * grouping by day, and punch status classification. Extracted from the
- * AttendanceCalendarPage component to keep it under 250 lines.
+ * grouping by day, and day status classification for CalendarMonth.
  */
 export function useAttendanceCalendar() {
   const { _ } = useLingui();
@@ -80,6 +116,15 @@ export function useAttendanceCalendar() {
     });
     return map;
   }, [data]);
+
+  /** CalendarMonth data map: ISO date → { status, hours }. */
+  const dayStatusMap = useMemo(() => {
+    const map: Record<string, { status: CalendarDayStatus; hours: number | null }> = {};
+    punchesByDay.forEach((punches, key) => {
+      map[key] = classifyDayFromPunches(punches);
+    });
+    return map;
+  }, [punchesByDay]);
 
   const employeeOptions: EmployeeOption[] = useMemo(() => {
     const seen = new Set<string>();
@@ -132,6 +177,7 @@ export function useAttendanceCalendar() {
     until,
     data,
     punchesByDay,
+    dayStatusMap,
     employeeOptions,
     monthLabel,
     goPrev,

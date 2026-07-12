@@ -123,9 +123,9 @@ export const WithStatusDot: Story = {
   ),
 };
 
-/** Contextual example: device status cards. */
-export const DeviceStatusExample: Story = {
-  name: "Device Status Example",
+/** Context: device status cards on the Dashboard. */
+export const ContextDeviceStatus: Story = {
+  name: "Context: Device Status",
   parameters: { controls: { disable: true } },
   render: () => (
     <div

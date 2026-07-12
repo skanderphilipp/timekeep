@@ -8,21 +8,21 @@
 }
 
 .sm {
-  border-width: 2px;
-  height: 16px;
-  width: 16px;
+  border-width: var(--ao-spacing-0_5);
+  height: var(--ao-spacing-4);
+  width: var(--ao-spacing-4);
 }
 
 .md {
-  border-width: 2.5px;
-  height: 24px;
-  width: 24px;
+  border-width: calc(var(--ao-spacing-0_5) + 0.5px);
+  height: var(--ao-spacing-6);
+  width: var(--ao-spacing-6);
 }
 
 .lg {
-  border-width: 3px;
-  height: 32px;
-  width: 32px;
+  border-width: var(--ao-spacing-1);
+  height: var(--ao-spacing-8);
+  width: var(--ao-spacing-8);
 }
 
 @keyframes spin {

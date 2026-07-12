@@ -214,6 +214,14 @@ pub(crate) async fn create_user(
         "dashboard user created"
     );
 
+    // Publish domain event for audit trail
+    state
+        .event_bus
+        .publish(timekeep_core::DomainEvent::DashboardUserCreated {
+            username: user.username.clone(),
+            role: user.role.to_string(),
+        });
+
     Ok((StatusCode::CREATED, Json(ApiEnvelope::success(DashboardUserResponse::from(&user)))))
 }
 

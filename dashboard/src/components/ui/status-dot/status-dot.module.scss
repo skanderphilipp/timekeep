@@ -5,13 +5,13 @@
 }
 
 .sm {
-  height: 8px;
-  width: 8px;
+  height: var(--ao-spacing-2);
+  width: var(--ao-spacing-2);
 }
 
 .md {
-  height: 12px;
-  width: 12px;
+  height: var(--ao-spacing-3);
+  width: var(--ao-spacing-3);
 }
 
 .online {
@@ -36,7 +36,7 @@
   }
 
   70% {
-    box-shadow: 0 0 0 4px transparent;
+    box-shadow: 0 0 0 var(--ao-spacing-1) transparent;
   }
 
   100% {

@@ -6,9 +6,9 @@
 }
 
 .donut {
-  height: 128px;
+  height: var(--ao-spacing-32);
   position: relative;
-  width: 128px;
+  width: var(--ao-spacing-32);
 }
 
 /* stylelint-disable declaration-no-important -- chart library sets inline sizes on its container */

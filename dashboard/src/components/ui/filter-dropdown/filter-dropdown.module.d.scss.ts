@@ -18,8 +18,5 @@ declare const classNames: {
   readonly backButton: "backButton";
   readonly valueContent: "valueContent";
   readonly chips: "chips";
-  readonly chip: "chip";
-  readonly chipLabel: "chipLabel";
-  readonly chipRemove: "chipRemove";
 };
 export = classNames;

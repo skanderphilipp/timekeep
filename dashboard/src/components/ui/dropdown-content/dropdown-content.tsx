@@ -21,3 +21,5 @@ export function DropdownContent({ children, className }: DropdownContentProps) {
     </div>
   );
 }
+
+DropdownContent.displayName = "DropdownContent";

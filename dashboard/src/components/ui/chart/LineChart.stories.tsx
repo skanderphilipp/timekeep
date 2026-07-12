@@ -19,6 +19,8 @@ const meta: Meta<typeof LineChart> = {
 export default meta;
 type Story = StoryObj<typeof LineChart>;
 
+// ── Primary ───────────────────────────────────────────────────────────────
+
 export const Primary: Story = {
   render: () => (
     <Chart title="Monthly Attendance Trend" description="Attendance % over time.">
@@ -33,10 +35,12 @@ export const Primary: Story = {
   ),
 };
 
+// ── Variants ──────────────────────────────────────────────────────────────
+
 export const WithAreaFill: Story = {
-  name: "With Area Fill",
+  name: "With Area Fill & Dots",
   render: () => (
-    <Chart title="With Subtle Fill" description="Area fill at 15% opacity.">
+    <Chart title="With Subtle Fill" description="Area fill at 15% opacity with point markers.">
       <LineChart
         data={monthlyData}
         xKey="month"
@@ -68,5 +72,92 @@ export const MultiLine: Story = {
         height={250}
       />
     </Chart>
+  ),
+};
+
+// ── States ────────────────────────────────────────────────────────────────
+
+export const Loading: Story = {
+  name: "Loading State",
+  render: () => (
+    <Chart title="Monthly Trend" description="Fetching attendance data…" isLoading>
+      <LineChart
+        data={monthlyData}
+        xKey="month"
+        lines={[{ dataKey: "rate", name: "Attendance %" }]}
+        height={250}
+      />
+    </Chart>
+  ),
+};
+
+export const ErrorState: Story = {
+  name: "Error State",
+  render: () => (
+    <Chart
+      title="Monthly Trend"
+      description="Could not load trend data."
+      error={new globalThis.Error("The employee may have been deleted or the API is unreachable.")}
+    >
+      <LineChart
+        data={monthlyData}
+        xKey="month"
+        lines={[{ dataKey: "rate", name: "Attendance %" }]}
+        height={250}
+      />
+    </Chart>
+  ),
+};
+
+export const Empty: Story = {
+  name: "Empty State",
+  render: () => (
+    <Chart
+      title="Monthly Trend"
+      description="New employee — not enough data yet."
+      isEmpty
+      emptyMessage="Not enough data yet — check back after the first month"
+    >
+      <LineChart data={[]} xKey="month" lines={[{ dataKey: "rate" }]} height={250} />
+    </Chart>
+  ),
+};
+
+// ── Interaction ───────────────────────────────────────────────────────────
+
+export const WithOnClick: Story = {
+  name: "Interactive (onClick)",
+  render: () => (
+    <Chart title="Monthly Trend" description="Click a data point.">
+      <LineChart
+        data={monthlyData}
+        xKey="month"
+        lines={[{ dataKey: "rate", name: "Attendance %", dot: true }]}
+        grid
+        height={250}
+        onClick={(row) => {
+          alert(`${row.month}: ${row.rate}%`);
+        }}
+      />
+    </Chart>
+  ),
+};
+
+// ── Responsive ────────────────────────────────────────────────────────────
+
+export const NarrowContainer: Story = {
+  name: "Narrow Container (280px)",
+  render: () => (
+    <div style={{ maxWidth: 280 }}>
+      <Chart title="Monthly Trend" description="Fits in a narrow container.">
+        <LineChart
+          data={monthlyData}
+          xKey="month"
+          lines={[{ dataKey: "rate", name: "%" }]}
+          grid
+          height={200}
+        />
+      </Chart>
+    </div>
   ),
 };

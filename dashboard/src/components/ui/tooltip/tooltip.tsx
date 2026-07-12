@@ -33,3 +33,5 @@ export function TooltipComponent({
     </Tooltip.Root>
   );
 }
+
+TooltipComponent.displayName = "Tooltip";

@@ -44,7 +44,7 @@
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
   gap: var(--ao-spacing-1_5);
-  height: 36px;
+  height: var(--ao-spacing-9);
   padding: 0 var(--ao-spacing-3);
   transition:
     border-color 0.15s ease,
@@ -76,7 +76,7 @@
   font-family: inherit;
   font-size: var(--ao-font-size-xs);
   gap: var(--ao-spacing-1);
-  height: 28px;
+  height: var(--ao-spacing-7);
   padding: 0 var(--ao-spacing-2);
   transition:
     color 0.15s ease,
@@ -114,10 +114,10 @@
   border-radius: var(--ao-radius-md);
   box-shadow: var(--ao-shadow-lg);
   left: 0;
-  min-width: 220px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-23));
   overflow: hidden;
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + var(--ao-spacing-1));
   z-index: 50;
 }
 
@@ -182,7 +182,7 @@
 .valuePanel {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-18));
 }
 
 .backButton {
@@ -216,45 +216,4 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ao-spacing-1);
-}
-
-.chip {
-  align-items: center;
-  background: var(--ao-background-secondary);
-  border: 1px solid var(--ao-border-color-light);
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-secondary);
-  display: inline-flex;
-  font-size: var(--ao-font-size-xs);
-  gap: var(--ao-spacing-1);
-  height: 24px;
-  padding: 0 var(--ao-spacing-1) 0 var(--ao-spacing-2);
-  transition:
-    background 0.1s ease,
-    border-color 0.1s ease;
-
-  &:hover {
-    background: var(--ao-background-tertiary);
-    border-color: var(--ao-border-color-medium);
-  }
-}
-
-.chipLabel {
-  font-weight: var(--ao-font-weight-medium);
-}
-
-.chipRemove {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-xs);
-  color: var(--ao-font-color-tertiary);
-  cursor: pointer;
-  display: flex;
-  padding: var(--ao-spacing-0_5);
-
-  &:hover {
-    background: var(--ao-background-primary);
-    color: var(--ao-font-color-primary);
-  }
 }

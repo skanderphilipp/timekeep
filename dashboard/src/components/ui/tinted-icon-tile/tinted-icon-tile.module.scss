@@ -4,9 +4,9 @@
   border-radius: var(--ao-radius-md);
   display: inline-flex;
   flex-shrink: 0;
-  height: 32px;
+  height: var(--ao-spacing-8);
   justify-content: center;
-  width: 32px;
+  width: var(--ao-spacing-8);
 }
 
 /* ── Color variants ── */

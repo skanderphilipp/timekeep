@@ -17,7 +17,7 @@
   color: var(--ao-font-color-secondary);
   font-size: var(--ao-font-size-xs);
   font-weight: var(--ao-font-weight-medium);
-  min-width: 140px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-3));
 }
 
 .hourMarkers {
@@ -37,7 +37,7 @@
 .body {
   display: flex;
   flex-direction: column;
-  max-height: 480px;
+  max-height: calc(var(--ao-spacing-32) * 3 + var(--ao-spacing-24));
   overflow-y: auto;
 }
 
@@ -55,9 +55,9 @@
   border-bottom: 1px solid var(--ao-border-color-light);
   display: flex;
   gap: var(--ao-spacing-3);
-  min-height: 40px;
+  min-height: var(--ao-spacing-10);
   padding: 0 var(--ao-spacing-3);
-  transition: background 0.1s ease;
+  transition: background duration(instant) ease;
 
   &:last-child {
     border-bottom: none;
@@ -76,7 +76,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ao-spacing-0_5);
-  min-width: 140px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-3));
 }
 
 .employeeName {
@@ -97,7 +97,7 @@
 
 .barTrack {
   flex: 1;
-  height: 20px;
+  height: var(--ao-spacing-5);
   position: relative;
 }
 
@@ -106,7 +106,7 @@
   height: 100%;
   position: absolute;
   top: 0;
-  transition: opacity 0.1s ease;
+  transition: opacity duration(instant) ease;
 
   &:hover {
     opacity: 0.8;
@@ -134,25 +134,19 @@
 .legend {
   align-items: center;
   display: flex;
-  gap: var(--ao-spacing-3);
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-2);
   padding: var(--ao-spacing-2) var(--ao-spacing-3) 0;
 }
 
-.legendDot {
-  border-radius: var(--ao-radius-full);
-  display: inline-block;
-  height: 8px;
-  width: 8px;
-}
-
+/* Fallback label when no Badge mapping exists for a legend color. */
 .legendLabel {
   color: var(--ao-font-color-secondary);
   font-size: var(--ao-font-size-xs);
-  margin-left: var(--ao-spacing-1);
 }
 
 /* ── Skeleton ───────────────────────────────────────────────────────────── */
 
 .skeleton {
-  height: 200px;
+  height: calc(var(--ao-spacing-32) + var(--ao-spacing-18));
 }

@@ -18,7 +18,6 @@ declare const classNames: {
   readonly blockWarning: "blockWarning";
   readonly blockOvertime: "blockOvertime";
   readonly legend: "legend";
-  readonly legendDot: "legendDot";
   readonly legendLabel: "legendLabel";
   readonly skeleton: "skeleton";
 };

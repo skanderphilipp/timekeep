@@ -1,4 +1,4 @@
-import { ResponsivePie } from "@nivo/pie";
+import { ResponsivePie, type ComputedDatum } from "@nivo/pie";
 
 import { useChartTheme } from "./use-chart-theme";
 
@@ -14,9 +14,20 @@ export type PieChartProps = {
   height?: number;
   donut?: boolean;
   showLegend?: boolean;
+  /**
+   * Called when a slice is clicked.
+   * Receives the Nivo slice datum with id, value, color, etc.
+   */
+  onClick?: (slice: ComputedDatum<SliceDef>) => void;
 };
 
-export function PieChart({ data, height = 250, donut = false, showLegend = true }: PieChartProps) {
+export function PieChart({
+  data,
+  height = 250,
+  donut = false,
+  showLegend = true,
+  onClick,
+}: PieChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
 
   if (data.length === 0) return null;
@@ -33,7 +44,8 @@ export function PieChart({ data, height = 250, donut = false, showLegend = true 
   return (
     <div style={{ width: "100%", height: `${height}px` }}>
       <ResponsivePie
-        data={nivoData}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data={nivoData as any}
         colors={colors}
         theme={nivo}
         margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
@@ -44,6 +56,10 @@ export function PieChart({ data, height = 250, donut = false, showLegend = true 
         enableArcLabels={false}
         enableArcLinkLabels={false}
         animate={false}
+        // ── Interaction ────────────────────────────────────────
+        isInteractive={!!onClick}
+        onClick={onClick}
+        // ── Legend ─────────────────────────────────────────────
         legends={
           showLegend
             ? [
@@ -56,7 +72,7 @@ export function PieChart({ data, height = 250, donut = false, showLegend = true 
                   itemHeight: 18,
                   itemsSpacing: 8,
                   symbolSize: 10,
-                  symbolShape: "circle",
+                  symbolShape: "circle" as const,
                   itemTextColor: nivo.legends.text.fill,
                 },
               ]

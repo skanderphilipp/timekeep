@@ -66,3 +66,5 @@ export function Badge({
     </span>
   );
 }
+
+Badge.displayName = "Badge";

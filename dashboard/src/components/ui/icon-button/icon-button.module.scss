@@ -1,81 +1,116 @@
 @use "@/styles/mixins" as *;
 
+// ── Twenty UI Alignment — IconButton ──────────────────────────────────────
+// See: SCSS-VISUAL-STANDARDS.md §6.2
+//
+// Key changes:
+//   1. border-radius: var(--ao-radius-md) (was sm)
+//   2. sm: 24×24px (was 28×28px)
+//   3. No scale press on :active
+//   4. Secondary gets visible border
+//   5. md icon: 16px (was 18px)
+//   6. Disabled: explicit colors, not opacity
+//   7. Focus: outline-based
+
 .button {
   align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-secondary);
+  border-radius: var(--ao-radius-md);
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
   justify-content: center;
   transition:
-    background 0.1s ease,
-    color 0.1s ease;
+    background duration(fast) ease,
+    color duration(fast) ease;
 
-  &:hover:not(:disabled) {
-    background: var(--ao-background-tertiary);
+  @include focus-ring;
+
+  &:hover:not([data-disabled]) {
+    background: var(--ao-background-transparent-light);
     color: var(--ao-font-color-primary);
   }
 
-  &:active:not(:disabled) {
-    transform: scale(0.96);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ao-focus-ring);
-    outline-offset: 2px;
+  &:active:not([data-disabled]) {
+    background: var(--ao-background-transparent-medium);
   }
 }
 
-// ── Sizes ──────────────────────────────────────────────────────────────────────
+// ── Sizes ──────────────────────────────────────────────────────────────────
 
-.sm {
-  height: 28px;
-  width: 28px;
+.button[data-size="sm"] {
+  height: var(--ao-spacing-6);
+  width: var(--ao-spacing-6);
 
   svg {
-    height: 16px;
-    width: 16px;
+    height: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
+    width: calc(var(--ao-spacing-4) - var(--ao-spacing-0_5));
   }
 }
 
-.md {
-  height: 32px;
-  width: 32px;
+.button[data-size="md"] {
+  height: var(--ao-spacing-8);
+  width: var(--ao-spacing-8);
 
   svg {
-    height: 18px;
-    width: 18px;
+    height: var(--ao-spacing-4);
+    width: var(--ao-spacing-4);
   }
 }
 
-// ── Accents ────────────────────────────────────────────────────────────────────
+// ── Accent: Primary (solid) ────────────────────────────────────────────────
 
-.primary {
+.button[data-variant="primary"] {
   background: var(--ao-accent-accent9);
   color: var(--ao-font-color-inverted);
 
-  &:hover:not(:disabled) {
+  &:hover:not([data-disabled]) {
     background: var(--ao-accent-accent10);
     color: var(--ao-font-color-inverted);
   }
+
+  &:active:not([data-disabled]) {
+    background: var(--ao-accent-accent11);
+  }
+
+  @include focus-ring-enhanced($glow-color: var(--ao-accent-accent5));
 }
 
-.secondary {
-  // default — see .button above
-}
+// ── Accent: Secondary (bordered) ───────────────────────────────────────────
 
-.tertiary {
-  color: var(--ao-font-color-tertiary);
+.button[data-variant="secondary"] {
+  background: var(--ao-background-transparent-lighter);
+  border: 1px solid var(--ao-background-transparent-medium);
+  color: var(--ao-font-color-secondary);
 
-  &:hover:not(:disabled) {
+  &:hover:not([data-disabled]) {
+    background: var(--ao-background-secondary);
     color: var(--ao-font-color-primary);
   }
+}
+
+// ── Accent: Tertiary (text-only) ───────────────────────────────────────────
+
+.button[data-variant="tertiary"] {
+  background: none;
+  border: none;
+  color: var(--ao-font-color-tertiary);
+
+  &:hover:not([data-disabled]) {
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── State: Disabled ────────────────────────────────────────────────────────
+
+.button[data-disabled] {
+  color: var(--ao-font-color-extraLight);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// Primary disabled gets lighter solid
+.button[data-variant="primary"][data-disabled] {
+  background: var(--ao-accent-accent5);
+  color: var(--ao-font-color-secondary);
 }

@@ -46,6 +46,10 @@ pub use model::{
     SystemSettings,
     // Attendance domain — work day computation
     anomaly::Anomaly,
+    attendance_analytics::{
+        CalendarDay, CheckedInEmployee, DailyHours, EmployeeKpi, MonthlyTrendPoint,
+        StatusDistribution, TodaySnapshot, WeeklyHours,
+    },
     device::{Device, DeviceStatus, DeviceVendor},
     device_event::{DeviceEvent, DeviceEventType},
     employee::{Employee, EmployeeId},

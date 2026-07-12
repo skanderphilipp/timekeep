@@ -100,3 +100,5 @@ export function DialogComponent({
     </Dialog.Root>
   );
 }
+
+DialogComponent.displayName = "Dialog";

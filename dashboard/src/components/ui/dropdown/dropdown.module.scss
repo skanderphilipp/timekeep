@@ -1,3 +1,6 @@
+// ── Twenty UI Alignment — Dropdown ────────────────────────────────────────
+// Built on @base-ui/react/popover. Absorbs former DropdownContent styles.
+
 .triggerWrapper {
   display: inline-flex;
 }
@@ -11,11 +14,22 @@
   border: 1px solid var(--ao-border-color-medium);
   border-radius: var(--ao-radius-md);
   box-shadow: var(--ao-shadow-md);
-  min-width: 180px;
+  min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-13));
   overflow: hidden;
   transform-origin: var(--transform-origin);
 }
 
 .matchWidth {
   width: var(--available-width, auto);
+}
+
+// ── Content area (absorbed from former DropdownContent) ───────────────────
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  max-height: calc(100vh - var(--ao-spacing-8));
+  overflow-y: auto;
+  padding: var(--ao-spacing-1);
 }

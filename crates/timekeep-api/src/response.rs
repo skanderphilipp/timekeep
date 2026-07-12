@@ -411,7 +411,68 @@ pub struct ReportSummaryResponse {
     pub daily_breakdown: Vec<DailyBreakdown>,
 }
 
-// ─── Audit ───────────────────────────────────────────────────────────
+// Domain -> Response DTO mappings
+
+impl From<&timekeep_core::DailyHours> for DailyHoursBreakdown {
+    fn from(dh: &timekeep_core::DailyHours) -> Self {
+        let ts =
+            jiff::civil::DateTime::from_parts(dh.date, jiff::civil::Time::new(0, 0, 0, 0).unwrap())
+                .to_zoned(jiff::tz::TimeZone::UTC)
+                .unwrap()
+                .timestamp()
+                .as_second();
+        Self {
+            date: ts,
+            regular_seconds: dh.regular_seconds,
+            overtime_seconds: dh.overtime_seconds,
+        }
+    }
+}
+
+impl From<&timekeep_core::WeeklyHours> for WeeklyHours {
+    fn from(wh: &timekeep_core::WeeklyHours) -> Self {
+        Self { week: wh.week, year: wh.year, total_seconds: wh.total_seconds }
+    }
+}
+
+pub(crate) fn status_distribution_to_response(
+    sd: &timekeep_core::StatusDistribution,
+) -> Vec<AttendanceDistribution> {
+    vec![
+        AttendanceDistribution {
+            status: "full".into(),
+            count: sd.full_days,
+            percentage: sd.full_pct(),
+        },
+        AttendanceDistribution {
+            status: "half".into(),
+            count: sd.half_days,
+            percentage: sd.half_pct(),
+        },
+        AttendanceDistribution {
+            status: "absent".into(),
+            count: sd.absent_days,
+            percentage: sd.absence_rate_pct(),
+        },
+    ]
+}
+
+impl From<&timekeep_core::EmployeeKpi> for EmployeeReportKpi {
+    fn from(ek: &timekeep_core::EmployeeKpi) -> Self {
+        Self {
+            user_pin: ek.user_pin.clone(),
+            employee_name: None,
+            days_present: ek.days_present,
+            days_absent: ek.days_absent,
+            days_late: ek.days_late,
+            avg_seconds_per_day: ek.avg_seconds_per_day,
+            overtime_seconds: ek.total_overtime_seconds,
+            anomaly_count: 0,
+        }
+    }
+}
+
+// Audit
 
 /// Response DTO for an audit log entry.
 #[derive(Debug, Serialize, ToSchema)]

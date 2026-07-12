@@ -19,7 +19,7 @@ const statusData = [
 ];
 
 const meta: Meta<typeof Chart> = {
-  title: "UI/Charts/Chart",
+  title: "UI/Charts/Chart (Wrapper)",
   component: Chart,
   tags: ["autodocs"],
   argTypes: {
@@ -31,6 +31,8 @@ const meta: Meta<typeof Chart> = {
 export default meta;
 type Story = StoryObj<typeof Chart>;
 
+// ── Primary ───────────────────────────────────────────────────────────────
+
 export const Primary: Story = {
   args: {
     title: "Hourly Arrivals",
@@ -40,6 +42,57 @@ export const Primary: Story = {
     ),
   },
 };
+
+// ── States (Wrapper Level) ────────────────────────────────────────────────
+
+export const LoadingState: Story = {
+  name: "Loading State",
+  args: {
+    title: "Hourly Arrivals",
+    description: "Fetching data…",
+    isLoading: true,
+    children: <div />,
+  },
+};
+
+export const ErrorState: Story = {
+  name: "Error State",
+  args: {
+    title: "Hourly Arrivals",
+    description: "Data fetch failed.",
+    error: new Error("Network request failed — the API may be unreachable."),
+    children: <div />,
+  },
+};
+
+export const EmptyState: Story = {
+  name: "Empty State",
+  args: {
+    title: "Hourly Arrivals",
+    description: "Check back after the workday starts.",
+    isEmpty: true,
+    emptyMessage: "No arrivals recorded yet today",
+    children: <div />,
+  },
+};
+
+export const WithFooter: Story = {
+  name: "With Footer (e.g., legend info)",
+  args: {
+    title: "Attendance Status",
+    description: "This month's distribution.",
+    footer: (
+      <span style={{ fontSize: "var(--ao-font-size-xs)", color: "var(--ao-font-color-tertiary)" }}>
+        Data from all devices. Last updated: just now.
+      </span>
+    ),
+    children: (
+      <PieChart data={statusData} donut showLegend height={250} />
+    ),
+  },
+};
+
+// ── Context Layouts ───────────────────────────────────────────────────────
 
 export const AllVariants: Story = {
   name: "All Variants",
@@ -63,6 +116,13 @@ export const AllVariants: Story = {
       >
         <div />
       </Chart>
+      <Chart
+        title="Error State"
+        description="Something went wrong."
+        error={new Error("The server returned a 500 error.")}
+      >
+        <div />
+      </Chart>
     </div>
   ),
 };
@@ -75,11 +135,11 @@ export const ContextReportsCharts: Story = {
       <Chart title="Daily Hours" description="Regular + Overtime breakdown.">
         <BarChart
           data={[
-            { date: "Jan 1", regular: 7.5, overtime: 1.0 },
-            { date: "Jan 2", regular: 8.0, overtime: 0.5 },
-            { date: "Jan 3", regular: 7.0, overtime: 2.0 },
-            { date: "Jan 4", regular: 8.0, overtime: 0 },
-            { date: "Jan 5", regular: 7.8, overtime: 0.8 },
+            { date: "Jul 1", regular: 7.5, overtime: 1.0 },
+            { date: "Jul 2", regular: 8.0, overtime: 0.5 },
+            { date: "Jul 3", regular: 7.0, overtime: 2.0 },
+            { date: "Jul 4", regular: 8.0, overtime: 0 },
+            { date: "Jul 5", regular: 7.8, overtime: 0.8 },
           ]}
           bars={[
             { dataKey: "regular", fill: "var(--ao-color-green9)", name: "Regular" },
@@ -117,6 +177,31 @@ export const ContextEmployeeDetailCharts: Story = {
           grid
           height={250}
         />
+      </Chart>
+    </div>
+  ),
+};
+
+export const AllStatesOverview: Story = {
+  name: "All States Overview",
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--ao-spacing-4)" }}>
+      <Chart title="✅ Normal Data" description="Chart renders correctly.">
+        <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" height={200} />
+      </Chart>
+      <Chart title="⏳ Loading" description="Spinner displayed in body." isLoading>
+        <div />
+      </Chart>
+      <Chart
+        title="❌ Error"
+        description="Error message displayed."
+        error={new Error("API unreachable.")}
+      >
+        <div />
+      </Chart>
+      <Chart title="📭 Empty" description="Empty state displayed." isEmpty emptyMessage="Nothing to show">
+        <div />
       </Chart>
     </div>
   ),

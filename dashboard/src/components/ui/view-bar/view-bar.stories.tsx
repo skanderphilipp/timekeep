@@ -4,7 +4,7 @@ import { ViewBar, type FilterChip } from "./view-bar";
 import { IconStatusChange } from "@tabler/icons-react";
 
 const activeFilters: FilterChip[] = [
-  { id: "1", label: "Status", value: "Check In", icon: <IconStatusChange size={12} /> },
+  { id: "1", label: "Status", value: "Check In", icon: IconStatusChange },
   { id: "2", label: "Device", value: "Main Gate" },
 ];
 

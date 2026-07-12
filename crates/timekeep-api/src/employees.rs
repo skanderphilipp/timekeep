@@ -12,7 +12,7 @@ use axum::{
 };
 use jiff::Timestamp;
 use std::sync::Arc;
-use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter, WorkPolicy};
+use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter};
 
 use crate::AppState;
 use crate::dto::{
@@ -37,7 +37,8 @@ pub(crate) async fn employee_work_days(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeWorkDaysResponse>>, AppError> {
-    let policy = WorkPolicy::standard_9to5();
+    let policy =
+        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
     let (since, until) = resolve_date_range(q.from, q.to);
 
     let punches = state
@@ -62,7 +63,8 @@ pub(crate) async fn employee_summary(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeSummaryResponse>>, AppError> {
-    let policy = WorkPolicy::standard_9to5();
+    let policy =
+        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
     let (since, until) = resolve_date_range(q.from, q.to);
 
     let punches = state
@@ -108,7 +110,8 @@ pub(crate) async fn dashboard_quick_stats(
     State(state): State<AppState>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<QuickStatsResponse>>, AppError> {
-    let policy = WorkPolicy::standard_9to5();
+    let policy =
+        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
     let (since, until) = resolve_date_range(q.from, q.to);
 
     let punches =
@@ -154,6 +157,15 @@ pub(crate) async fn create_employee(
             AppError::from(e)
         }
     })?;
+
+    // Publish employee domain event for audit trail + subscribers
+    state
+        .event_bus
+        .publish(timekeep_core::DomainEvent::EmployeeCreated {
+            pin: employee.pin.clone(),
+            name: employee.name.clone(),
+        });
+
     Ok((StatusCode::CREATED, Json(ApiEnvelope::success(EmployeeResponse::from(&employee)))))
 }
 
@@ -222,6 +234,13 @@ pub(crate) async fn deactivate_employee(
 ) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
     let emp_id = timekeep_core::EmployeeId::from(id);
     employees(&state)?.deactivate_employee(&emp_id).await?;
+
+    state
+        .event_bus
+        .publish(timekeep_core::DomainEvent::EmployeeDeactivated {
+            pin: emp_id.to_string(),
+        });
+
     Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::deleted())))
 }
 
@@ -273,6 +292,87 @@ pub(crate) async fn list_device_enrollments(
             responses.push(EmployeeResponse::from(&emp));
         }
     }
+    Ok(Json(ApiEnvelope::success(responses)))
+}
+
+// ─── Chart Endpoints ───────────────────────────────────────────────
+
+/// Get monthly attendance trend for an employee.
+///
+/// Returns one data point per month with attendance percentage.
+pub(crate) async fn employee_monthly_trend(
+    State(state): State<AppState>,
+    Path(user_pin): Path<String>,
+    Query(q): Query<WorkDayQuery>,
+) -> Result<Json<ApiEnvelope<Vec<crate::dto::MonthlyTrendResponse>>>, AppError> {
+    let policy =
+        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
+    let (since, until) = resolve_date_range(q.from, q.to);
+
+    let punches = state
+        .storage
+        .query_punches(&PunchFilter {
+            user_pin: Some(user_pin.clone()),
+            since,
+            until,
+            ..Default::default()
+        })
+        .await?;
+
+    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+    let from_date = since.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
+    let to_date = until.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
+
+    let trend = if let (Some(from), Some(to)) = (from_date, to_date) {
+        AttendanceCalculator::compute_monthly_trend(&work_days, &policy, from, to)
+    } else {
+        Vec::new()
+    };
+
+    let responses: Vec<crate::dto::MonthlyTrendResponse> =
+        trend.iter().map(crate::dto::MonthlyTrendResponse::from).collect();
+
+    Ok(Json(ApiEnvelope::success(responses)))
+}
+
+/// Get calendar projection for an employee for a specific month.
+///
+/// Query params: `year` and `month` (both required).
+/// Returns one CalendarDay per day of the month.
+pub(crate) async fn employee_calendar(
+    State(state): State<AppState>,
+    Path(user_pin): Path<String>,
+    Query(q): Query<WorkDayQuery>,
+) -> Result<Json<ApiEnvelope<Vec<crate::dto::CalendarDayResponse>>>, AppError> {
+    let policy =
+        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
+    let (since, until) = resolve_date_range(q.from, q.to);
+
+    let punches = state
+        .storage
+        .query_punches(&PunchFilter {
+            user_pin: Some(user_pin.clone()),
+            since,
+            until,
+            ..Default::default()
+        })
+        .await?;
+
+    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+    // Determine the month from the query range (use the first month in range)
+    let target_date = since.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
+
+    let calendar = if let Some(date) = target_date {
+        AttendanceCalculator::project_calendar(&work_days, date.year(), date.month(), &policy)
+    } else {
+        Vec::new()
+    };
+
+    let responses: Vec<crate::dto::CalendarDayResponse> =
+        calendar.iter().map(crate::dto::CalendarDayResponse::from).collect();
+
     Ok(Json(ApiEnvelope::success(responses)))
 }
 

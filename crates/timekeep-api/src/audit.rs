@@ -32,6 +32,17 @@ const ACTION_MAP: &[(&str, &[(&str, &str)])] = &[
     ("auth/login", &[("POST", "auth.login")]),
     ("punches/correct", &[("POST", "punch.corrected")]),
     ("exports/punches", &[("GET", "export.downloaded")]),
+    ("settings", &[("PUT", "settings.updated")]),
+    (
+        "employees",
+        &[
+            ("POST", "employee.created"),
+            ("PUT", "employee.updated"),
+            ("DELETE", "employee.deactivated"),
+        ],
+    ),
+    ("enrollments", &[("POST", "enrollment.created")]),
+    ("users", &[("POST", "user.created"), ("PUT", "user.updated"), ("DELETE", "user.deleted")]),
     (
         "endpoints",
         &[
@@ -45,7 +56,6 @@ const ACTION_MAP: &[(&str, &[(&str, &str)])] = &[
         "devices",
         &[("POST", "device.created"), ("PUT", "device.updated"), ("DELETE", "device.deleted")],
     ),
-    ("settings", &[("PUT", "settings.updated")]),
 ];
 
 /// Paths excluded from audit logging.

@@ -1084,3 +1084,39 @@ pub struct QuickStatsResponse {
     pub anomalies_detected: usize,
     pub work_days: Vec<WorkDayResponse>,
 }
+
+// ─── Monthly Trend ────────────────────────────────────────────────────
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct MonthlyTrendResponse {
+    pub year: i16,
+    pub month: i8,
+    pub attendance_pct: f64,
+}
+
+impl From<&timekeep_core::MonthlyTrendPoint> for MonthlyTrendResponse {
+    fn from(tp: &timekeep_core::MonthlyTrendPoint) -> Self {
+        Self { year: tp.year, month: tp.month, attendance_pct: tp.attendance_pct }
+    }
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct CalendarDayResponse {
+    pub date: String,
+    pub status_code: u8,
+    pub hours: Option<f64>,
+    pub is_working_day: bool,
+}
+
+impl From<&timekeep_core::CalendarDay> for CalendarDayResponse {
+    fn from(cd: &timekeep_core::CalendarDay) -> Self {
+        Self {
+            date: cd.date.to_string(),
+            status_code: cd.status_code,
+            hours: cd.hours,
+            is_working_day: cd.is_working_day,
+        }
+    }
+}

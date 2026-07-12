@@ -34,7 +34,7 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: 20 }}>
+    <div style={{ display: "flex", gap: "var(--ao-spacing-4)", padding: "var(--ao-spacing-4)" }}>
       <Dropdown
         trigger={
           <Button variant="secondary" size="sm">
@@ -60,6 +60,35 @@ export const AllVariants: Story = {
           <MenuItem label="Today" onClick={fn()} />
           <MenuItem label="This Week" onClick={fn()} />
           <MenuItem label="This Month" onClick={fn()} />
+        </DropdownContent>
+      </Dropdown>
+    </div>
+  ),
+};
+
+/** Context: employee row actions in an attendance table. */
+export const ContextEmployeeActions: Story = {
+  name: "Context: Employee Actions",
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--ao-spacing-2)",
+        padding: "var(--ao-spacing-4)",
+        maxWidth: 320,
+      }}
+    >
+      <p style={{ fontSize: "var(--ao-font-size-sm)", color: "var(--ao-font-color-secondary)" }}>
+        Employee: Ahmed Al-Rashid — Punch ID: 10042
+      </p>
+      <Dropdown trigger={<Button variant="secondary" size="sm">Actions</Button>}>
+        <DropdownContent>
+          <MenuItem label="View Attendance Log" onClick={fn()} />
+          <MenuItem label="Edit Employee" onClick={fn()} />
+          <MenuSeparator />
+          <MenuItem label="Deactivate" variant="danger" onClick={fn()} />
         </DropdownContent>
       </Dropdown>
     </div>

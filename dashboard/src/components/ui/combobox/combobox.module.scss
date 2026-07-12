@@ -11,17 +11,17 @@
   font-family: var(--ao-font-family);
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  height: 36px;
+  height: var(--ao-spacing-9);
   justify-content: space-between;
   outline: none;
   padding: 0 var(--ao-spacing-3);
-  transition: border-color 0.15s ease;
+  transition: border-color duration(fast) ease;
   user-select: none;
   width: 100%;
 
   &:focus-visible {
     border-color: var(--ao-accent-accent9);
-    box-shadow: 0 0 0 2px var(--ao-focus-ring);
+    box-shadow: 0 0 0 var(--ao-spacing-0_5) var(--ao-focus-ring);
   }
 
   &[data-popup-open] {
@@ -110,5 +110,5 @@
 /* ── List (max-height override) ── */
 
 .list {
-  max-height: 220px;
+  max-height: calc(var(--ao-spacing-32) + var(--ao-spacing-23));
 }

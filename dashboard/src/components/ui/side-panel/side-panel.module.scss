@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-width: 320px;
+  min-width: calc(var(--ao-spacing-32) * 2.5);
   width: var(--tk-side-panel-width);
 }
 
@@ -35,7 +35,7 @@
   display: flex;
   flex-shrink: 0;
   gap: var(--ao-spacing-2);
-  height: 48px;
+  height: var(--ao-spacing-12);
   padding: 0 var(--ao-spacing-4);
 }
 
@@ -60,9 +60,9 @@
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  height: 28px;
+  height: var(--ao-spacing-7);
   justify-content: center;
-  width: 28px;
+  width: var(--ao-spacing-7);
 
   &:hover {
     background: var(--ao-background-secondary);
@@ -78,7 +78,7 @@
   overflow-y: auto;
 
   // Subtle fade-in when content appears
-  animation: sidePanelFadeIn 0.15s ease;
+  animation: sidePanelFadeIn duration(fast) ease;
 
   &:empty {
     display: none;
@@ -119,26 +119,26 @@
 .handle {
   background: var(--ao-border-color-light);
   border-radius: var(--ao-radius-pill);
-  height: 48px;
+  height: var(--ao-spacing-12);
   left: 50%;
-  margin-inline-start: -2px;
+  margin-inline-start: calc(var(--ao-spacing-0_5) * -1);
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
   transition:
-    background-color 0.15s ease,
-    height 0.15s ease;
-  width: 4px;
+    background-color duration(fast) ease,
+    height duration(fast) ease;
+  width: var(--ao-spacing-1);
 
   [data-hovered="true"] &,
   &:hover {
     background: var(--ao-font-color-tertiary);
-    height: 64px;
+    height: var(--ao-spacing-16);
   }
 
   [data-resizing="true"] &,
   [data-active="true"] & {
     background: var(--ao-accent-accent9);
-    height: 64px;
+    height: var(--ao-spacing-16);
   }
 }

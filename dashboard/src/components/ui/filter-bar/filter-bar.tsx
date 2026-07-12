@@ -4,6 +4,8 @@ import { IconX } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
+import { Tag } from "@/components/ui/tag";
+
 import styles from "./filter-bar.module.scss";
 
 export type ActiveFilter = {
@@ -89,16 +91,15 @@ export function FilterBar({
       {activeFilters && activeFilters.length > 0 && (
         <div data-slot="filter-bar-chips" className={styles.chips}>
           {activeFilters.map((f) => (
-            <button
+            <Tag
               key={f.key}
-              type="button"
-              className={styles.chip}
+              text={f.label}
+              color="gray"
+              variant="outline"
+              dismissible
               onClick={f.onRemove}
-              aria-label={_(msg`Remove ${f.label} filter`)}
-            >
-              <span className={styles.chipLabel}>{f.label}</span>
-              <IconX size={10} />
-            </button>
+              onRemove={f.onRemove}
+            />
           ))}
         </div>
       )}

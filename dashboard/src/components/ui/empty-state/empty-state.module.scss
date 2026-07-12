@@ -21,7 +21,7 @@
 .description {
   color: var(--ao-font-color-tertiary);
   font-size: var(--ao-font-size-sm);
-  max-width: 360px;
+  max-width: calc(var(--ao-spacing-30) * 3);
 }
 
 .action {
