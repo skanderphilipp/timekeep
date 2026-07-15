@@ -74,11 +74,11 @@ export function IpInput({
     },
     {
       onAccept: (_value, mask) => {
-        const raw = mask.unmaskedValue;
-        onRawChange?.(raw);
+        const displayValue = mask.value;
+        onRawChange?.(displayValue);
 
-        if (raw.length > 0 && IPV4_REGEX.test(raw)) {
-          onChange?.(raw);
+        if (displayValue.length > 0 && IPV4_REGEX.test(displayValue)) {
+          onChange?.(displayValue);
         }
       },
     },

@@ -1,0 +1,108 @@
+// ── Root ───────────────────────────────────────────────────────────────────────
+
+.root {
+  width: 100%;
+}
+
+// ── Tab List ────────────────────────────────────────────────────────────────────
+
+.list {
+  display: flex;
+  gap: var(--ao-spacing-1);
+  border-block-end: 1px solid var(--ao-border-color-light);
+
+  :global([data-orientation="vertical"]) & {
+    flex-direction: column;
+    border-block-end: none;
+    border-inline-end: 1px solid var(--ao-border-color-light);
+  }
+}
+
+// ── Tab Trigger ─────────────────────────────────────────────────────────────────
+//
+// Pill-style tabs: active tab gets a background fill, inactive tabs are
+// transparent with secondary text. This creates clear visual distinction
+// and works naturally with icons.
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--ao-radius-sm) var(--ao-radius-sm) 0 0;
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  line-height: var(--ao-line-height-body);
+  padding: var(--ao-spacing-2) var(--ao-spacing-3);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  white-space: nowrap;
+
+  // ── Active state ──────────────────────────────────────────────────────────
+  // Pill highlight: a subtle secondary background + primary text color.
+  // The bottom border is hidden so the active tab "connects" to the content.
+
+  &[data-active] {
+    background: var(--ao-background-secondary);
+    color: var(--ao-font-color-primary);
+  }
+
+  &[data-active]:not([data-disabled]) {
+    font-weight: var(--ao-font-weight-semibold);
+  }
+
+  // ── Hover ─────────────────────────────────────────────────────────────────
+  // A translucent overlay so the hover works on both light and dark themes,
+  // and layers correctly over the active pill background.
+
+  &:hover:not([data-disabled]):not([data-active]) {
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-primary);
+  }
+
+  // ── Disabled ──────────────────────────────────────────────────────────────
+
+  &[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  // ── Focus ─────────────────────────────────────────────────────────────────
+  // Inset ring so it stays inside the border-radius.
+
+  &:focus-visible {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: -2px;
+  }
+}
+
+// ── Icon ────────────────────────────────────────────────────────────────────────
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+
+  // The icon inherits the tab's color automatically.
+  // No explicit color needed — Tabler icons use currentColor.
+}
+
+// ── Label ───────────────────────────────────────────────────────────────────────
+
+.label {
+  // Inherits everything from .tab
+}
+
+// ── Panel ───────────────────────────────────────────────────────────────────────
+
+.panel {
+  padding-block-start: var(--ao-spacing-4);
+
+  &[data-hidden] {
+    display: none;
+  }
+}

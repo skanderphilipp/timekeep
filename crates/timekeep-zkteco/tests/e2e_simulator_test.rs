@@ -42,7 +42,7 @@ async fn adms_push_attendance_to_event_bus() {
     // Handshake — marks device online
     let handshake = device.handshake().await.expect("handshake");
     assert!(handshake.contains("GET OPTION FROM: SIM-ADMS-001"));
-    assert!(handshake.contains("TransFlag=1111000000"));
+    assert!(handshake.contains("TransFlag=0000001111"));
 
     let status = server.device_status("SIM-ADMS-001").unwrap();
     assert!(status.is_online);
@@ -152,26 +152,26 @@ async fn adms_handshake_marks_online() {
     server.stop().await;
 }
 
-// ── Unregistered device rejected ──────────────────────────────────────
+// ── Unregistered device auto-registers ─────────────────────────────────
 
 #[tokio::test]
-async fn adms_unregistered_device_rejected() {
+async fn adms_unregistered_device_auto_registers() {
     // Start server with NO registered devices
     let event_bus = EventBus::new(4);
+    let _rx = event_bus.subscribe();
     let mut server = AdmsServer::new("127.0.0.1:0", event_bus);
     server.start().await.expect("start");
     let base_url = format!("http://{}", server.bind_addr());
 
     let ghost = AdmsDeviceSim::new("GHOST-DEVICE", &base_url);
 
-    // Handshake should be rejected
+    // Handshake should auto-register and succeed
     let result = ghost.handshake().await;
-    assert!(
-        result.is_err() || result.unwrap().contains("UNKNOWN DEVICE"),
-        "unregistered device must be rejected"
-    );
+    assert!(result.is_ok(), "auto-registration should allow handshake: {:?}", result.err());
+    let handshake_body = result.unwrap();
+    assert!(handshake_body.contains("GET OPTION FROM: GHOST-DEVICE"));
 
-    // Push should be rejected
+    // Push attendance should auto-register and succeed
     let result = ghost
         .push_attendance(&[AdmsPunch {
             pin: "1".into(),
@@ -180,10 +180,12 @@ async fn adms_unregistered_device_rejected() {
             verify: 1,
         }])
         .await;
-    assert!(
-        result.is_err() || result.unwrap().contains("UNKNOWN DEVICE"),
-        "unregistered device push must be rejected"
-    );
+    assert!(result.is_ok(), "auto-registration should allow push: {:?}", result.err());
+
+    // Device should now appear in the registry
+    let status = server.device_status("GHOST-DEVICE");
+    assert!(status.is_some(), "device should be auto-registered");
+    assert!(status.unwrap().is_online, "device should be marked online");
 
     server.stop().await;
 }

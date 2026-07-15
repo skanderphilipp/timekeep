@@ -9,7 +9,7 @@
 
 .text {
   border-radius: var(--ao-radius-sm);
-  height: 1em;
+  height: calc(var(--ao-spacing-4) - 2px);
   width: 100%;
 }
 

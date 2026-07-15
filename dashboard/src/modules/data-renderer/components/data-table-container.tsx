@@ -6,14 +6,8 @@ import { useTableSort } from "../hooks/use-table-sort";
 import { useTableFilter } from "../hooks/use-table-filter";
 import { useTableInstanceId, useCellClickHandler } from "../hooks/use-cell-click-handler";
 import { useInfiniteScrollSentinel } from "../hooks/use-infinite-scroll-sentinel";
-import {
-  DataTable,
-  InfiniteScrollSentinel,
-  Spinner,
-  Text,
-  PageError,
-  type DataTableColumn,
-} from "@/components/ui";
+import { DataTable, InfiniteScrollSentinel, Spinner, Text, type DataTableColumn } from "@/components/ui";
+import { PageError } from "@/modules/shared/components";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import type { ColumnDefinition, FieldMetadata, EntityType, PaginationState } from "../types";
@@ -53,6 +47,13 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
  * Converts ColumnDefinition[] → DataTableColumn[] via createCellRenderer,
  * injects the context hierarchy, handles entity routing on cell clicks,
  * and adds infinite scroll / pagination support.
+ *
+ * TODO(ENTERPRISE): Delegate error/loading/empty handling to DataBoundary.
+ *   DataTableContainer currently reimplements PageError rendering and
+ *   isLoading/emptyState prop forwarding. The punch-query-view should use
+ *   DataBoundary wrapping DataTableContainer (like every other module),
+ *   and DataTableContainer should focus only on column conversion + cell
+ *   routing + infinite scroll / pagination composition.
  */
 export function DataTableContainer<T extends Record<string, unknown>>({
   columns,

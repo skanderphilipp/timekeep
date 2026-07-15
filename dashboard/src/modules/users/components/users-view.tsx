@@ -6,51 +6,22 @@ import { useUsersPage } from "../hooks/use-users-page";
 import { UserForm } from "./user-form";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
-import {
-  PageHeader,
-  Section,
-  DataTable,
-  Spinner,
-  EmptyState,
-  Button,
-  Dialog as DialogComponent,
-  PageError,
-} from "@/components/ui";
+import { Section, DataTable, Button, Dialog as DialogComponent } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DataBoundary } from "@/modules/shared/components";
+import type { DashboardUser } from "@/lib/api";
+import { UserListLoading, UserListError, UserListEmpty } from "../states";
 
 /**
  * Users view — user table, create/edit form, password + delete dialogs.
  *
- * Owns all page state via useUsersPage; the page composes this inside PageLayout.
+ * Uses `DataBoundary` for the data pipeline (loading → error → empty → data).
+ * UI state (form mode, dialogs) is managed via Jotai atoms so other components
+ * (dashboard, side panel) can coordinate with user management.
  */
 export function UsersView() {
   const { _ } = useLingui();
   const page = useUsersPage();
-
-  if (page.query.error) {
-    return (
-      <>
-        <PageHeader
-          title={_(msg`Users`)}
-          description={_(msg`Manage dashboard users, roles, and passwords.`)}
-        />
-        <PageError onRetry={() => page.query.refetch()} />
-      </>
-    );
-  }
-
-  if (page.query.isLoading) {
-    return (
-      <>
-        <PageHeader
-          title={_(msg`Users`)}
-          description={_(msg`Manage dashboard users, roles, and passwords.`)}
-        />
-        <Section>
-          <Spinner />
-        </Section>
-      </>
-    );
-  }
 
   return (
     <>
@@ -58,25 +29,26 @@ export function UsersView() {
         title={_(msg`Users`)}
         description={_(msg`Manage dashboard users, roles, and passwords.`)}
         actions={
-          <Button size="sm" icon={<IconPlus size={16} />} onClick={page.handleCreate}>
-            {_(msg`Add User`)}
-          </Button>
+          !page.query.isLoading && !page.query.error ? (
+            <Button size="sm" icon={<IconPlus size={16} />} onClick={page.handleCreate}>
+              {_(msg`Add User`)}
+            </Button>
+          ) : undefined
         }
       />
+
       <Section>
-        {page.users.length === 0 ? (
-          <EmptyState
-            title={_(msg`No users`)}
-            description={_(msg`Create your first dashboard user to get started.`)}
-            action={
-              <Button icon={<IconPlus size={16} />} onClick={page.handleCreate}>
-                {_(msg`Add User`)}
-              </Button>
-            }
-          />
-        ) : (
-          <DataTable columns={page.columns} data={page.users} getRowKey={(u) => u.id} />
-        )}
+        <DataBoundary<DashboardUser>
+          data={page.query.data ? page.users : undefined}
+          isLoading={page.query.isLoading}
+          error={page.query.error ?? null}
+          onRetry={() => page.query.refetch()}
+          loadingFallback={<UserListLoading />}
+          errorFallback={<UserListError onRetry={() => page.query.refetch()} />}
+          emptyFallback={<UserListEmpty onCreateUser={page.handleCreate} />}
+        >
+          {(users) => <DataTable columns={page.columns} data={users} getRowKey={(u) => u.id} />}
+        </DataBoundary>
       </Section>
 
       <DialogComponent
@@ -92,14 +64,14 @@ export function UsersView() {
       <DeleteUserDialog
         user={page.deletingUser}
         isPending={page.deleteMutation.isPending}
-        onCancel={() => page.setDeletingUser(undefined)}
+        onCancel={() => page.closeDeleteDialog()}
         onConfirm={page.handleDelete}
       />
 
       {page.passwordUser && (
         <ChangePasswordDialog
           open={!!page.passwordUser}
-          onClose={() => page.setPasswordUser(undefined)}
+          onClose={() => page.closePasswordDialog()}
           user={page.passwordUser}
           onSubmit={page.handlePasswordChange}
         />

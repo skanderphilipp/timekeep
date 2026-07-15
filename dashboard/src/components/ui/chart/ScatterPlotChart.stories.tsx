@@ -19,9 +19,7 @@ function generateCorrelationData(
   };
 }
 
-const hoursVsAttendance = [
-  generateCorrelationData("Employees", 50, 8.0, 92, 1.5, 8),
-];
+const hoursVsAttendance = [generateCorrelationData("Employees", 50, 8.0, 92, 1.5, 8)];
 
 const multiGroupData = [
   generateCorrelationData("Operations", 20, 8.2, 95, 1.0, 6),
@@ -58,7 +56,10 @@ export const Primary: Story = {
 export const ByDepartment: Story = {
   name: "By Department",
   render: () => (
-    <Chart title="Hours vs Attendance by Department" description="Operations, Warehouse, Admin clusters.">
+    <Chart
+      title="Hours vs Attendance by Department"
+      description="Operations, Warehouse, Admin clusters."
+    >
       <ScatterPlotChart
         data={multiGroupData}
         xLabel="Avg Daily Hours"
@@ -90,7 +91,12 @@ export const Loading: Story = {
   name: "Loading State",
   render: () => (
     <Chart title="Hours vs Attendance" description="Fetching correlation data…" isLoading>
-      <ScatterPlotChart data={hoursVsAttendance} xLabel="Hours" yLabel="Attendance %" height={300} />
+      <ScatterPlotChart
+        data={hoursVsAttendance}
+        xLabel="Hours"
+        yLabel="Attendance %"
+        height={300}
+      />
     </Chart>
   ),
 };
@@ -103,7 +109,12 @@ export const ErrorState: Story = {
       description="Could not load correlation data."
       error={new globalThis.Error("Not enough employee data for correlation analysis.")}
     >
-      <ScatterPlotChart data={hoursVsAttendance} xLabel="Hours" yLabel="Attendance %" height={300} />
+      <ScatterPlotChart
+        data={hoursVsAttendance}
+        xLabel="Hours"
+        yLabel="Attendance %"
+        height={300}
+      />
     </Chart>
   ),
 };
@@ -111,7 +122,12 @@ export const ErrorState: Story = {
 export const Empty: Story = {
   name: "Empty State",
   render: () => (
-    <Chart title="Hours vs Attendance" description="No data." isEmpty emptyMessage="No employee data available for correlation">
+    <Chart
+      title="Hours vs Attendance"
+      description="No data."
+      isEmpty
+      emptyMessage="No employee data available for correlation"
+    >
       <ScatterPlotChart data={[]} xLabel="Hours" yLabel="Attendance %" height={300} />
     </Chart>
   ),

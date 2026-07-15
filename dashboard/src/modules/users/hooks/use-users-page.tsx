@@ -1,10 +1,24 @@
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPencil, IconKey, IconTrash } from "@tabler/icons-react";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { Badge, IconButton, ActionGroup, type DataTableColumn } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
+import {
+  userFormModeAtom,
+  editingUserAtom,
+  deletingUserAtom,
+  passwordChangeUserAtom,
+  openCreateUserFormAtom,
+  openEditUserFormAtom,
+  closeUserFormAtom,
+  openDeleteUserDialogAtom,
+  closeDeleteUserDialogAtom,
+  openPasswordChangeDialogAtom,
+  closePasswordChangeDialogAtom,
+} from "@/infrastructure/state";
 import { useUsers } from "./use-users";
 import type { DashboardUser } from "@/lib/api";
 
@@ -22,34 +36,37 @@ function roleVariant(role: string): "success" | "warning" | "neutral" {
 /**
  * Page-level orchestration hook for the Users page.
  *
- * All modal state, mutation handlers, column definitions, and CRUD logic
- * live here. The page is pure composition.
+ * Uses Jotai atoms for cross-cutting UI state (form mode, editing user,
+ * delete/password dialogs) so other components (dashboard, side panel)
+ * can coordinate with user management.
+ *
+ * TanStack Query handles server state (user list, mutations).
  */
 export function useUsersPage() {
   const { _ } = useLingui();
   const toast = useToast();
   const { query, deleteUser: deleteMutation, changePassword: passwordMutation } = useUsers();
 
-  const [formMode, setFormMode] = useState<"closed" | "create" | "edit">("closed");
-  const [editingUser, setEditingUser] = useState<DashboardUser | undefined>();
-  const [deletingUser, setDeletingUser] = useState<DashboardUser | undefined>();
-  const [passwordUser, setPasswordUser] = useState<DashboardUser | undefined>();
+  // ── Jotai atoms — cross-cutting UI state ──────────────────────────
+  const formMode = useAtomValue(userFormModeAtom);
+  const editingUser = useAtomValue(editingUserAtom);
+  const deletingUser = useAtomValue(deletingUserAtom);
+  const passwordUser = useAtomValue(passwordChangeUserAtom);
 
-  const handleCreate = useCallback(() => {
-    setEditingUser(undefined);
-    setFormMode("create");
-  }, []);
+  const handleCreate = useSetAtom(openCreateUserFormAtom);
+  const openEdit = useSetAtom(openEditUserFormAtom);
+  const closeForm = useSetAtom(closeUserFormAtom);
+  const openDeleteDialog = useSetAtom(openDeleteUserDialogAtom);
+  const closeDeleteDialog = useSetAtom(closeDeleteUserDialogAtom);
+  const openPasswordDialog = useSetAtom(openPasswordChangeDialogAtom);
+  const closePasswordDialog = useSetAtom(closePasswordChangeDialogAtom);
 
-  const handleEdit = useCallback((user: DashboardUser) => {
-    setEditingUser(user);
-    setFormMode("edit");
-  }, []);
+  const handleEdit = useCallback((user: DashboardUser) => openEdit(user), [openEdit]);
 
   const handleCloseForm = useCallback(() => {
-    setFormMode("closed");
-    setEditingUser(undefined);
+    closeForm();
     query.refetch();
-  }, [query]);
+  }, [closeForm, query]);
 
   const handleDelete = useCallback(async () => {
     if (!deletingUser) return;
@@ -60,9 +77,9 @@ export function useUsersPage() {
     } catch {
       toast.error(_(msg`Failed to delete user.`));
     } finally {
-      setDeletingUser(undefined);
+      closeDeleteDialog();
     }
-  }, [deletingUser, deleteMutation, query, toast, _]);
+  }, [deletingUser, deleteMutation, query, toast, closeDeleteDialog, _]);
 
   const handlePasswordChange = useCallback(
     async (id: string, password: string) => {
@@ -108,7 +125,7 @@ export function useUsersPage() {
             <IconButton
               size="sm"
               aria-label={_(msg`Change password`)}
-              onClick={() => setPasswordUser(u)}
+              onClick={() => openPasswordDialog(u)}
             >
               <IconKey size={14} />
             </IconButton>
@@ -116,7 +133,7 @@ export function useUsersPage() {
               size="sm"
               accent="tertiary"
               aria-label={_(msg`Delete`)}
-              onClick={() => setDeletingUser(u)}
+              onClick={() => openDeleteDialog(u)}
             >
               <IconTrash size={14} />
             </IconButton>
@@ -124,7 +141,7 @@ export function useUsersPage() {
         ),
       },
     ],
-    [_, handleEdit],
+    [_, handleEdit, openPasswordDialog, openDeleteDialog],
   );
 
   return {
@@ -135,13 +152,13 @@ export function useUsersPage() {
     editingUser,
     deletingUser,
     passwordUser,
-    setDeletingUser,
-    setPasswordUser,
+    closeDeleteDialog,
+    closePasswordDialog,
     handleCreate,
     handleCloseForm,
     handleDelete,
     handlePasswordChange,
     columns,
     users: query.data ?? [],
-  };
+  } as const;
 }

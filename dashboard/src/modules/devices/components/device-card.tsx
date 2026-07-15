@@ -2,6 +2,10 @@ import type { DeviceSummary } from "@/lib/api";
 import { Link } from "react-router-dom";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
+
+import { AppRoute } from "@/lib/navigation";
+import { getDeviceStatusUI } from "@/lib/device-status-ui";
+import { getDeviceStatus } from "@shared/device-statuses";
 import { Card, Badge, StatusDot, InlineHeader, Text } from "@/components/ui";
 
 type DeviceCardProps = {
@@ -10,23 +14,30 @@ type DeviceCardProps = {
 
 export function DeviceCard({ device }: DeviceCardProps) {
   const { _ } = useLingui();
+  const statusUI = getDeviceStatusUI(device.connection_status);
+  const statusDef = getDeviceStatus(device.connection_status);
 
   return (
-    <Link to={`/devices/${device.serial_number}/edit`}>
+    <Link to={AppRoute.devices.detail(device.serial_number)}>
       <Card>
         <Card.Content>
           <InlineHeader
             icon={
               <StatusDot
-                status={device.push_enabled ? "online" : "offline"}
-                pulsing={device.push_enabled}
+                status={statusUI.dotColor}
+                pulsing={device.connection_status === "online"}
               />
             }
             title={device.label}
           >
-            <Badge variant={device.push_enabled ? "success" : "neutral"}>
-              {device.push_enabled ? _(msg`Active`) : _(msg`Inactive`)}
+            <Badge variant={statusUI.variant} dot={statusUI.dotColor}>
+              {statusDef?.label ?? _(msg`Unknown`)}
             </Badge>
+            {device.auto_registered && (
+              <Badge variant="info" size="sm">
+                {_(msg`Auto`)}
+              </Badge>
+            )}
           </InlineHeader>
           <Text variant="caption" color="tertiary">
             {device.serial_number}

@@ -15,8 +15,8 @@
 //! ```
 
 use crate::model::{AttendancePunch, Device, DeviceConfig};
-use crate::traits::storage::{PunchFilter, Storage};
-use crate::{Error, PunchStatus, VerifyMode};
+use crate::traits::Storage;
+use crate::{Error, PunchFilter, PunchStatus, VerifyMode};
 use async_trait::async_trait;
 
 // ─── Shared SQL row types ───────────────────────────────────────────
@@ -165,14 +165,14 @@ impl Storage for NoopStorage {
     }
 }
 
-// ─── NoopEmployeeRepository ──────────────────────────────────────────
+// ─── NoopEmployeeStore ──────────────────────────────────────────
 
-/// A no-op `EmployeeRepository` that returns empty/default for every method.
+/// A no-op `EmployeeStore` that returns empty/default for every method.
 #[derive(Clone)]
 pub struct NoopEmployeeRepo;
 
 #[async_trait]
-impl crate::traits::employee_repository::EmployeeRepository for NoopEmployeeRepo {
+impl crate::traits::employee_store::EmployeeStore for NoopEmployeeRepo {
     async fn create_employee(&self, _: &crate::Employee) -> Result<(), Error> {
         Ok(())
     }

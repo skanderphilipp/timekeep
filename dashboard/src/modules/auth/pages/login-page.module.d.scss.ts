@@ -1,5 +1,2 @@
-declare const classNames: {
-  readonly page: "page";
-  readonly main: "main";
-};
+declare const classNames: {};
 export = classNames;

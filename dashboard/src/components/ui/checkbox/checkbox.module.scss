@@ -1,70 +1,79 @@
 @use "@/styles/mixins" as *;
 
-// ── Twenty UI Alignment — Checkbox ────────────────────────────────────────
-// See: SCSS-VISUAL-STANDARDS.md §6.3
-//
-// Key changes:
-//   1. border-radius: var(--ao-radius-sm) (was xs / 2px)
-//   2. Disabled: explicit lighter bg/border (was opacity: 0.5)
-//   3. Label gets 5px padding for larger hover/hit zone
+.root {
+  --checkbox-box-size: 12px;
+  --checkbox-icon-size: 14px;
+  --checkbox-bg: transparent;
+  --checkbox-border-color: var(--ao-border-color-medium);
+  --checkbox-accent: var(--ao-accent-accent9);
+  --checkbox-accent-disabled: var(--ao-accent-accent5);
 
-.label {
   align-items: center;
+  border-radius: var(--ao-radius-md);
   cursor: pointer;
   display: inline-flex;
   gap: var(--ao-spacing-2);
-  padding: calc(var(--ao-spacing-1) + 1px);          // hoverable expansion zone
-  user-select: none;
+  padding: var(--ao-spacing-1);
+  position: relative;
+
+  @include focus-ring;
+
+  &:not([data-disabled]):hover {
+    background: var(--ao-background-transparent-light);
+  }
+
+  &[data-checked],
+  &[data-indeterminate] {
+    --checkbox-bg: var(--checkbox-accent);
+    --checkbox-border-color: var(--checkbox-accent);
+  }
 
   &[data-disabled] {
+    --checkbox-border-color: var(--ao-border-color-light);
+
     cursor: not-allowed;
+
+    &[data-checked],
+    &[data-indeterminate] {
+      --checkbox-bg: var(--checkbox-accent-disabled);
+      --checkbox-border-color: var(--checkbox-accent-disabled);
+    }
+
+    &:hover {
+      background: transparent;
+    }
   }
 }
 
-.input {
-  @include sr-only;
-
-  &:focus-visible + .indicator {
-    outline: var(--ao-spacing-0_5) solid var(--ao-accent-accent9);
-    outline-offset: 1px;
-  }
-}
-
-.indicator {
+.box {
   align-items: center;
-  background: var(--ao-background-primary);
-  border: 1px solid var(--ao-border-color-medium);
+  background: var(--checkbox-bg);
+  border: 1px solid var(--checkbox-border-color);
   border-radius: var(--ao-radius-sm);
   display: flex;
   flex-shrink: 0;
-  height: var(--ao-spacing-4);
+  height: var(--checkbox-icon-size);
   justify-content: center;
   transition:
     background-color duration(fast) ease,
     border-color duration(fast) ease;
-  width: var(--ao-spacing-4);
-
-  .input:checked + & {
-    background: var(--ao-accent-accent9);
-    border-color: var(--ao-accent-accent9);
-  }
-
-  // Disabled: explicit lighter colors, no opacity hack
-  .input:disabled + & {
-    background: var(--ao-accent-accent5);
-    border-color: var(--ao-accent-accent5);
-  }
+  width: var(--checkbox-icon-size);
 }
 
-.check {
+.indicator {
   color: var(--ao-font-color-inverted);
-  display: none;
+  display: flex;
+  height: var(--checkbox-icon-size);
+  width: var(--checkbox-icon-size);
 
-  .input:checked + .indicator & {
+  svg {
     display: block;
+    height: 100%;
+    width: 100%;
   }
 }
 
 .labelText {
+  color: var(--ao-font-color-secondary);
   font-size: var(--ao-font-size-sm);
 }

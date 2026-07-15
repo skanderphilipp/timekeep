@@ -10,7 +10,7 @@ import {
   Section,
   Heading,
   Separator,
-  Callout,
+  Banner,
   Dialog,
   SchemaForm,
 } from "@/components/ui";
@@ -50,7 +50,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onCreateKey }: CreateAp
         <Section>
           <Heading level="h3">{_(msg`API Key Created`)}</Heading>
           <Separator />
-          <Callout
+          <Banner
             variant="warning"
             title={_(msg`Important`)}
             description={_(msg`Copy this key now. It will not be shown again.`)}

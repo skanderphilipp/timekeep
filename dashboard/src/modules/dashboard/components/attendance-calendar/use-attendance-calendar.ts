@@ -45,7 +45,10 @@ export function statusLabel(status: string, _: (msg: MessageDescriptor) => strin
  * Fix: Use GET /api/attendance/by-employee/{pin}/calendar response
  *       instead of computing locally from raw punches.
  */
-function classifyDayFromPunches(punches: Punch[]): { status: CalendarDayStatus; hours: number | null } {
+function classifyDayFromPunches(punches: Punch[]): {
+  status: CalendarDayStatus;
+  hours: number | null;
+} {
   if (punches.length === 0) return { status: "absent", hours: null };
 
   let totalSeconds = 0;

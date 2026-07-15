@@ -1,13 +1,23 @@
 declare const classNames: {
   readonly banner: "banner";
+  readonly header: "header";
   readonly icon: "icon";
-  readonly body: "body";
   readonly title: "title";
-  readonly text: "text";
   readonly dismiss: "dismiss";
+  readonly body: "body";
+  readonly bodyWithAction: "bodyWithAction";
+  readonly description: "description";
+  readonly text: "text";
+  readonly footer: "footer";
   readonly info: "info";
   readonly success: "success";
   readonly warning: "warning";
   readonly danger: "danger";
+  readonly neutral: "neutral";
+  readonly infoIcon: "infoIcon";
+  readonly successIcon: "successIcon";
+  readonly warningIcon: "warningIcon";
+  readonly dangerIcon: "dangerIcon";
+  readonly neutralIcon: "neutralIcon";
 };
 export = classNames;

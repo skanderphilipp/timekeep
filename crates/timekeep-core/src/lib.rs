@@ -9,7 +9,8 @@
 //! ## Layers
 //!
 //! - [`model`] — Domain aggregates: `Punch`, `User`, `Device`, `WorkDay`, `WorkPeriod`
-//! - [`traits`] — Contracts: `BiometricDevice`, `Storage`, `Distributor`, `DeviceProvider`
+//! - [`traits`] — Contracts: `BiometricDevice`, `Storage`, `Distributor`, `DeviceProvider`,
+//!   and focused `*Store` traits (see ADR-001)
 //! - [`events`] — `DomainEvent` enum and event bus abstraction
 //! - [`services`] — Domain services: `AttendanceCalculator` (punch pairing, anomaly detection)
 //! - [`provider_registry`] — Runtime provider registry for multi-vendor routing
@@ -20,6 +21,7 @@ pub mod events;
 pub mod facet;
 pub mod model;
 pub mod network_scanner;
+pub mod provider_manifest;
 pub mod provider_registry;
 pub mod query;
 pub mod services;
@@ -53,8 +55,9 @@ pub use model::{
     device::{Device, DeviceStatus, DeviceVendor},
     device_event::{DeviceEvent, DeviceEventType},
     employee::{Employee, EmployeeId},
-    enrollment::{BiometricType, DeviceEnrollment},
+    enrollment::{BiometricType, DeviceEnrollment, FingerprintTemplate},
     oplog::{OperationLog, OperationType},
+    pending_delivery::PendingDelivery,
     provider::{DeviceProbe, ProviderCapabilities, ProviderInfo},
     punch::{AttendancePunch, PunchStatus, VerifyMode},
     user::User,
@@ -63,21 +66,26 @@ pub use model::{
     work_policy::WorkPolicy,
 };
 
+pub use provider_manifest::ProviderManifest;
 pub use provider_registry::ProviderRegistry;
 
 pub use facet::{
     FacetContext, FacetDimension, FacetGroup, FacetKind, FacetOption, FacetQuery,
+    audit_facet_dimensions, device_facet_dimensions, employee_facet_dimensions,
     punch_facet_dimensions,
+};
+pub use query::cursor::{Cursor, CursorValue, decode_cursor, encode_cursor, encode_offset_cursor};
+pub use query::filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter};
+pub use query::schema::{
+    AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEVICE_SCHEMA, EMPLOYEE_SCHEMA, EntitySchema,
+    PUNCH_SCHEMA, entity_schema,
 };
 pub use query::{ListParams, ListResult, SortOrder, sanitize_search};
 
 pub use traits::{
-    biometric_device::BiometricDevice,
-    config_provider::ConfigProvider,
-    distributor::Distributor,
-    employee_repository::EmployeeRepository,
-    provider_registry::DeviceProvider,
-    storage::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter, Storage},
+    ApiKeyStore, AuditLogStore, BiometricDevice, ConfigProvider, DashboardUserStore,
+    DeviceConfigStore, DeviceInfoStore, DeviceProvider, DeviceUserStore, Distributor,
+    EmployeeStore, EndpointStore, OutboxStore, PunchStore, SettingsStore, Storage,
 };
 
 pub use events::{DomainEvent, EventBus};

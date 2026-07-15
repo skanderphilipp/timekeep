@@ -65,21 +65,15 @@ function formatHours(hours: number | null): string {
  *   Each day color-coded by status. Click → Daily Detail section.
  *   Green=full, amber=late, red=absent, gray=weekend.
  */
-export function CalendarChart({
-  data,
-  from,
-  to,
-  height = 300,
-  onClick,
-}: CalendarChartProps) {
+export function CalendarChart({ data, from, to, height = 300, onClick }: CalendarChartProps) {
   const { nivo, resolveColor } = useChartTheme();
 
   const colors = STATUS_COLORS.map(resolveColor);
 
   // Tooltip style matching our design system (inverted card).
   const tooltipStyle = chartTooltipStyle({
-    background: nivo.tooltip?.container?.background ?? "#202020",
-    color: nivo.tooltip?.container?.color ?? "#fcfcfc",
+    background: nivo.tooltip?.container?.background ?? "var(--ao-font-color-primary)",
+    color: nivo.tooltip?.container?.color ?? "var(--ao-background-primary)",
     fontFamily: nivo.text?.fontFamily ?? "Inter, sans-serif",
   });
 
@@ -126,7 +120,7 @@ export function CalendarChart({
           const hours = hit?.hours ?? null;
           const label = hit?.status
             ? hit.status.charAt(0).toUpperCase() + hit.status.slice(1)
-            : STATUS_LABELS[Number(value) as keyof typeof STATUS_LABELS] ?? "—";
+            : (STATUS_LABELS[Number(value) as keyof typeof STATUS_LABELS] ?? "—");
 
           return (
             <div style={tooltipStyle}>

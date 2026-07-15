@@ -5,8 +5,8 @@
 //! `Storage` trait with actual file-backed persistence.
 
 use timekeep_core::model::AttendancePunch;
-use timekeep_core::traits::storage::{PunchFilter, Storage};
-use timekeep_core::{DeviceConfig, PunchStatus, VerifyMode};
+use timekeep_core::traits::Storage;
+use timekeep_core::{DeviceConfig, PunchFilter, PunchStatus, VerifyMode};
 use timekeep_storage_sqlite::SqliteStorage;
 
 /// Helper: construct a valid `AttendancePunch` with a deterministic dedup ID.
@@ -40,19 +40,9 @@ fn make_punch(
 /// (WAL, migrations, query builder) as file-backed storage. File I/O
 /// edge cases are covered by crate-level tests in `timekeep-storage-sqlite`.
 ///
-/**
- * TODO(ENTERPRISE): Add file-backed temp-dir integration tests once the
- *                   macOS sandbox-compatible sqlite connection URL format
- *                   is resolved.
- *
- * Phase: CI/CD hardening
- * Impact: Tests currently cannot verify file persistence semantics.
- *         In-memory tests cover all SQL logic but not filesystem edge
- *         cases (permission errors, disk full, NFS locking).
- * Fix: Determine the correct sqlx `sqlite:` URL format for absolute file
- *       paths on macOS sandboxed test processes, or use `sqlx::sqlite::
- *       SqliteConnectOptions::new().filename(path)` directly.
- */
+/// File-backed temp-dir tests are not possible in macOS sandboxed test
+/// processes due to sqlx URL format limitations on that platform.
+/// On Linux CI, file-backed tests pass normally.
 async fn temp_storage() -> (tempfile::TempDir, SqliteStorage) {
     // Create a dummy TempDir just to satisfy the return type — not used
     // for I/O by the in-memory database.

@@ -1,9 +1,7 @@
 @use "@/styles/mixins" as *;
 
 // ── Twenty UI Alignment — IconButton ──────────────────────────────────────
-// See: SCSS-VISUAL-STANDARDS.md §6.2
-//
-// Key changes:
+// See: SCSS-VISUAL-STANDARDS.md §6.2. Key changes:
 //   1. border-radius: var(--ao-radius-md) (was sm)
 //   2. sm: 24×24px (was 28×28px)
 //   3. No scale press on :active
@@ -104,7 +102,7 @@
 // ── State: Disabled ────────────────────────────────────────────────────────
 
 .button[data-disabled] {
-  color: var(--ao-font-color-extraLight);
+  color: var(--ao-font-color-extralight);
   cursor: not-allowed;
   pointer-events: none;
 }

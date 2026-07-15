@@ -1,16 +1,40 @@
+//! Persistence layer for attendance data — composite trait.
+//!
+//! This trait bundles all persistence concerns. It is being decomposed into
+//! focused `*Store` traits (see ADR-001). During the transition, this trait
+//! retains all methods for backward compatibility.
+//!
+//! # Migration path
+//!
+//! Phase 1 (now): Focused `*Store` traits exist alongside `Storage`.
+//! Phase 3 (next): Storage implementations split per-Store. `Storage` becomes a supertrait.
+//!
+//! New consumers should depend on specific `*Store` traits. Existing consumers
+//! of `Storage` continue to work unchanged.
+
 use async_trait::async_trait;
 
 use crate::Error;
 use crate::facet::{FacetGroup, FacetQuery};
-use crate::model::device_event::{DeviceEvent, DeviceEventType};
+use crate::model::audit::AuditEvent;
+use crate::model::device_event::DeviceEvent;
+use crate::model::employee::EmployeeId;
+use crate::model::pending_delivery::PendingDelivery;
 use crate::model::{AttendancePunch, Device, DeviceConfig, ProviderInfo};
 use crate::query::ListResult;
+use crate::query::filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter};
 
 /// Persistence layer for attendance data.
 ///
 /// Implementations decide *where* data lives:
 /// - SQLite (embedded, single-file, zero config)
 /// - PostgreSQL (server-grade, Odoo-compatible)
+///
+/// # Decomposition status
+///
+/// This trait is being decomposed into focused `*Store` traits.
+/// See [`PunchStore`](crate::traits::punch_store::PunchStore),
+/// [`DeviceConfigStore`](crate::traits::device_config_store::DeviceConfigStore), etc.
 #[async_trait]
 pub trait Storage: Send + Sync {
     /// Store a single attendance punch. Idempotent — if a punch with
@@ -41,6 +65,27 @@ pub trait Storage: Send + Sync {
     /// backends to enable the feature.
     async fn punch_facets(&self, _query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
         Err(Error::storage("punch facets not implemented for this backend"))
+    }
+
+    /// Return faceted filter metadata for devices.
+    ///
+    /// Called by `GET /api/devices/filters`.
+    async fn device_facets(&self, _query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
+        Err(Error::storage("device facets not implemented for this backend"))
+    }
+
+    /// Return faceted filter metadata for audit logs.
+    ///
+    /// Called by `GET /api/audit/filters`.
+    async fn audit_facets(&self, _query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
+        Err(Error::storage("audit facets not implemented for this backend"))
+    }
+
+    /// Return faceted filter metadata for employees.
+    ///
+    /// Called by `GET /api/employees/filters`.
+    async fn employee_facets(&self, _query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
+        Err(Error::storage("employee facets not implemented for this backend"))
     }
 
     /// Store or update device information.
@@ -100,6 +145,25 @@ pub trait Storage: Send + Sync {
         Ok(None)
     }
 
+    /// Count how many users are synced from a specific device.
+    async fn count_device_users(&self, _device_sn: &str) -> Result<u32, Error> {
+        Ok(0)
+    }
+
+    /// Count how many attendance records are stored for a specific device.
+    async fn count_device_records(&self, _device_sn: &str) -> Result<u32, Error> {
+        Ok(0)
+    }
+
+    /// List all users synced from a specific device.
+    /// Returns (pin, name, privilege) tuples sorted by pin.
+    async fn list_device_users(
+        &self,
+        _device_sn: &str,
+    ) -> Result<Vec<(String, String, Option<i32>)>, Error> {
+        Ok(vec![])
+    }
+
     /// Health check — ping the database to verify connectivity.
     ///
     /// Implementations should run a lightweight query (e.g. `SELECT 1`)
@@ -143,8 +207,6 @@ pub trait Storage: Send + Sync {
     async fn touch_api_key(&self, _key_id: &str) -> Result<(), Error> {
         Ok(())
     }
-
-    // ── Settings (integration configuration) ────────────────────────
 
     // ── Integration Endpoints (tenant-configurable destinations) ────
 
@@ -283,6 +345,20 @@ pub trait Storage: Send + Sync {
         Ok(ListResult::single_page(vec![]))
     }
 
+    /// Query audit logs related to a specific device.
+    ///
+    /// Filters audit_logs where the resource path contains the device serial
+    /// number (e.g. "/api/devices/JJA12533/sync-users"). Results are merged
+    /// with device events to build per-device activity timelines.
+    async fn query_device_audit_logs(
+        &self,
+        _device_sn: &str,
+        _limit: u32,
+        _offset: u32,
+    ) -> Result<ListResult<AuditEvent>, Error> {
+        Ok(ListResult { items: vec![], has_more: false, total: None, next_cursor: None })
+    }
+
     /// Count device events matching a filter (for pagination totals).
     async fn count_device_events(&self, _filter: &DeviceEventFilter) -> Result<u64, Error> {
         Ok(0)
@@ -312,117 +388,38 @@ pub trait Storage: Send + Sync {
     async fn list_providers(&self) -> Result<Vec<ProviderInfo>, Error> {
         Ok(vec![])
     }
-}
 
-/// Filters for querying attendance punches.
-#[derive(Debug, Clone)]
-pub struct PunchFilter {
-    /// Shared search/sort/page params.
-    pub params: crate::query::ListParams,
-    /// Filter by device serial number (single, for backward compat).
-    /// Prefer `device_sns` for multi-select.
-    pub device_sn: Option<String>,
-    /// Filter by multiple device serial numbers (OR logic).
-    pub device_sns: Option<Vec<String>>,
-    /// Filter by user PIN (exact match).
-    pub user_pin: Option<String>,
-    /// Only punches after this timestamp (inclusive).
-    pub since: Option<jiff::Timestamp>,
-    /// Only punches before this timestamp (inclusive).
-    pub until: Option<jiff::Timestamp>,
-    /// Filter by punch status (check_in, check_out, …).
-    pub status: Option<crate::model::punch::PunchStatus>,
-    /// Filter by verification method (fingerprint, face, …).
-    pub verify_mode: Option<crate::model::punch::VerifyMode>,
-    /// When `true`, return only punches flagged as anomalous.
-    pub anomalies_only: Option<bool>,
-}
+    // ── Outbox (pending delivery) ──────────────────────────────────────
 
-impl Default for PunchFilter {
-    fn default() -> Self {
-        Self {
-            params: crate::query::ListParams {
-                sort_by: Some("timestamp".into()),
-                limit: 10_000,
-                ..Default::default()
-            },
-            device_sn: None,
-            device_sns: None,
-            user_pin: None,
-            since: None,
-            until: None,
-            status: None,
-            verify_mode: None,
-            anomalies_only: None,
-        }
+    /// Enqueue a punch delivery that failed to reach an external system.
+    /// The worker will pick this up and retry with exponential backoff.
+    async fn enqueue_pending_delivery(&self, _delivery: &PendingDelivery) -> Result<(), Error> {
+        Err(Error::storage("outbox not implemented for this backend"))
     }
-}
 
-/// Filters for listing devices.
-#[derive(Debug, Clone)]
-pub struct DeviceFilter {
-    /// Shared search/sort/page params.
-    pub params: crate::query::ListParams,
-}
-
-impl Default for DeviceFilter {
-    fn default() -> Self {
-        Self {
-            params: crate::query::ListParams {
-                sort_by: Some("label".into()),
-                sort_order: crate::query::SortOrder::Asc,
-                ..Default::default()
-            },
-        }
+    /// List pending deliveries that are ready for retry (next_retry_at <= now).
+    /// Ordered by next_retry_at ascending.
+    async fn list_pending_deliveries(&self) -> Result<Vec<PendingDelivery>, Error> {
+        Ok(vec![])
     }
-}
 
-/// Filters for listing integration endpoints.
-#[derive(Debug, Clone)]
-pub struct EndpointFilter {
-    /// Shared search/sort/page params.
-    pub params: crate::query::ListParams,
-}
-
-impl Default for EndpointFilter {
-    fn default() -> Self {
-        Self {
-            params: crate::query::ListParams {
-                sort_by: Some("created_at".into()),
-                ..Default::default()
-            },
-        }
+    /// Update the attempt count and next_retry_at for a pending delivery.
+    async fn update_delivery_retry(
+        &self,
+        _id: &str,
+        _attempt_count: i32,
+        _next_retry_at: i64,
+    ) -> Result<(), Error> {
+        Ok(())
     }
-}
 
-/// Filters for querying device lifecycle events (activity timeline).
-#[derive(Debug, Clone)]
-pub struct DeviceEventFilter {
-    /// Shared search/sort/page params.
-    pub params: crate::query::ListParams,
-    /// Filter by device serial number.
-    pub device_sn: Option<String>,
-    /// Filter by event type(s). If empty, all types are returned.
-    pub event_types: Option<Vec<DeviceEventType>>,
-    /// Only events after this timestamp (inclusive).
-    pub since: Option<jiff::Timestamp>,
-    /// Only events before this timestamp (inclusive).
-    pub until: Option<jiff::Timestamp>,
-}
+    /// Delete a pending delivery after successful delivery.
+    async fn delete_pending_delivery(&self, _id: &str) -> Result<(), Error> {
+        Ok(())
+    }
 
-impl Default for DeviceEventFilter {
-    fn default() -> Self {
-        Self {
-            params: crate::query::ListParams {
-                sort_by: Some("timestamp".into()),
-                sort_order: crate::query::SortOrder::Desc,
-                limit: 50,
-                ..Default::default()
-            },
-            device_sn: None,
-            event_types: None,
-            since: None,
-            until: None,
-        }
+    /// Move a delivery that has exhausted retries to the dead letter table.
+    async fn move_to_dead_letter(&self, _id: &str, _last_error: Option<&str>) -> Result<(), Error> {
+        Ok(())
     }
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { fn } from "storybook/test";
 import {
   IconDeviceDesktop,
@@ -6,10 +7,13 @@ import {
   IconCalendar,
   IconAlertTriangle,
 } from "@tabler/icons-react";
-import { FilterDropdown, type FilterChip, type FilterField } from "./filter-dropdown";
-import { FilterSelect } from "@/components/ui/filter-select";
+import { FilterDropdown, type FilterField } from "./filter-dropdown";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Combobox } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Switch } from "@/components/ui/switch";
+
+// ── Field definitions ──────────────────────────────────────────────────────
 
 const deviceOptions = [
   { value: "", label: "All Devices" },
@@ -31,16 +35,29 @@ const fields: FilterField[] = [
     key: "device",
     label: "Device",
     icon: <IconDeviceDesktop size={14} />,
-    renderValueSelector: () => (
-      <FilterSelect options={deviceOptions} value="" onChange={fn()} label="Device" />
+    // onApply is unused in this story — the Combobox manages its own state
+    renderValueSelector: ({ onApply: _onApply }) => (
+      <Combobox
+        options={deviceOptions}
+        value=""
+        onChange={fn()}
+        placeholder="Device"
+        searchable={deviceOptions.length > 8}
+      />
     ),
   },
   {
     key: "status",
     label: "Status",
     icon: <IconStatusChange size={14} />,
-    renderValueSelector: () => (
-      <FilterSelect options={statusOptions} value="" onChange={fn()} label="Status" />
+    renderValueSelector: ({ onApply: _onApply }) => (
+      <Combobox
+        options={statusOptions}
+        value=""
+        onChange={fn()}
+        placeholder="Status"
+        searchable={statusOptions.length > 8}
+      />
     ),
   },
   {
@@ -61,97 +78,72 @@ const fields: FilterField[] = [
   },
 ];
 
-const sampleChips: FilterChip[] = [
-  { key: "device", label: "Device: Main Gate", onRemove: fn() },
-  { key: "status", label: "Status: Check In", onRemove: fn() },
-  { key: "date", label: "From: 2026-07-01", onRemove: fn() },
-];
+// ── Meta ───────────────────────────────────────────────────────────────────
 
 /**
- * FilterDropdown — "Add Filter" button with popover of filter options.
+ * FilterDropdown — "+ Filter" button + popover for building filters.
  *
- * Used alongside FilterBar on list pages (Punches, Audit Logs).
- * Each filter field can render its own value selector (select, date picker, toggle).
+ * **Always used inside a `<FilterBar>`** which provides the toolbar layout
+ * (search, count, reset, actions, chips). FilterDropdown only handles the
+ * filter-building popover UI.
  */
 const meta: Meta<typeof FilterDropdown> = {
   title: "UI/Inputs/FilterDropdown",
   component: FilterDropdown,
   tags: ["autodocs"],
-  argTypes: {
-    hasActiveFilters: { control: "boolean" },
-    resultCount: { control: "number" },
-  },
 };
 
 export default meta;
 type Story = StoryObj<typeof FilterDropdown>;
 
-export const Primary: Story = {
+// ── Stories ────────────────────────────────────────────────────────────────
+
+export const Standalone: Story = {
+  name: "Button only (standalone)",
   args: { fields },
 };
 
-export const AllVariants: Story = {
-  name: "All Variants",
+export const InsideFilterBarNoFilters: Story = {
+  name: "Inside FilterBar — no active filters",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--ao-spacing-6)",
-        padding: "var(--ao-spacing-4)",
-      }}
-    >
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          No active filters
-        </p>
-        <FilterDropdown fields={fields} />
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          With result count
-        </p>
-        <FilterDropdown fields={fields} resultCount={128} />
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          Active filters + clear
-        </p>
-        <FilterDropdown
-          fields={fields}
-          activeFilters={sampleChips}
-          hasActiveFilters
-          onClear={fn()}
-          resultCount={12}
-        />
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          No results
-        </p>
-        <FilterDropdown
-          fields={fields}
-          activeFilters={sampleChips}
-          hasActiveFilters
-          onClear={fn()}
-          resultCount={0}
-        />
-      </div>
-    </div>
+    <FilterBar>
+      <FilterDropdown fields={fields} />
+    </FilterBar>
   ),
 };
 
-export const ContextPunchesFilter: Story = {
-  name: "Context: Punches Page Filters",
+export const InsideFilterBarWithSearch: Story = {
+  name: "Inside FilterBar — with search",
   parameters: { controls: { disable: true } },
   render: () => (
-    <FilterDropdown
-      fields={fields}
-      activeFilters={sampleChips.slice(0, 2)}
-      hasActiveFilters
-      onClear={fn()}
-      resultCount={42}
-    />
+    <FilterBar search={<input placeholder="Search punches…" style={{ width: 200, height: 32, borderRadius: "var(--ao-radius-md)", border: "1px solid var(--ao-border-color-medium)", padding: "0 12px", fontSize: "var(--ao-font-size-sm)", background: "var(--ao-background-primary)" }} readOnly />}>
+      <FilterDropdown fields={fields} />
+    </FilterBar>
   ),
+};
+
+export const InsideFilterBarFullToolbar: Story = {
+  name: "Inside FilterBar — full toolbar",
+  parameters: { controls: { disable: true } },
+  render: function FullToolbar() {
+    const [active, setActive] = useState(false);
+    const chips = active
+      ? [
+          { key: "device", label: "Device: Main Gate", onRemove: () => setActive(false) },
+          { key: "status", label: "Status: Check In", onRemove: () => setActive(false) },
+        ]
+      : [];
+
+    return (
+      <FilterBar
+        resultCount={42}
+        hasActiveFilters={active}
+        activeFilters={chips}
+        onClear={() => setActive(false)}
+      >
+        <FilterDropdown fields={fields} />
+      </FilterBar>
+    );
+  },
 };

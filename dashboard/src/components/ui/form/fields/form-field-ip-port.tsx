@@ -43,7 +43,8 @@ export function FormFieldIpPort({
                     ipField.onChange(ip);
                     portField.onChange(port);
                   }}
-                  placeholder={field.placeholder}
+                  ipName={ipName}
+                  portName={portName}
                   disabled={field.disabled}
                   required={field.required}
                   error={error}

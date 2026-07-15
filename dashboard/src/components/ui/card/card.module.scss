@@ -16,8 +16,7 @@
   align-items: flex-start;
   display: flex;
   justify-content: space-between;
-  padding: var(--ao-spacing-2) var(--ao-spacing-4);
-  padding-bottom: 0;
+  padding: var(--ao-spacing-3) var(--ao-spacing-4);
 }
 
 .title {
@@ -33,14 +32,7 @@
 }
 
 .content {
-  background: var(--ao-background-secondary);
-  border-bottom: none;
-  cursor: default;
   padding: var(--ao-spacing-4);
-
-  &:hover {
-    background: transparent;
-  }
 }
 
 .footer {

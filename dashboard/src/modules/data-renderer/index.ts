@@ -76,6 +76,7 @@ export {
   useTableFilter,
   useTableRowSelection,
   useColumnDefinitions,
+  useSchemaColumns,
 } from "./hooks";
 
 // ── Components ─────────────────────────────────────────────────────────────
@@ -86,9 +87,17 @@ export {
   createCellRenderer,
 } from "./components";
 
+// ── Schema Mapper ──────────────────────────────────────────────────────────
+export {
+  mapSchemaFieldToFieldType,
+  columnMetaToDefinition,
+  getPresentationOverride,
+} from "./schema-mapper";
+
 // ── Column Definitions ─────────────────────────────────────────────────────
 export { createPunchColumns } from "./column-definitions/punch-columns";
 export { createDeviceColumns } from "./column-definitions/device-columns";
 export { createUserColumns } from "./column-definitions/user-columns";
 export { createApiKeyColumns } from "./column-definitions/api-key-columns";
 export { createAuditColumns } from "./column-definitions/audit-columns";
+export { createEmployeeColumns } from "./column-definitions/employee-columns";

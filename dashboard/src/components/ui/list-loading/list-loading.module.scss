@@ -1,0 +1,10 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-12) var(--ao-spacing-4);
+  text-align: center;
+  min-height: calc(var(--ao-spacing-30) * 1.5);
+}

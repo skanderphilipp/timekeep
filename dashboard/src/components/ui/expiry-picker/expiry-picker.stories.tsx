@@ -1,6 +1,7 @@
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "storybook/test";
-import { ExpiryPicker } from "./expiry-picker";
+import { ExpiryPicker, type ExpiryValue } from "./expiry-picker";
 
 const meta: Meta<typeof ExpiryPicker> = {
   title: "UI/Inputs/ExpiryPicker",
@@ -11,12 +12,21 @@ const meta: Meta<typeof ExpiryPicker> = {
 export default meta;
 type Story = StoryObj<typeof ExpiryPicker>;
 
+function PrimaryDemo() {
+  const [value, setValue] = useState<ExpiryValue>({ preset: "never", customDate: null });
+  return (
+    <div style={{ padding: 20 }}>
+      <ExpiryPicker label="API Key Expiry" value={value} onChange={setValue} />
+      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+        Preset: {value.preset}
+        {value.customDate ? ` — ${value.customDate.toISOString().split("T")[0]}` : ""}
+      </div>
+    </div>
+  );
+}
+
 export const Primary: Story = {
-  args: {
-    label: "API Key Expiry",
-    value: { preset: "never", customDate: null },
-    onChange: fn(),
-  },
+  render: () => <PrimaryDemo />,
 };
 
 export const AllVariants: Story = {
@@ -44,4 +54,12 @@ export const AllVariants: Story = {
       />
     </div>
   ),
+};
+
+export const Playground: Story = {
+  args: {
+    label: "API Key Expiry",
+    value: { preset: "never", customDate: null },
+    onChange: fn(),
+  },
 };

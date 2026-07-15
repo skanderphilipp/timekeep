@@ -9,10 +9,14 @@ import type { FormSchemaDefinition } from "@/lib/form-field-meta";
 /**
  * Validation schema for the initial setup form.
  *
- * Creates the first admin user — username and password required.
+ * Creates the first admin user and configures the workspace.
  */
 export function createSetupFormSchema(_: I18n["_"]) {
   return z.object({
+    workspaceName: z
+      .string({ message: _(msg`Workspace name is required`) })
+      .min(1, _(msg`Workspace name is required`))
+      .min(2, _(msg`Workspace name must be at least 2 characters`)),
     username: z
       .string({ message: _(msg`Username is required`) })
       .min(1, _(msg`Username is required`))
@@ -34,6 +38,12 @@ export function createSetupFormDef(_: I18n["_"]) {
   return {
     schema: createSetupFormSchema,
     fields: {
+      workspaceName: {
+        label: _(msg`Workspace Name`),
+        description: _(msg`Your company or organization name. Shown on the login screen.`),
+        placeholder: _(msg`Acme Corp`),
+        section: "workspace",
+      },
       username: {
         label: _(msg`Admin Username`),
         description: _(msg`Choose a secure username for the administrator account.`),
@@ -49,6 +59,11 @@ export function createSetupFormDef(_: I18n["_"]) {
       },
     },
     sections: [
+      {
+        key: "workspace",
+        title: _(msg`Configure Workspace`),
+        description: _(msg`Set up your organization's workspace for timekeep.`),
+      },
       {
         key: "credentials",
         title: _(msg`Create Admin Account`),

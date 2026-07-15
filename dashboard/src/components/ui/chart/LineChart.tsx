@@ -36,7 +36,14 @@ function toSeries(data: Record<string, unknown>[], lines: LineDef[], xKey: strin
   }));
 }
 
-export function LineChart({ data, lines, xKey, height = 300, grid = false, onClick }: LineChartProps) {
+export function LineChart({
+  data,
+  lines,
+  xKey,
+  height = 300,
+  grid = false,
+  onClick,
+}: LineChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
 
   const series = toSeries(data, lines, xKey);

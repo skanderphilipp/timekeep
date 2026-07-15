@@ -8,6 +8,7 @@ import type {
   TodaySummary,
   Punch,
   PunchCorrectedResponse,
+  AuditEvent,
 } from "@/lib/api";
 
 // ── Envelope helpers ──────────────────────────────────────────────────────────
@@ -76,6 +77,42 @@ const DEFAULT_PUNCHES: Punch[] = [
   },
 ];
 
+const DEFAULT_AUDIT_EVENTS: AuditEvent[] = [
+  {
+    id: "audit-001",
+    timestamp: NOW_SECONDS() - 60,
+    actor: "admin",
+    action: "device.add",
+    resource: "/api/devices",
+    detail: { serial_number: "TEST001", label: "Main Gate" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-002",
+    timestamp: NOW_SECONDS() - 180,
+    actor: "admin",
+    action: "punch.correct",
+    resource: "/api/punches/correct",
+    detail: { user_pin: "145" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-003",
+    timestamp: NOW_SECONDS() - 300,
+    actor: "operator_ahmed",
+    action: "user.enroll",
+    resource: "/api/devices/TEST001/users",
+    detail: { user_pin: "203" },
+    ip_address: "192.168.1.20",
+    status: "success",
+    error_message: null,
+  },
+];
+
 // ── Handler options ───────────────────────────────────────────────────────────
 
 export type HandlerOptions = {
@@ -87,6 +124,8 @@ export type HandlerOptions = {
   todaySummary?: TodaySummary;
   /** Punches to return from GET /api/punches. */
   punches?: Punch[];
+  /** Audit events to return from GET /api/audit. */
+  auditEvents?: AuditEvent[];
 };
 
 // ── Factory ──────────────────────────────────────────────────────────────────
@@ -115,6 +154,7 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
     devices = DEFAULT_DEVICES,
     todaySummary = DEFAULT_TODAY,
     punches = DEFAULT_PUNCHES,
+    auditEvents = DEFAULT_AUDIT_EVENTS,
   } = opts;
 
   // Derive the DeviceSummary list from the full DeviceConfig array (the list
@@ -271,6 +311,51 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
         status: body.status,
       };
       return HttpResponse.json(envelope(corrected), { status: 201 });
+    }),
+
+    // ── Audit ────────────────────────────────────────────────────────────────
+
+    // GET /api/audit — query audit logs with filters + sort + pagination.
+    // Rust: ApiEnvelope<Vec<AuditEventResponse>> with PageMeta
+    http.get("/api/audit", ({ request }) => {
+      const url = new URL(request.url);
+      const search = url.searchParams.get("search")?.toLowerCase();
+      const sortBy = url.searchParams.get("sort_by") ?? "timestamp";
+      const sortOrder = url.searchParams.get("sort_order") ?? "desc";
+      const limit = parseInt(url.searchParams.get("limit") ?? "50", 10);
+
+      let filtered = [...auditEvents];
+
+      if (search) {
+        filtered = filtered.filter(
+          (e) =>
+            e.actor.toLowerCase().includes(search) ||
+            e.action.toLowerCase().includes(search) ||
+            e.resource.toLowerCase().includes(search),
+        );
+      }
+
+      const dir = sortOrder === "asc" ? 1 : -1;
+      filtered.sort((a, b) => {
+        const va = sortBy === "actor" ? a.actor : sortBy === "action" ? a.action : a.timestamp;
+        const vb = sortBy === "actor" ? b.actor : sortBy === "action" ? b.action : b.timestamp;
+        if (typeof va === "string") return (va as string).localeCompare(vb as string) * dir;
+        return ((va as number) - (vb as number)) * dir;
+      });
+
+      const hasMore = filtered.length > limit;
+      const page = filtered.slice(0, limit);
+
+      const meta: PageMeta = {
+        has_more: hasMore,
+        next_cursor:
+          hasMore && page.length > 0
+            ? btoa(`${page[page.length - 1].timestamp}:${page[page.length - 1].id}`)
+            : null,
+        total: filtered.length,
+      };
+
+      return HttpResponse.json(envelope(page, meta));
     }),
   ];
 }

@@ -57,6 +57,10 @@ const validateSegment = (
       if (segment === "types") {
         return { nextContext: { type: "leaf" } };
       }
+      // shared is the cross-cutting composites module — not a domain module
+      if (segment === "shared") {
+        return { nextContext: { type: "module", depth: 1 } };
+      }
       if (!KEBAB_CASE_REGEX.test(segment)) {
         return {
           error: {

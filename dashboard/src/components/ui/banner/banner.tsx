@@ -1,34 +1,84 @@
 import { clsx } from "clsx";
+import { useState } from "react";
 import {
   IconInfoCircle,
   IconCheck,
   IconAlertTriangle,
   IconX,
+  type Icon as TablerIcon,
   type ReactNode,
 } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
+import { Button } from "../button";
+import { IconButton } from "../icon-button";
+
 import styles from "./banner.module.scss";
 
+export type BannerVariant = "info" | "success" | "warning" | "danger" | "neutral";
+
 type BannerProps = {
-  variant?: "info" | "success" | "warning" | "danger";
+  variant?: BannerVariant;
   title?: string;
-  children: ReactNode;
+  /** Free-form content (existing Banner API). */
+  children?: ReactNode;
+  /** Structured description string (Callout compatibility). */
+  description?: string;
+  /** Override the default icon per variant. */
+  Icon?: TablerIcon;
+  /** Action button rendered at the bottom of the banner. */
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  /** Show a close button with internal visibility tracking. Calls onClose when dismissed. */
+  closable?: boolean;
+  onClose?: () => void;
+  /** Direct dismiss callback (existing Banner API, no internal visibility state). */
   onDismiss?: () => void;
   className?: string;
 };
 
-const iconMap = {
+const iconMap: Record<BannerVariant, TablerIcon> = {
   info: IconInfoCircle,
   success: IconCheck,
   warning: IconAlertTriangle,
   danger: IconX,
+  neutral: IconInfoCircle,
 };
 
-export function Banner({ variant = "info", title, children, onDismiss, className }: BannerProps) {
+export function Banner({
+  variant = "info",
+  title,
+  children,
+  description,
+  Icon,
+  action,
+  closable = false,
+  onClose,
+  onDismiss,
+  className,
+}: BannerProps) {
   const { _ } = useLingui();
-  const Icon = iconMap[variant];
+  const [visible, setVisible] = useState(true);
+  const ResolvedIcon = Icon ?? iconMap[variant];
+
+  // Internal close for the closable/closable path
+  const handleClose = () => {
+    if (!closable) return;
+    setVisible(false);
+    onClose?.();
+  };
+
+  // External dismiss for the direct onDismiss callback
+  const handleDismiss = () => {
+    onDismiss?.();
+  };
+
+  if (closable && !visible) return null;
+
+  const hasBody = !!children || !!description;
 
   return (
     <div
@@ -37,29 +87,49 @@ export function Banner({ variant = "info", title, children, onDismiss, className
       className={clsx(styles.banner, styles[variant], className)}
       role="alert"
     >
-      <span data-slot="banner-icon" className={styles.icon}>
-        <Icon size={18} />
-      </span>
-      <div data-slot="banner-body" className={styles.body}>
+      <div className={styles.header}>
+        <span data-slot="banner-icon" className={clsx(styles.icon, styles[`${variant}Icon`])}>
+          <ResolvedIcon size={16} />
+        </span>
         {title && (
           <span data-slot="banner-title" className={styles.title}>
             {title}
           </span>
         )}
-        <span data-slot="banner-text" className={styles.text}>
-          {children}
-        </span>
+        {closable && (
+          <IconButton accent="tertiary" size="sm" aria-label={_(msg`Close`)} onClick={handleClose}>
+            <IconX size={14} />
+          </IconButton>
+        )}
+        {!closable && onDismiss && (
+          <button
+            data-slot="banner-dismiss"
+            className={styles.dismiss}
+            onClick={handleDismiss}
+            type="button"
+            aria-label={_(msg`Dismiss`)}
+          >
+            <IconX size={14} />
+          </button>
+        )}
       </div>
-      {onDismiss && (
-        <button
-          data-slot="banner-dismiss"
-          className={styles.dismiss}
-          onClick={onDismiss}
-          type="button"
-          aria-label={_(msg`Dismiss`)}
+
+      {hasBody && (
+        <div
+          data-slot="banner-body"
+          className={clsx(styles.body, action && styles.bodyWithAction)}
         >
-          <IconX size={14} />
-        </button>
+          {description && <p className={styles.description}>{description}</p>}
+          {children && <span data-slot="banner-text" className={styles.text}>{children}</span>}
+        </div>
+      )}
+
+      {action && (
+        <div className={styles.footer}>
+          <Button variant="ghost" size="sm" onClick={action.onClick}>
+            {action.label}
+          </Button>
+        </div>
       )}
     </div>
   );

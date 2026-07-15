@@ -4,7 +4,9 @@ import { MemoryRouter } from "react-router-dom";
 import { Provider as JotaiProvider } from "jotai";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "../src/infrastructure/theme/theme-context";
+import { ToastProvider } from "../src/infrastructure/toast/toast";
 import { messages as enMessages } from "../src/locales/en";
 import { worker } from "../src/testing/mocks/browser";
 
@@ -25,12 +27,31 @@ i18n.activate("en");
 // Page and molecule stories can override handlers per-story via
 // `worker.use(...createHandlers({ ... }))` in their loaders.
 //
+// We use a preview-level loader (not module-level code) so that
+// `worker.start()` is awaited BEFORE any story-specific loader
+// runs. Without this, story loaders calling `worker.use()` can
+// race against the service worker registration.
+//
 // TODO(ENTERPRISE): Migrate to msw-storybook-addon for cleaner
 // per-story handler loading (pattern used by Twenty).
-if (typeof globalThis.process === "undefined") {
+let _workerReady = false;
+
+async function ensureWorker(): Promise<void> {
+  if (_workerReady) return;
   // Only run in browser (Storybook), not in Node (Vitest uses msw/node).
-  worker.start({ onUnhandledRequest: "bypass" });
+  if (typeof globalThis.process === "undefined") {
+    await worker.start({ onUnhandledRequest: "bypass" });
+  }
+  _workerReady = true;
 }
+
+// ── TanStack Query client (for stories that render hooks with useQuery) ──
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+});
 
 // ── Font loading (for visual consistency in screenshots) ───────────
 async function waitForFontsLoaded() {
@@ -81,15 +102,16 @@ const preview: Preview = {
     },
   },
 
-  // Wait for fonts before rendering (prevents layout shift in
-  // visual regression screenshots).
-  loaders: [waitForFontsLoaded],
+  // Wait for MSW worker (must be ready before story loaders call worker.use()),
+  // then wait for fonts (prevents layout shift in visual regression screenshots).
+  loaders: [ensureWorker, waitForFontsLoaded],
 
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme as "light" | "dark";
 
       useEffect(() => {
+        document.documentElement.dir = "ltr";
         document.documentElement.classList.remove("light", "dark");
         document.documentElement.classList.add(theme);
       }, [theme]);
@@ -99,7 +121,11 @@ const preview: Preview = {
           <JotaiProvider>
             <I18nProvider i18n={i18n}>
               <ThemeProvider>
-                <Story />
+                <QueryClientProvider client={queryClient}>
+                  <ToastProvider>
+                    <Story />
+                  </ToastProvider>
+                </QueryClientProvider>
               </ThemeProvider>
             </I18nProvider>
           </JotaiProvider>

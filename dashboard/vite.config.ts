@@ -1,6 +1,7 @@
 import { lingui } from "@lingui/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import sassDts from "vite-plugin-sass-dts";
@@ -18,6 +19,18 @@ export default defineConfig(({ command }) => {
       svgr(),
       sassDts({ enabledMode: ["development"] }),
       checker({ typescript: true, overlay: false }),
+      // Strip MSW service worker from production builds.
+      // It is a dev-only tool; shipping it to prod is wasteful.
+      {
+        name: "strip-msw-worker",
+        apply: "build",
+        closeBundle() {
+          const mswPath = path.resolve(__dirname, "dist/mockServiceWorker.js");
+          if (fs.existsSync(mswPath)) {
+            fs.unlinkSync(mswPath);
+          }
+        },
+      },
     ],
     resolve: {
       alias: {

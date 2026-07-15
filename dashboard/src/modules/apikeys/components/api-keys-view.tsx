@@ -2,16 +2,21 @@ import { useState, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { PageHeader, Section, Spinner, EmptyState, Button, PageError } from "@/components/ui";
+import { Section, Button, ConfirmDialog } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DataBoundary } from "@/modules/shared/components";
 import { useApiKeys } from "../hooks/use-api-keys";
 import { useToast } from "@/infrastructure/toast/toast";
 import { CreateApiKeyDialog } from "./create-api-key-dialog";
 import { ApiKeyCard } from "./api-key-card";
+import { ApiKeyListLoading, ApiKeyListError, ApiKeyListEmpty } from "../states";
+import type { ApiKey } from "@/lib/api";
 
 /**
- * API keys view — key list, create dialog, revoke flow.
+ * API keys view — key list, create dialog, revoke flow via ConfirmDialog.
  *
- * Owns all page state; the page composes this inside PageLayout.
+ * Uses `DataBoundary` for the data pipeline. Local UI state (create dialog,
+ * revoke confirmation) stays via `useState` — no cross-component coordination needed.
  */
 export function ApiKeysView() {
   const { _ } = useLingui();
@@ -19,44 +24,23 @@ export function ApiKeysView() {
   const { query, createKey, revokeKey } = useApiKeys();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
 
-  const handleRevoke = useCallback(
-    async (id: string, name: string) => {
-      if (!window.confirm(_(msg`Revoke API key "${name}"? This cannot be undone.`))) return;
-      try {
-        await revokeKey.mutateAsync(id);
-        toast.success(_(msg`API key revoked.`));
-      } catch {
-        toast.error(_(msg`Failed to revoke API key.`));
-      }
-    },
-    [revokeKey, toast, _],
-  );
+  const handleRevokeRequest = useCallback((id: string, name: string) => {
+    setRevokeTarget({ id, name });
+  }, []);
 
-  if (query.isLoading) {
-    return (
-      <>
-        <PageHeader title={_(msg`API Keys`)} />
-        <Section>
-          <Spinner />
-        </Section>
-      </>
-    );
-  }
-
-  if (query.error) {
-    return (
-      <>
-        <PageHeader
-          title={_(msg`API Keys`)}
-          description={_(msg`Manage integration API keys for Odoo, Zapier, and other partners.`)}
-        />
-        <PageError onRetry={() => query.refetch()} />
-      </>
-    );
-  }
-
-  const keys = query.data ?? [];
+  const handleRevokeConfirm = useCallback(async () => {
+    if (!revokeTarget) return;
+    try {
+      await revokeKey.mutateAsync(revokeTarget.id);
+      toast.success(_(msg`API key revoked.`));
+    } catch {
+      toast.error(_(msg`Failed to revoke API key.`));
+    } finally {
+      setRevokeTarget(null);
+    }
+  }, [revokeTarget, revokeKey, toast, _]);
 
   return (
     <>
@@ -64,21 +48,28 @@ export function ApiKeysView() {
         title={_(msg`API Keys`)}
         description={_(msg`Manage integration API keys for Odoo, Zapier, and other partners.`)}
         actions={
-          <Button onClick={() => setShowCreateDialog(true)}>{_(msg`Create API Key`)}</Button>
+          !query.isLoading && !query.error ? (
+            <Button onClick={() => setShowCreateDialog(true)}>{_(msg`Create API Key`)}</Button>
+          ) : undefined
         }
       />
 
       <Section>
-        {keys.length === 0 ? (
-          <EmptyState
-            title={_(msg`No API keys`)}
-            description={_(
-              msg`Create an API key to allow external integrations to query attendance data.`,
-            )}
-          />
-        ) : (
-          keys.map((key) => <ApiKeyCard key={key.id} key_={key} onRevoke={handleRevoke} />)
-        )}
+        <DataBoundary<ApiKey>
+          data={query.data ? query.data : undefined}
+          isLoading={query.isLoading}
+          error={query.error ?? null}
+          onRetry={() => query.refetch()}
+          loadingFallback={<ApiKeyListLoading />}
+          errorFallback={<ApiKeyListError onRetry={() => query.refetch()} />}
+          emptyFallback={<ApiKeyListEmpty />}
+        >
+          {(keys) =>
+            keys.map((key) => (
+              <ApiKeyCard key={key.id} key_={key} onRevoke={handleRevokeRequest} />
+            ))
+          }
+        </DataBoundary>
       </Section>
 
       <CreateApiKeyDialog
@@ -86,6 +77,20 @@ export function ApiKeysView() {
         onOpenChange={setShowCreateDialog}
         onCreateKey={(req) => createKey.mutateAsync(req)}
         isCreating={createKey.isPending}
+      />
+
+      <ConfirmDialog
+        open={revokeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeTarget(null);
+        }}
+        title={_(msg`Revoke API Key`)}
+        message={revokeTarget ? _(msg`Revoke API key "${revokeTarget.name}"? This cannot be undone.`) : ""}
+        confirmLabel={_(msg`Revoke`)}
+        cancelLabel={_(msg`Cancel`)}
+        variant="danger"
+        isPending={revokeKey.isPending}
+        onConfirm={handleRevokeConfirm}
       />
     </>
   );

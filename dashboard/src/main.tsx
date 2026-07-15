@@ -9,11 +9,18 @@ import { Provider as JotaiProvider } from "jotai";
 import { detectAndActivateLocale } from "@/infrastructure/locale/locale";
 import { SidePanelCmdkHandler } from "@/infrastructure/side-panel/side-panel-shell";
 import { ToastProvider } from "@/infrastructure/toast/toast";
-import { ErrorBoundary } from "@/infrastructure/error-boundary";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ThemeProvider } from "@/infrastructure/theme";
 import { AuthProvider } from "@/modules/auth/components/auth-provider";
 import { App } from "./App";
 import { LS_THEME } from "@/lib/constants";
+
+// ── Fonts ───────────────────────────────────────────────────────────────────
+
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 
 // ── Styles ─────────────────────────────────────────────────────────────────
 

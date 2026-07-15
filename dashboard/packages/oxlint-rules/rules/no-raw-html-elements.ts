@@ -7,21 +7,29 @@ export const RULE_NAME = "no-raw-html-elements";
  * use raw HTML elements. Pages and module components must compose from UI
  * primitives or named sub-components.
  *
- * ── Scope ──
- *   This rule applies to ALL non-UI, non-test files under `modules/`.
- *   - Pages:          modules/[domain]/pages/    - raw HTML + atom imports forbidden
- *   - Components:     modules/[domain]/components/ - raw HTML forbidden (atoms allowed)
- *   - Hooks/States:   modules/[domain]/hooks/ states/
+ * ── Tier System (see .notes/architecture/component-hierarchy.md) ──
  *
- * Allowed everywhere (semantic HTML5 layout):
- *   section, nav, main, article, aside, header, footer
+ *   Tier 1 — Primitives (atoms + simple molecules)
+ *            ❌ NEVER import in pages
+ *            ⚠️  Warn in module components (prefer composites)
+ *   Tier 2 — Widgets (complex molecules)
+ *            ✅ Allowed everywhere
+ *   Tier 3 — Composites (@/modules/shared/components/)
+ *            ✅ Allowed everywhere
+ *   Tier 4 — Layout Shell (@/components/layout/)
+ *            ✅ Allowed everywhere
  *
- * Forbidden raw elements (use UI primitive instead):
- *   div, span, h1-h6, p, hr, label, button, input, select, textarea
+ * ── Page enforcement (modules/* /pages/) ──
+ *   Pages may import from @/components/ui:
+ *     Section, Grid — layout primitives
+ *     EmptyState, Spinner, Skeleton — feedback states
+ *   Everything else from @/components/ui is FORBIDDEN.
+ *   (PageLayout, PageBody, PageBar, PageHeader come from @/components/layout)
  *
- * Forbidden UI atom imports (pages only):
- *   Pages may only import layout/feedback primitives. Everything else must
- *   be composed into a module component first.
+ * ── Module component enforcement (modules/* /components/) ──
+ *   Module components may import Tier 2 widgets freely.
+ *   Tier 1 atom imports (Button, Text, Badge, etc.) produce a WARNING —
+ *   prefer composing through Tier 3 composites or module-specific wrappers.
  */
 
 // ---------------------------------------------------------------------------
@@ -62,99 +70,206 @@ const ALLOWED_SEMANTIC_ELEMENTS = new Set([
 ]);
 
 /**
- * UI atom components that are NOT allowed in pages.
- * Pages should only compose molecules and layout primitives.
+ * Tier 1 — Primitives: atoms that MUST NOT be imported directly by pages.
+ * These belong in components/ui/ and should only be composed through
+ * Tier 3 composites or Tier 2 widgets.
  */
-const FORBIDDEN_UI_IMPORTS = new Set([
+const TIER1_ATOMS = new Set([
   // Typography
-  "Heading",
   "Text",
+  "Heading",
+  // Data display
+  "Badge",
+  "Avatar",
+  "StatusDot",
+  "Dot",
+  "Banner",
   "Separator",
+  "MenuSeparator",
   // Form primitives
+  "Input",
+  "TextArea",
+  "Checkbox",
+  "Switch",
+  // Actions
+  "Button",
+  "IconButton",
+  // Feedback
+  "Tooltip",
+  "VisuallyHidden",
+  "ProgressBar",
+  "CircularProgressBar",
+  "Spinner",
+  "Skeleton",
+  "SkeletonLines",
+]);
+
+/**
+ * Tier 1 — Primitives: simple molecules. Pages should NOT import these
+ * directly, but module components often need them for composition.
+ */
+const TIER1_MOLECULES = new Set([
+  "ActionGroup",
+  "AvatarGroup",
+  "Breadcrumb",
+  "ClickableListItem",
+  "ConfirmDialog",
+  "DetailGrid",
+  "DetailItem",
+  "EmptyState",
+  "Grid",
+  "InlineHeader",
+  "Info",
+  "LinkChip",
+  "ListItem",
+  "ListLoading",
+  "MenuItem",
+  "MetadataGrid",
+  "OverflowingTextWithTooltip",
+  "Section",
+  "Tag",
+  "Tabs",
+  "Tab",
+  "TabPanel",
+  "ToggleGroup",
+  "Toggle",
+  "TintedIconTile",
+]);
+
+/**
+ * ══════════════════════════════════════════════════════════════════════
+ * TIER 2 — Widgets: pages, module components, and hooks MAY import these.
+ * ══════════════════════════════════════════════════════════════════════
+ *
+ * These components are complex enough to stand on their own. They handle
+ * their own state, loading, error, and empty conditions internally.
+ */
+const TIER2_WIDGETS = new Set([
+  "AnimatedButton",
+  "AnimatedPlaceholder",
+  "Combobox",
+  "DataTable",
+  "TextCell",
+  "TimestampCell",
+  "DurationCell",
+  "StatusCell",
+  "DatePicker",
+  "Dialog",
+  "Dropdown",
+  "useDropdownContext",
+  "DropdownSearch",
+  "ErrorBoundary",
+  "FilterBar",
+  "FilterChips",
+  "FilterDateRange",
+  "FilterDropdown",
   "Form",
   "FormField",
   "FormActions",
   "FormSection",
-  "Input",
-  "Select",
-  "Checkbox",
-  "Toggle",
-  "TextArea",
-  "Button",
-  "IconButton",
-  // Data display
-  "Badge",
-  "Chip",
-  "Avatar",
-  "StatusDot",
-  "Banner",
-  "ProgressBar",
-  "Tooltip",
-  // Navigation
-  "TabList",
-  "Tab",
-  "TabPanel",
+  "FormFieldInput",
+  "FieldInputContainer",
+  "SchemaForm",
+  "InfiniteScrollSentinel",
+  "MultiSelect",
   "Pagination",
-  // Overlays
-  "Dialog",
-  "Dropdown",
-  "DropdownContent",
-  "DropdownSearch",
-  // Charts (should be in molecules)
+  "SearchInput",
+  "Select",
+  "StatCard",
+  "TableOptionsDropdown",
+  // Charts
   "Chart",
   "BarChart",
   "LineChart",
   "PieChart",
-  // Search/Filter
-  "FilterBar",
-  "FilterInput",
-  "FilterSelect",
-  "FilterDateRange",
-  "SearchInput",
-  "Combobox",
-  "MultiSelect",
-  // Table
-  "DataTable",
-  // Date
-  "DatePicker",
-  // Menu
-  "MenuItem",
-  "MenuItemNavigate",
-  "MenuSeparator",
-  // Misc
-  "VisuallyHidden",
+  "CalendarChart",
+  "RadarChart",
+  "HeatmapChart",
+  "StreamChart",
+  "BumpChart",
+  "ScatterPlotChart",
+  "buildNivoTheme",
+  "toSRGB",
+  "useChartTheme",
+  "chartTooltipStyle",
+  // Specialized inputs
+  "IpInput",
+  "isValidIpv4",
+  "PortInput",
+  "clampPort",
+  "IpPortInput",
+  "parseIpPort",
+  "ExpiryPicker",
 ]);
 
-/** UI imports that ARE allowed in pages (layout + feedback primitives). */
-const ALLOWED_UI_IMPORTS = new Set([
+/**
+ * Tier 4 — Layout shell (imported from @/components/layout, not @/components/ui).
+ * These are always allowed everywhere.
+ */
+const LAYOUT_COMPONENTS = new Set([
   "PageLayout",
   "PageBody",
   "PageBar",
   "PageHeader",
+]);
+
+/**
+ * For pages: ONLY these Tier 1 molecules are allowed from @/components/ui.
+ * Everything else from Tier 1 is forbidden at the page level.
+ */
+const PAGE_ALLOWED_TIER1 = new Set([
   "Section",
-  "Card",
-  "CardGrid",
+  "Grid",
   "EmptyState",
   "Spinner",
   "Skeleton",
   "SkeletonLines",
+  // PageBar action buttons — used for refresh, add, filter toggles
+  "IconButton",
 ]);
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const isUiComponent = (filename: string): boolean => /(?:^|\/)components\/ui\//.test(filename);
+const isUiComponentFile = (filename: string): boolean =>
+  /(?:^|\/)components\/ui\//.test(filename);
 
-const isTestOrStory = (filename: string): boolean => /\.(test|spec|stories)\.tsx?$/.test(filename);
+/** Tier 3 composites — these ARE allowed to use Tier 1 primitives. */
+const isSharedComposite = (filename: string): boolean =>
+  /(?:^|\/)modules\/shared\/components\//.test(filename);
 
-const isPageFile = (filename: string): boolean => /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
+/** Tier 4 layout shell — these ARE allowed to use Tier 1 primitives. */
+const isLayoutComponent = (filename: string): boolean =>
+  /(?:^|\/)components\/layout\//.test(filename);
 
-const isModuleFile = (filename: string): boolean => /(?:^|\/)modules\//.test(filename);
+const isTestOrStory = (filename: string): boolean =>
+  /\.(test|spec|stories)\.tsx?$/.test(filename);
+
+const isPageFile = (filename: string): boolean =>
+  /(?:^|\/)modules\/[^/]+\/pages\//.test(filename);
+
+const isModuleComponentFile = (filename: string): boolean =>
+  /(?:^|\/)modules\/[^/]+\/components\//.test(filename);
+
+const isModuleFile = (filename: string): boolean =>
+  /(?:^|\/)modules\//.test(filename);
 
 const resolveImportSource = (node: any): string | null => {
   const source = node.source?.value;
   if (typeof source === "string") return source;
+  return null;
+};
+
+/**
+ * Classify a named import from @/components/ui into its tier.
+ * Returns null if the import is from a different barrel or unknown.
+ */
+const classifyImport = (name: string): "tier1-atom" | "tier1-molecule" | "tier2-widget" | "layout" | null => {
+  if (TIER1_ATOMS.has(name)) return "tier1-atom";
+  if (TIER1_MOLECULES.has(name)) return "tier1-molecule";
+  if (TIER2_WIDGETS.has(name)) return "tier2-widget";
+  if (LAYOUT_COMPONENTS.has(name)) return "layout";
   return null;
 };
 
@@ -167,64 +282,91 @@ export const rule = defineRule({
     type: "suggestion",
     docs: {
       description:
-        "Raw HTML elements (div, span, h1-h6, p, button, input, select, textarea) are forbidden outside components/ui/. Pages and module components must compose from UI primitives. Pages additionally cannot import UI atoms directly.",
+        "Enforces component hierarchy: raw HTML elements forbidden outside components/ui/. Pages may only import Section/Grid/EmptyState/Spinner/Skeleton from @/components/ui. Module components may import Tier 2 widgets but get warnings for Tier 1 atom imports.",
     },
     messages: {
-      rawElement: "Raw <{{ element }}> outside components/ui/. Replace with {{ replacement }}",
+      rawElementInPage:
+        "Raw <{{ element }}> in page. Replace with {{ replacement }}",
       rawElementInModule:
-        "Raw <{{ element }}> in module component. Replace with {{ replacement }} If no UI primitive exists, create one in components/ui/ first.",
+        "Raw <{{ element }}> in module component. Replace with {{ replacement }}. If no UI primitive exists, create one in components/ui/ first.",
       atomImport:
-        'Atom component "{{ name }}" imported in page from @/components/ui. Extract this into a module component under modules/*/components/ and compose that from the page. Only PageLayout, PageBody, PageBar, PageHeader, Section, Card, CardGrid, EmptyState, Spinner, and Skeleton are permitted at the page level.',
+        'Tier 1 atom "{{ name }}" imported in page from @/components/ui. Pages must only import Section, Grid, EmptyState, Spinner, Skeleton. Extract this into a module component under modules/*/components/ and compose from the page.',
+      moleculeImport:
+        'Tier 1 molecule "{{ name }}" imported in page from @/components/ui. Pages must only import Section, Grid, EmptyState, Spinner, Skeleton. Extract this into a module component.',
+      tier1AtomInModuleComponent:
+        'Tier 1 atom "{{ name }}" imported in module component from @/components/ui. Prefer composing through Tier 3 composites (@/modules/shared/components/) or Tier 2 widgets instead of raw primitives.',
     },
     schema: [
       {
         type: "object",
         properties: {
           skipTestFiles: { type: "boolean" },
+          warnTier1InModuleComponents: { type: "boolean" },
         },
         additionalProperties: false,
       },
     ],
   },
   create: (context) => {
-    const options = (context.options as [{ skipTestFiles?: boolean }])?.[0];
+    const options = (context.options as [{ skipTestFiles?: boolean; warnTier1InModuleComponents?: boolean }])?.[0];
     const skipTestFiles = options?.skipTestFiles ?? true;
+    const warnTier1InModuleComponents = options?.warnTier1InModuleComponents ?? true;
     const filename = context.filename as string;
 
     // Skip the UI component library itself — that's where raw elements belong
-    if (isUiComponent(filename)) return {};
+    if (isUiComponentFile(filename)) return {};
+
+    // Skip Tier 3 composites — they compose primitives by design
+    if (isSharedComposite(filename)) return {};
+
+    // Skip Tier 4 layout shell
+    if (isLayoutComponent(filename)) return {};
 
     // Skip test/story files
     if (skipTestFiles && isTestOrStory(filename)) return {};
 
-    // Only enforce in module files (pages + components + hooks + states)
+    // Only enforce in module files
     const inPage = isPageFile(filename);
+    const inModuleComponent = isModuleComponentFile(filename);
     const inModule = isModuleFile(filename);
 
     if (!inPage && !inModule) return {};
 
     return {
-      // --- Check 1: Forbidden UI atom imports from @/components/ui (pages only) ---
+      // --- Check 1: UI imports from @/components/ui ---
       ImportDeclaration: (node: any) => {
-        if (!inPage) return;
-
         const source = resolveImportSource(node);
-        if (!source || source !== "@/components/ui") return;
+        if (!source) return;
+
+        // Only check @/components/ui imports
+        if (source !== "@/components/ui") return;
 
         for (const spec of node.specifiers || []) {
           const name = spec.imported?.name || spec.imported?.value || spec.local?.name;
           if (!name) continue;
 
-          // Allow layout/feedback primitives
-          if (ALLOWED_UI_IMPORTS.has(name)) continue;
+          const tier = classifyImport(name);
+          if (!tier) continue; // Unknown — skip
 
-          // Flag everything else from @/components/ui
-          if (FORBIDDEN_UI_IMPORTS.has(name)) {
+          if (inPage) {
+            // Pages: only allow Tier 2 widgets + specific Tier 1 primitives
+            if (tier === "tier2-widget" || tier === "layout") continue;
+            if (PAGE_ALLOWED_TIER1.has(name)) continue;
+
             context.report({
               node: spec,
-              messageId: "atomImport",
+              messageId: tier === "tier1-atom" ? "atomImport" : "moleculeImport",
               data: { name },
             });
+          } else if (inModuleComponent && warnTier1InModuleComponents) {
+            // Module components: warn about Tier 1 atom imports
+            if (tier === "tier1-atom") {
+              context.report({
+                node: spec,
+                messageId: "tier1AtomInModuleComponent",
+                data: { name },
+              });
+            }
           }
         }
       },
@@ -252,7 +394,7 @@ export const rule = defineRule({
 
         context.report({
           node: openingEl,
-          messageId: inPage ? "rawElement" : "rawElementInModule",
+          messageId: inPage ? "rawElementInPage" : "rawElementInModule",
           data: {
             element: tagName,
             replacement: FORBIDDEN_ELEMENTS[tagName],

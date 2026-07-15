@@ -1,12 +1,6 @@
 declare const classNames: {
   readonly root: "root";
-  readonly toolbar: "toolbar";
-  readonly filterArea: "filterArea";
-  readonly actions: "actions";
   readonly filterButton: "filterButton";
-  readonly filterButtonOpen: "filterButtonOpen";
-  readonly resetButton: "resetButton";
-  readonly count: "count";
   readonly backdrop: "backdrop";
   readonly popover: "popover";
   readonly fieldList: "fieldList";
@@ -17,6 +11,5 @@ declare const classNames: {
   readonly valuePanel: "valuePanel";
   readonly backButton: "backButton";
   readonly valueContent: "valueContent";
-  readonly chips: "chips";
 };
 export = classNames;

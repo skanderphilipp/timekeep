@@ -93,6 +93,18 @@ impl From<&DeviceConfig> for DeviceResponse {
     }
 }
 
+/// A user synced from a device and stored in the local database.
+/// Used by the "Users on Device" tab in the dashboard.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct SyncedUserResponse {
+    /// Device PIN / employee number.
+    pub pin: String,
+    /// Display name from the device.
+    pub name: String,
+    /// Privilege level (0 = normal, 14 = admin).
+    pub privilege: i32,
+}
+
 /// Minimal device summary for list endpoints.
 #[derive(Debug, Serialize, ToSchema)]
 pub struct DeviceSummary {
@@ -111,6 +123,10 @@ pub struct DeviceSummary {
 
     /// Whether the SDK poll loop is running for this device
     pub sdk_poll_active: bool,
+
+    /// Last time the SDK poller successfully reached the device (Unix seconds)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sdk_last_poll: Option<i64>,
 
     /// Last time the device was seen (Unix seconds)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -133,6 +149,7 @@ impl From<&DeviceConfig> for DeviceSummary {
             connection_status: "unknown".into(),
             adms_active: false,
             sdk_poll_active: false,
+            sdk_last_poll: None,
             last_seen_at: None,
             location: c.location.clone(),
         }
@@ -151,6 +168,7 @@ impl From<&Device> for DeviceSummary {
             connection_status: format!("{:?}", d.status).to_lowercase(),
             adms_active: false,
             sdk_poll_active: false,
+            sdk_last_poll: None,
             last_seen_at: d.last_seen.map(|t| t.as_second()),
             location: d.location.clone(),
         }
@@ -186,6 +204,8 @@ pub struct DeviceDetailResponse {
     // ── Connection ──
     pub adms_active: bool,
     pub sdk_poll_active: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sdk_last_poll: Option<i64>,
 
     // ── Capacity ──
     pub user_count: u32,
@@ -208,16 +228,36 @@ pub struct DeviceDetailResponse {
 
 impl DeviceDetailResponse {
     /// Build from DeviceConfig + optional enriched Device info + connection state.
+    ///
+    /// `synced_user_count` and `synced_record_count` come from the local database
+    /// (synced from devices at startup). They take precedence over the live Device
+    /// struct values when provided (non-zero). This ensures the dashboard shows real
+    /// numbers even when the device is offline.
     pub fn from_parts(
         config: &DeviceConfig,
         device: Option<&Device>,
         adms_active: bool,
         sdk_active: bool,
         last_seen: Option<i64>,
+        sdk_last_poll: Option<i64>,
+        synced_user_count: u32,
+        synced_record_count: u32,
     ) -> Self {
         let d = device;
         let status =
             d.map(|d| format!("{:?}", d.status).to_lowercase()).unwrap_or_else(|| "offline".into());
+
+        // Use DB-synced counts as primary source; fall back to live device info
+        let user_count = if synced_user_count > 0 {
+            synced_user_count
+        } else {
+            d.map(|d| d.user_count).unwrap_or(0)
+        };
+        let record_count = if synced_record_count > 0 {
+            synced_record_count
+        } else {
+            d.map(|d| d.record_count).unwrap_or(0)
+        };
 
         Self {
             config: DeviceResponse::from(config),
@@ -237,9 +277,10 @@ impl DeviceDetailResponse {
             uptime_seconds: d.and_then(|d| d.uptime_seconds),
             adms_active,
             sdk_poll_active: sdk_active,
-            user_count: d.map(|d| d.user_count).unwrap_or(0),
+            sdk_last_poll,
+            user_count,
             user_capacity: d.map(|d| d.user_capacity).unwrap_or(0),
-            record_count: d.map(|d| d.record_count).unwrap_or(0),
+            record_count,
             record_capacity: d.map(|d| d.record_capacity).unwrap_or(0),
             record_usage_pct: d.map(|d| d.record_usage_pct()).unwrap_or(0.0),
             fingerprint_count: d.map(|d| d.fingerprint_count).unwrap_or(0),
@@ -253,7 +294,7 @@ impl DeviceDetailResponse {
 
     /// Legacy: build from config only (no device info available).
     pub fn from_config(config: &DeviceConfig, device: Option<&Device>) -> Self {
-        Self::from_parts(config, device, false, false, None)
+        Self::from_parts(config, device, false, false, None, None, 0, 0)
     }
 
     /// Build a "not found" placeholder.
@@ -282,6 +323,7 @@ impl DeviceDetailResponse {
             uptime_seconds: None,
             adms_active: false,
             sdk_poll_active: false,
+            sdk_last_poll: None,
             user_count: 0,
             user_capacity: 0,
             record_count: 0,
@@ -328,7 +370,7 @@ impl From<&DeviceEvent> for DeviceEventResponse {
 }
 
 /// Build a human-readable label from a device event.
-fn device_event_label(e: &DeviceEvent) -> String {
+pub(crate) fn device_event_label(e: &DeviceEvent) -> String {
     match &e.event_type {
         DeviceEventType::CameOnline => "Came online".into(),
         DeviceEventType::WentOffline { reason } => format!("Went offline ({reason})"),
@@ -353,6 +395,16 @@ fn device_event_label(e: &DeviceEvent) -> String {
         DeviceEventType::Decommissioned => "Decommissioned".into(),
         DeviceEventType::FirmwareUpdated { old_version, new_version } => {
             format!("Firmware updated: {old_version} → {new_version}")
+        },
+        DeviceEventType::OperationLog { op_type, admin_pin, .. } => {
+            format!("Device operation: {op_type} (admin: {admin_pin})")
+        },
+        DeviceEventType::UserSynced { action, pin, name } => {
+            let name_str = name.as_deref().unwrap_or("unknown");
+            format!("User {action}: {pin} ({name_str})")
+        },
+        DeviceEventType::DeviceCommandExecuted { command } => {
+            format!("Device command: {command}")
         },
     }
 }
@@ -1117,6 +1169,96 @@ impl From<&timekeep_core::CalendarDay> for CalendarDayResponse {
             status_code: cd.status_code,
             hours: cd.hours,
             is_working_day: cd.is_working_day,
+        }
+    }
+}
+
+// ─── About / Support ───────────────────────────────────────────────────
+
+/// Public endpoint response — no auth required.
+/// Surfaced in the dashboard footer and error pages
+/// to show users where to get help.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct AboutResponse {
+    /// Application name.
+    pub name: String,
+    /// Current version.
+    pub version: String,
+    /// Support email (empty string if not configured).
+    pub support_email: String,
+    /// Workspace/company name (empty string if not configured).
+    pub workspace_name: String,
+}
+
+// ─── Device Activity Feed ──────────────────────────────────────────────
+
+/// A single entry in the per-device activity feed, merging
+/// device-originated events (online, sync, op_log) with server-side
+/// events (audit log entries).
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DeviceActivityEntry {
+    /// Unique event identifier.
+    pub id: String,
+    /// ISO-8601 timestamp string.
+    pub timestamp: String,
+    /// Unix timestamp (seconds) for sorting.
+    #[serde(skip)]
+    pub ts_secs: i64,
+    /// Human-readable label for display.
+    pub label: String,
+    /// Event type key: "came_online", "user_synced", "device.created", etc.
+    pub event_type: String,
+    /// Who performed the action (username or "device").
+    pub actor: String,
+    /// "device" or "server".
+    pub source: String,
+    /// Whether this event indicates a problem (for alerting).
+    pub is_problem: bool,
+}
+
+impl DeviceActivityEntry {
+    /// Create from a DeviceEvent.
+    pub fn from_device_event(e: &DeviceEvent, label_fn: fn(&DeviceEvent) -> String) -> Self {
+        Self {
+            id: e.id.clone(),
+            timestamp: e.timestamp.to_string(),
+            ts_secs: e.timestamp.as_second(),
+            label: label_fn(e),
+            event_type: e.event_type.key().to_string(),
+            actor: "device".into(),
+            source: "device".into(),
+            is_problem: e.event_type.is_problem(),
+        }
+    }
+
+    /// Create from an AuditEvent.
+    pub fn from_audit_event(e: &timekeep_core::AuditEvent) -> Self {
+        let label = Self::audit_label(&e.action, &e.resource);
+        Self {
+            id: e.id.clone(),
+            timestamp: jiff::Timestamp::from_second(e.timestamp)
+                .map(|t| t.to_string())
+                .unwrap_or_default(),
+            ts_secs: e.timestamp,
+            label,
+            event_type: e.action.clone(),
+            actor: e.actor.clone(),
+            source: "server".into(),
+            is_problem: e.status == "error",
+        }
+    }
+
+    fn audit_label(action: &str, resource: &str) -> String {
+        match action {
+            "device.created" => format!("Device added: {resource}"),
+            "device.updated" => format!("Device updated: {resource}"),
+            "device.deleted" => format!("Device removed: {resource}"),
+            "settings.updated" => "Settings changed".into(),
+            "user.created" => "Dashboard user created".into(),
+            "user.updated" => "Dashboard user updated".into(),
+            "user.deleted" => "Dashboard user deleted".into(),
+            "login" => "Admin logged in".into(),
+            _ => format!("{action}: {resource}"),
         }
     }
 }

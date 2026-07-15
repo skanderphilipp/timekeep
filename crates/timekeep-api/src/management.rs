@@ -179,7 +179,7 @@ pub(crate) async fn export_punches(
     State(state): State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ExportQueryParams>,
 ) -> Result<ExportResponse, AppError> {
-    use timekeep_core::traits::storage::PunchFilter;
+    use timekeep_core::PunchFilter;
 
     let filter = PunchFilter {
         device_sn: params.device_sn.clone(),
@@ -190,6 +190,7 @@ pub(crate) async fn export_punches(
         status: None,
         verify_mode: None,
         anomalies_only: None,
+        cursor_after: None,
         params: timekeep_core::ListParams {
             sort_by: Some("timestamp".into()),
             sort_order: params.sort_order.unwrap_or(timekeep_core::SortOrder::Desc),
@@ -363,7 +364,7 @@ pub(crate) async fn list_endpoints(
     State(state): State<AppState>,
     Query(params): Query<timekeep_core::ListParams>,
 ) -> Result<Json<ApiEnvelope<Vec<EndpointResponse>>>, AppError> {
-    use timekeep_core::traits::storage::EndpointFilter;
+    use timekeep_core::EndpointFilter;
 
     let filter = EndpointFilter { params };
     let result = state.storage.list_endpoints_filtered(&filter).await?;
@@ -575,6 +576,15 @@ pub(crate) async fn update_settings(
         }
     }
 
+    if let Some(email) = body.support_email {
+        current.support_email = email;
+        changed.push("support_email".into());
+    }
+    if let Some(wn) = body.workspace_name {
+        current.workspace_name = wn;
+        changed.push("workspace_name".into());
+    }
+
     state.storage.upsert_system_settings(&current).await?;
 
     // Publish settings-changed domain event for audit trail
@@ -659,4 +669,48 @@ pub(crate) async fn query_audit(
     };
 
     Ok(Json(ApiEnvelope::paginated(items, meta)))
+}
+
+/// Return the entity schema for audit logs.
+#[utoipa::path(
+    get,
+    path = "/api/audit/schema",
+    tag = "Audit",
+    security(("bearer_auth" = [])),
+    responses(
+        (status = 200, description = "Audit entity schema metadata", body = timekeep_core::EntitySchema),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
+pub(crate) async fn audit_schema() -> Json<ApiEnvelope<timekeep_core::EntitySchema>> {
+    Json(ApiEnvelope::success(timekeep_core::AUDIT_SCHEMA.clone()))
+}
+
+/// Return faceted filter metadata for audit logs.
+#[utoipa::path(
+    get,
+    path = "/api/audit/filters",
+    tag = "Audit",
+    security(("bearer_auth" = [])),
+    params(crate::request::GenericFacetParams),
+    responses(
+        (status = 200, description = "Audit facet metadata"),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
+pub(crate) async fn audit_filters(
+    State(state): State<AppState>,
+    Query(q): Query<crate::request::GenericFacetParams>,
+) -> Result<Json<ApiEnvelope<Vec<timekeep_core::FacetGroup>>>, AppError> {
+    use timekeep_core::{FacetContext, FacetQuery};
+
+    let query = FacetQuery {
+        dimension: q.dimension.clone(),
+        search: q.search.clone(),
+        limit: q.limit.clamp(1, 100),
+        context: FacetContext::default(),
+    };
+
+    let groups = state.storage.audit_facets(&query).await?;
+    Ok(Json(ApiEnvelope::success(groups)))
 }

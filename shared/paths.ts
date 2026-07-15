@@ -26,6 +26,8 @@ export const AppRoute = {
     list: "/devices",
     new: "/devices/new",
     /** @param sn — device serial number */
+    detail: (sn: string) => `/devices/${encodeURIComponent(sn)}`,
+    /** @param sn — device serial number */
     edit: (sn: string) => `/devices/${encodeURIComponent(sn)}/edit`,
   },
 
@@ -35,6 +37,15 @@ export const AppRoute = {
     byDevice: (sn: string) => `/punches?device_sn=${encodeURIComponent(sn)}`,
     /** Opens the punch list filtered to a specific user PIN. */
     byUser: (pin: string) => `/punches?user_pin=${encodeURIComponent(pin)}`,
+  },
+
+  employees: {
+    list: "/employees",
+    new: "/employees/new",
+    /** @param id — employee UUID */
+    detail: (id: string) => `/employees/${encodeURIComponent(id)}`,
+    /** @param id — employee UUID */
+    edit: (id: string) => `/employees/${encodeURIComponent(id)}/edit`,
   },
 
   reports: "/reports",
@@ -71,6 +82,8 @@ export const ALL_ROUTE_PATHS = [
   AppRoute.devices.list,
   AppRoute.devices.new,
   AppRoute.punches.list,
+  AppRoute.employees.list,
+  AppRoute.employees.new,
   AppRoute.reports,
   AppRoute.settings.system,
   AppRoute.settings.users,

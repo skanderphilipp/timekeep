@@ -300,7 +300,7 @@ async fn test_attendance_records() {
 /// Verify DeviceProbe structure is correct even without a real connection.
 #[test]
 fn test_probe_structure() {
-    let probe = DeviceProbe::minimal("TEST001");
+    let probe = DeviceProbe::minimal("TEST001", "");
     assert_eq!(probe.serial_number, "TEST001");
     assert_eq!(probe.vendor, "unknown");
     assert!(probe.model.is_empty());
@@ -313,6 +313,7 @@ fn test_probe_structure() {
         firmware_version: "Ver 6.60".into(),
         platform: "ZLM60_TFT".into(),
         mac_address: "00:17:61:10:41:52".into(),
+        host: "88.201.39.242".into(),
         user_count: 116,
         record_count: 11489,
     };

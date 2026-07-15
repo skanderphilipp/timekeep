@@ -196,10 +196,12 @@ export function apiGetWithMeta<T>(path: string): {
 /**
  * POST JSON to the API and unwrap the `data` field from the response envelope.
  */
-export function apiPost<T>(path: string, body: unknown): { json: () => Promise<T> } {
+export function apiPost<T>(path: string, body: unknown, opts?: { timeout?: number | false }): { json: () => Promise<T> } {
   return {
     json: async () => {
-      const envelope = await _client.post(path, { json: body }).json<ApiEnvelope<T>>();
+      const envelope = await _client
+        .post(path, { json: body, ...(opts?.timeout !== undefined ? { timeout: opts.timeout } : {}) })
+        .json<ApiEnvelope<T>>();
       return envelope.data;
     },
   };

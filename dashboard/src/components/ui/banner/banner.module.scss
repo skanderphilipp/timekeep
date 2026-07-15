@@ -2,31 +2,40 @@
   align-items: flex-start;
   border-radius: var(--ao-radius-md);
   display: flex;
-  gap: var(--ao-spacing-3);
-  padding: var(--ao-spacing-4);
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-3) var(--ao-spacing-3) var(--ao-spacing-2);
+}
+
+/* ── Header row ────────────────────────────────────────────────────────────── */
+
+.header {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  gap: var(--ao-spacing-2);
+  min-height: var(--ao-spacing-6);
 }
 
 .icon {
+  align-items: center;
   display: flex;
   flex-shrink: 0;
-  margin-block-start: 1px;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--ao-spacing-1);
-  min-width: 0;
+  height: var(--ao-spacing-4);
+  justify-content: center;
+  width: var(--ao-spacing-4);
 }
 
 .title {
-  font-size: var(--ao-font-size-sm);
-  font-weight: var(--ao-font-weight-semibold);
-}
-
-.text {
-  font-size: var(--ao-font-size-sm);
+  color: var(--ao-font-color-primary);
+  flex: 1;
+  font-size: var(--ao-font-size-md);
+  font-weight: var(--ao-font-weight-medium);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dismiss {
@@ -48,7 +57,44 @@
   }
 }
 
-// ── Variants ───────────────────────────────────────────────────────────────────
+/* ── Body ──────────────────────────────────────────────────────────────────── */
+
+.body {
+  align-items: flex-start;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  padding-bottom: var(--ao-spacing-2);
+  padding-inline-start: var(--ao-spacing-6);
+}
+
+.bodyWithAction {
+  padding-bottom: 0;
+}
+
+.description {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-regular);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.text {
+  font-size: var(--ao-font-size-sm);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+
+.footer {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Variant backgrounds ───────────────────────────────────────────────────── */
 
 .info {
   background: var(--ao-accent-accent3);
@@ -68,4 +114,31 @@
 .danger {
   background: var(--ao-color-red3);
   color: var(--ao-color-red11);
+}
+
+.neutral {
+  background: var(--ao-background-secondary);
+  color: var(--ao-font-color-primary);
+}
+
+/* ── Icon variant colors ───────────────────────────────────────────────────── */
+
+.infoIcon {
+  color: var(--ao-accent-accent9);
+}
+
+.successIcon {
+  color: var(--ao-color-green9);
+}
+
+.warningIcon {
+  color: var(--ao-color-amber9);
+}
+
+.dangerIcon {
+  color: var(--ao-color-red9);
+}
+
+.neutralIcon {
+  color: var(--ao-font-color-tertiary);
 }

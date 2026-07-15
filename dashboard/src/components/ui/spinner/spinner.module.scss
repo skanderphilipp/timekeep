@@ -1,3 +1,5 @@
+@use "@/styles/mixins" as *;
+
 .spinner {
   animation: spin 0.8s linear infinite;
   border-color: var(--ao-border-color-medium);
@@ -5,6 +7,7 @@
   border-style: solid;
   border-right-color: var(--ao-accent-accent9);
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .sm {

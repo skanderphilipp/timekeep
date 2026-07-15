@@ -1,0 +1,15 @@
+.statusRow {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--ao-spacing-3);
+}
+
+.sectionTitle {
+  margin-bottom: var(--ao-spacing-3);
+}
+
+.storageBar {
+  margin-block-start: var(--ao-spacing-3);
+  width: 100%;
+}

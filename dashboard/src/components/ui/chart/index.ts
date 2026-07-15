@@ -18,7 +18,7 @@ export { BumpChart } from "./BumpChart";
 export type { BumpSerieDef, BumpChartProps } from "./BumpChart";
 export { ScatterPlotChart } from "./ScatterPlotChart";
 export type { ScatterSerieDef, ScatterPlotChartProps } from "./ScatterPlotChart";
-export { buildNivoTheme } from "./nivo-theme";
+export { buildNivoTheme, toSRGB } from "./nivo-theme";
 export { useChartTheme } from "./use-chart-theme";
 export type { ChartTheme } from "./use-chart-theme";
 export { chartTooltipStyle } from "./chart-tooltip-style";

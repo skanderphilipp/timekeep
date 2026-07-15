@@ -1,0 +1,126 @@
+@use "@/styles/mixins" as *;
+
+// ── Full-page layout ───────────────────────────────────────────────────────
+
+.layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--ao-spacing-6);
+  position: relative;
+  overflow: hidden;
+  background: var(--ao-background-primary);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Animated background
+// ═══════════════════════════════════════════════════════════════════════════
+
+.background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+// ── Gradient wash ──────────────────────────────────────────────────────────
+
+.gradient {
+  position: absolute;
+  inset: 0;
+
+  // Accent-colored radial gradients that create depth
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 0%,
+      color-mix(in srgb, var(--ao-accent-accent9) 8%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 80%,
+      color-mix(in srgb, var(--ao-accent-accent9) 5%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 30% at 20% 60%,
+      color-mix(in srgb, var(--ao-accent-accent9) 4%, transparent) 0%,
+      transparent 50%
+    );
+}
+
+// ── Noise texture overlay ──────────────────────────────────────────────────
+
+.noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+
+  // CSS-only noise via SVG data URI (no external image needed)
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+// ── Floating accent shapes ─────────────────────────────────────────────────
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    color-mix(in srgb, var(--ao-accent-accent9) 15%, transparent),
+    transparent
+  );
+  filter: blur(40px);
+  will-change: transform;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Centered content
+// ═══════════════════════════════════════════════════════════════════════════
+
+.main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-spacing-8);
+  width: 100%;
+  max-width: 420px;
+}
+
+// ── Branding header ────────────────────────────────────────────────────────
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-spacing-3);
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.workspace {
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  color: var(--ao-font-color-tertiary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--ao-background-transparent-light);
+  padding: var(--ao-spacing-1) var(--ao-spacing-3);
+  border-radius: var(--ao-radius-pill);
+  border: 1px solid var(--ao-border-color-light);
+}
+
+// ── Card slot ──────────────────────────────────────────────────────────────
+
+.card {
+  width: 100%;
+}

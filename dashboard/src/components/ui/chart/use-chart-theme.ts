@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { useTheme, type Theme } from "@/infrastructure/theme";
 
-import { buildNivoTheme } from "./nivo-theme";
+import { buildNivoTheme, toSRGB } from "./nivo-theme";
 
 /**
  * Theme bridge for chart components.
@@ -41,7 +41,11 @@ function resolveToken(reference: string): string {
   if (!token) return reference;
   if (typeof document === "undefined") return reference;
   const resolved = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
-  return resolved === "" ? reference : resolved;
+  if (resolved === "") return reference;
+  // Convert P3 colors to sRGB so Nivo / d3-color can parse them.
+  // Without this, any token with a color(display-p3 …) fallback
+  // (most semantic scales) renders invisibly.
+  return toSRGB(resolved);
 }
 
 export function useChartTheme(): ChartTheme {

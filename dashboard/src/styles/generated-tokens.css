@@ -158,8 +158,8 @@
   --ao-background-page: color(display-p3 0.975 0.975 0.975);
   --ao-background-transparent-lighter: #00000003;
   --ao-background-transparent-lighter: color(display-p3 0 0 0 / 0.012);
-  --ao-background-transparent-light: #00000006;
-  --ao-background-transparent-light: color(display-p3 0 0 0 / 0.024);
+  --ao-background-transparent-light: #0000000f;
+  --ao-background-transparent-light: color(display-p3 0 0 0 / 0.063);
   --ao-background-transparent-medium: #0000001f;
   --ao-background-transparent-medium: color(display-p3 0 0 0 / 0.122);
   --ao-background-transparent-strong: #00000031;
@@ -173,8 +173,8 @@
   --ao-font-color-tertiary: color(display-p3 0.512 0.512 0.512);
   --ao-font-color-light: #bbbbbb;
   --ao-font-color-light: color(display-p3 0.732 0.732 0.732);
-  --ao-font-color-extraLight: #cecece;
-  --ao-font-color-extraLight: color(display-p3 0.807 0.807 0.807);
+  --ao-font-color-extralight: #cecece;
+  --ao-font-color-extralight: color(display-p3 0.807 0.807 0.807);
   --ao-font-color-disabled: #bbbbbb;
   --ao-font-color-disabled: color(display-p3 0.732 0.732 0.732);
   --ao-font-color-danger: #e5484d;
@@ -474,8 +474,8 @@
   --ao-background-page: color(display-p3 0.098 0.098 0.098);
   --ao-background-transparent-lighter: #00000000;
   --ao-background-transparent-lighter: color(display-p3 0 0 0 / 0);
-  --ao-background-transparent-light: #ffffff09;
-  --ao-background-transparent-light: color(display-p3 1 1 1 / 0.034);
+  --ao-background-transparent-light: #ffffff12;
+  --ao-background-transparent-light: color(display-p3 1 1 1 / 0.071);
   --ao-background-transparent-medium: #ffffff22;
   --ao-background-transparent-medium: color(display-p3 1 1 1 / 0.134);
   --ao-background-transparent-strong: #ffffff3b;
@@ -489,8 +489,8 @@
   --ao-font-color-tertiary: color(display-p3 0.484 0.484 0.484);
   --ao-font-color-light: #606060;
   --ao-font-color-light: color(display-p3 0.375 0.375 0.375);
-  --ao-font-color-extraLight: #484848;
-  --ao-font-color-extraLight: color(display-p3 0.283 0.283 0.283);
+  --ao-font-color-extralight: #484848;
+  --ao-font-color-extralight: color(display-p3 0.283 0.283 0.283);
   --ao-font-color-disabled: #606060;
   --ao-font-color-disabled: color(display-p3 0.375 0.375 0.375);
   --ao-font-color-danger: #e5484d;

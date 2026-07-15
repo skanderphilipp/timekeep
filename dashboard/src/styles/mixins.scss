@@ -3,13 +3,12 @@
 
 @use "sass:map";
 
-
 // ── Animation ────────────────────────────────────────────────────────────────
 // Twenty UI alignment: unitless duration tokens → seconds via calc().
 // Usage: transition: background duration(fast) ease;
 
 @function duration($name) {
-  @return calc(var(--ao-animation-duration-#{$name}) * 1s);
+  @return calc(var(--ao-animation-duration-#{$name}) * 1s); // token-lint-ignore (SCSS interpolation)
 }
 
 // ── Breakpoints ──────────────────────────────────────────────────────────────
@@ -66,7 +65,11 @@ $breakpoints: (
 
 /// Double-ring focus enhancement for solid buttons (primary/danger).
 /// Combines outline + box-shadow for a punched-out effect.
-@mixin focus-ring-enhanced($size: 2px, $color: var(--ao-accent-accent9), $glow-color: var(--ao-accent-accent5)) {
+@mixin focus-ring-enhanced(
+  $size: 2px,
+  $color: var(--ao-accent-accent9),
+  $glow-color: var(--ao-accent-accent5)
+) {
   &:focus-visible {
     outline: $size solid $color;
     outline-offset: 1px;

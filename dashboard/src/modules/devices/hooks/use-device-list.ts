@@ -51,9 +51,9 @@ export function useDeviceList() {
     if (search) {
       result = all.filter(
         (d) =>
-          d.label.toLowerCase().includes(search) ||
-          d.serial_number.toLowerCase().includes(search) ||
-          d.host.toLowerCase().includes(search),
+          d.label?.toLowerCase().includes(search) ||
+          d.serial_number?.toLowerCase().includes(search) ||
+          d.host?.toLowerCase().includes(search),
       );
     }
 

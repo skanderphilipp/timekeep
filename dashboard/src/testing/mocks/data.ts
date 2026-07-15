@@ -18,6 +18,7 @@ import type {
   UserProfile,
   ReportSummary,
   EmployeeReportKpi,
+  AuditEvent,
 } from "@/lib/api";
 import type { ApiEnvelope } from "@/lib/api-client";
 import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
@@ -546,6 +547,126 @@ export const MOCK_DEVICE_SUMMARIES: DeviceSummary[] = MOCK_DEVICES.map((d) => ({
   last_seen_at: d.serial_number === "OFM9928475623" ? NOW() - 3600 : NOW() - 30,
 }));
 
+// ── Audit mocks ──────────────────────────────────────────────────────────────
+
+const NOW_SECONDS = () => Math.floor(Date.now() / 1000);
+const ts = (offsetSeconds: number) => NOW_SECONDS() + offsetSeconds;
+
+export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
+  {
+    id: "audit-001",
+    timestamp: ts(-60),
+    actor: "admin",
+    action: "device.add",
+    resource: "/api/devices",
+    detail: { serial_number: "CQZ7232960836", label: "Main Gate" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-002",
+    timestamp: ts(-180),
+    actor: "admin",
+    action: "punch.correct",
+    resource: "/api/punches/correct",
+    detail: { user_pin: "145", status: "check_out" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-003",
+    timestamp: ts(-300),
+    actor: "operator_ahmed",
+    action: "user.enroll",
+    resource: "/api/devices/CQZ7232960836/users",
+    detail: { user_pin: "203", device_sn: "CQZ7232960836" },
+    ip_address: "192.168.1.20",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-004",
+    timestamp: ts(-420),
+    actor: "admin",
+    action: "api_key.create",
+    resource: "/api/api-keys",
+    detail: { name: "Odoo Integration", permissions: "read:punches" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-005",
+    timestamp: ts(-600),
+    actor: "operator_ahmed",
+    action: "device.sync",
+    resource: "/api/devices/BKW8471209384/sync",
+    detail: { device_sn: "BKW8471209384" },
+    ip_address: "192.168.1.20",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-006",
+    timestamp: ts(-900),
+    actor: "operator_fatima",
+    action: "device.command",
+    resource: "/api/devices/OFM9928475623/commands",
+    detail: { command: "RESTART", device_sn: "OFM9928475623" },
+    ip_address: "192.168.1.30",
+    status: "failure",
+    error_message: "Device OFM9928475623 is offline — command queued for retry",
+  },
+  {
+    id: "audit-007",
+    timestamp: ts(-1200),
+    actor: "admin",
+    action: "settings.update",
+    resource: "/api/settings",
+    detail: { poll_interval_secs: 30 },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-008",
+    timestamp: ts(-1800),
+    actor: "admin",
+    action: "auth.login",
+    resource: "/api/auth/login",
+    detail: null,
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-009",
+    timestamp: ts(-2400),
+    actor: "operator_ahmed",
+    action: "employee.create",
+    resource: "/api/employees",
+    detail: { employee_name: "Khalid Al-Otaibi", pin: "301" },
+    ip_address: "192.168.1.20",
+    status: "success",
+    error_message: null,
+  },
+  {
+    id: "audit-010",
+    timestamp: ts(-3600),
+    actor: "admin",
+    action: "device.remove",
+    resource: "/api/devices/OLD0123456789",
+    detail: { serial_number: "OLD0123456789" },
+    ip_address: "192.168.1.10",
+    status: "success",
+    error_message: null,
+  },
+];
+
+export const MOCK_AUDIT_EVENTS_EMPTY: AuditEvent[] = [];
+
 // ── Envelope helpers ──────────────────────────────────────────────────────────
 
 export function envelope<T>(
@@ -574,3 +695,5 @@ export const employeeKpis = MOCK_EMPLOYEE_KPIS;
 export const reportSummary = MOCK_REPORT_SUMMARY;
 export const devices = MOCK_DEVICES;
 export const deviceSummaries = MOCK_DEVICE_SUMMARIES;
+export const auditEvents = MOCK_AUDIT_EVENTS;
+export const auditEventsEmpty = MOCK_AUDIT_EVENTS_EMPTY;

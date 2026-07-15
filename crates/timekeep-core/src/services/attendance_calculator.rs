@@ -279,7 +279,7 @@ impl AttendanceCalculator {
         let mut working_days_by_month: BTreeMap<(i16, i8), u32> = BTreeMap::new();
 
         for wd in work_days {
-            let month_key = (i16::from(wd.date.year()), wd.date.month());
+            let month_key = (wd.date.year(), wd.date.month());
             attendance_by_month.entry(month_key).or_default().insert(wd.date);
         }
 
@@ -291,7 +291,7 @@ impl AttendanceCalculator {
             }
             let weekday = cursor.weekday().to_monday_zero_offset() as u8 % 7;
             if policy.is_working_day(weekday) {
-                let month_key = (i16::from(cursor.year()), cursor.month());
+                let month_key = (cursor.year(), cursor.month());
                 *working_days_by_month.entry(month_key).or_default() += 1;
             }
             cursor = match cursor.tomorrow() {
@@ -361,13 +361,7 @@ impl AttendanceCalculator {
                             3
                         }
                     },
-                    DayStatus::Late | DayStatus::EarlyLeave => {
-                        if wd.total_regular_seconds >= policy.min_seconds_for_present {
-                            2
-                        } else {
-                            2
-                        }
-                    },
+                    DayStatus::Late | DayStatus::EarlyLeave => 2,
                     DayStatus::HalfDay => 3,
                     DayStatus::Absent => 1,
                     DayStatus::Holiday => 0,

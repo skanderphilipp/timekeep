@@ -86,9 +86,7 @@ export const WithFooter: Story = {
         Data from all devices. Last updated: just now.
       </span>
     ),
-    children: (
-      <PieChart data={statusData} donut showLegend height={250} />
-    ),
+    children: <PieChart data={statusData} donut showLegend height={250} />,
   },
 };
 
@@ -200,7 +198,12 @@ export const AllStatesOverview: Story = {
       >
         <div />
       </Chart>
-      <Chart title="📭 Empty" description="Empty state displayed." isEmpty emptyMessage="Nothing to show">
+      <Chart
+        title="📭 Empty"
+        description="Empty state displayed."
+        isEmpty
+        emptyMessage="Nothing to show"
+      >
         <div />
       </Chart>
     </div>

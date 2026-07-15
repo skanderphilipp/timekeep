@@ -97,6 +97,28 @@ export function useReportsPage() {
     }));
   }, [summary, _]);
 
+  /** Daily hours chart data: regular + overtime stacked lines. */
+  const dailyHoursData = useMemo(() => {
+    if (!summary?.daily_hours) return [];
+    return summary.daily_hours.map((d) => ({
+      date: new Date(d.date * 1000).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      }),
+      regular: +(d.regular_seconds / 3600).toFixed(1),
+      overtime: +(d.overtime_seconds / 3600).toFixed(1),
+    }));
+  }, [summary]);
+
+  /** Weekly hours chart data: trend line. */
+  const weeklyHoursData = useMemo(() => {
+    if (!summary?.weekly_hours) return [];
+    return summary.weekly_hours.map((w) => ({
+      week: `${_(msg`W`)}${w.week}`,
+      hours: +(w.total_seconds / 3600).toFixed(1),
+    }));
+  }, [summary, _]);
+
   const handleFetchPunches = useCallback(async () => {
     const result = await fetchPunches({
       since: filters.date_from || undefined,
@@ -127,6 +149,8 @@ export function useReportsPage() {
     pieData,
     barData,
     statusData,
+    dailyHoursData,
+    weeklyHoursData,
     handleFetchPunches,
     exportFilter,
   };

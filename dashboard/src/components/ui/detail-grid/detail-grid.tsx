@@ -1,23 +1,25 @@
 import type { ReactNode } from "react";
 
 import { Heading } from "../heading/heading";
-import { Text } from "../text/text";
+import { OverflowingTextWithTooltip } from "../overflowing-text-with-tooltip/overflowing-text-with-tooltip";
 import styles from "./detail-grid.module.scss";
 
 type DetailGridProps = {
   children: ReactNode;
-  /** Optional section title shown above the grid. */
+  /** Optional section title shown above the grid rows. */
   title?: string;
 };
 
 /**
- * Structured label-value grid for detail views.
+ * Structured horizontal label-value grid for detail views.
  *
- * Replaces the recurring raw `<div>` with flex-column + gap inside
- * `Card.Content` for showing key-value metadata.
+ * Ported from twenty-ui's RecordInlineCell / PropertyBox pattern.
+ * Uses a fixed-width label column on the left with the value
+ * filling remaining space on the right — instead of the weak
+ * vertical label-above-value stack.
  *
- * Pages MUST use `<DetailGrid>` + `<DetailItem>` instead of raw divs
- * with `<Text variant="label">` / `<Text variant="body">` pairs.
+ * Pages MUST use `<DetailGrid>` + `<DetailItem>` instead of
+ * raw divs with `<Text variant="label">` / `<Text variant="body">`.
  *
  * @example
  * ```tsx
@@ -25,7 +27,9 @@ type DetailGridProps = {
  *   <Card.Content>
  *     <DetailGrid title="Account">
  *       <DetailItem label="Username">admin</DetailItem>
- *       <DetailItem label="Role">Administrator</DetailItem>
+ *       <DetailItem label="Role">
+ *         <Badge variant="success">Administrator</Badge>
+ *       </DetailItem>
  *     </DetailGrid>
  *   </Card.Content>
  * </Card>
@@ -35,34 +39,49 @@ export function DetailGrid({ children, title }: DetailGridProps) {
   return (
     <div data-slot="detail-grid" className={styles.grid}>
       {title && <Heading level="h3">{title}</Heading>}
-      {children}
+      <div className={styles.items}>{children}</div>
     </div>
   );
 }
 
 type DetailItemProps = {
-  /** Label shown above the value. Uses `<Text variant="label">`. */
+  /** Label shown in the fixed-width left column. */
   label: string;
-  /** The value content. Rendered as `<Text variant="body">` by default. */
+  /** Value content. Strings render with overflow tooltip; ReactNodes render directly. */
   children: ReactNode;
+  /** Optional icon rendered before the label text (twenty pattern). */
+  icon?: ReactNode;
 };
 
 /**
- * A single label-value pair within a `<DetailGrid>`.
+ * A single label-value row within `<DetailGrid>`.
+ *
+ * The label sits in a fixed 100px column on the left using tertiary
+ * color. String children get overflow detection + tooltip; JSX children
+ * (Badge, Tag, etc.) render inline without tooltip wrapping.
  *
  * @example
  * ```tsx
- * <DetailItem label="Username">admin</DetailItem>
- * <DetailItem label="Role">
- *   <Badge variant="success">admin</Badge>
+ * <DetailItem label="Username" icon={<UserIcon />}>admin</DetailItem>
+ * <DetailItem label="Status">
+ *   <Badge dot="online" variant="success">Connected</Badge>
  * </DetailItem>
  * ```
  */
-export function DetailItem({ label, children }: DetailItemProps) {
+export function DetailItem({ label, children, icon }: DetailItemProps) {
   return (
     <div data-slot="detail-item" className={styles.item}>
-      <Text variant="label">{label}</Text>
-      <Text variant="body">{children}</Text>
+      <div className={styles.label}>
+        {icon && <span className={styles.icon}>{icon}</span>}
+        <OverflowingTextWithTooltip text={label} displayedMaxRows={1} />
+      </div>
+      <div className={styles.value}>
+        {typeof children === "string" ? (
+          <OverflowingTextWithTooltip text={children} displayedMaxRows={1} />
+        ) : (
+          children
+        )}
+      </div>
     </div>
   );
 }

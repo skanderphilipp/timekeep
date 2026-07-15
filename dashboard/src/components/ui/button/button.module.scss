@@ -1,9 +1,7 @@
 @use "@/styles/mixins" as *;
 
 // ── Twenty UI Alignment — Button ──────────────────────────────────────────
-// See: SCSS-VISUAL-STANDARDS.md §6.1
-//
-// Key changes from old SCSS:
+// See: SCSS-VISUAL-STANDARDS.md §6.1. Key changes from old SCSS:
 //   1. State selectors use [data-*] attributes (not CSS classes)
 //   2. Height: md=32px (was 40px), sm=24px (was 32px)
 //   3. Border-radius: var(--ao-radius-md) (was var(--ao-radius-sm))
@@ -123,8 +121,9 @@
 
 .button[data-disabled] {
   --btn-bg: var(--ao-background-secondary);
-  --btn-color: var(--ao-font-color-extraLight);
+  --btn-color: var(--ao-font-color-extralight);
   --btn-border-color: transparent;
+
   cursor: not-allowed;
   pointer-events: none;
 }

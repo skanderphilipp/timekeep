@@ -1,30 +1,20 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import {
-  PageHeader,
-  Card,
-  Form,
-  FormActions,
-  Button,
-  Spinner,
-  SchemaForm,
-  DetailGrid,
-  DetailItem,
-  Badge,
-  Text,
-  PageError,
-} from "@/components/ui";
+import { Section, Card, Form, FormActions, Button, SchemaForm, DetailGrid, DetailItem, Badge, Text } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DataBoundary } from "@/modules/shared/components";
 import { useCurrentUser } from "@/modules/auth/hooks/use-current-user";
 import { useSystemSettings } from "../hooks/use-system-settings";
 import { useSystemHealth } from "../hooks/use-system-health";
 import { createSystemSettingsFormDef } from "../schemas/settings-form.schema";
+import { SettingsLoading, SettingsError } from "../states";
+import type { Health } from "@/lib/api";
 
 // ═══════════════════════════════════════════════════════════════════════
 // Health status helpers
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Map a health status string to a Badge dot + variant. */
 function healthVariant(status: string): {
   dot: "online" | "offline" | "warning";
   variant: "success" | "warning" | "danger" | "neutral";
@@ -47,12 +37,118 @@ function healthLabel(status: string, _: ReturnType<typeof useLingui>["_"]): stri
   }
 }
 
-/** Protocol indicator row for a single device protocol (ADMS or SDK). */
 function ProtocolIndicator({ active, label }: { active: boolean; label: string }) {
   return (
     <Badge dot={active ? "online" : "offline"} variant={active ? "success" : "neutral"}>
       {label}
     </Badge>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Sub-components — extracted to keep the view focused
+// ═══════════════════════════════════════════════════════════════════════
+
+type HealthCardsProps = {
+  health: Health;
+  formatUptime: (seconds: number) => string;
+  _: ReturnType<typeof useLingui>["_"];
+};
+
+function HealthCards({ health, formatUptime, _ }: HealthCardsProps) {
+  return (
+    <>
+      <Card>
+        <Card.Content>
+          <DetailGrid title={_(msg`System Health`)}>
+            <DetailItem label={_(msg`Status`)}>
+              <Badge
+                dot={healthVariant(health.status).dot}
+                variant={healthVariant(health.status).variant}
+              >
+                {healthLabel(health.status, _)}
+              </Badge>
+            </DetailItem>
+            <DetailItem label={_(msg`Version`)}>v{health.version}</DetailItem>
+            <DetailItem label={_(msg`Database`)}>
+              <Badge dot={healthVariant(health.db).dot} variant={healthVariant(health.db).variant}>
+                {healthLabel(health.db, _)}
+              </Badge>
+            </DetailItem>
+            <DetailItem label={_(msg`Uptime`)}>{formatUptime(health.uptime_seconds)}</DetailItem>
+          </DetailGrid>
+        </Card.Content>
+      </Card>
+
+      {health.engine && (
+        <Card>
+          <Card.Content>
+            <DetailGrid title={_(msg`Engine Pipeline`)}>
+              <DetailItem label={_(msg`Events Processed`)}>
+                {health.engine.events_processed.toLocaleString()}
+              </DetailItem>
+              <DetailItem label={_(msg`Events Dropped`)}>
+                {health.engine.events_dropped.toLocaleString()}
+              </DetailItem>
+              <DetailItem label={_(msg`Events Distributed`)}>
+                {health.engine.events_distributed.toLocaleString()}
+              </DetailItem>
+              <DetailItem label={_(msg`Events Failed`)}>
+                {health.engine.events_failed.toLocaleString()}
+              </DetailItem>
+            </DetailGrid>
+          </Card.Content>
+        </Card>
+      )}
+
+      {health.devices && health.devices.length > 0 && (
+        <Card>
+          <Card.Content>
+            <DetailGrid title={_(msg`Devices`)}>
+              {health.devices.map((d) => (
+                <DetailItem key={d.serial_number} label={d.serial_number}>
+                  <ProtocolIndicator active={d.adms_active} label="ADMS" />{" "}
+                  <ProtocolIndicator active={d.sdk_active} label="SDK" />
+                  {d.last_seen_secs_ago != null && (
+                    <Text as="span" variant="caption" color="tertiary">
+                      {_(msg`Last seen`)}: {d.last_seen_secs_ago}s ago
+                    </Text>
+                  )}
+                </DetailItem>
+              ))}
+            </DetailGrid>
+          </Card.Content>
+        </Card>
+      )}
+
+      {health.distributors && health.distributors.length > 0 && (
+        <Card>
+          <Card.Content>
+            <DetailGrid title={_(msg`Distributors`)}>
+              {health.distributors.map((d) => (
+                <DetailItem key={d.name} label={d.name}>
+                  <Text as="span" variant="caption" color="success">
+                    {d.delivered} {_(msg`delivered`)}
+                  </Text>
+                  {d.queued > 0 && (
+                    <Text as="span" variant="caption" color="warning">
+                      {" · "}
+                      {d.queued} {_(msg`queued`)}
+                    </Text>
+                  )}
+                  {d.dead > 0 && (
+                    <Text as="span" variant="caption" color="danger">
+                      {" · "}
+                      {d.dead} {_(msg`dead`)}
+                    </Text>
+                  )}
+                </DetailItem>
+              ))}
+            </DetailGrid>
+          </Card.Content>
+        </Card>
+      )}
+    </>
   );
 }
 
@@ -63,7 +159,9 @@ function ProtocolIndicator({ active, label }: { active: boolean; label: string }
 /**
  * Settings view — system health, engine pipeline, settings form, account.
  *
- * Owns all page state; the page composes this inside PageLayout.
+ * Uses two `DataBoundary` instances for the two independent queries
+ * (system health and system settings). Sub-components are extracted to
+ * keep the view focused.
  */
 export function SettingsView() {
   const { _ } = useLingui();
@@ -94,127 +192,45 @@ export function SettingsView() {
       />
 
       {/* ── System Health ─────────────────────────────────────── */}
-      {healthError && <PageError onRetry={() => refetchHealth()} />}
-
-      {!healthError && healthLoading && <Spinner />}
-
-      {!healthError && !healthLoading && health && (
-        <Card>
-          <Card.Content>
-            <DetailGrid title={_(msg`System Health`)}>
-              <DetailItem label={_(msg`Status`)}>
-                <Badge
-                  dot={healthVariant(health.status).dot}
-                  variant={healthVariant(health.status).variant}
-                >
-                  {healthLabel(health.status, _)}
-                </Badge>
-              </DetailItem>
-              <DetailItem label={_(msg`Version`)}>v{health.version}</DetailItem>
-              <DetailItem label={_(msg`Database`)}>
-                <Badge
-                  dot={healthVariant(health.db).dot}
-                  variant={healthVariant(health.db).variant}
-                >
-                  {healthLabel(health.db, _)}
-                </Badge>
-              </DetailItem>
-              <DetailItem label={_(msg`Uptime`)}>{formatUptime(health.uptime_seconds)}</DetailItem>
-            </DetailGrid>
-          </Card.Content>
-        </Card>
-      )}
-
-      {/* ── Engine Pipeline ───────────────────────────────────── */}
-      {health?.engine ? (
-        <Card>
-          <Card.Content>
-            <DetailGrid title={_(msg`Engine Pipeline`)}>
-              <DetailItem label={_(msg`Events Processed`)}>
-                {health.engine.events_processed.toLocaleString()}
-              </DetailItem>
-              <DetailItem label={_(msg`Events Dropped`)}>
-                {health.engine.events_dropped.toLocaleString()}
-              </DetailItem>
-              <DetailItem label={_(msg`Events Distributed`)}>
-                {health.engine.events_distributed.toLocaleString()}
-              </DetailItem>
-              <DetailItem label={_(msg`Events Failed`)}>
-                {health.engine.events_failed.toLocaleString()}
-              </DetailItem>
-            </DetailGrid>
-          </Card.Content>
-        </Card>
-      ) : null}
-
-      {/* ── Devices ───────────────────────────────────────────── */}
-      {health?.devices && health.devices.length > 0 ? (
-        <Card>
-          <Card.Content>
-            <DetailGrid title={_(msg`Devices`)}>
-              {health.devices.map((d) => (
-                <DetailItem key={d.serial_number} label={d.serial_number}>
-                  <ProtocolIndicator active={d.adms_active} label="ADMS" />{" "}
-                  <ProtocolIndicator active={d.sdk_active} label="SDK" />
-                  {d.last_seen_secs_ago != null && (
-                    <Text as="span" variant="caption" color="tertiary">
-                      {_(msg`Last seen`)}: {d.last_seen_secs_ago}s ago
-                    </Text>
-                  )}
-                </DetailItem>
-              ))}
-            </DetailGrid>
-          </Card.Content>
-        </Card>
-      ) : null}
-
-      {/* ── Distributors ──────────────────────────────────────── */}
-      {health?.distributors && health.distributors.length > 0 ? (
-        <Card>
-          <Card.Content>
-            <DetailGrid title={_(msg`Distributors`)}>
-              {health.distributors.map((d) => (
-                <DetailItem key={d.name} label={d.name}>
-                  <Text as="span" variant="caption" color="success">
-                    {d.delivered} {_(msg`delivered`)}
-                  </Text>
-                  {d.queued > 0 && (
-                    <Text as="span" variant="caption" color="warning">
-                      {" · "}
-                      {d.queued} {_(msg`queued`)}
-                    </Text>
-                  )}
-                  {d.dead > 0 && (
-                    <Text as="span" variant="caption" color="danger">
-                      {" · "}
-                      {d.dead} {_(msg`dead`)}
-                    </Text>
-                  )}
-                </DetailItem>
-              ))}
-            </DetailGrid>
-          </Card.Content>
-        </Card>
-      ) : null}
+      <Section>
+      <DataBoundary<Health>
+        data={health ? [health] : undefined}
+        isLoading={healthLoading}
+        error={healthError ? new Error("Health check failed") : null}
+        onRetry={() => refetchHealth()}
+        loadingFallback={<SettingsLoading />}
+        errorFallback={<SettingsError onRetry={() => refetchHealth()} section="health status" />}
+      >
+        {([h]) => <HealthCards health={h} formatUptime={formatUptime} _={_} />}
+      </DataBoundary>
+      </Section>
 
       {/* ── Settings Form ─────────────────────────────────────── */}
-      {settingsError && <PageError onRetry={() => refetchSettings()} />}
-
-      {!settingsError && settingsLoading && <Spinner />}
-
-      {!settingsError && !settingsLoading && (
-        <Form onSubmit={handleSubmit}>
-          <SchemaForm formSchema={formSchema} form={form} />
-          <FormActions>
-            <Button type="submit" loading={isSaving}>
-              {_(msg`Save`)}
-            </Button>
-          </FormActions>
-        </Form>
-      )}
+      <Section>
+      <DataBoundary<unknown>
+        data={settingsError || settingsLoading ? undefined : [{}]}
+        isLoading={settingsLoading}
+        error={settingsError ?? null}
+        onRetry={() => refetchSettings()}
+        loadingFallback={<SettingsLoading />}
+        errorFallback={<SettingsError onRetry={() => refetchSettings()} section="settings" />}
+      >
+        {() => (
+          <Form onSubmit={handleSubmit}>
+            <SchemaForm formSchema={formSchema} form={form} />
+            <FormActions>
+              <Button type="submit" loading={isSaving}>
+                {_(msg`Save`)}
+              </Button>
+            </FormActions>
+          </Form>
+        )}
+      </DataBoundary>
+      </Section>
 
       {/* ── Account ───────────────────────────────────────────── */}
       {user && (
+        <Section>
         <Card>
           <Card.Content>
             <DetailGrid title={_(msg`Account`)}>
@@ -226,6 +242,7 @@ export function SettingsView() {
             </DetailGrid>
           </Card.Content>
         </Card>
+        </Section>
       )}
     </>
   );

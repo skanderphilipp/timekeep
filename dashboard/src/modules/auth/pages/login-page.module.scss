@@ -1,13 +1,6 @@
-.page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: var(--ao-spacing-6);
-  background: var(--ao-background-secondary);
-}
-
-.main {
-  width: 100%;
-  max-width: 400px;
-}
+// Auth pages no longer use per-page layout styles.
+// The shared AuthLayout component (auth-layout.module.scss) handles
+// the full-page background, centering, and responsive behavior.
+//
+// This file is kept as a placeholder — remove if no page-specific
+// overrides are ever added.

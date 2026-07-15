@@ -64,6 +64,8 @@ pub enum OperationType {
     EnterManagement,
     /// Attendance records were cleared by time range.
     ClearAttendanceByTime,
+    /// A server-issued command was executed on the device (sync clock, restart, etc.).
+    CommandExecuted,
     /// An unknown operation code (preserved for forward compatibility).
     Unknown(u8),
 }
@@ -119,6 +121,7 @@ impl OperationType {
             Self::DeleteFingerprint => "Delete Fingerprint",
             Self::EnterManagement => "Enter Management Mode",
             Self::ClearAttendanceByTime => "Clear Attendance by Time",
+            Self::CommandExecuted => "Command Executed",
             Self::Unknown(_) => "Unknown Operation",
         }
     }

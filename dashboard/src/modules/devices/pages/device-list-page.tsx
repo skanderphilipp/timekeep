@@ -1,5 +1,4 @@
-import { PageLayout, PageBody } from "@/components/ui";
-
+import { PageLayout, PageBody } from "@/components/layout";
 import { DeviceListView } from "../components/device-list-view";
 
 export function DeviceListPage() {

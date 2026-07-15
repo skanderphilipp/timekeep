@@ -83,13 +83,13 @@ export function ScatterPlotChart({
         tooltip={({ node }: { node: ScatterPlotNodeData<ScatterPlotDatum> }) => (
           <div
             style={{
-              background: nivo.tooltip?.container?.background ?? "#202020",
-              color: nivo.tooltip?.container?.color ?? "#fcfcfc",
+              background: nivo.tooltip?.container?.background ?? "var(--ao-font-color-primary)",
+              color: nivo.tooltip?.container?.color ?? "var(--ao-background-primary)",
               padding: "6px 10px",
               borderRadius: "4px",
               fontSize: "12px",
               fontFamily: nivo.text?.fontFamily ?? "Inter, sans-serif",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              boxShadow: "var(--ao-shadow-md)",
             }}
           >
             <strong>{node.serieId}</strong>

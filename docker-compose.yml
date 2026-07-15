@@ -18,12 +18,13 @@ services:
     ports:
       - "3000:3000"    # Management API + Dashboard
       - "3001:3001"    # Integration API
-      - "8085:8085"    # ADMS push endpoint (scanners push here)
+      - "${TIMEKEEP_ADMS_PORT:-8085}:${TIMEKEEP_ADMS_PORT:-8085}"    # ADMS push endpoint
     environment:
       - TIMEKEEP_DB_PATH=/var/lib/timekeep/timekeep.db
       - TIMEKEEP_DB_BACKEND=sqlite
       - TIMEKEEP_API_PORT=3000
       - TIMEKEEP_INTEGRATION_PORT=3001
+      - TIMEKEEP_ADMS_PORT=${TIMEKEEP_ADMS_PORT:-8085}
       - RUST_LOG=timekeep=info
       - TIMEKEEP_JWT_SECRET=${TIMEKEEP_JWT_SECRET:-change-me-in-production}
       - TIMEKEEP_ADMIN_USER=${TIMEKEEP_ADMIN_USER:-admin}

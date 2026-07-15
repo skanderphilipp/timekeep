@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { Checkbox } from "./checkbox";
 import { Text } from "../text";
 
 /**
  * Checkbox — binary toggle for forms and lists.
  *
- * Follows the native input pattern: checked, unchecked, disabled.
+ * Uses @base-ui/react/checkbox primitives for full accessibility
+ * (keyboard navigation, ARIA attributes, focus management).
  * Used in settings (working days), filters, and multi-select lists.
  */
 const meta: Meta<typeof Checkbox> = {
@@ -15,6 +17,7 @@ const meta: Meta<typeof Checkbox> = {
   argTypes: {
     checked: { control: "boolean" },
     disabled: { control: "boolean" },
+    indeterminate: { control: "boolean" },
   },
 };
 
@@ -23,6 +26,26 @@ type Story = StoryObj<typeof Checkbox>;
 
 export const Primary: Story = {
   args: { checked: true },
+};
+
+export const Unchecked: Story = {
+  args: { checked: false },
+};
+
+export const Disabled: Story = {
+  args: { checked: false, disabled: true },
+};
+
+export const DisabledChecked: Story = {
+  args: { checked: true, disabled: true },
+};
+
+export const Indeterminate: Story = {
+  args: { indeterminate: true },
+};
+
+export const WithLabel: Story = {
+  args: { checked: true, label: "Accept terms" },
 };
 
 export const AllVariants: Story = {
@@ -57,28 +80,71 @@ export const AllVariants: Story = {
           Disabled (checked)
         </Text>
       </div>
+      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+        <Checkbox indeterminate />
+        <Text variant="body">Indeterminate</Text>
+      </div>
     </div>
   ),
+};
+
+export const Interactive: Story = {
+  name: "Interactive",
+  parameters: { controls: { disable: true } },
+  render: () => {
+    const [checked, setChecked] = useState(false);
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-3)",
+          padding: "var(--ao-spacing-4)",
+          alignItems: "center",
+        }}
+      >
+        <Checkbox checked={checked} onCheckedChange={setChecked} label="Toggle me" />
+        <Text variant="body" color="secondary">
+          Currently: {checked ? "Checked" : "Unchecked"}
+        </Text>
+      </div>
+    );
+  },
 };
 
 export const ContextWorkingDays: Story = {
   name: "Context: Working Days",
   parameters: { controls: { disable: true } },
-  render: () => (
-    <div
-      style={{
-        display: "flex",
-        gap: "var(--ao-spacing-3)",
-        padding: "var(--ao-spacing-4)",
-        flexWrap: "wrap",
-      }}
-    >
-      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-        <label key={day} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <Checkbox checked={day !== "Sat" && day !== "Sun"} />
-          <Text variant="body">{day}</Text>
-        </label>
-      ))}
-    </div>
-  ),
+  render: () => {
+    const workingDaysState = useState({
+      Mon: true,
+      Tue: true,
+      Wed: true,
+      Thu: true,
+      Fri: true,
+      Sat: false,
+      Sun: false,
+    });
+    const [workingDays, setWorkingDays] = workingDaysState;
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-3)",
+          padding: "var(--ao-spacing-4)",
+          flexWrap: "wrap",
+        }}
+      >
+        {(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const).map((day) => (
+          <Checkbox
+            key={day}
+            checked={workingDays[day]}
+            onCheckedChange={(value) => setWorkingDays((prev) => ({ ...prev, [day]: value }))}
+            label={day}
+          />
+        ))}
+      </div>
+    );
+  },
 };

@@ -106,7 +106,12 @@ export const ErrorState: Story = {
 export const Empty: Story = {
   name: "Empty State",
   render: () => (
-    <Chart title="Punch Flow" description="No data to display." isEmpty emptyMessage="No punches recorded for this period">
+    <Chart
+      title="Punch Flow"
+      description="No data to display."
+      isEmpty
+      emptyMessage="No punches recorded for this period"
+    >
       <StreamChart data={[]} series={[{ dataKey: "check_in", name: "Check In" }]} height={250} />
     </Chart>
   ),

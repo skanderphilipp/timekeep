@@ -73,7 +73,10 @@ type Story = StoryObj<typeof BumpChart>;
 
 export const Primary: Story = {
   render: () => (
-    <Chart title="Employee Attendance Ranking" description="Rank 1 = best attendance. Lines crossing = rank changes.">
+    <Chart
+      title="Employee Attendance Ranking"
+      description="Rank 1 = best attendance. Lines crossing = rank changes."
+    >
       <BumpChart data={rankingData} height={350} />
     </Chart>
   ),
@@ -126,7 +129,12 @@ export const ErrorState: Story = {
 export const Empty: Story = {
   name: "Empty State",
   render: () => (
-    <Chart title="Employee Ranking" description="No ranking data." isEmpty emptyMessage="No rankings available for this period">
+    <Chart
+      title="Employee Ranking"
+      description="No ranking data."
+      isEmpty
+      emptyMessage="No rankings available for this period"
+    >
       <BumpChart data={[]} height={300} />
     </Chart>
   ),

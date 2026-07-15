@@ -1,0 +1,110 @@
+// ── Vertical layout (DeviceHealthCard style) ────────────────────────────
+
+.vertical {
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-radius-md);
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-3) var(--ao-spacing-4);
+
+  .icon {
+    color: var(--ao-font-color-tertiary);
+    margin-bottom: var(--ao-spacing-1);
+  }
+
+  .value {
+    font-family: var(--ao-font-family-mono);
+    font-size: var(--ao-font-size-xl);
+    font-weight: var(--ao-font-weight-bold);
+  }
+
+  .label {
+    color: var(--ao-font-color-secondary);
+    font-size: var(--ao-font-size-sm);
+  }
+}
+
+// ── Horizontal layout (MetricCard style) ──────────────────────────────────
+// Twenty UI alignment: compact KPI card with icon + label/value side by side.
+// Padded internally so the wrapping <Card> surface doesn't need extra padding.
+
+.horizontal {
+  align-items: center;
+  flex-direction: row;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-3) var(--ao-spacing-4);
+
+  .icon {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .value {
+    color: var(--ao-font-color-primary);
+    font-size: var(--ao-font-size-xl);
+    font-weight: var(--ao-font-weight-semibold);
+    line-height: 1.2;
+  }
+
+  .label {
+    color: var(--ao-font-color-tertiary);
+    font-size: var(--ao-font-size-sm);
+  }
+}
+
+// ── Shared ────────────────────────────────────────────────────────────────
+
+.card {
+  display: flex;
+  position: relative;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--ao-border-color-medium);
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-0_5);
+  min-width: 0;
+}
+
+.subtitle {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  margin-top: var(--ao-spacing-1);
+}
+
+.bar {
+  width: 100%;
+}
+
+// ── Icon color accents (horizontal layout only) ───────────────────────────
+
+.green {
+  color: var(--ao-color-green11);
+}
+
+.red {
+  color: var(--ao-color-red11);
+}
+
+.amber {
+  color: var(--ao-color-amber11);
+}
+
+.accent {
+  color: var(--ao-accent-accent11);
+}
+
+.neutral {
+  color: var(--ao-font-color-tertiary);
+}

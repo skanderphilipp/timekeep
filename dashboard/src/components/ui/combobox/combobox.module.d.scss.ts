@@ -8,6 +8,7 @@ declare const classNames: {
   readonly stateRow: "stateRow";
   readonly emptyText: "emptyText";
   readonly trigger: "trigger";
+  readonly chevron: "chevron";
   readonly placeholder: "placeholder";
   readonly value: "value";
   readonly triggerPrefix: "triggerPrefix";

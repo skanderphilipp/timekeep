@@ -2,7 +2,7 @@ import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 
 import type { Punch } from "@/modules/punches/hooks/use-punch-data";
-import type { TimelineBlockData } from "@/components/ui";
+import type { TimelineBlockData } from "@/modules/shared/components";
 
 // ── Timeline block builders ────────────────────────────────────────────────────────────────────
 

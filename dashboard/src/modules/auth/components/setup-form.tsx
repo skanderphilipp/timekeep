@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useSetAtom } from "jotai";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconShieldLock } from "@tabler/icons-react";
 
 import { AppRoute } from "@/lib/navigation";
 import { useZodForm } from "@/lib/form";
@@ -30,8 +29,9 @@ import styles from "./setup-form.module.scss";
 /**
  * First-run admin account creation form.
  *
- * Creates the initial admin account and auto-logs in.
- * After setup, the endpoint returns 409 (users already exist).
+ * Creates the initial admin account, sets the workspace name,
+ * and auto-logs in. After setup, the endpoint returns 409
+ * (users already exist).
  */
 export function SetupForm() {
   const { _ } = useLingui();
@@ -43,7 +43,7 @@ export function SetupForm() {
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useZodForm(createSetupFormSchema(_), {
-    defaultValues: { username: "", password: "" },
+    defaultValues: { workspaceName: "", username: "", password: "" },
   });
   const formSchema = createSetupFormDef(_);
 
@@ -51,7 +51,11 @@ export function SetupForm() {
     setSetupError(null);
     setIsSaving(true);
     try {
-      const resp = await performSetup({ username: data.username, password: data.password });
+      const resp = await performSetup({
+        username: data.username,
+        password: data.password,
+        workspace_name: data.workspaceName,
+      });
       setAuthToken(resp.token);
       setToken(resp.token);
       setCurrentUser({
@@ -70,11 +74,9 @@ export function SetupForm() {
   return (
     <Card>
       <Card.Content className={styles.content}>
-        <IconShieldLock size={40} stroke={1.5} />
-
         <Heading level="h1">{_(msg`Welcome to timekeep`)}</Heading>
         <Text variant="caption" color="tertiary">
-          {_(msg`Create your admin account to get started.`)}
+          {_(msg`Configure your workspace and create your admin account.`)}
         </Text>
 
         <Separator noMargin />
@@ -89,7 +91,7 @@ export function SetupForm() {
           <SchemaForm formSchema={formSchema} form={form} />
           <FormActions>
             <Button type="submit" fullWidth loading={isSaving}>
-              {_(msg`Create Admin Account`)}
+              {_(msg`Create Workspace`)}
             </Button>
           </FormActions>
         </Form>

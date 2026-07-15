@@ -227,7 +227,107 @@ async fn get_attendance_buffered() {
     sim.shutdown().await;
 }
 
-// ── Error handling ────────────────────────────────────────────────────
+// ── `since` parameter filtering ──────────────────────────────────────
+
+/// Verify that `get_attendance(since)` filters out records whose timestamp
+/// is on or before the since cursor.
+#[tokio::test]
+async fn get_attendance_with_since_filters_old_records() {
+    let make_record = |user_pin: &str, ts_secs: i64| -> Vec<u8> {
+        let mut rec = vec![0u8; 40];
+        rec[0] = 0x01;
+        rec[1] = 0x00;
+        let pin = user_pin.as_bytes();
+        rec[2..2 + pin.len().min(9)].copy_from_slice(pin);
+        rec[26] = 1;
+        let zk_ts: u32 = timekeep_zkteco::protocol::encoding::encode_zk_time(
+            jiff::Timestamp::from_second(ts_secs).unwrap(),
+        )
+        .unwrap();
+        rec[27..31].copy_from_slice(&zk_ts.to_le_bytes());
+        rec[31] = 0;
+        rec
+    };
+
+    let rec_old = make_record("1001", 1_000_000_000);
+    let rec_new = make_record("1002", 2_000_000_000);
+
+    let mut att_blob = Vec::with_capacity(4 + 40 + 40);
+    att_blob.extend_from_slice(&80u32.to_le_bytes());
+    att_blob.extend_from_slice(&rec_old);
+    att_blob.extend_from_slice(&rec_new);
+
+    let empty_blob = 0u32.to_le_bytes().to_vec();
+
+    let sim = ZkSimServer::with_handshake(simulator::canned_responder(
+        empty_blob.clone(),
+        att_blob,
+        0,
+        2,
+    ))
+    .await;
+
+    let (host, port) = sim.host_port();
+    let conn = ZkConnection::connect(&host, port, 0).await.expect("connect");
+
+    let since = jiff::Timestamp::from_second(1_500_000_000).expect("valid timestamp");
+    let punches = conn.get_attendance(Some(since)).await.expect("get_attendance with since");
+
+    assert_eq!(punches.len(), 1, "only the 2B record should pass the 1.5B cursor");
+    assert_eq!(punches[0].user_pin, "1002");
+    assert_eq!(punches[0].timestamp.as_second(), 2_000_000_000);
+
+    sim.shutdown().await;
+}
+
+/// Verify that `get_attendance(None)` returns all records (no filtering).
+#[tokio::test]
+async fn get_attendance_without_since_returns_all() {
+    let make_record = |user_pin: &str, ts_secs: i64| -> Vec<u8> {
+        let mut rec = vec![0u8; 40];
+        rec[0] = 0x01;
+        rec[1] = 0x00;
+        let pin = user_pin.as_bytes();
+        rec[2..2 + pin.len().min(9)].copy_from_slice(pin);
+        rec[26] = 1;
+        let zk_ts: u32 = timekeep_zkteco::protocol::encoding::encode_zk_time(
+            jiff::Timestamp::from_second(ts_secs).unwrap(),
+        )
+        .unwrap();
+        rec[27..31].copy_from_slice(&zk_ts.to_le_bytes());
+        rec[31] = 0;
+        rec
+    };
+
+    let rec1 = make_record("1001", 1_000_000_000);
+    let rec2 = make_record("1002", 2_000_000_000);
+
+    let mut att_blob = Vec::with_capacity(4 + 40 + 40);
+    att_blob.extend_from_slice(&80u32.to_le_bytes());
+    att_blob.extend_from_slice(&rec1);
+    att_blob.extend_from_slice(&rec2);
+
+    let empty_blob = 0u32.to_le_bytes().to_vec();
+
+    let sim = ZkSimServer::with_handshake(simulator::canned_responder(
+        empty_blob.clone(),
+        att_blob,
+        0,
+        2,
+    ))
+    .await;
+
+    let (host, port) = sim.host_port();
+    let conn = ZkConnection::connect(&host, port, 0).await.expect("connect");
+
+    let punches = conn.get_attendance(None).await.expect("get_attendance");
+
+    assert_eq!(punches.len(), 2, "without since, all records should be returned");
+
+    sim.shutdown().await;
+}
+
+// ── Error handling ──
 
 /// Verify that connecting to a non-existent port fails.
 #[tokio::test]

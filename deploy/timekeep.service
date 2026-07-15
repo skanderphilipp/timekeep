@@ -17,6 +17,7 @@ Environment=TIMEKEEP_DB_PATH=/var/lib/timekeep/timekeep.db
 Environment=TIMEKEEP_DB_BACKEND=sqlite
 Environment=TIMEKEEP_API_PORT=3000
 Environment=TIMEKEEP_INTEGRATION_PORT=3001
+Environment=TIMEKEEP_ADMS_PORT=8085
 Environment=RUST_LOG=timekeep=info
 
 # Webhook (optional)

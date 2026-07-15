@@ -7,6 +7,7 @@ license = { workspace = true }
 [dependencies]
 timekeep-circuit = { workspace = true }
 timekeep-core = { workspace = true }
+inventory = { workspace = true }
 async-trait = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

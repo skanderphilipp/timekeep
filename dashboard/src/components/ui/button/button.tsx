@@ -44,10 +44,7 @@ export function Button(props: ButtonProps) {
   const disabled = !to ? (props as ButtonAsButton).disabled : undefined;
   const isDisabled = loading || !!disabled;
 
-  const classNames = clsx(
-    styles.button,
-    className,
-  );
+  const classNames = clsx(styles.button, className);
 
   const content = (
     <>

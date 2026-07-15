@@ -6,19 +6,17 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-primary);
   cursor: pointer;
   display: inline-flex;
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
   gap: var(--ao-spacing-2);
-  min-height: var(--ao-spacing-9);
+  height: 32px;
   min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-8));
   padding: 0 var(--ao-spacing-3);
-  transition:
-    border-color duration(fast) ease,
-    box-shadow duration(fast) ease;
+  transition: border-color duration(fast) ease;
   user-select: none;
 
   &:hover {
@@ -27,8 +25,7 @@
 
   &:focus-visible,
   &[aria-expanded="true"] {
-    border-color: var(--ao-focus-ring);
-    box-shadow: 0 0 0 1px var(--ao-focus-ring);
+    border-color: var(--ao-accent-accent9);
     outline: none;
   }
 }

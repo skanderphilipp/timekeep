@@ -29,6 +29,7 @@ export function usePunchQueryPage() {
     hasActiveFilters,
     handleSortChange,
     handleFilterChange,
+    deviceSns,
     setDeviceSns,
     handleClearFilters,
   } = useInfinitePunchQuery();
@@ -89,6 +90,7 @@ export function usePunchQueryPage() {
     handleSearchChange,
     handleDeviceChange,
     handleStatusChange,
+    handleVerifyModeChange,
     handleAnomaliesOnlyToggle,
   } = usePunchFilterHandlers(handleFilterChange, setDeviceSns);
 
@@ -124,7 +126,10 @@ export function usePunchQueryPage() {
     handleSearchChange,
     handleDeviceChange,
     handleStatusChange,
+    handleVerifyModeChange,
     handleAnomaliesOnlyToggle,
+    deviceSns,
+    setDeviceSns,
     refetch: () => query.refetch(),
   };
 }

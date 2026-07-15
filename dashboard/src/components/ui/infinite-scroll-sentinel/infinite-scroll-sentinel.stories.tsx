@@ -45,9 +45,7 @@ export const AllVariants: Story = {
           borderRadius: "var(--ao-radius-md)",
         }}
       >
-        <InfiniteScrollSentinel ref={sentinelRef}>
-          Loading more records…
-        </InfiniteScrollSentinel>
+        <InfiniteScrollSentinel ref={sentinelRef}>Loading more records…</InfiniteScrollSentinel>
       </div>
       <div
         style={{
@@ -57,7 +55,9 @@ export const AllVariants: Story = {
         }}
       >
         <InfiniteScrollSentinel ref={sentinelRef}>
-          <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: "var(--ao-font-size-sm)" }}>
+          <span
+            style={{ color: "var(--ao-font-color-tertiary)", fontSize: "var(--ao-font-size-sm)" }}
+          >
             No more records to load.
           </span>
         </InfiniteScrollSentinel>
@@ -88,7 +88,13 @@ export const ContextEmployeeList: Story = {
         maxWidth: 400,
       }}
     >
-      <p style={{ fontSize: "var(--ao-font-size-sm)", color: "var(--ao-font-color-secondary)", marginBottom: "var(--ao-spacing-2)" }}>
+      <p
+        style={{
+          fontSize: "var(--ao-font-size-sm)",
+          color: "var(--ao-font-color-secondary)",
+          marginBottom: "var(--ao-spacing-2)",
+        }}
+      >
         Employee List — showing 50 of 312 records
       </p>
       <div
@@ -99,7 +105,9 @@ export const ContextEmployeeList: Story = {
           marginBottom: "var(--ao-spacing-2)",
         }}
       >
-        <span style={{ fontSize: "var(--ao-font-size-sm)" }}>Ahmed Al-Rashid — Punch ID: 10042</span>
+        <span style={{ fontSize: "var(--ao-font-size-sm)" }}>
+          Ahmed Al-Rashid — Punch ID: 10042
+        </span>
       </div>
       <div
         style={{
@@ -111,9 +119,7 @@ export const ContextEmployeeList: Story = {
       >
         <span style={{ fontSize: "var(--ao-font-size-sm)" }}>Fatima Hassan — Punch ID: 10043</span>
       </div>
-      <InfiniteScrollSentinel ref={sentinelRef}>
-        Loading more records…
-      </InfiniteScrollSentinel>
+      <InfiniteScrollSentinel ref={sentinelRef}>Loading more records…</InfiniteScrollSentinel>
     </div>
   ),
 };

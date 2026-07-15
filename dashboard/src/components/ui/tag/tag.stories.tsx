@@ -43,7 +43,14 @@ export const AllVariants: Story = {
       }}
     >
       {/* Solid variants */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Active" color="green" />
         <Tag text="Pending" color="amber" />
         <Tag text="Failed" color="red" />
@@ -53,7 +60,14 @@ export const AllVariants: Story = {
       </div>
 
       {/* Outline variants */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Outline" variant="outline" color="accent" />
         <Tag text="Outline" variant="outline" color="green" />
         <Tag text="Outline" variant="outline" color="amber" />
@@ -61,33 +75,75 @@ export const AllVariants: Story = {
       </div>
 
       {/* Dismissible */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Removable" color="gray" dismissible onRemove={fn()} />
         <Tag text="Filter" color="accent" dismissible onRemove={fn()} />
         <Tag text="Error" color="red" dismissible onRemove={fn()} />
       </div>
 
       {/* With value (filter chip pattern) */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Status" value="Active" color="green" dismissible onRemove={fn()} />
         <Tag text="Department" value="Engineering" color="accent" dismissible onRemove={fn()} />
-        <Tag text="Date" value="Today" color="blue" Icon={IconCalendar} dismissible onRemove={fn()} />
+        <Tag
+          text="Date"
+          value="Today"
+          color="blue"
+          Icon={IconCalendar}
+          dismissible
+          onRemove={fn()}
+        />
       </div>
 
       {/* Interactive */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Clickable" color="accent" onClick={fn()} />
         <Tag text="Clickable Outline" variant="outline" color="blue" onClick={fn()} />
       </div>
 
       {/* Disabled */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Disabled" color="gray" disabled />
         <Tag text="Disabled" color="accent" dismissible onRemove={fn()} disabled />
       </div>
 
       {/* Weights */}
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--ao-spacing-2)",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <Tag text="Regular" color="gray" />
         <Tag text="Medium" color="gray" weight="medium" />
       </div>
@@ -110,7 +166,14 @@ export const ContextFilterChips: Story = {
     >
       <Tag text="Status" value="Active" color="green" dismissible onRemove={fn()} />
       <Tag text="Department" value="Engineering" color="accent" dismissible onRemove={fn()} />
-      <Tag text="Sort" value="Name ↑" color="blue" Icon={IconArrowsSort} dismissible onRemove={fn()} />
+      <Tag
+        text="Sort"
+        value="Name ↑"
+        color="blue"
+        Icon={IconArrowsSort}
+        dismissible
+        onRemove={fn()}
+      />
     </div>
   ),
 };

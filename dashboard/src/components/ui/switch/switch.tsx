@@ -50,10 +50,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         readOnly={readOnly}
         id={id}
       >
-        <BaseUISwitch.Thumb
-          data-slot="switch-thumb"
-          className={styles.thumb}
-        />
+        <BaseUISwitch.Thumb data-slot="switch-thumb" className={styles.thumb} />
       </BaseUISwitch.Root>
     );
 

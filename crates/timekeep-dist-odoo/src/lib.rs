@@ -41,7 +41,8 @@ use async_trait::async_trait;
 use serde::Deserialize;
 use timekeep_circuit::{CircuitBreaker, CircuitBreakerError};
 use timekeep_core::{
-    Error, events::DomainEvent, model::AttendancePunch, traits::distributor::Distributor,
+    Error, events::DomainEvent, model::AttendancePunch, model::PendingDelivery,
+    traits::distributor::Distributor, traits::storage::Storage,
 };
 
 /// Odoo JSON-2 API response wrapper.
@@ -82,6 +83,9 @@ pub struct OdooDistributor {
     /// Circuit breaker: prevents cascading failures when Odoo is down.
     /// Trips after 3 consecutive failures, probes after 60s cooldown.
     circuit: Arc<CircuitBreaker>,
+    /// Optional storage backend for outbox retry. When set, failed deliveries
+    /// are persisted to the database for background retry instead of being dropped.
+    storage: Option<Arc<dyn Storage>>,
 }
 
 impl OdooDistributor {
@@ -111,7 +115,18 @@ impl OdooDistributor {
                     .half_open_max_success(1)
                     .build(),
             ),
+            storage: None,
         }
+    }
+
+    /// Attach a storage backend for outbox retry.
+    ///
+    /// When set, failed deliveries are persisted to the database instead of being
+    /// silently dropped. A background worker picks them up and retries with
+    /// exponential backoff.
+    pub fn with_storage(mut self, storage: Arc<dyn Storage>) -> Self {
+        self.storage = Some(storage);
+        self
     }
 
     /// Resolve a device PIN to an Odoo employee ID and name.
@@ -485,7 +500,30 @@ impl Distributor for OdooDistributor {
     async fn on_event(&self, event: &DomainEvent) -> Result<(), Error> {
         match event {
             DomainEvent::PunchReceived { punch } => {
-                self.handle_punch(punch).await?;
+                if let Err(e) = self.handle_punch(punch).await {
+                    // If storage is configured, enqueue for retry instead of dropping
+                    if let Some(ref storage) = self.storage {
+                        // Serialize the punch directly — AttendancePunch is Serialize
+                        let event_json =
+                            serde_json::to_string(punch).unwrap_or_else(|_| "{}".to_string());
+                        let delivery = PendingDelivery::new("odoo", &event_json);
+                        if let Err(enq_err) = storage.enqueue_pending_delivery(&delivery).await {
+                            tracing::error!(
+                                error = %enq_err,
+                                "odoo: failed to enqueue for retry — punch lost"
+                            );
+                        } else {
+                            tracing::warn!(
+                                pin = %punch.user_pin,
+                                error = %e,
+                                delivery_id = %delivery.id,
+                                "odoo: delivery failed, enqueued for retry"
+                            );
+                        }
+                        return Ok(()); // Don't propagate error to engine
+                    }
+                    return Err(e);
+                }
             },
             _ => {
                 // Odoo distributor only cares about punches

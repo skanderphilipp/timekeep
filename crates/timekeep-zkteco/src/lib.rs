@@ -186,6 +186,53 @@ impl BiometricDevice for ZkTecoDevice {
                     port = self.config.port,
                     "SDK connection established"
                 );
+
+                // Pull device metadata on connect to enrich dashboard
+                match conn.get_device_info().await {
+                    Ok(device) => {
+                        tracing::info!(
+                            host = %self.config.host,
+                            platform = %device.platform,
+                            fw = %device.firmware_version,
+                            "device info pulled on connect"
+                        );
+                        self.event_bus.publish(DomainEvent::DeviceInfoUpdated { device });
+                    },
+                    Err(e) => {
+                        tracing::warn!(
+                            host = %self.config.host,
+                            error = %e,
+                            "failed to pull device info on connect"
+                        );
+                    },
+                }
+
+                // Pull device-side operation logs on connect to catch up
+                // on any events missed while SDK was disconnected.
+                // ADMS OPERLOG handles real-time delivery; this is the catch-up path.
+                match conn.get_operation_logs().await {
+                    Ok(logs) if !logs.is_empty() => {
+                        tracing::info!(
+                            host = %self.config.host,
+                            count = logs.len(),
+                            "publishing operation logs from SDK pull on connect"
+                        );
+                        for log in logs {
+                            self.event_bus.publish(DomainEvent::OperationLogReceived { log });
+                        }
+                    },
+                    Ok(_) => {
+                        tracing::debug!(host = %self.config.host, "no operation logs to pull");
+                    },
+                    Err(e) => {
+                        tracing::warn!(
+                            host = %self.config.host,
+                            error = %e,
+                            "failed to pull operation logs on connect"
+                        );
+                    },
+                }
+
                 self.sdk_connection = Some(conn);
                 modes.push("SDK pull");
 
@@ -672,12 +719,46 @@ impl DeviceProvider for ZkTecoProvider {
             firmware_version: info.firmware_version.clone(),
             platform: info.platform.clone(),
             mac_address: info.mac_address.clone(),
+            host: host.to_string(),
             user_count: info.user_count,
             record_count: info.record_count,
         };
 
         let _ = device.disconnect().await;
         Ok(probe)
+    }
+}
+
+// ── Compile-time provider registration ──────────────────────────────
+//
+// This manifest is collected by inventory at link time.
+// The engine auto-discovers all providers without manual wiring.
+// Adding a new vendor = create crate + submit manifest.
+
+inventory::submit! {
+    timekeep_core::ProviderManifest {
+        vendor_key: "zkteco",
+        display_name: "ZKTeco",
+        capabilities: timekeep_core::ProviderCapabilities {
+            attendance_read: true,
+            attendance_clear: true,
+            user_read: true,
+            user_write: true,
+            user_delete: true,
+            device_config_read: true,
+            device_config_write: true,
+            real_time_events: true,
+            fingerprint_enroll: true,
+            face_enroll: false,
+            palm_enroll: false,
+            time_sync: true,
+            restart: true,
+        },
+        default_port: 4370,
+        create: |config, bus| {
+            Box::new(ZkTecoDevice::new(config, bus))
+        },
+        probe: None,
     }
 }
 

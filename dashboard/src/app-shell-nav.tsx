@@ -4,7 +4,7 @@ import { IconChevronDown } from "@tabler/icons-react";
 import { clsx } from "clsx";
 
 import type { ResolvedNavItem } from "@/infrastructure/navigation/use-navigation";
-import styles from "./app-shell.module.scss";
+import styles from "@/infrastructure/app-shell/app-sidebar.module.scss";
 
 // ── NavItem (leaf) ────────────────────────────────────────────────────────────
 

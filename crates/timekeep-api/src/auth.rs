@@ -70,8 +70,8 @@ pub async fn require_jwt(
         None => return Err(StatusCode::UNAUTHORIZED),
     };
 
-    let claims =
-        crate::verify_token(token, &state.jwt_secret).map_err(|_| StatusCode::UNAUTHORIZED)?;
+    let claims = crate::middleware::jwt::verify_token(token, &state.jwt_secret)
+        .map_err(|_| StatusCode::UNAUTHORIZED)?;
 
     let role = Role::from_str(&claims.role).unwrap_or(Role::Viewer);
     let permissions = claims

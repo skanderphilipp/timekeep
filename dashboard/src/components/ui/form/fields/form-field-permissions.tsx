@@ -2,7 +2,7 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 
 import { FormField } from "@/components/ui/form/form-field";
 import { FieldInputContainer } from "@/components/ui/form/field-input-container";
-import { PermissionMultiSelect } from "@/components/ui/permission-multiselect";
+import { PermissionMultiSelect } from "@/modules/shared/components/permission-multiselect";
 import type { FormPermissionsFieldDef } from "@/components/ui/form/form-field-def";
 
 export function FormFieldPermissions({

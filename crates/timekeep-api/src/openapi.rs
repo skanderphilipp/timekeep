@@ -27,50 +27,50 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
     modifiers(&SecurityAddon),
     paths(
         // ── Auth ──
-        crate::login,
+        crate::routes::auth::login,
         crate::users::whoami,
-        crate::health_check,
+        crate::routes::auth::health_check,
 
         // ── Devices ──
-        crate::list_devices,
-        crate::get_device,
-        crate::add_device,
-        crate::update_device,
-        crate::remove_device,
+        crate::routes::devices::list_devices,
+        crate::routes::devices::get_device,
+        crate::routes::devices::add_device,
+        crate::routes::devices::update_device,
+        crate::routes::devices::remove_device,
 
         // ── Device Discovery & Provisioning ──
-        crate::discover_device,
-        crate::scan_network,
-        crate::provision_device,
+        crate::routes::devices::discover_device,
+        crate::routes::devices::scan_network,
+        crate::routes::devices::provision_device,
 
         // ── Device Search & Health ──
-        crate::search_devices,
-        crate::devices_health,
-        crate::device_events,
+        crate::routes::devices::search_devices,
+        crate::routes::devices::devices_health,
+        crate::routes::devices::device_events,
 
         // ── Device Batch ──
-        crate::batch_action,
+        crate::routes::devices::batch_action,
 
         // ── Providers ──
-        crate::list_providers,
+        crate::routes::devices::list_providers,
 
         // ── Dashboard ──
-        crate::today_summary,
-        crate::report_summary,
+        crate::routes::dashboard::today_summary,
+        crate::routes::dashboard::report_summary,
 
         // ── Punches (Management) ──
-        crate::query_punches_mgmt,
-        crate::correct_punch,
+        crate::routes::punches::query_punches_mgmt,
+        crate::routes::punches::correct_punch,
 
         // ── Punches (Integration) ──
-        crate::query_punches_integration,
+        crate::routes::punches::query_punches_integration,
 
         // ── Device Users ──
-        crate::set_user_on_device,
-        crate::delete_user_from_device,
+        crate::routes::device_users::set_user_on_device,
+        crate::routes::device_users::delete_user_from_device,
 
         // ── Device Commands ──
-        crate::enqueue_device_command,
+        crate::routes::device_users::enqueue_device_command,
 
         // ── API Keys ──
         crate::management::list_api_keys,

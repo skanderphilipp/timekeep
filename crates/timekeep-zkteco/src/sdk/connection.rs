@@ -23,6 +23,8 @@
 //!
 //! Reference: `adrobinoga/zk-protocol`, `fananimi/pyzk/zk/base.py`
 
+use std::sync::atomic::AtomicU16;
+use std::sync::atomic::Ordering;
 use std::time::Duration;
 
 use crate::protocol::encoding;
@@ -79,6 +81,17 @@ const DEFAULT_TICKS: u8 = 50;
 /// Maximum TCP chunk size for data exchange (0xFFc0 = 65472 bytes).
 const MAX_CHUNK: usize = 0xFFC0;
 
+/// Timeout for establishing a TCP connection to a device.
+/// ZKTeco devices on a local network respond in <100ms.
+/// 5 seconds is generous for worst-case network conditions.
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// Timeout for individual read operations on an established connection.
+/// Each `readable()` call corresponds to a single protocol packet exchange
+/// (header or payload). Devices respond in milliseconds on a local network;
+/// 5 seconds is the upper bound that catches rogue services on port 4370.
+const IO_TIMEOUT: Duration = Duration::from_secs(5);
+
 /// Response from a command execution.
 #[derive(Debug)]
 pub struct CommandResponse {
@@ -119,8 +132,9 @@ pub struct ZkConnection {
     comm_key: u32,
     /// Session ID assigned by the device after CONNECT
     session_id: u16,
-    /// Monotonically increasing reply counter
-    reply_id: u16,
+    /// Monotonically increasing reply counter (AtomicU16 — must be Sync
+    /// because ZkConnection is held behind an Arc in ZkTecoDevice).
+    reply_id: AtomicU16,
     /// Whether the device uses the newer ZK8 firmware (72-byte user records)
     is_zk8: bool,
     /// Whether CMD_REG_EVENT has been sent (real-time events enabled)
@@ -129,11 +143,17 @@ pub struct ZkConnection {
 
 impl ZkConnection {
     /// Establish a TCP connection and authenticate with the device.
+    ///
+    /// The TCP connect is bounded by `CONNECT_TIMEOUT` (5s).
+    /// On timeout, returns `Error::device("TCP connect timed out")`.
     pub async fn connect(host: &str, port: u16, comm_key: u32) -> Result<Self, Error> {
         let addr = format!("{host}:{port}");
 
-        let stream = TcpStream::connect(&addr)
+        let stream = tokio::time::timeout(CONNECT_TIMEOUT, TcpStream::connect(&addr))
             .await
+            .map_err(|_| {
+                Error::device(format!("TCP connect to {addr} timed out after {CONNECT_TIMEOUT:?}"))
+            })?
             .map_err(|e| Error::device(format!("TCP connect to {addr}: {e}")))?;
 
         stream.set_nodelay(true).map_err(|e| Error::device(format!("set_nodelay: {e}")))?;
@@ -146,7 +166,7 @@ impl ZkConnection {
             port,
             comm_key,
             session_id: 0,
-            reply_id: u16::MAX - 1, // Start at USHRT_MAX - 1 like pyzk
+            reply_id: AtomicU16::new(u16::MAX - 1), // Start at USHRT_MAX - 1 like pyzk
             is_zk8: false,
             realtime_enabled: false,
         };
@@ -188,9 +208,9 @@ impl ZkConnection {
                 // Step 2: AUTH with scrambled key
                 let scrambled =
                     encoding::scramble_comm_key(self.comm_key, self.session_id, DEFAULT_TICKS);
+                let auth_reply_id = self.reply_id.fetch_add(1, Ordering::Relaxed);
                 let auth_pkt =
-                    Packet::new(CMD_AUTH, self.session_id, self.reply_id, scrambled.to_vec());
-                self.reply_id = self.reply_id.wrapping_add(1);
+                    Packet::new(CMD_AUTH, self.session_id, auth_reply_id, scrambled.to_vec());
 
                 tracing::debug!("sending CMD_AUTH");
                 self.send_packet(&auth_pkt).await?;
@@ -232,18 +252,25 @@ impl ZkConnection {
                 // ZK8 devices typically report ZLM60, ZEM760, etc.
                 tracing::debug!(%platform, "device platform detected");
                 // If platform name is long, likely ZK8
-                platform.len() > 10
+                !platform.is_empty()
+                    && ["ZLM60", "ZEM760", "ZEM720", "ZMM220", "ZL60"]
+                        .iter()
+                        .any(|p| platform.starts_with(p))
             },
-            Err(_) => false,
+            Err(_) => true, // Default to ZK8 (modern firmware)
         }
     }
 
-    /// Send a packet and expect an ACK_OK response.
+    /// Send a packet and expect an ACK_OK or CMD_DATA response.
+    ///
+    /// pyzk treats ACK_OK, PREPARE_DATA, and CMD_DATA all as valid success
+    /// responses. Devices may send CMD_DATA when they have buffered real-time
+    /// events that need flushing before processing the next command.
     async fn send_command(&self, cmd_id: u16, data: Vec<u8>) -> Result<CommandResponse, Error> {
         let response = self.send_and_receive(cmd_id, data).await?;
 
         match response.reply_code {
-            CMD_ACK_OK => Ok(response),
+            CMD_ACK_OK | CMD_DATA => Ok(response),
             CMD_ACK_ERROR => {
                 Err(Error::device(format!("device returned error for command 0x{cmd_id:04X}")))
             },
@@ -253,9 +280,15 @@ impl ZkConnection {
         }
     }
 
+    /// Get-and-increment the reply ID counter.
+    fn next_reply_id(&self) -> u16 {
+        self.reply_id.fetch_add(1, Ordering::Relaxed)
+    }
+
     /// Send a packet and receive a response. Returns raw response including non-ACK codes.
     async fn send_and_receive(&self, cmd_id: u16, data: Vec<u8>) -> Result<CommandResponse, Error> {
-        let pkt = Packet::new(cmd_id, self.session_id, self.reply_id, data);
+        let reply_id = self.next_reply_id();
+        let pkt = Packet::new(cmd_id, self.session_id, reply_id, data);
         self.send_packet(&pkt).await?;
 
         let response = self.receive_packet().await?;
@@ -285,7 +318,7 @@ impl ZkConnection {
         let mut header = [0u8; 8];
         self.read_exact(&mut header).await?;
 
-        let magic = u32::from_le_bytes([header[0], header[1], header[2], header[3]]);
+        let magic = u32::from_be_bytes([header[0], header[1], header[2], header[3]]);
         if magic != crate::protocol::packet::PACKET_MAGIC {
             return Err(Error::device(format!("invalid magic in response: 0x{magic:08X}")));
         }
@@ -308,13 +341,26 @@ impl ZkConnection {
         Packet::from_bytes(&full)
     }
 
-    /// Read exactly `n` bytes from the stream, with a short timeout per read attempt.
+    /// Read exactly `n` bytes from the stream.
+    ///
+    /// Each `readable()` wait is bounded by `IO_TIMEOUT` (5s). If a non-ZKTeco
+    /// service on port 4370 accepts TCP but never sends the expected protocol
+    /// data, this timeout prevents the scan from hanging indefinitely.
     async fn read_exact(&self, buf: &mut [u8]) -> Result<(), Error> {
         let stream = self.stream.as_ref().ok_or_else(|| Error::device("not connected"))?;
 
         let mut offset = 0;
         while offset < buf.len() {
-            stream.readable().await.map_err(|e| Error::device(format!("read ready: {e}")))?;
+            match tokio::time::timeout(IO_TIMEOUT, stream.readable()).await {
+                Ok(Ok(())) => {},
+                Ok(Err(e)) => return Err(Error::device(format!("read ready: {e}"))),
+                Err(_) => {
+                    return Err(Error::device(format!(
+                        "read timed out after {IO_TIMEOUT:?} (received {offset}/{len} bytes)",
+                        len = buf.len()
+                    )));
+                },
+            }
             match stream.try_read(&mut buf[offset..]) {
                 Ok(0) => return Err(Error::device("connection closed by device")),
                 Ok(n) => offset += n,
@@ -466,6 +512,10 @@ impl ZkConnection {
     }
 
     /// Read a single chunk from the device buffer.
+    ///
+    /// Accepts both CMD_DATA (direct data) and CMD_PREPARE_DATA (0x05DC)
+    /// which the device may send for large chunk transfers before the actual
+    /// CMD_DATA packet.
     async fn read_chunk(&self, start: u32, size: u32) -> Result<Vec<u8>, Error> {
         let mut req = vec![0u8; 8];
         req[0..4].copy_from_slice(&start.to_le_bytes());
@@ -475,6 +525,19 @@ impl ZkConnection {
 
         match response.reply_code {
             CMD_DATA => Ok(response.packet.data.clone()),
+            CMD_PREPARE_DATA => {
+                // Device is sending data in chunks — the actual data follows
+                // in a subsequent CMD_DATA packet. Read it.
+                let data_packet = self.receive_packet().await?;
+                if data_packet.cmd_id == CMD_DATA {
+                    Ok(data_packet.data.clone())
+                } else {
+                    Err(Error::device(format!(
+                        "READ_BUFFER expected CMD_DATA after PREPARE_DATA, got 0x{:04X}",
+                        data_packet.cmd_id
+                    )))
+                }
+            },
             other => Err(Error::device(format!("READ_BUFFER unexpected response: 0x{other:04X}"))),
         }
     }
@@ -582,6 +645,8 @@ impl ZkConnection {
     /// Get device storage sizes (user count, record count, capacity).
     pub async fn read_sizes(&self) -> Result<DeviceSizes, Error> {
         // Disable → GET_FREE_SIZES → Enable
+        // ZK8 firmware requires disable before reading sizes (unlike older ZK6
+        // where pyzk can read sizes without disable).
         self.send_command(CMD_DISABLE_DEVICE, vec![]).await?;
 
         let response = self.send_and_receive(CMD_GET_FREE_SIZES, vec![]).await?;
@@ -868,13 +933,16 @@ impl ZkConnection {
         Ok(())
     }
 
-    /// Get attendance records.
+    /// Get attendance records since an optional timestamp.
     ///
-    /// Returns all attendance records from the device.
+    /// The ZKTeco data exchange protocol always returns the full attendance
+    /// buffer — server-side filtering is not supported. We filter client-side
+    /// by discarding records whose timestamp is on or before `since`.
+    ///
     /// Each record is 40 bytes in the standard ZKTeco format.
     pub async fn get_attendance(
         &self,
-        _since: Option<jiff::Timestamp>,
+        since: Option<jiff::Timestamp>,
     ) -> Result<Vec<timekeep_core::model::AttendancePunch>, Error> {
         let sizes = self.read_sizes().await?;
         if sizes.record_count == 0 {
@@ -914,6 +982,14 @@ impl ZkConnection {
                 }
 
                 if let Some(punch) = parser::parse_attendance_record(record, &device_sn) {
+                    // Client-side `since` filtering: the protocol returns the full
+                    // buffer so we discard records already persisted.
+                    if let Some(since_ts) = &since {
+                        if punch.timestamp.as_second() <= since_ts.as_second() {
+                            offset += 40;
+                            continue;
+                        }
+                    }
                     punches.push(punch);
                 }
                 offset += 40;
@@ -924,7 +1000,11 @@ impl ZkConnection {
             )));
         }
 
-        tracing::info!(count = punches.len(), "attendance records parsed from device");
+        tracing::info!(
+            count = punches.len(),
+            total_on_device = sizes.record_count,
+            "attendance records parsed from device"
+        );
         Ok(punches)
     }
 
@@ -1040,7 +1120,7 @@ impl ZkConnection {
 
     /// Get the reply ID (for testing/debugging).
     pub fn reply_id(&self) -> u16 {
-        self.reply_id
+        self.reply_id.load(Ordering::Relaxed)
     }
 
     // ─── Real-Time Event Methods ────────────────────────────────────
@@ -1098,7 +1178,8 @@ impl ZkConnection {
         data: Vec<u8>,
         event_tx: &mpsc::UnboundedSender<event::RealTimeEvent>,
     ) -> Result<CommandResponse, Error> {
-        let pkt = Packet::new(cmd_id, self.session_id, self.reply_id, data);
+        let reply_id = self.next_reply_id();
+        let pkt = Packet::new(cmd_id, self.session_id, reply_id, data);
         self.send_packet(&pkt).await?;
 
         // Loop: read packets until we get the expected command response.

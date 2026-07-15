@@ -10,35 +10,6 @@
   }
 }
 
-/* ── Chip rendering (formerly from <Chip> component) ── */
-
-.chip {
-  align-items: center;
-  background-color: inherit;
-  border: none;
-  border-radius: var(--ao-radius-sm);
-  box-sizing: content-box;
-  color: var(--ao-font-color-primary);
-  cursor: pointer;
-  display: inline-flex;
-  font-weight: inherit;
-  gap: var(--ao-spacing-1);
-  height: var(--ao-spacing-3);
-  justify-content: flex-start;
-  max-width: 100%;
-  overflow: hidden;
-  padding: var(--ao-spacing-1);
-  user-select: none;
-
-  &:hover {
-    background-color: var(--ao-background-tertiary);
-  }
-
-  &:active {
-    background-color: var(--ao-border-color-light);
-  }
-}
-
 .bold {
   font-weight: var(--ao-font-weight-medium);
 }

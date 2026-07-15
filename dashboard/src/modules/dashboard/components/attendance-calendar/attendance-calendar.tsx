@@ -5,16 +5,8 @@ import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
 import { openSidePanelAtom } from "@/infrastructure/state";
-import {
-  CalendarMonth,
-  Select,
-  IconButton,
-  Button,
-  Text,
-  ActionGroup,
-  StatusDot,
-  type CalendarDayData,
-} from "@/components/ui";
+import { Select, IconButton, Button, Text, ActionGroup, StatusDot } from "@/components/ui";
+import { CalendarMonth, type CalendarDayData } from "@/modules/shared/components";
 import { useAttendanceCalendar } from "./use-attendance-calendar";
 import { DayDetailPanel } from "./day-detail-panel";
 

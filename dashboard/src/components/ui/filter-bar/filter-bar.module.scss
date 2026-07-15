@@ -3,12 +3,10 @@
 // ── Root ─────────────────────────────────────────────────────────────────────
 
 .root {
-  background: var(--ao-background-secondary);
-  border: 1px solid var(--ao-border-color-light);
-  border-radius: var(--ao-radius-md);
   display: flex;
   flex-direction: column;
   gap: 0;
+  width: 100%;
 }
 
 .sticky {
@@ -19,33 +17,17 @@
   z-index: 10;
 }
 
-// ── Search section (full-width, at top) ──────────────────────────────────────
+// ── Toolbar row (single-row: search + controls + actions) ─────────────────────
 
-.search {
-  border-bottom: 1px solid var(--ao-border-color-light);
-  padding: var(--ao-spacing-2);
-
-  /* Search input fills the full width of the bar */
-  [data-slot="filter-input"] {
-    width: 100%;
-  }
-}
-
-// ── Main bar (filters + actions) ─────────────────────────────────────────────
-
-.bar {
+.toolbar {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
   gap: var(--ao-spacing-2);
-  padding: var(--ao-spacing-2);
-
-  .search + & {
-    padding-top: var(--ao-spacing-1_5);
-  }
+  justify-content: space-between;
+  padding: 0;
 }
 
-// ── Filter controls area ─────────────────────────────────────────────────────
+// ── Left side: search + inline filter controls ────────────────────────────────
 
 .items {
   align-items: center;
@@ -56,7 +38,15 @@
   min-width: 0;
 }
 
-// ── Actions area (count + reset + custom) ────────────────────────────────────
+// ── Search slot (constrained width, matches FilterDropdown) ───────────────────
+
+.searchSlot {
+  flex: 1;
+  max-width: 320px;
+  min-width: 160px;
+}
+
+// ── Right side: count + reset + custom actions ────────────────────────────────
 
 .actions {
   align-items: center;
@@ -72,31 +62,27 @@
   white-space: nowrap;
 }
 
-// ── Clear / Reset button ─────────────────────────────────────────────────────
+// ── Clear / Reset button (borderless, matches FilterDropdown reset style) ─────
 
 .clear {
   align-items: center;
   background: none;
-  border: 1px solid var(--ao-border-color-light);
+  border: none;
   border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-secondary);
+  color: var(--ao-font-color-tertiary);
   cursor: pointer;
   display: inline-flex;
-  flex-shrink: 0;
   font-family: inherit;
   font-size: var(--ao-font-size-xs);
-  font-weight: var(--ao-font-weight-medium);
   gap: var(--ao-spacing-1);
   height: var(--ao-spacing-7);
   padding: 0 var(--ao-spacing-2);
   transition:
-    background duration(fast) ease,
-    border-color duration(fast) ease,
-    color duration(fast) ease;
+    color duration(fast) ease,
+    background duration(fast) ease;
 
   &:hover {
     background: var(--ao-background-tertiary);
-    border-color: var(--ao-border-color-medium);
     color: var(--ao-font-color-primary);
   }
 }
@@ -104,9 +90,8 @@
 // ── Active filter chips row ──────────────────────────────────────────────────
 
 .chips {
-  border-top: 1px solid var(--ao-border-color-light);
   display: flex;
   flex-wrap: wrap;
   gap: var(--ao-spacing-1);
-  padding: var(--ao-spacing-1_5) var(--ao-spacing-2);
+  padding: var(--ao-spacing-1) 0;
 }

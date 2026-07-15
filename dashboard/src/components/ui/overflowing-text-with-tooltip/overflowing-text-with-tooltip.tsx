@@ -1,14 +1,23 @@
-import { useId, useRef, useState, useCallback } from "react";
+import { type ReactNode, useId, useRef, useState, useCallback } from "react";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { clsx } from "clsx";
 
 import styles from "./overflowing-text-with-tooltip.module.scss";
 
 export type OverflowingTextWithTooltipProps = {
-  /** The text content. When overflowing, a tooltip shows the full text. */
-  text: string;
-  /** Optional custom tooltip content (overrides `text` for the tooltip). */
+  /** The text content. When overflowing, a tooltip shows the full text. Not used when noTooltip is true. */
+  text?: string;
+  /** Rich content for noTooltip mode. Supports ReactNode children. */
+  children?: ReactNode;
+  /** Optional custom tooltip content (overrides `text` for the tooltip). Only in tooltip mode. */
   tooltipContent?: string;
+  /**
+   * When true, behaves like EllipsisDisplay: pure CSS text truncation without a tooltip.
+   * Uses `children` prop for rich content support. Defaults to false.
+   */
+  noTooltip?: boolean;
+  /** Maximum width in pixels for the noTooltip mode. */
+  maxWidth?: number;
   /**
    * Maximum number of visible lines before truncation.
    * When set, uses multi-line clamping. When omitted, uses single-line ellipsis.
@@ -28,7 +37,10 @@ export type OverflowingTextWithTooltipProps = {
  */
 export function OverflowingTextWithTooltip({
   text,
+  children,
   tooltipContent,
+  noTooltip = false,
+  maxWidth,
   displayedMaxRows,
   className,
 }: OverflowingTextWithTooltipProps) {
@@ -37,7 +49,7 @@ export function OverflowingTextWithTooltip({
   const [open, setOpen] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
-  const tooltipText = tooltipContent ?? text;
+  const tooltipText = tooltipContent ?? text ?? "";
 
   const handleMouseEnter = useCallback(() => {
     const el = textRef.current;
@@ -55,6 +67,28 @@ export function OverflowingTextWithTooltip({
 
   const isMultiLine = displayedMaxRows !== undefined;
 
+  // ── noTooltip mode: pure CSS ellipsis (EllipsisDisplay behavior) ──
+  if (noTooltip) {
+    return (
+      <div
+        data-slot="overflowing-text"
+        className={clsx(
+          isMultiLine ? styles.overflowingMultilineText : styles.overflowingText,
+          className,
+        )}
+        style={{
+          ...(isMultiLine
+            ? ({ "--displayed-max-rows": displayedMaxRows } as React.CSSProperties)
+            : undefined),
+          ...(maxWidth ? { maxWidth: `${maxWidth}px` } : undefined),
+        }}
+      >
+        {children ?? text}
+      </div>
+    );
+  }
+
+  // ── Tooltip mode ──
   return (
     <Tooltip.Root open={open} onOpenChange={setOpen}>
       <Tooltip.Trigger

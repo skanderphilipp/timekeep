@@ -33,8 +33,8 @@ export const AllVariants: Story = {
       <AnimatedButton variant="primary">Primary</AnimatedButton>
       <AnimatedButton variant="secondary">Secondary</AnimatedButton>
       <AnimatedButton variant="ghost">Ghost</AnimatedButton>
-      <AnimatedButton variant="primary" soon>
-        Coming Soon
+      <AnimatedButton variant="primary" disabled>
+        Disabled
       </AnimatedButton>
       <AnimatedButton variant="primary" loading>
         Loading

@@ -3,7 +3,8 @@
 use axum::body::Body;
 use serde_json::{Value, json};
 use std::sync::Arc;
-use timekeep_api::{DeviceConnectionState, integration_router, management_router};
+use timekeep_api::app_state::DeviceConnectionState;
+use timekeep_api::{integration_router, management_router};
 use timekeep_core::ProviderRegistry;
 use timekeep_core::events::EventBus;
 use timekeep_core::model::AttendancePunch;

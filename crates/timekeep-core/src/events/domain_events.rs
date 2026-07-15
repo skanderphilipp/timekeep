@@ -1,4 +1,4 @@
-use crate::model::{AttendancePunch, Device, DeviceProbe, OperationLog, User};
+use crate::model::{AttendancePunch, Device, DeviceProbe, EmployeeId, OperationLog, User};
 
 /// A domain event emitted by the engine when something significant happens.
 ///
@@ -46,6 +46,24 @@ pub enum DomainEvent {
     /// A request to delete a user from a specific device.
     UserDeleteRequested { device_sn: String, user_sn: u16 },
 
+    /// Request to push an employee to all devices they are enrolled on.
+    EmployeeSyncRequested { employee_pin: String },
+
+    /// Request to remove an employee from all devices.
+    EmployeeRemoveRequested { employee_pin: String },
+
+    /// Request to copy all users from one device to another.
+    DeviceToDeviceSyncRequested { source_sn: String, target_sn: String },
+
+    /// Request a full device re-sync (delete all users, re-upload from employee DB).
+    DeviceResyncRequested { device_sn: String },
+
+    /// Bulk user sync completed for a device.
+    UsersBulkSynced { device_sn: String, pushed: u32, deleted: u32, failed: u32, duration_ms: u64 },
+
+    /// A specific user sync to a device failed.
+    UserSyncFailed { device_sn: String, employee_pin: String, error: String },
+
     /// An operation log entry was received from a device.
     OperationLogReceived { log: OperationLog },
 
@@ -71,6 +89,9 @@ pub enum DomainEvent {
     /// Device firmware was updated (reported by the device).
     DeviceFirmwareUpdated { device_sn: String, old_version: String, new_version: String },
 
+    /// Enriched device metadata received (platform, firmware, MAC, capacity).
+    DeviceInfoUpdated { device: Device },
+
     // ── Employee lifecycle events ─────────────────────────────
     /// A new employee was registered in the system.
     EmployeeCreated { pin: String, name: String },
@@ -90,6 +111,22 @@ pub enum DomainEvent {
     SetupCompleted { admin_username: String },
     /// System settings were changed.
     SettingsChanged { changed_fields: Vec<String> },
+
+    // ── Fingerprint Template Transfer events ───────────────────
+    /// Request to transfer fingerprint templates between devices.
+    FingerprintTransferRequested {
+        source_sn: String,
+        target_sn: String,
+        employee_id: Option<EmployeeId>,
+    },
+    /// Fingerprint transfer completed.
+    FingerprintTransferCompleted {
+        source_sn: String,
+        target_sn: String,
+        transferred: u32,
+        failed: u32,
+        duration_ms: u64,
+    },
 }
 
 impl DomainEvent {
@@ -107,6 +144,12 @@ impl DomainEvent {
             Self::DeviceRemoved { .. } => "device_removed",
             Self::UserSetRequested { .. } => "user_set_requested",
             Self::UserDeleteRequested { .. } => "user_delete_requested",
+            Self::EmployeeSyncRequested { .. } => "employee_sync_requested",
+            Self::EmployeeRemoveRequested { .. } => "employee_remove_requested",
+            Self::DeviceToDeviceSyncRequested { .. } => "device_to_device_sync_requested",
+            Self::DeviceResyncRequested { .. } => "device_resync_requested",
+            Self::UsersBulkSynced { .. } => "users_bulk_synced",
+            Self::UserSyncFailed { .. } => "user_sync_failed",
             Self::OperationLogReceived { .. } => "operation_log_received",
             Self::DeviceCommandEnqueueRequested { .. } => "device_command_enqueue_requested",
             Self::DeviceDiscovered { .. } => "device_discovered",
@@ -115,6 +158,7 @@ impl DomainEvent {
             Self::DeviceSyncFailed { .. } => "device_sync_failed",
             Self::DeviceConfigChanged { .. } => "device_config_changed",
             Self::DeviceFirmwareUpdated { .. } => "device_firmware_updated",
+            Self::DeviceInfoUpdated { .. } => "device_info_updated",
             Self::EmployeeCreated { .. } => "employee_created",
             Self::EmployeeDeactivated { .. } => "employee_deactivated",
             Self::EmployeeEnrolled { .. } => "employee_enrolled",
@@ -122,6 +166,8 @@ impl DomainEvent {
             Self::DashboardUserDeleted { .. } => "dashboard_user_deleted",
             Self::SetupCompleted { .. } => "setup_completed",
             Self::SettingsChanged { .. } => "settings_changed",
+            Self::FingerprintTransferRequested { .. } => "fingerprint_transfer_requested",
+            Self::FingerprintTransferCompleted { .. } => "fingerprint_transfer_completed",
         }
     }
 
@@ -137,6 +183,10 @@ impl DomainEvent {
             | Self::DeviceRemoved { device_sn }
             | Self::UserSetRequested { device_sn, .. }
             | Self::UserDeleteRequested { device_sn, .. }
+            | Self::UsersBulkSynced { device_sn, .. }
+            | Self::UserSyncFailed { device_sn, .. }
+            | Self::DeviceToDeviceSyncRequested { target_sn: device_sn, .. }
+            | Self::DeviceResyncRequested { device_sn, .. }
             | Self::OperationLogReceived { log: OperationLog { device_sn, .. } }
             | Self::DeviceCommandEnqueueRequested { device_sn, .. }
             | Self::DeviceProvisioned { device_sn, .. }
@@ -144,16 +194,21 @@ impl DomainEvent {
             | Self::DeviceSyncFailed { device_sn, .. }
             | Self::DeviceConfigChanged { device_sn, .. }
             | Self::DeviceFirmwareUpdated { device_sn, .. } => Some(device_sn),
+            Self::DeviceInfoUpdated { device } => Some(&device.serial_number),
             Self::DeviceDiscovered { probe } => Some(&probe.serial_number),
             Self::EmployeeEnrolled { device_sn, .. } => Some(device_sn),
             Self::EngineStarted { .. }
             | Self::EngineStopping
+            | Self::EmployeeSyncRequested { .. }
+            | Self::EmployeeRemoveRequested { .. }
             | Self::EmployeeCreated { .. }
             | Self::EmployeeDeactivated { .. }
             | Self::DashboardUserCreated { .. }
             | Self::DashboardUserDeleted { .. }
             | Self::SetupCompleted { .. }
-            | Self::SettingsChanged { .. } => None,
+            | Self::SettingsChanged { .. }
+            | Self::FingerprintTransferRequested { .. }
+            | Self::FingerprintTransferCompleted { .. } => None,
         }
     }
 }
@@ -232,7 +287,7 @@ mod tests {
                 device_sn: "SN001".into(),
                 command: "reboot".into(),
             },
-            DomainEvent::DeviceDiscovered { probe: DeviceProbe::minimal("SN003") },
+            DomainEvent::DeviceDiscovered { probe: DeviceProbe::minimal("SN003", "") },
             DomainEvent::DeviceProvisioned { device_sn: "SN003".into(), provider: "zkteco".into() },
             DomainEvent::DeviceSyncCompleted {
                 device_sn: "SN001".into(),
@@ -296,7 +351,7 @@ mod tests {
 
         // New events
         assert_eq!(
-            DomainEvent::DeviceDiscovered { probe: DeviceProbe::minimal("SN003") }.device_sn(),
+            DomainEvent::DeviceDiscovered { probe: DeviceProbe::minimal("SN003", "") }.device_sn(),
             Some("SN003")
         );
         assert_eq!(

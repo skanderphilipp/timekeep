@@ -48,14 +48,17 @@ impl Packet {
     ///
     /// Format:
     /// ```text
-    /// [magic: u32 LE] [payload_size: u32 LE] [payload: 8 + data.len() bytes]
+    /// [magic: 4 bytes BE] [payload_size: u32 LE] [payload: 8 + data.len() bytes]
     /// ```
+    /// PACKET_MAGIC is the byte sequence [0x50, 0x50, 0x82, 0x7D] sent as-is
+    /// (big-endian / network byte order). All other multi-byte fields are LE.
+    /// FIX: was incorrectly using to_le_bytes() which reversed the byte order.
     pub fn to_bytes(&self) -> Vec<u8> {
         let payload_size = 8 + self.data.len() as u32; // 8 = cmd_id + checksum + session_id + reply_id
         let mut buf = Vec::with_capacity(8 + payload_size as usize);
 
-        // Header: magic + payload_size
-        buf.extend_from_slice(&PACKET_MAGIC.to_le_bytes());
+        // Header: magic (BE) + payload_size (LE)
+        buf.extend_from_slice(&PACKET_MAGIC.to_be_bytes());
         buf.extend_from_slice(&payload_size.to_le_bytes());
 
         // Payload: cmd_id + checksum + session_id + reply_id + data
@@ -80,8 +83,8 @@ impl Packet {
             )));
         }
 
-        // Read magic (4 bytes LE)
-        let magic = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+        // Read magic (4 bytes BE — PACKET_MAGIC is big-endian on the wire)
+        let magic = u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
         if magic != PACKET_MAGIC {
             return Err(Error::device(format!(
                 "invalid magic: 0x{magic:08X} (expected 0x{PACKET_MAGIC:08X})"
@@ -185,7 +188,7 @@ mod tests {
         assert!(bytes.len() >= 16);
 
         // Verify magic bytes are present
-        assert_eq!(&bytes[0..4], &PACKET_MAGIC.to_le_bytes());
+        assert_eq!(&bytes[0..4], &PACKET_MAGIC.to_be_bytes());
 
         let parsed = Packet::from_bytes(&bytes).expect("should parse");
         assert_eq!(parsed.cmd_id, 1000);

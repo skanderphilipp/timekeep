@@ -1,7 +1,8 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { Heading, Text, ListItem, type CalendarDayData } from "@/components/ui";
+import { Heading, Text, ListItem } from "@/components/ui";
+import { type CalendarDayData } from "@/modules/shared/components";
 import { type Punch } from "@/modules/punches/hooks/use-punch-data";
 
 type DayDetailPanelProps = {

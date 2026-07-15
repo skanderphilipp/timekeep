@@ -23,7 +23,7 @@ use crate::request::WorkDayQuery;
 use crate::response::{ApiEnvelope, AppError};
 
 /// Resolve the employee repository or return an error if not configured.
-fn employees(state: &AppState) -> Result<&Arc<dyn timekeep_core::EmployeeRepository>, AppError> {
+fn employees(state: &AppState) -> Result<&Arc<dyn timekeep_core::EmployeeStore>, AppError> {
     state.employees.as_ref().ok_or_else(|| {
         AppError::Internal("Employee repository not configured for this storage backend".into())
     })
@@ -159,12 +159,10 @@ pub(crate) async fn create_employee(
     })?;
 
     // Publish employee domain event for audit trail + subscribers
-    state
-        .event_bus
-        .publish(timekeep_core::DomainEvent::EmployeeCreated {
-            pin: employee.pin.clone(),
-            name: employee.name.clone(),
-        });
+    state.event_bus.publish(timekeep_core::DomainEvent::EmployeeCreated {
+        pin: employee.pin.clone(),
+        name: employee.name.clone(),
+    });
 
     Ok((StatusCode::CREATED, Json(ApiEnvelope::success(EmployeeResponse::from(&employee)))))
 }
@@ -237,9 +235,7 @@ pub(crate) async fn deactivate_employee(
 
     state
         .event_bus
-        .publish(timekeep_core::DomainEvent::EmployeeDeactivated {
-            pin: emp_id.to_string(),
-        });
+        .publish(timekeep_core::DomainEvent::EmployeeDeactivated { pin: emp_id.to_string() });
 
     Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::deleted())))
 }
@@ -388,4 +384,103 @@ fn resolve_date_range(
     let since = from.and_then(|ts| Timestamp::from_second(ts).ok()).unwrap_or(default_since);
     let until = to.and_then(|ts| Timestamp::from_second(ts).ok()).unwrap_or(now);
     (Some(since), Some(until))
+}
+
+// ─── Employee Sync (push to devices) ─────────────────────────────────
+
+/// Trigger a sync of an employee to all their enrolled devices.
+///
+/// Publishes `EmployeeSyncRequested` which is handled by the
+/// application layer to push the employee to each device via SDK.
+pub(crate) async fn sync_employee_to_devices(
+    State(state): State<AppState>,
+    Path(id_or_pin): Path<String>,
+) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
+    // Resolve the employee to verify they exist
+    let repo = employees(&state)?;
+    let emp_id = timekeep_core::EmployeeId::from(id_or_pin.as_str());
+    let employee = repo.find_employee(&emp_id).await?;
+    let employee = match employee {
+        Some(e) => e,
+        None => repo
+            .find_employee_by_pin(&id_or_pin)
+            .await?
+            .ok_or_else(|| AppError::not_found(format!("employee '{id_or_pin}' not found")))?,
+    };
+
+    state.event_bus.publish(timekeep_core::DomainEvent::EmployeeSyncRequested {
+        employee_pin: employee.pin.clone(),
+    });
+
+    Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::requested())))
+}
+
+/// Trigger removal of an employee from all their enrolled devices.
+///
+/// Publishes `EmployeeRemoveRequested` which is handled by the
+/// application layer to delete the employee from each device via SDK.
+pub(crate) async fn remove_employee_from_devices(
+    State(state): State<AppState>,
+    Path(id_or_pin): Path<String>,
+) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
+    let repo = employees(&state)?;
+    let emp_id = timekeep_core::EmployeeId::from(id_or_pin.as_str());
+    let employee = repo.find_employee(&emp_id).await?;
+    let employee = match employee {
+        Some(e) => e,
+        None => repo
+            .find_employee_by_pin(&id_or_pin)
+            .await?
+            .ok_or_else(|| AppError::not_found(format!("employee '{id_or_pin}' not found")))?,
+    };
+
+    state.event_bus.publish(timekeep_core::DomainEvent::EmployeeRemoveRequested {
+        employee_pin: employee.pin.clone(),
+    });
+
+    Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::requested())))
+}
+
+/// Return the entity schema for employees.
+#[utoipa::path(
+    get,
+    path = "/api/employees/schema",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    responses(
+        (status = 200, description = "Employee entity schema metadata", body = timekeep_core::EntitySchema),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
+pub(crate) async fn employee_schema() -> Json<ApiEnvelope<timekeep_core::EntitySchema>> {
+    Json(ApiEnvelope::success(timekeep_core::EMPLOYEE_SCHEMA.clone()))
+}
+
+/// Return faceted filter metadata for employees.
+#[utoipa::path(
+    get,
+    path = "/api/employees/filters",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(crate::request::GenericFacetParams),
+    responses(
+        (status = 200, description = "Employee facet metadata"),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
+pub(crate) async fn employee_filters(
+    State(state): State<AppState>,
+    Query(q): Query<crate::request::GenericFacetParams>,
+) -> Result<Json<ApiEnvelope<Vec<timekeep_core::FacetGroup>>>, AppError> {
+    use timekeep_core::{FacetContext, FacetQuery};
+
+    let query = FacetQuery {
+        dimension: q.dimension.clone(),
+        search: q.search.clone(),
+        limit: q.limit.clamp(1, 100),
+        context: FacetContext::default(),
+    };
+
+    let groups = state.storage.employee_facets(&query).await?;
+    Ok(Json(ApiEnvelope::success(groups)))
 }

@@ -14,6 +14,9 @@ export const API_BASE = "/api";
 /** Default request timeout in milliseconds. */
 export const API_TIMEOUT_MS = 15_000;
 
+/** Timeout for network scan requests — must accommodate scanning 254 hosts. */
+export const API_SCAN_TIMEOUT_MS = 90_000;
+
 /** Default number of retry attempts for idempotent requests. */
 export const API_RETRY_COUNT = 2;
 
@@ -86,6 +89,16 @@ export const SECONDS_PER_DAY = 86_400;
 export const SECONDS_PER_WEEK = 604_800;
 
 // ═══════════════════════════════════════════════════════════════════════
+// Branding
+// ═══════════════════════════════════════════════════════════════════════
+
+/** Application display name. */
+export const APP_NAME = "TimeKeep";
+
+/** Workspace / company name shown on the auth screen. */
+export const WORKSPACE_NAME = "Alsabah";
+
+// ═══════════════════════════════════════════════════════════════════════
 // Local storage keys
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -99,3 +112,20 @@ export const LS_AUTH = "ao-auth";
 
 /** Default poll interval in seconds (used before settings are loaded from API). */
 export const DEFAULT_POLL_INTERVAL_SECS = 30;
+
+// ═══════════════════════════════════════════════════════════════════════
+// UI component sizing
+// ═══════════════════════════════════════════════════════════════════════
+
+/** Standard component size variants used across all UI primitives. */
+export const COMPONENT_SIZES = ["sm", "md", "lg"] as const;
+export type ComponentSize = (typeof COMPONENT_SIZES)[number];
+
+/** Standard Tabler icon sizes in pixels. */
+export const ICON_SIZE = {
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
+  xxl: 32,
+} as const;

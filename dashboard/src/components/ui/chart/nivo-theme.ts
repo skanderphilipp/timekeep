@@ -13,22 +13,20 @@ import type { Theme } from "@/infrastructure/theme";
  * KEEP THIS — do not remove unless the design token pipeline stops emitting
  * P3 fallback declarations in generated-tokens.css.
  */
-function toSRGB(color: string): string {
+export function toSRGB(color: string): string {
   const match =
-    /^color\(display-p3\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)$/.exec(
-      color,
-    );
+    /^color\(display-p3\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)$/.exec(color);
   if (!match) return color;
 
   const r = Math.round(Math.min(1, Math.max(0, Number(match[1]))) * 255);
   const g = Math.round(Math.min(1, Math.max(0, Number(match[2]))) * 255);
   const b = Math.round(Math.min(1, Math.max(0, Number(match[3]))) * 255);
 
-  if (match[4] !== undefined) {
-    const alpha = Math.min(1, Math.max(0, Number(match[4])));
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-  return `rgb(${r}, ${g}, ${b})`;
+  const fnPrefix = match[4] !== undefined ? "rgba" : "rgb";
+  const alpha = match[4] !== undefined ? Math.min(1, Math.max(0, Number(match[4]))) : null;
+  return alpha !== null
+    ? `${fnPrefix}(${r}, ${g}, ${b}, ${alpha})`
+    : `${fnPrefix}(${r}, ${g}, ${b})`;
 }
 
 /**
@@ -72,7 +70,7 @@ export function buildNivoTheme(theme: Theme) {
         color: toSRGB(theme.background.primary),
         fontSize: "12px",
         borderRadius: "4px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        boxShadow: theme.shadow.md,
         padding: "6px 10px",
       },
     },

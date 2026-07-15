@@ -1,0 +1,39 @@
+# ─── timekeep — Synology NAS Deployment ──────────────────────────
+#
+# This file lives at /opt/timekeep/docker-compose.yml on the NAS.
+# The image is pre-built and shipped via `docker save/load`.
+#
+# Quick start:
+#   1. sudo docker load < timekeep-image.tar
+#   2. sudo docker compose up -d
+#   3. Open http://<nas-ip>:3000 for the dashboard
+#
+# network_mode: host is used so the container shares the NAS network stack.
+# This is required for:
+#   - SDK (TCP :4370) to reach devices with the correct source IP
+#   - ADMS push to see the real device IP (not Docker NAT 172.x)
+# Without host networking, ZKTeco devices reject SDK connections because
+# they come from Docker bridge IPs (172.19.0.x) instead of the NAS LAN IP.
+
+services:
+  app:
+    image: timekeep:latest
+    container_name: timekeep
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TIMEKEEP_DB_PATH=/var/lib/timekeep/timekeep.db
+      - TIMEKEEP_DB_BACKEND=sqlite
+      - TIMEKEEP_API_PORT=3000
+      - TIMEKEEP_INTEGRATION_PORT=3001
+      - TIMEKEEP_ADMS_PORT=8085
+      # Debug logging — shows all SDK connection attempts, ADMS pushes, device events
+      - RUST_LOG=timekeep=debug,timekeep_zkteco=debug,timekeep_engine=debug
+      - TIMEKEEP_JWT_SECRET=${TIMEKEEP_JWT_SECRET:-change-me-in-production}
+      - TIMEKEEP_ADMIN_USER=${TIMEKEEP_ADMIN_USER:-admin}
+      - TIMEKEEP_ADMIN_PASSWORD=${TIMEKEEP_ADMIN_PASSWORD:-change-me}
+    volumes:
+      - timekeep-data:/var/lib/timekeep
+
+volumes:
+  timekeep-data:

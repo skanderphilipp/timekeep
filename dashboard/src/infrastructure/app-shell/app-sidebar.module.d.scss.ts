@@ -1,0 +1,23 @@
+declare const classNames: {
+  readonly sidebar: "sidebar";
+  readonly sidebarCollapsed: "sidebarCollapsed";
+  readonly sidebarHeader: "sidebarHeader";
+  readonly logo: "logo";
+  readonly brand: "brand";
+  readonly nav: "nav";
+  readonly navItem: "navItem";
+  readonly navItemActive: "navItemActive";
+  readonly navItemNested: "navItemNested";
+  readonly navGroup: "navGroup";
+  readonly navGroupCollapsed: "navGroupCollapsed";
+  readonly navGroupHeader: "navGroupHeader";
+  readonly navGroupHeaderActive: "navGroupHeaderActive";
+  readonly navGroupLabel: "navGroupLabel";
+  readonly navGroupChevron: "navGroupChevron";
+  readonly navGroupChevronOpen: "navGroupChevronOpen";
+  readonly navGroupChildren: "navGroupChildren";
+  readonly sidebarFooter: "sidebarFooter";
+  readonly collapseToggle: "collapseToggle";
+  readonly sidebarOpen: "sidebarOpen";
+};
+export = classNames;

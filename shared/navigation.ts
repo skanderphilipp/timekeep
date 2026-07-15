@@ -72,6 +72,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     iconName: "IconFingerprint",
   },
   {
+    key: "employees",
+    labelKey: "nav.employees",
+    path: "/employees",
+    iconName: "IconUsers",
+  },
+  {
     key: "reports",
     labelKey: "nav.reports",
     path: "/reports",

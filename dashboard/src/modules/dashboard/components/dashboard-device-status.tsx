@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconDeviceDesktop } from "@tabler/icons-react";
 
-import { Heading, Text, Badge, CardGrid, Card, Banner } from "@/components/ui";
+import { Heading, Text, Badge, Grid, Card, Banner } from "@/components/ui";
 import type { DashboardDeviceHealth } from "@/lib/api";
 
 type DashboardDeviceStatusProps = {
@@ -18,7 +18,7 @@ export function DashboardDeviceStatus({ devices, onDeviceClick }: DashboardDevic
       <Heading level="h3" icon={<IconDeviceDesktop size={20} />}>
         {_(msg`Device Status`)}
       </Heading>
-      <CardGrid>
+      <Grid>
         {devices.map((device) => (
           <Card
             key={device.serial_number}
@@ -47,7 +47,7 @@ export function DashboardDeviceStatus({ devices, onDeviceClick }: DashboardDevic
             </Card.Content>
           </Card>
         ))}
-      </CardGrid>
+      </Grid>
       {devices.every((d) => !d.online) && (
         <Banner variant="danger">
           {_(msg`All devices are currently offline. Attendance data may be stale.`)}

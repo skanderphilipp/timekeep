@@ -34,6 +34,16 @@ export const QueryKeys = {
     list: () => ["devices"] as const,
     /** Single device by serial number. */
     detail: (sn: string) => ["device", sn] as const,
+    /** Enriched device detail (DeviceDetailResponse). */
+    detailEnriched: (sn: string) => ["device", sn, "enriched"] as const,
+    /** Synced users from local DB for a device. */
+    syncedUsers: (sn: string) => ["device", sn, "synced-users"] as const,
+    /** Device enrollments. */
+    enrollments: (sn: string) => ["device", sn, "enrollments"] as const,
+    /** Device activity feed. */
+    activity: (sn: string) => ["device", sn, "activity"] as const,
+    /** Devices health overview. */
+    health: () => ["devices", "health"] as const,
   },
 
   /** Punches / attendance records */
@@ -47,6 +57,8 @@ export const QueryKeys = {
       ["punches-infinite", filter] as const,
     /** Facet filter metadata. */
     filters: <T extends Record<string, unknown>>(filter: T) => ["punch-filters", filter] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "punch"] as const,
   },
 
   /** Reports */
@@ -93,6 +105,24 @@ export const QueryKeys = {
   users: {
     /** User list. */
     list: () => ["users"] as const,
+  },
+
+  /** Employee directory */
+  employees: {
+    /** All employee queries (invalidate with `QueryKeys.employees.all`). */
+    all: ["employees"] as const,
+    /** Full employee list. */
+    list: () => ["employees"] as const,
+    /** Single employee by ID. */
+    detail: (id: string) => ["employee", id] as const,
+    /** Attendance summary for an employee by PIN. */
+    summary: (pin: string) => ["employee-summary", pin] as const,
+    /** Work days for an employee by PIN. */
+    workDays: (pin: string) => ["employee-work-days", pin] as const,
+    /** Monthly trend for an employee by PIN. */
+    monthly: (pin: string) => ["employee-monthly", pin] as const,
+    /** Calendar days for an employee by PIN. */
+    calendar: (pin: string) => ["employee-calendar", pin] as const,
   },
 
   /** Side panel entity detail */

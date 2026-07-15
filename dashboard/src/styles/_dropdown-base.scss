@@ -2,7 +2,6 @@
 
 // ── Shared Dropdown / Popup Patterns ────────────────────────────────────────
 // Twenty UI alignment (2026-07-12). See: SCSS-VISUAL-STANDARDS.md §6.6
-//
 // Key changes:
 //   1. Item border-radius: concentric with container (calc(md - spacing-1))
 //   2. Item height: content-box pattern (32px - 2*padding)
@@ -51,7 +50,7 @@
   }
 
   &[data-disabled] {
-    color: var(--ao-font-color-extraLight);
+    color: var(--ao-font-color-extralight);
     cursor: not-allowed;
   }
 }

@@ -1,0 +1,126 @@
+@use "@/styles/mixins" as *;
+
+// ── Top Bar ──────────────────────────────────────────────────────────────────
+
+.topBar {
+  align-items: center;
+  background: var(--ao-background-primary);
+  display: flex;
+  gap: var(--ao-spacing-4);
+  height: 48px;
+  justify-content: space-between;
+  padding: 0 var(--ao-spacing-4);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.topBarLeft {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.topBarActions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--ao-spacing-2);
+}
+
+// ── Breadcrumbs ──────────────────────────────────────────────────────────────
+
+.breadcrumbs {
+  align-items: center;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+}
+
+.breadcrumbItem {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-1);
+  white-space: nowrap;
+}
+
+.breadcrumbSeparator {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+  margin: 0 var(--ao-spacing-1);
+}
+
+.breadcrumbLink {
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--ao-background-secondary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Menu Toggle (mobile) ─────────────────────────────────────────────────────
+
+.menuToggle {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: none;
+  height: 32px;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+
+  &:hover {
+    background: var(--ao-background-secondary);
+  }
+}
+
+// ── Top Bar Icon Buttons (theme, logout, etc.) ────────────────────────────────
+
+.topBarButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+
+  &:hover {
+    background: var(--ao-background-secondary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: $breakpoint-md) {
+  .menuToggle {
+    display: flex;
+  }
+
+  .topBar {
+    padding: 0 var(--ao-spacing-3);
+  }
+
+  .breadcrumbs {
+    display: none;
+  }
+
+  .topBarActions {
+    gap: var(--ao-spacing-1);
+  }
+}

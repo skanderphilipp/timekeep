@@ -74,6 +74,8 @@ pub struct DeviceProbe {
     pub platform: String,
     /// MAC address.
     pub mac_address: String,
+    /// IP address or hostname of the device.
+    pub host: String,
     /// Currently enrolled users.
     pub user_count: u32,
     /// Current attendance records stored.
@@ -82,7 +84,10 @@ pub struct DeviceProbe {
 
 impl DeviceProbe {
     /// Create a minimal probe result for a reachable but unidentified device.
-    pub fn minimal(serial_number: impl Into<String>) -> Self {
+    ///
+    /// Pass an empty string for `host` if the device IP is unknown
+    /// (e.g., in tests or when the probe is created without an active connection).
+    pub fn minimal(serial_number: impl Into<String>, host: impl Into<String>) -> Self {
         Self {
             vendor: "unknown".into(),
             serial_number: serial_number.into(),
@@ -90,6 +95,7 @@ impl DeviceProbe {
             firmware_version: String::new(),
             platform: String::new(),
             mac_address: String::new(),
+            host: host.into(),
             user_count: 0,
             record_count: 0,
         }
@@ -130,9 +136,17 @@ mod tests {
 
     #[test]
     fn test_device_probe_minimal() {
-        let probe = DeviceProbe::minimal("SN001");
+        let probe = DeviceProbe::minimal("SN001", "192.168.1.100");
         assert_eq!(probe.serial_number, "SN001");
         assert_eq!(probe.vendor, "unknown");
+        assert_eq!(probe.host, "192.168.1.100");
         assert!(probe.model.is_empty());
+    }
+
+    #[test]
+    fn test_device_probe_minimal_empty_host() {
+        let probe = DeviceProbe::minimal("SN002", "");
+        assert_eq!(probe.serial_number, "SN002");
+        assert!(probe.host.is_empty());
     }
 }

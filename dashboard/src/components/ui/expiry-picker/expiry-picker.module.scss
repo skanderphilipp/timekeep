@@ -20,7 +20,10 @@
   font-size: var(--ao-font-size-sm);
   height: var(--ao-spacing-8);
   padding: 0 var(--ao-spacing-3);
-  transition: all 0.15s ease;
+  transition:
+    background-color duration(fast) ease,
+    border-color duration(fast) ease,
+    color duration(fast) ease;
   user-select: none;
   white-space: nowrap;
 

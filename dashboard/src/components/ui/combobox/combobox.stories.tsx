@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "storybook/test";
 import { Combobox, type ComboboxOption } from "./combobox";
@@ -19,16 +20,19 @@ export default meta;
 type Story = StoryObj<typeof Combobox>;
 
 export const Primary: Story = {
-  render: () => (
-    <div style={{ padding: 20, maxWidth: 300 }}>
-      <Combobox
-        options={deviceOptions}
-        value="CQZ7232960836"
-        onChange={fn()}
-        placeholder="Select device…"
-      />
-    </div>
-  ),
+  render: function InteractiveCombobox() {
+    const [selected, setSelected] = useState<string | undefined>(undefined);
+    return (
+      <div style={{ padding: 20, maxWidth: 300 }}>
+        <Combobox
+          options={deviceOptions}
+          value={selected}
+          onChange={setSelected}
+          placeholder="Select device…"
+        />
+      </div>
+    );
+  },
 };
 
 export const AllVariants: Story = {

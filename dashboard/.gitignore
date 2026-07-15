@@ -3,3 +3,9 @@ dist/
 storybook-static/
 tsconfig.tsbuildinfo
 *.local
+
+# Lingui compiled catalogs (Vite plugin transforms .po at build time)
+src/locales/*.ts
+
+# MSW service worker (auto-generated, dev-only)
+public/mockServiceWorker.js

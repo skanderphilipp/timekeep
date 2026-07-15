@@ -5,13 +5,6 @@
 .row {
   align-items: center;
   display: flex;
-  gap: 0;
-}
-
-.ipField {
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  flex: 1;
 }
 
 .separator {
@@ -25,17 +18,11 @@
   font-family: var(--ao-font-family-mono);
   font-size: var(--ao-font-size-md);
   font-weight: var(--ao-font-weight-bold);
-  height: var(--ao-spacing-10);
+  height: var(--ao-spacing-8);
   justify-content: center;
   min-width: var(--ao-spacing-5);
   padding: 0 var(--ao-spacing-1);
   user-select: none;
-}
-
-.portField {
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-  max-width: var(--ao-spacing-25);
 }
 
 .ipInput {
@@ -61,10 +48,4 @@
   &:focus {
     border-color: var(--ao-color-red9);
   }
-}
-
-.hint {
-  color: var(--ao-font-color-tertiary);
-  font-size: var(--ao-font-size-xs);
-  margin-top: var(--ao-spacing-0_5);
 }

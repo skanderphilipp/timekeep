@@ -244,7 +244,7 @@ async fn serve_connection(mut stream: TcpStream, peer: SocketAddr, responder: Ar
             Err(_) => return, // client closed
         }
 
-        let magic = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
+        let magic = u32::from_be_bytes([buf[0], buf[1], buf[2], buf[3]]);
         if magic != PACKET_MAGIC {
             tracing::warn!(%peer, "simulator: bad magic, disconnecting");
             return;

@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconCalendar, IconClock, IconClockPlus, IconPercentage } from "@tabler/icons-react";
 
-import { MetricCard, CardGrid } from "@/components/ui";
+import { StatCard, Grid } from "@/components/ui";
 import type { ReportSummary } from "@/lib/api";
 
 /** Format seconds into a human-readable duration string. */
@@ -17,44 +17,47 @@ type ReportSummaryCardsProps = {
 };
 
 /**
- * Report KPI cards — matches the Dashboard's MetricCard pattern.
+ * Report KPI cards — uses StatCard (horizontal layout) for consistent design.
  *
- * Shows the four business KPIs from the spec:
- * Work Days, Avg Hours, Overtime, Absence Rate.
+ * Shows the four business KPIs: Work Days, Avg Hours, Overtime, Absence Rate.
  */
 export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
   const { _ } = useLingui();
 
   return (
-    <CardGrid>
-      <MetricCard
-        icon={<IconCalendar size={24} />}
+    <Grid>
+      <StatCard
+        layout="horizontal"
+        icon={<IconCalendar size={20} />}
         label={_(msg`Work Days`)}
         value={summary.work_days ?? 0}
-        sub={_(msg`this period`)}
+        subtitle={_(msg`this period`)}
         color="accent"
       />
-      <MetricCard
-        icon={<IconClock size={24} />}
+      <StatCard
+        layout="horizontal"
+        icon={<IconClock size={20} />}
         label={_(msg`Avg Hours`)}
         value={formatHours(summary.avg_seconds_per_day ?? 0)}
-        sub={_(msg`per day`)}
+        subtitle={_(msg`per day`)}
         color="accent"
       />
-      <MetricCard
-        icon={<IconClockPlus size={24} />}
+      <StatCard
+        layout="horizontal"
+        icon={<IconClockPlus size={20} />}
         label={_(msg`Overtime`)}
         value={formatHours(summary.overtime_seconds ?? 0)}
-        sub={_(msg`total`)}
+        subtitle={_(msg`total`)}
         color="amber"
       />
-      <MetricCard
-        icon={<IconPercentage size={24} />}
+      <StatCard
+        layout="horizontal"
+        icon={<IconPercentage size={20} />}
         label={_(msg`Absence Rate`)}
         value={`${(summary.absence_rate ?? 0).toFixed(1)}%`}
-        sub={_(msg`this period`)}
+        subtitle={_(msg`this period`)}
         color="red"
       />
-    </CardGrid>
+    </Grid>
   );
 }

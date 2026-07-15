@@ -21,13 +21,13 @@ use std::time::Instant;
 
 use axum::{
     Router,
-    extract::{Query, State},
+    extract::{ConnectInfo, Query, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
 };
 use queue::CommandQueue;
-use timekeep_core::{Error, EventBus, events::DomainEvent};
+use timekeep_core::{DeviceProbe, Error, EventBus, events::DomainEvent, model::Device};
 use tokio::net::TcpListener;
 
 /// Status of a device tracked by the ADMS server.
@@ -156,7 +156,7 @@ impl AdmsServer {
         self.shutdown_tx = Some(shutdown_tx);
 
         tokio::spawn(async move {
-            axum::serve(listener, app)
+            axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
                 .with_graceful_shutdown(async {
                     let _ = shutdown_rx.await;
                 })
@@ -231,26 +231,62 @@ struct CDataQuery {
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-/// Mark a device as active (update `last_seen`, `last_activity`, `is_online`).
-fn mark_device_active(state: &DeviceAdmsState) {
-    if let Ok(mut status) = state.status.lock() {
+/// Mark a device as active (update `last_seen`, `last_activity`, `is_online`)
+/// and publish a `DeviceOnline` event so that `DeviceConnectionState`
+/// (in the API layer) can track the device's connection health.
+fn mark_device_active(state: &SharedAdmsState, sn: &str) {
+    let was_online = if let Some(device) = state.get_device(sn) {
+        let mut status = device.status.lock().unwrap();
+        let was = status.is_online;
         status.last_seen = Some(jiff::Timestamp::now());
         status.last_activity = Some(Instant::now());
         status.is_online = true;
+        was
+    } else {
+        false
+    };
+
+    // Only publish DeviceOnline when transitioning from offline → online
+    // to avoid spamming the activity timeline on every ADMS keepalive.
+    if !was_online {
+        state.event_bus.publish(DomainEvent::DeviceOnline {
+            device_sn: sn.to_string(),
+            device_info: Device::new(sn),
+        });
     }
 }
 
-/// Resolve a device by SN, or return 404 if not registered.
-macro_rules! require_device {
-    ($state:expr, $sn:expr) => {
-        match $state.get_device($sn) {
-            Some(d) => d,
-            None => {
-                tracing::warn!(device = %$sn, "ADMS: unrecognised device SN");
-                return (StatusCode::NOT_FOUND, "UNKNOWN DEVICE".to_string()).into_response();
-            },
-        }
-    };
+/// Resolve a device by SN. Auto-registers unknown devices so that
+/// scanners pushing ADMS data appear automatically without manual
+/// device creation.
+///
+/// When an unknown serial number is encountered:
+/// 1. A new `DeviceAdmsState` is created and registered
+/// 2. A `DeviceDiscovered` event is published to the event bus
+///    (includes the device's source IP as host when available)
+/// 3. The handler proceeds normally (attendance data is accepted)
+///
+/// The device will appear in the API device list on the next poll.
+fn resolve_device(state: &SharedAdmsState, sn: &str, host: &str) -> DeviceAdmsState {
+    if let Some(d) = state.get_device(sn) {
+        return d;
+    }
+
+    tracing::info!(
+        device = %sn,
+        host = %host,
+        "ADMS: auto-registering previously unknown device"
+    );
+
+    let adms_state = DeviceAdmsState::new(sn);
+    state.devices.write().unwrap().insert(sn.to_string(), adms_state.clone());
+
+    // Publish discovery event with the device's source IP so the engine
+    // can store it as the device host for future SDK polling.
+    let probe = DeviceProbe::minimal(sn, host);
+    state.event_bus.publish(DomainEvent::DeviceDiscovered { probe });
+
+    adms_state
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────
@@ -261,12 +297,14 @@ macro_rules! require_device {
 /// and used to route the data to the correct device's state.
 async fn handle_cdata(
     State(state): State<SharedAdmsState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(query): Query<CDataQuery>,
     body: String,
 ) -> impl IntoResponse {
     let sn = query.sn.as_deref().unwrap_or("UNKNOWN");
-    let device = require_device!(state, sn);
-    mark_device_active(&device);
+    let host = addr.ip().to_string();
+    let device = resolve_device(&state, sn, &host);
+    mark_device_active(&state, sn);
 
     let table = query.table.as_deref().unwrap_or("UNKNOWN");
 
@@ -368,11 +406,13 @@ async fn handle_cdata(
 /// configuration parameters (poll interval, transflag, etc.).
 async fn handle_cdata_get(
     State(state): State<SharedAdmsState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(query): Query<CDataQuery>,
 ) -> impl IntoResponse {
     let sn = query.sn.as_deref().unwrap_or("UNKNOWN");
-    let device = require_device!(state, sn);
-    mark_device_active(&device);
+    let host = addr.ip().to_string();
+    let _device = resolve_device(&state, sn, &host);
+    mark_device_active(&state, sn);
 
     let response = format!(
         "GET OPTION FROM: {sn}\r\n\
@@ -382,7 +422,7 @@ async fn handle_cdata_get(
          Delay=30\r\n\
          TransTimes=00:00;14:05\r\n\
          TransInterval=1\r\n\
-         TransFlag=1111000000\r\n\
+         TransFlag=0000001111\r\n\
          Realtime=1\r\n\
          Encrypt=0",
         jiff::Timestamp::now().as_second()
@@ -395,11 +435,13 @@ async fn handle_cdata_get(
 /// Device polls for pending commands.
 async fn handle_getrequest(
     State(state): State<SharedAdmsState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(query): Query<CDataQuery>,
 ) -> impl IntoResponse {
     let sn = query.sn.as_deref().unwrap_or("UNKNOWN");
-    let device = require_device!(state, sn);
-    mark_device_active(&device);
+    let host = addr.ip().to_string();
+    let device = resolve_device(&state, sn, &host);
+    mark_device_active(&state, sn);
 
     let mut queue = device.command_queue.lock().unwrap();
     let response = queue.get_pending(sn);
@@ -420,12 +462,14 @@ async fn handle_getrequest(
 /// Device confirms command execution result.
 async fn handle_devicecmd(
     State(state): State<SharedAdmsState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(query): Query<CDataQuery>,
     body: String,
 ) -> impl IntoResponse {
     let sn = query.sn.as_deref().unwrap_or("UNKNOWN");
-    let device = require_device!(state, sn);
-    mark_device_active(&device);
+    let host = addr.ip().to_string();
+    let device = resolve_device(&state, sn, &host);
+    mark_device_active(&state, sn);
 
     let body = body.trim().to_string();
 
@@ -450,12 +494,14 @@ async fn handle_devicecmd(
 /// Device registration and capabilities.
 async fn handle_registry(
     State(state): State<SharedAdmsState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(query): Query<CDataQuery>,
     body: String,
 ) -> impl IntoResponse {
     let sn = query.sn.as_deref().unwrap_or("UNKNOWN");
-    let device = require_device!(state, sn);
-    mark_device_active(&device);
+    let host = addr.ip().to_string();
+    let device = resolve_device(&state, sn, &host);
+    mark_device_active(&state, sn);
 
     if !body.is_empty() {
         let info = parser::parse_kv_pairs(&body);
@@ -545,6 +591,14 @@ mod tests {
     use timekeep_core::events::EventBus;
     use tower::ServiceExt;
 
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+    fn with_connect_info(mut req: Request<Body>) -> Request<Body> {
+        req.extensions_mut()
+            .insert(ConnectInfo(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 12345)));
+        req
+    }
+
     /// Create a test ADMS server with one registered device.
     fn test_server(sn: &str) -> (AdmsServer, DeviceAdmsState) {
         let event_bus = EventBus::default();
@@ -574,22 +628,61 @@ mod tests {
         let app = test_router(shared);
 
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/cdata?SN=TEST001")
                     .method("GET")
                     .body(Body::empty())
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
     }
 
+    /// The handshake MUST return TransFlag with bits 0-3 enabled so that
+    /// devices push attendance, operation logs, photos, and fingerprint
+    /// enrollments in real time.
+    ///
+    /// Bit layout (rightmost = bit 0 = LSB):
+    ///   0000001111 → bit 0=ATTLOG, bit 1=OPERLOG, bit 2=ATTPHOTO, bit 3=FP enroll
+    #[tokio::test]
+    async fn test_cdata_get_handshake_enables_push_flags() {
+        let (server, state) = test_server("TEST001");
+        server.register("TEST001".into(), state);
+        let shared = SharedAdmsState {
+            event_bus: server.event_bus.clone(),
+            devices: server.devices.clone(),
+        };
+        let app = test_router(shared);
+
+        let response = app
+            .oneshot(with_connect_info(
+                Request::builder()
+                    .uri("/iclock/cdata?SN=TEST001")
+                    .method("GET")
+                    .body(Body::empty())
+                    .unwrap(),
+            ))
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body = String::from_utf8(body_bytes.to_vec()).unwrap();
+
+        assert!(
+            body.contains("TransFlag=0000001111"),
+            "Handshake must return TransFlag=0000001111 to enable ATTLOG+OPERLOG+ATTPHOTO+FP enroll pushes.\nGot: {body}"
+        );
+    }
+
     #[tokio::test]
     async fn test_cdata_get_marks_device_online() {
         let (server, state) = test_server("TEST001");
+        let mut rx = server.event_bus.subscribe();
         server.register("TEST001".into(), state.clone());
         let shared = SharedAdmsState {
             event_bus: server.event_bus.clone(),
@@ -598,19 +691,61 @@ mod tests {
         let app = test_router(shared);
 
         let _ = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/cdata?SN=TEST001")
                     .method("GET")
                     .body(Body::empty())
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
         let status = state.status.lock().unwrap();
         assert!(status.is_online);
         assert!(status.last_seen.is_some());
+
+        // Verify DeviceOnline was published on first activation (offline → online).
+        let events: Vec<_> = collect_events(&mut rx, 2).await;
+        let has_online = events
+            .iter()
+            .any(|e| matches!(e.as_ref(), DomainEvent::DeviceOnline { device_sn, .. } if device_sn == "TEST001"));
+        assert!(has_online, "First ADMS push should publish DeviceOnline event");
+    }
+
+    #[tokio::test]
+    async fn test_cdata_get_does_not_spam_device_online() {
+        let (server, state) = test_server("TEST001");
+        let mut rx = server.event_bus.subscribe();
+        server.register("TEST001".into(), state.clone());
+        let shared = SharedAdmsState {
+            event_bus: server.event_bus.clone(),
+            devices: server.devices.clone(),
+        };
+        let app = test_router(shared);
+
+        let req = || {
+            with_connect_info(
+                Request::builder()
+                    .uri("/iclock/cdata?SN=TEST001")
+                    .method("GET")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+        };
+
+        // First push — should transition offline → online and publish DeviceOnline.
+        let _ = app.clone().oneshot(req()).await.unwrap();
+
+        // Second push — device is already online, MUST NOT publish another DeviceOnline.
+        let _ = app.clone().oneshot(req()).await.unwrap();
+
+        let events: Vec<_> = collect_events(&mut rx, 5).await;
+        let online_count = events
+            .iter()
+            .filter(|e| matches!(e.as_ref(), DomainEvent::DeviceOnline { device_sn, .. } if device_sn == "TEST001"))
+            .count();
+        assert_eq!(online_count, 1, "Only one DeviceOnline should be published across two pushes");
     }
 
     #[tokio::test]
@@ -626,27 +761,48 @@ mod tests {
 
         let body = "1\t2026-07-11 08:42:15\t1\t15\t0\t0\t";
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/cdata?SN=TEST001&table=ATTLOG")
                     .method("POST")
                     .header("Content-Type", "text/plain")
                     .body(Body::from(body))
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
 
-        // Verify event was published
-        let event = rx.recv().await.unwrap();
-        assert_eq!(event.event_type(), "punch_received");
+        // Verify a PunchReceived event was published.
+        // Note: DeviceOnline is now published first by mark_device_active,
+        // so we drain until we find the punch event.
+        let mut found_punch = false;
+        let mut saw_online = false;
+        for _ in 0..5 {
+            match tokio::time::timeout(std::time::Duration::from_millis(200), rx.recv()).await {
+                Ok(Ok(event)) => match event.event_type() {
+                    "punch_received" => {
+                        found_punch = true;
+                        break;
+                    },
+                    "device_online" => {
+                        saw_online = true;
+                    },
+                    _ => {},
+                },
+                _ => break,
+            }
+        }
+
+        assert!(found_punch, "expected PunchReceived event after ADMS POST");
+        assert!(saw_online, "expected DeviceOnline event from mark_device_active");
     }
 
     #[tokio::test]
-    async fn test_unrecognised_device_returns_404() {
+    async fn test_unrecognised_device_auto_registers_and_returns_200() {
         let event_bus = EventBus::default();
+        let mut rx = event_bus.subscribe();
         let shared = SharedAdmsState {
             event_bus: event_bus.clone(),
             devices: Arc::new(std::sync::RwLock::new(HashMap::new())),
@@ -654,18 +810,158 @@ mod tests {
         let app = test_router(shared);
 
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/cdata?SN=GHOST&table=ATTLOG")
                     .method("POST")
                     .header("Content-Type", "text/plain")
                     .body(Body::from("1\t2026-01-01 00:00:00\t1\t1\t0\t0\t"))
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        // Auto-registration should succeed — device is now known
+        assert_eq!(response.status(), StatusCode::OK);
+
+        // Verify a DeviceDiscovered event was published
+        let event = tokio::time::timeout(std::time::Duration::from_secs(1), rx.recv())
+            .await
+            .expect("timeout waiting for DeviceDiscovered event")
+            .expect("event should be received");
+
+        match event.as_ref() {
+            DomainEvent::DeviceDiscovered { probe } => {
+                assert_eq!(probe.serial_number, "GHOST");
+                assert_eq!(probe.host, "127.0.0.1");
+            },
+            other => panic!("expected DeviceDiscovered, got {}", other.event_type()),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_auto_registered_device_is_added_to_registry() {
+        let event_bus = EventBus::default();
+        let devices = Arc::new(std::sync::RwLock::new(HashMap::new()));
+        let shared = SharedAdmsState { event_bus: event_bus.clone(), devices: devices.clone() };
+        let app = test_router(shared);
+
+        // Initially empty
+        assert!(devices.read().unwrap().is_empty());
+
+        // Push attendance from unknown device
+        let _response = app
+            .oneshot(with_connect_info(
+                Request::builder()
+                    .uri("/iclock/cdata?SN=NEWDEVICE&table=ATTLOG")
+                    .method("POST")
+                    .header("Content-Type", "text/plain")
+                    .body(Body::from("1\t2026-01-01 00:00:00\t1\t1\t0\t0\t"))
+                    .unwrap(),
+            ))
+            .await
+            .unwrap();
+
+        // Device should now be in the registry
+        assert!(devices.read().unwrap().contains_key("NEWDEVICE"));
+        assert_eq!(devices.read().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_auto_registered_device_queues_device_online_event() {
+        let event_bus = EventBus::default();
+        let mut rx = event_bus.subscribe();
+        let shared = SharedAdmsState {
+            event_bus: event_bus.clone(),
+            devices: Arc::new(std::sync::RwLock::new(HashMap::new())),
+        };
+        let app = test_router(shared);
+
+        // Push attendance from unknown device
+        let _response = app
+            .oneshot(with_connect_info(
+                Request::builder()
+                    .uri("/iclock/cdata?SN=AUTOREG001&table=ATTLOG")
+                    .method("POST")
+                    .header("Content-Type", "text/plain")
+                    .body(Body::from("1\t2026-01-01 00:00:00\t1\t1\t0\t0\t"))
+                    .unwrap(),
+            ))
+            .await
+            .unwrap();
+
+        // Collect all events — should include DeviceDiscovered and DeviceOnline
+        let mut saw_discovered = false;
+        let mut saw_online = false;
+
+        for _ in 0..5 {
+            let event = match tokio::time::timeout(std::time::Duration::from_millis(200), rx.recv())
+                .await
+            {
+                Ok(Ok(e)) => e,
+                _ => break,
+            };
+            match event.as_ref() {
+                DomainEvent::DeviceDiscovered { probe } => {
+                    assert_eq!(probe.serial_number, "AUTOREG001");
+                    assert_eq!(probe.host, "127.0.0.1");
+                    saw_discovered = true;
+                },
+                DomainEvent::DeviceOnline { device_sn, .. } => {
+                    assert_eq!(device_sn, "AUTOREG001");
+                    saw_online = true;
+                },
+                _ => {},
+            }
+        }
+
+        assert!(saw_discovered, "expected DeviceDiscovered event");
+        assert!(saw_online, "expected DeviceOnline event for ADMS push");
+    }
+
+    #[tokio::test]
+    async fn test_registered_device_publishes_device_online_on_each_push() {
+        let (server, state) = test_server("TEST001");
+        let mut rx = server.event_bus.subscribe();
+        server.register("TEST001".into(), state);
+        let shared = SharedAdmsState {
+            event_bus: server.event_bus.clone(),
+            devices: server.devices.clone(),
+        };
+        let app = test_router(shared);
+
+        // First push — should publish DeviceOnline
+        let _ = app
+            .oneshot(with_connect_info(
+                Request::builder()
+                    .uri("/iclock/cdata?SN=TEST001")
+                    .method("GET")
+                    .body(Body::empty())
+                    .unwrap(),
+            ))
+            .await
+            .unwrap();
+
+        let online_events: Vec<_> = collect_events(&mut rx, 2).await;
+        let has_online = online_events
+            .iter()
+            .any(|e| matches!(e.as_ref(), DomainEvent::DeviceOnline { device_sn, .. } if device_sn == "TEST001"));
+        assert!(has_online, "ADMS push should publish DeviceOnline event");
+    }
+
+    /// Helper: drain available events from a subscriber with a short timeout.
+    async fn collect_events(
+        rx: &mut tokio::sync::broadcast::Receiver<Arc<DomainEvent>>,
+        max: usize,
+    ) -> Vec<Arc<DomainEvent>> {
+        let mut events = Vec::new();
+        for _ in 0..max {
+            match tokio::time::timeout(std::time::Duration::from_millis(200), rx.recv()).await {
+                Ok(Ok(e)) => events.push(e),
+                _ => break,
+            }
+        }
+        events
     }
 
     #[tokio::test]
@@ -679,13 +975,13 @@ mod tests {
         let app = test_router(shared);
 
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/getrequest?SN=TEST001")
                     .method("GET")
                     .body(Body::empty())
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
@@ -703,13 +999,13 @@ mod tests {
         let app = test_router(shared);
 
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/inspect")
                     .method("GET")
                     .body(Body::empty())
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 
@@ -727,13 +1023,13 @@ mod tests {
         let app = test_router(shared);
 
         let response = app
-            .oneshot(
+            .oneshot(with_connect_info(
                 Request::builder()
                     .uri("/iclock/inspect?SN=TEST001")
                     .method("GET")
                     .body(Body::empty())
                     .unwrap(),
-            )
+            ))
             .await
             .unwrap();
 

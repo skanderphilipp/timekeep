@@ -16,7 +16,7 @@
 
 .PHONY: build build-rust build-dashboard build-docker dev dev-rust dev-dashboard \
         test test-rust test-dashboard lint lint-rust lint-dashboard \
-        clean release help seed-db seed-db-reset
+        clean release help seed-db seed-db-reset seed-dev seed-dev-reset
 
 # ─── Default target ──────────────────────────────────────────────────
 
@@ -100,14 +100,26 @@ release: build build-docker ## Build everything for release
 
 # ─── Database Seeding ───────────────────────────────────────────────
 
-seed-db: ## Seed database with test fixture data
+seed-db: ## Seed database with test fixture data (legacy — devices + users + all punches)
 	@echo "📥 Applying seed to timekeep.db ..."
 	sqlite3 timekeep.db < tests/fixtures/seed-biotime.sql
 	@echo "✅ Database seeded."
 
-seed-db-reset: ## Reset database to empty, then re-seed
+seed-db-reset: ## Reset database to empty, then re-seed (legacy)
 	@echo "🗑️  Resetting timekeep.db ..."
 	rm -f timekeep.db timekeep.db-shm timekeep.db-wal
 	@echo "📥 Applying seed ..."
 	sqlite3 timekeep.db < tests/fixtures/seed-biotime.sql
 	@echo "✅ Database seeded."
+
+seed-dev: ## Seed database with comprehensive dev data (all tables v1–v12)
+	@echo "📥 Applying dev seed to timekeep.db ..."
+	sqlite3 timekeep.db < tests/fixtures/seed-dev.sql
+	@echo "✅ Dev database seeded (admin / admin123)."
+
+seed-dev-reset: ## Reset database to empty, then re-seed with dev data
+	@echo "🗑️  Resetting timekeep.db ..."
+	rm -f timekeep.db timekeep.db-shm timekeep.db-wal
+	@echo "📥 Applying dev seed ..."
+	sqlite3 timekeep.db < tests/fixtures/seed-dev.sql
+	@echo "✅ Dev database seeded (admin / admin123)."

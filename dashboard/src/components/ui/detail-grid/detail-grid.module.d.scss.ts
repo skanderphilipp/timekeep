@@ -1,6 +1,9 @@
 declare const classNames: {
   readonly grid: "grid";
-  readonly title: "title";
+  readonly items: "items";
   readonly item: "item";
+  readonly label: "label";
+  readonly icon: "icon";
+  readonly value: "value";
 };
 export = classNames;

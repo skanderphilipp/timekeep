@@ -19,22 +19,30 @@ export const Primary: Story = {
   args: { label: "View Details", onClick: fn() },
 };
 
+/**
+ * MenuItem renders transparent — it inherits the background of its container.
+ * In production, MenuItem lives inside a `<Dropdown>` popup which provides
+ * `background: var(--ao-background-primary)`. The story wrappers below replicate
+ * that context so the component renders as it would in the real app.
+ */
+const dropdownSurface: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 0,
+  width: 220,
+  background: "var(--ao-background-primary)",
+  border: "1px solid var(--ao-border-color-medium)",
+  borderRadius: "var(--ao-radius-md)",
+  boxShadow: "var(--ao-shadow-md)",
+  overflow: "hidden",
+  padding: 4,
+};
+
 export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        width: 220,
-        border: "1px solid var(--ao-border-color-light)",
-        borderRadius: "var(--ao-radius-md)",
-        overflow: "hidden",
-        padding: 4,
-      }}
-    >
+    <div style={dropdownSurface}>
       <MenuItem label="View Details" leftIcon={<IconEye size={16} />} onClick={fn()} />
       <MenuItem label="Edit" leftIcon={<IconPencil size={16} />} hotkey="⌘E" onClick={fn()} />
       <MenuItem label="Settings" leftIcon={<IconSettings size={16} />} onClick={fn()} />
@@ -54,18 +62,7 @@ export const ContextUserMenu: Story = {
   name: "Context: User Dropdown",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        width: 220,
-        border: "1px solid var(--ao-border-color-light)",
-        borderRadius: "var(--ao-radius-md)",
-        overflow: "hidden",
-        padding: 4,
-      }}
-    >
+    <div style={dropdownSurface}>
       <MenuItem label="My Profile" onClick={fn()} />
       <MenuItem label="Change Password" onClick={fn()} />
       <hr

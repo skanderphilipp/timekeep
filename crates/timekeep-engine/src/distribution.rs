@@ -4,7 +4,7 @@
 //! - **Circuit breaker** — prevents retry storms when downstream is down
 //! - **Fire-and-forget spawning** — distribution never blocks punch storage
 //! - **Stats** — success/failure counts for health visibility
-//! - **Outbox** — in-memory retry queue for failed deliveries
+//! - **Outbox** — retry queue persisted to DB (survives process restart)
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -12,7 +12,9 @@ use std::time::Duration;
 
 use timekeep_circuit::CircuitBreaker;
 use timekeep_core::events::DomainEvent;
+use timekeep_core::model::PendingDelivery;
 use timekeep_core::traits::Distributor;
+use timekeep_core::traits::storage::Storage;
 use tokio::sync::mpsc;
 
 // ---------------------------------------------------------------------------
@@ -191,6 +193,9 @@ pub struct OutboxEntry {
     pub distributor_name: String,
     pub retry_count: u32,
     pub created_at: std::time::Instant,
+    /// Database ID for the corresponding `PendingDelivery` record.
+    /// Set when the entry is persisted; used to delete on success.
+    db_delivery_id: Option<String>,
 }
 
 impl OutboxEntry {
@@ -201,6 +206,7 @@ impl OutboxEntry {
             distributor_name,
             retry_count: 0,
             created_at: std::time::Instant::now(),
+            db_delivery_id: None,
         }
     }
 
@@ -214,17 +220,12 @@ impl OutboxEntry {
 }
 
 /// A background outbox worker that retries failed deliveries with
-/// exponential backoff.
+/// exponential backoff. Entries are persisted to the database via the
+/// `Storage` trait so they survive process restarts.
 ///
-/// # TODO(ENTERPRISE): Persist outbox to database
-///
-/// Phase: Production hardening (before tenant onboarding)
-/// Impact: Events queued in the outbox are lost on process restart.
-///         During normal operation with healthy distributors, the outbox
-///         is rarely used — but when it is needed (downstream outage),
-///         restarting the process loses queued events.
-/// Fix: Add `outbox` table to Storage trait, persist entries on enqueue,
-///      load pending entries on startup, remove on successful delivery.
+/// The app-level `outbox_worker` handles reloading `PendingDelivery`
+/// records on startup, providing an additional safety net for
+/// `PunchReceived` events.
 pub struct Outbox {
     /// Receiver for new outbox entries.
     rx: mpsc::UnboundedReceiver<OutboxEntry>,
@@ -232,14 +233,19 @@ pub struct Outbox {
     tx: mpsc::UnboundedSender<OutboxEntry>,
     /// Maximum retries before moving to dead letter.
     max_retries: u32,
+    /// Storage backend for persisting entries to survive restarts.
+    storage: Option<Arc<dyn Storage>>,
 }
 
 impl Outbox {
     /// Create a new outbox and return (Outbox, sender) so the sender can
     /// be cloned to each `DistributorHandle`.
-    pub fn new(max_retries: u32) -> (Self, mpsc::UnboundedSender<OutboxEntry>) {
+    pub fn new(
+        max_retries: u32,
+        storage: Option<Arc<dyn Storage>>,
+    ) -> (Self, mpsc::UnboundedSender<OutboxEntry>) {
         let (tx, rx) = mpsc::unbounded_channel();
-        (Self { rx, tx: tx.clone(), max_retries }, tx)
+        (Self { rx, tx: tx.clone(), max_retries, storage }, tx)
     }
 
     /// Sender for registering new distributor handles.
@@ -251,7 +257,7 @@ impl Outbox {
     ///
     /// The worker processes entries one at a time with exponential
     /// backoff between retries. Each entry is retried up to `max_retries`
-    /// times before being logged as a dead letter and dropped.
+    /// times before being moved to dead letter in both memory and the database.
     pub async fn run(mut self, distributor_handles: Vec<DistributorHandle>) {
         tracing::info!(max_retries = self.max_retries, "outbox worker started");
 
@@ -269,6 +275,33 @@ impl Outbox {
                     break;
                 },
             };
+
+            // ── Persist to DB on first receipt ──
+            if entry.db_delivery_id.is_none() {
+                if let Some(ref storage) = self.storage {
+                    // Serialize the punch from the event
+                    if let DomainEvent::PunchReceived { ref punch } = entry.event {
+                        let event_json = serde_json::to_string(punch).unwrap_or_default();
+                        if !event_json.is_empty() && event_json != "null" {
+                            let delivery =
+                                PendingDelivery::new(&entry.distributor_name, &event_json);
+                            match storage.enqueue_pending_delivery(&delivery).await {
+                                Ok(()) => {
+                                    entry.db_delivery_id = Some(delivery.id.clone());
+                                    tracing::debug!(
+                                        entry_id = %entry.id,
+                                        db_id = %delivery.id,
+                                        "outbox: entry persisted to DB"
+                                    );
+                                },
+                                Err(e) => {
+                                    tracing::error!(entry_id = %entry.id, error = %e, "outbox: failed to persist to DB");
+                                },
+                            }
+                        }
+                    }
+                }
+            }
 
             // Wait for the retry delay
             let delay = entry.retry_delay();
@@ -297,6 +330,12 @@ impl Outbox {
             // Attempt delivery
             match handle.distributor.on_event(&entry.event).await {
                 Ok(()) => {
+                    // Delete from DB if persisted
+                    if let Some(ref db_id) = entry.db_delivery_id {
+                        if let Some(ref storage) = self.storage {
+                            let _ = storage.delete_pending_delivery(db_id).await;
+                        }
+                    }
                     handle.stats.delivered.fetch_add(1, Ordering::Relaxed);
                     handle.stats.queued.fetch_sub(1, Ordering::Relaxed);
                     tracing::info!(
@@ -309,6 +348,20 @@ impl Outbox {
                 Err(e) => {
                     entry.retry_count += 1;
                     if entry.retry_count > self.max_retries {
+                        // Move to dead letter in DB if persisted
+                        if let Some(ref db_id) = entry.db_delivery_id {
+                            if let Some(ref storage) = self.storage {
+                                let _ = storage
+                                    .move_to_dead_letter(
+                                        db_id,
+                                        Some(&format!(
+                                            "max retries ({}) exceeded: {e}",
+                                            entry.retry_count
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
                         handle.stats.dead.fetch_add(1, Ordering::Relaxed);
                         handle.stats.queued.fetch_sub(1, Ordering::Relaxed);
                         tracing::error!(
@@ -454,7 +507,7 @@ mod tests {
     /// Outbox: entries retry and eventually succeed.
     #[tokio::test]
     async fn test_outbox_retries_and_succeeds() {
-        let (outbox, outbox_tx) = Outbox::new(5);
+        let (outbox, outbox_tx) = Outbox::new(5, None);
 
         // A distributor that fails twice then succeeds
         let dist: Arc<dyn Distributor> = Arc::new(FlakyDistributor::new("flaky-dist", 2));

@@ -3,12 +3,33 @@ import { RadarChart } from "./RadarChart";
 import { Chart } from "./chart";
 
 const kpiData = [
-  { employee: "Ahmed A.", punctuality: 92, hours_consistency: 85, attendance_rate: 98, overtime_reliability: 70, break_compliance: 88 },
-  { employee: "Fatima H.", punctuality: 98, hours_consistency: 90, attendance_rate: 95, overtime_reliability: 85, break_compliance: 92 },
+  {
+    employee: "Ahmed A.",
+    punctuality: 92,
+    hours_consistency: 85,
+    attendance_rate: 98,
+    overtime_reliability: 70,
+    break_compliance: 88,
+  },
+  {
+    employee: "Fatima H.",
+    punctuality: 98,
+    hours_consistency: 90,
+    attendance_rate: 95,
+    overtime_reliability: 85,
+    break_compliance: 92,
+  },
 ];
 
 const singleEmployeeData = [
-  { employee: "Ahmed A.", punctuality: 92, hours_consistency: 85, attendance_rate: 98, overtime_reliability: 70, break_compliance: 88 },
+  {
+    employee: "Ahmed A.",
+    punctuality: 92,
+    hours_consistency: 85,
+    attendance_rate: 98,
+    overtime_reliability: 70,
+    break_compliance: 88,
+  },
 ];
 
 const meta: Meta<typeof RadarChart> = {
@@ -24,7 +45,10 @@ type Story = StoryObj<typeof RadarChart>;
 
 export const Primary: Story = {
   render: () => (
-    <Chart title="Employee KPI Radar" description="Punctuality, hours, attendance, overtime, breaks.">
+    <Chart
+      title="Employee KPI Radar"
+      description="Punctuality, hours, attendance, overtime, breaks."
+    >
       <RadarChart
         data={singleEmployeeData}
         axes={[
@@ -122,8 +146,18 @@ export const ErrorState: Story = {
 export const Empty: Story = {
   name: "Empty State",
   render: () => (
-    <Chart title="KPI Radar" description="No KPI data available." isEmpty emptyMessage="No KPI data yet">
-      <RadarChart data={[]} axes={[{ dataKey: "punctuality", name: "Punctuality" }]} indexBy="employee" height={300} />
+    <Chart
+      title="KPI Radar"
+      description="No KPI data available."
+      isEmpty
+      emptyMessage="No KPI data yet"
+    >
+      <RadarChart
+        data={[]}
+        axes={[{ dataKey: "punctuality", name: "Punctuality" }]}
+        indexBy="employee"
+        height={300}
+      />
     </Chart>
   ),
 };

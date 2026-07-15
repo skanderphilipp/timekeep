@@ -3,9 +3,7 @@
 @use "@/styles/dropdown-base" as *;
 
 // ── Twenty UI Alignment — Select ──────────────────────────────────────────
-// See: SCSS-VISUAL-STANDARDS.md §6.6
-//
-// Key changes:
+// See: SCSS-VISUAL-STANDARDS.md §6.6. Key changes:
 //   1. Height: 32px (was 40px)
 //   2. border-radius: var(--ao-radius-md) (was sm)
 //   3. Focus: border-color only, no box-shadow
@@ -42,7 +40,7 @@
 
   &:disabled {
     background-color: var(--ao-background-secondary);
-    color: var(--ao-font-color-extraLight);
+    color: var(--ao-font-color-extralight);
     cursor: not-allowed;
   }
 }

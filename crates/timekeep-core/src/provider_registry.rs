@@ -15,9 +15,14 @@ use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::BiometricDevice;
 use crate::Error;
-use crate::model::{DeviceProbe, ProviderInfo};
+use crate::events::EventBus;
+use crate::model::{DeviceConfig, DeviceProbe, ProviderCapabilities, ProviderInfo};
+use crate::provider_manifest::ProviderManifest;
 use crate::traits::DeviceProvider;
+
+use async_trait::async_trait;
 
 /// Registry that maps vendor keys to their provider implementations.
 ///
@@ -68,6 +73,18 @@ impl ProviderRegistry {
             .collect()
     }
 
+    /// Auto-register all providers discovered via `inventory::submit!`.
+    ///
+    /// Call once at startup. Manifests are collected at link time —
+    /// no runtime discovery needed. Each manifest is wrapped in a
+    /// [`ManifestProvider`] adapter that implements [`DeviceProvider`].
+    pub fn init_from_inventory(&mut self) {
+        for manifest in inventory::iter::<ProviderManifest> {
+            let provider = ManifestProvider::from_manifest(manifest);
+            self.register(Arc::new(provider));
+        }
+    }
+
     /// Probe all registered providers against an IP to auto-detect the vendor.
     ///
     /// Tries each provider's `probe()` in sequence. The first provider that
@@ -112,6 +129,9 @@ impl ProviderRegistry {
     /// the subnet, then probes responsive hosts with all registered providers
     /// to identify vendor and extract device identity.
     ///
+    /// The overall scan is bounded by a safety timeout. Individual probes
+    /// are bounded by per-connection I/O timeouts (see `timekeep-zkteco`).
+    ///
     /// See [`crate::network_scanner::scan_subnet`] for subnet format details.
     pub async fn scan_subnet(
         &self,
@@ -148,17 +168,43 @@ impl ProviderRegistry {
             handles.push(handle);
         }
 
-        let mut discovered = Vec::new();
-        for handle in handles {
-            match handle.await {
-                Ok(Some(probe)) => discovered.push(probe),
-                Ok(None) => {},
-                Err(e) => tracing::debug!(error = %e, "scan task panicked"),
-            }
-        }
+        // Safety timeout: with per-probe I/O timeouts (5s) and 64 concurrent
+        // tasks, a /24 subnet takes ~20s max. 60s is generous.
+        const SCAN_TIMEOUT: Duration = Duration::from_secs(60);
 
-        tracing::info!(discovered = discovered.len(), "network scan complete");
-        Ok(discovered)
+        let collect_fut = async {
+            let mut discovered = Vec::new();
+            for handle in handles.iter_mut() {
+                match handle.await {
+                    Ok(Some(probe)) => discovered.push(probe),
+                    Ok(None) => {},
+                    Err(e) => tracing::debug!(error = %e, "scan task panicked"),
+                }
+            }
+            discovered
+        };
+
+        match tokio::time::timeout(SCAN_TIMEOUT, collect_fut).await {
+            Ok(discovered) => {
+                tracing::info!(discovered = discovered.len(), "network scan complete");
+                Ok(discovered)
+            },
+            Err(_elapsed) => {
+                let remaining = handles.iter().filter(|h| !h.is_finished()).count();
+                tracing::warn!(
+                    remaining = remaining,
+                    timeout_secs = SCAN_TIMEOUT.as_secs(),
+                    "network scan timed out, aborting remaining tasks"
+                );
+                for handle in &handles {
+                    handle.abort();
+                }
+                Err(Error::internal(format!(
+                    "network scan timed out after {} seconds",
+                    SCAN_TIMEOUT.as_secs()
+                )))
+            },
+        }
     }
 }
 
@@ -219,6 +265,103 @@ async fn scan_and_probe(
     None
 }
 
+/// Adapter that wraps a [`ProviderManifest`] and implements [`DeviceProvider`].
+///
+/// Created by [`ProviderRegistry::init_from_inventory()`] for each
+/// manifest discovered at link time.
+struct ManifestProvider {
+    vendor_key: &'static str,
+    display_name: &'static str,
+    capabilities: ProviderCapabilities,
+    default_port: u16,
+    create_fn: fn(DeviceConfig, EventBus) -> Box<dyn BiometricDevice>,
+    // Probe is optional — manifests can provide a custom probe or default
+    // to a simple TCP-connect based detection.
+    probe_fn: Option<fn(&str, u16) -> Result<DeviceProbe, Error>>,
+}
+
+impl ManifestProvider {
+    fn from_manifest(manifest: &ProviderManifest) -> Self {
+        Self {
+            vendor_key: manifest.vendor_key,
+            display_name: manifest.display_name,
+            capabilities: manifest.capabilities.clone(),
+            default_port: manifest.default_port,
+            create_fn: manifest.create,
+            probe_fn: manifest.probe,
+        }
+    }
+}
+
+#[async_trait]
+impl DeviceProvider for ManifestProvider {
+    fn vendor_key(&self) -> &str {
+        self.vendor_key
+    }
+
+    fn display_name(&self) -> &str {
+        self.display_name
+    }
+
+    fn capabilities(&self) -> ProviderCapabilities {
+        self.capabilities.clone()
+    }
+
+    fn default_port(&self) -> u16 {
+        self.default_port
+    }
+
+    fn supports_adms(&self) -> bool {
+        // ADMS support correlates with real-time event capability
+        self.capabilities.real_time_events
+    }
+
+    fn supports_sdk(&self) -> bool {
+        // SDK support correlates with attendance read capability
+        self.capabilities.attendance_read
+    }
+
+    async fn create_device(
+        &self,
+        config: DeviceConfig,
+        event_bus: EventBus,
+    ) -> Result<Box<dyn BiometricDevice>, Error> {
+        Ok((self.create_fn)(config, event_bus))
+    }
+
+    async fn probe(&self, host: &str, port: u16) -> Result<DeviceProbe, Error> {
+        if let Some(probe_fn) = self.probe_fn {
+            probe_fn(host, port)
+        } else {
+            // Default probe: quick TCP connect check
+            use std::net::{TcpStream, ToSocketAddrs};
+            use std::time::Duration;
+
+            let addr_str = format!("{host}:{port}");
+            let addr = addr_str
+                .to_socket_addrs()
+                .ok()
+                .and_then(|mut a| a.next())
+                .ok_or_else(|| Error::device(format!("cannot resolve {host}")))?;
+
+            TcpStream::connect_timeout(&addr, Duration::from_secs(2))
+                .map_err(|e| Error::device(format!("probe failed: {e}")))?;
+
+            Ok(DeviceProbe {
+                vendor: self.vendor_key.to_string(),
+                serial_number: format!("{host}-unknown"),
+                model: "Unknown".into(),
+                firmware_version: "?".into(),
+                platform: "?".into(),
+                mac_address: String::new(),
+                host: host.to_string(),
+                user_count: 0,
+                record_count: 0,
+            })
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -276,6 +419,7 @@ mod tests {
                     firmware_version: "1.0".into(),
                     platform: "test".into(),
                     mac_address: "00:00:00:00:00:00".into(),
+                    host: host.to_string(),
                     user_count: 0,
                     record_count: 0,
                 })

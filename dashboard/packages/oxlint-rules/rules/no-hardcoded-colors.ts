@@ -2,6 +2,9 @@ import { defineRule } from "@oxlint/plugins";
 
 export const RULE_NAME = "no-hardcoded-colors";
 
+const isTestOrStory = (filename: string): boolean =>
+  /\.(test|spec|stories)\.tsx?$/.test(filename);
+
 export const rule = defineRule({
   meta: {
     docs: {
@@ -13,10 +16,24 @@ export const rule = defineRule({
         "Hardcoded color {{ color }} found. Please use a design token (e.g. var(--ao-color-red9)) instead.",
     },
     type: "suggestion",
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        properties: {
+          skipTestFiles: { type: "boolean" },
+        },
+        additionalProperties: false,
+      },
+    ],
     fixable: "code",
   },
   create: (context) => {
+    const options = (context.options as [{ skipTestFiles?: boolean }])?.[0];
+    const skipTestFiles = options?.skipTestFiles ?? true;
+    const filename = context.filename as string;
+
+    if (skipTestFiles && isTestOrStory(filename)) return {};
+
     const testHardcodedColor = (literal: any) => {
       const colorRegex = /(?:rgba?\()|(?:#[0-9a-fA-F]{3,8})\b/i;
       if (literal.type === "Literal" && typeof literal.value === "string") {

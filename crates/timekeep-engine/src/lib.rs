@@ -81,9 +81,8 @@ impl Engine {
         storages: Vec<Arc<dyn Storage>>,
         distributors: Vec<DistributorHandle>,
         health: health::EngineHealth,
+        event_bus: EventBus,
     ) -> Self {
-        let event_bus = EventBus::default();
-
         // Use the first storage backend for dedup lookups (cache-miss fallback).
         // If no storage is configured, use a placeholder that never finds dups.
         let dedup_storage: Arc<dyn Storage> = storages.first().cloned().unwrap_or_else(|| {
@@ -103,7 +102,7 @@ impl Engine {
 
         // Outbox for failed deliveries (background retry with exponential backoff)
         let (outbox_tx, outbox_handle) = if distributors.iter().any(|d| d.has_outbox()) {
-            let (outbox, sender) = Outbox::new(5);
+            let (outbox, sender) = Outbox::new(5, storages.first().cloned());
             // The outbox worker needs handles to retry distribution.
             // We clone the handles now — the actual distributors inside
             // them are Arc'd so this is cheap.
@@ -134,10 +133,11 @@ impl Engine {
     pub fn with_raw_distributors(
         storages: Vec<Arc<dyn Storage>>,
         raw_distributors: Vec<Arc<dyn Distributor>>,
+        event_bus: EventBus,
     ) -> Self {
         let handles: Vec<DistributorHandle> =
             raw_distributors.into_iter().map(DistributorHandle::new).collect();
-        Self::new(storages, handles, health::EngineHealth::default())
+        Self::new(storages, handles, health::EngineHealth::default(), event_bus)
     }
 
     /// Get distribution stats for health reporting.
@@ -275,6 +275,56 @@ impl Engine {
                 }
             },
             _other => {
+                // Auto-register devices discovered via ADMS push
+                if let DomainEvent::DeviceDiscovered { probe } = event {
+                    let config = timekeep_core::DeviceConfig {
+                        label: probe.serial_number.clone(),
+                        serial_number: probe.serial_number.clone(),
+                        host: probe.host.clone(),
+                        port: 4370,
+                        comm_key: 0,
+                        timezone: None,
+                        push_enabled: true,
+                        vendor: probe.vendor.clone(),
+                        location: None,
+                        poll_interval_secs: None,
+                    };
+                    for storage in &self.storages {
+                        if let Err(e) = storage.upsert_device_config(&config).await {
+                            tracing::warn!(
+                                device = %probe.serial_number,
+                                error = %e,
+                                "failed to auto-register discovered device in storage"
+                            );
+                        } else {
+                            tracing::info!(
+                                device = %probe.serial_number,
+                                "auto-registered ADMS device in storage"
+                            );
+                        }
+                    }
+                }
+
+                // Store enriched device metadata when device info is pulled on connect
+                if let DomainEvent::DeviceInfoUpdated { device } = event {
+                    for storage in &self.storages {
+                        if let Err(e) = storage.upsert_device_info(device).await {
+                            tracing::warn!(
+                                device = %device.serial_number,
+                                error = %e,
+                                "failed to store device info"
+                            );
+                        } else {
+                            tracing::info!(
+                                device = %device.serial_number,
+                                platform = %device.platform,
+                                fw = %device.firmware_version,
+                                "device info stored"
+                            );
+                        }
+                    }
+                }
+
                 // Persist device lifecycle events to storage for the activity timeline
                 self.persist_device_event(event).await;
 
@@ -317,6 +367,29 @@ impl Engine {
                 device_sn.clone(),
                 SyncFailed { error: error.clone(), records_synced: *records_synced },
             ),
+            // New: Operation log from ADMS OPERLOG or SDK OpLog pull
+            OperationLogReceived { log } => (
+                log.device_sn.clone(),
+                OperationLog {
+                    op_type: format!("{:?}", log.operation),
+                    admin_pin: log.admin_pin.clone(),
+                    detail: None,
+                },
+            ),
+            // New: Server-initiated user push
+            UserSetRequested { device_sn, user } => (
+                device_sn.clone(),
+                UserSynced {
+                    action: "set".into(),
+                    pin: user.pin.clone(),
+                    name: Some(user.name.clone()),
+                },
+            ),
+            // New: Server-initiated user delete
+            UserDeleteRequested { device_sn, .. } => (
+                device_sn.clone(),
+                UserSynced { action: "delete".into(), pin: String::new(), name: None },
+            ),
             _ => return, // Not a persistable device lifecycle event
         };
 
@@ -349,7 +422,7 @@ impl Storage for NoopStorage {
     }
     async fn query_punches(
         &self,
-        _filter: &timekeep_core::traits::storage::PunchFilter,
+        _filter: &timekeep_core::PunchFilter,
     ) -> Result<Vec<timekeep_core::model::AttendancePunch>, Error> {
         Ok(vec![])
     }

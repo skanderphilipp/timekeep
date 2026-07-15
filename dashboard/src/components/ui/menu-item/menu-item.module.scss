@@ -2,9 +2,7 @@
 
 // ── Twenty UI Alignment — MenuItem ────────────────────────────────────────
 // Unified menu item supporting both button and link modes.
-// SCSS-VISUAL-STANDARDS.md §6.6
-//
-// Key changes:
+// See SCSS-VISUAL-STANDARDS.md §6.6. Key changes:
 //   1. border-radius: concentric (calc(md - spacing-1))
 //   2. Hover bg: transparent-light (Twenty pattern)
 //   3. Disabled: explicit color, no opacity
@@ -51,7 +49,7 @@
 // ── State: Disabled ────────────────────────────────────────────────────────
 
 .item[data-disabled] {
-  color: var(--ao-font-color-extraLight);
+  color: var(--ao-font-color-extralight);
   cursor: not-allowed;
   pointer-events: none;
 }

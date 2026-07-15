@@ -1,43 +1,61 @@
 import { clsx } from "clsx";
-import { forwardRef, useId, type InputHTMLAttributes } from "react";
-import { IconCheck } from "@tabler/icons-react";
+import { forwardRef } from "react";
+import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
+import { IconCheck, IconMinus } from "@tabler/icons-react";
 
 import styles from "./checkbox.module.scss";
 
 type CheckboxProps = {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  disabled?: boolean;
+  indeterminate?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   label?: string;
-} & Omit<InputHTMLAttributes<HTMLInputElement>, "type">;
+  className?: string;
+  id?: string;
+  "aria-label"?: string;
+};
 
-export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ label, className, id: externalId, disabled, ...rest }, ref) => {
-    const autoId = useId();
-    const checkboxId = externalId || autoId;
-
+export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(
+  (
+    {
+      checked,
+      defaultChecked,
+      disabled,
+      indeterminate,
+      onCheckedChange,
+      label,
+      className,
+      id,
+      "aria-label": ariaLabel,
+    },
+    externalRef,
+  ) => {
     return (
-      <label
+      <CheckboxPrimitive.Root
+        ref={externalRef}
+        checked={checked}
+        defaultChecked={defaultChecked}
+        disabled={disabled}
+        indeterminate={indeterminate}
+        onCheckedChange={onCheckedChange}
+        id={id}
+        aria-label={ariaLabel}
         data-slot="checkbox"
-        data-disabled={disabled || undefined}
-        className={clsx(styles.label, className)}
-        htmlFor={checkboxId}
+        className={clsx(styles.root, className)}
       >
-        <input
-          ref={ref}
-          id={checkboxId}
-          data-slot="checkbox-input"
-          type="checkbox"
-          className={styles.input}
-          disabled={disabled}
-          {...rest}
-        />
-        <span data-slot="checkbox-indicator" className={styles.indicator} aria-hidden="true">
-          <IconCheck size={14} className={styles.check} />
+        <span data-slot="checkbox-box" className={styles.box}>
+          <CheckboxPrimitive.Indicator className={styles.indicator}>
+            {indeterminate ? <IconMinus aria-hidden /> : <IconCheck aria-hidden />}
+          </CheckboxPrimitive.Indicator>
         </span>
         {label && (
           <span data-slot="checkbox-label" className={styles.labelText}>
             {label}
           </span>
         )}
-      </label>
+      </CheckboxPrimitive.Root>
     );
   },
 );

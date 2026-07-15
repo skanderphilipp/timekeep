@@ -132,7 +132,7 @@ describe("FilterBar", () => {
     expect(onRemove).toHaveBeenCalledOnce();
   });
 
-  it("renders search section when search prop is provided", () => {
+  it("renders search inline in the toolbar when search prop is provided", () => {
     render(
       <Wrapper>
         <FilterBar search={<input placeholder="Global search…" readOnly />}>
@@ -142,8 +142,10 @@ describe("FilterBar", () => {
     );
 
     expect(screen.getByPlaceholderText("Global search…")).toBeInTheDocument();
-    const searchSection = document.querySelector('[data-slot="filter-bar-search"]');
-    expect(searchSection).toBeInTheDocument();
+    // Search should be inside the toolbar items area, not a separate section
+    const items = document.querySelector('[data-slot="filter-bar-items"]');
+    expect(items).toBeInTheDocument();
+    expect(items!.querySelector('[placeholder="Global search…"]')).toBeInTheDocument();
   });
 
   it("renders custom actions when actions prop is provided", () => {
@@ -169,7 +171,6 @@ describe("FilterBar", () => {
 
     const root = container.querySelector('[data-slot="filter-bar"]') as HTMLElement;
     expect(root).not.toBeNull();
-    // CSS Modules may mangle class names — verify sticky class is present
     expect(root!.className).toContain("sticky");
   });
 

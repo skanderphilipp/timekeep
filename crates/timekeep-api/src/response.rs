@@ -267,6 +267,10 @@ pub struct SystemSettingsResponse {
     pub poll_interval_secs: u32,
     pub auto_discover: bool,
     pub work_policy: WorkPolicyResponse,
+    /// Support email shown in the dashboard UI. Empty string = no support configured.
+    pub support_email: String,
+    /// Workspace/company name shown on the login page.
+    pub workspace_name: String,
 }
 
 /// Work policy settings exposed to the frontend.
@@ -305,6 +309,8 @@ impl From<&timekeep_core::SystemSettings> for SystemSettingsResponse {
             poll_interval_secs: s.poll_interval_secs,
             auto_discover: s.auto_discover,
             work_policy: WorkPolicyResponse::from(&s.work_policy),
+            support_email: s.support_email.clone(),
+            workspace_name: s.workspace_name.clone(),
         }
     }
 }

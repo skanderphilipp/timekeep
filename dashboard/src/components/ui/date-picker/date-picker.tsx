@@ -76,9 +76,15 @@ export function DatePicker({
 
   const isRange = mode === "range";
 
-  // Calendar sees the real value, or pendingRangeStart during selection
+  // Calendar sees the real value, or pendingRangeStart during selection.
+  // When a range is pending (user picked start but not end), endDate must
+  // be null so react-datepicker knows the range is still in progress.
   const calendarStartDate: Date | null = isRange ? (pendingRangeStart ?? value) : value;
-  const calendarEndDate: Date | null = isRange ? (endValue ?? null) : null;
+  const calendarEndDate: Date | null = isRange
+    ? pendingRangeStart
+      ? null
+      : (endValue ?? null)
+    : null;
 
   // Display text uses the committed (parent) value
   const displayText = formatDisplay(value, endValue, mode, dateFormat);
@@ -186,7 +192,7 @@ export function DatePicker({
           <div
             data-slot="date-picker-popup"
             ref={refs.setFloating}
-            style={{ ...floatingStyles, zIndex: 50 }}
+            style={floatingStyles}
             className={styles.popup}
             {...getFloatingProps()}
           >

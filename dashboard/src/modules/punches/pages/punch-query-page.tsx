@@ -2,8 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { PunchQueryView } from "../components/punch-query-view";
-import { PageLayout, PageBody, PageHeader } from "@/components/ui";
-
+import { PageLayout, PageBody, PageHeader } from "@/components/layout";
 export function PunchQueryPage() {
   const { _ } = useLingui();
 

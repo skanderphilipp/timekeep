@@ -5,7 +5,8 @@ import { useLingui } from "@lingui/react";
 
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
-import { Timeline, Text, Heading, ListItem, type TimelineRowData } from "@/components/ui";
+import { Text, Heading, ListItem } from "@/components/ui";
+import { Timeline, type TimelineRowData } from "@/modules/shared/components";
 import { buildBlocks, buildLegendItems } from "./daily-timeline-blocks";
 
 // ── Types ──────────────────────────────────────────────────────────────────────

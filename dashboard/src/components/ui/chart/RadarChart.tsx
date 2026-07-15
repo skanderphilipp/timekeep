@@ -62,7 +62,7 @@ export function RadarChart({
     ...nivo,
     grid: {
       line: {
-        stroke: nivo.grid?.line?.stroke ?? "#e0e0e0",
+        stroke: nivo.grid?.line?.stroke ?? "var(--ao-background-tertiary)",
         strokeWidth: 1.5,
         // Solid lines for circular rings — dashed looks broken on arcs.
         strokeDasharray: undefined as unknown as string,

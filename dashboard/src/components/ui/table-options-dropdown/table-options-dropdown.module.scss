@@ -1,0 +1,32 @@
+@use "@/styles/mixins" as *;
+
+.trigger {
+  align-items: center;
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-radius-md);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-1_5);
+  height: 32px;
+  padding: 0 var(--ao-spacing-3);
+  transition:
+    border-color duration(fast) ease,
+    color duration(fast) ease,
+    background duration(fast) ease;
+
+  &:hover {
+    border-color: var(--ao-border-color-strong);
+    color: var(--ao-font-color-primary);
+  }
+
+  &[data-popup-open] {
+    background: var(--ao-background-tertiary);
+    border-color: var(--ao-border-color-strong);
+    color: var(--ao-font-color-primary);
+  }
+}

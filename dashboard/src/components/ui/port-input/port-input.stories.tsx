@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "storybook/test";
 import { PortInput } from "./port-input";
@@ -11,8 +12,20 @@ const meta: Meta<typeof PortInput> = {
 export default meta;
 type Story = StoryObj<typeof PortInput>;
 
+function PrimaryDemo() {
+  const [port, setPort] = useState(4370);
+  return (
+    <div style={{ padding: 20 }}>
+      <PortInput label="Port" value={port} onChange={setPort} />
+      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+        Current port: {port}
+      </div>
+    </div>
+  );
+}
+
 export const Primary: Story = {
-  args: { label: "Port", value: 4370, onChange: fn() },
+  render: () => <PrimaryDemo />,
 };
 
 export const AllVariants: Story = {
@@ -33,4 +46,8 @@ export const AllVariants: Story = {
       <PortInput label="Port (disabled)" value={4370} disabled onChange={fn()} />
     </div>
   ),
+};
+
+export const Playground: Story = {
+  args: { label: "Port", value: 4370, onChange: fn() },
 };

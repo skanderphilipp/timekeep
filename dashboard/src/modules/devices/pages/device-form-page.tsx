@@ -1,7 +1,8 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { PageBar, PageLayout, PageBody, Section } from "@/components/ui";
+import { Section } from "@/components/ui";
+import { PageBar, PageLayout, PageBody } from "@/components/layout";
 import { DeviceForm } from "../components/device-form";
 import { useDeviceForm } from "../hooks/use-device-form";
 

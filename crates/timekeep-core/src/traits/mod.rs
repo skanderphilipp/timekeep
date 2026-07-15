@@ -1,12 +1,34 @@
+pub mod api_key_store;
+pub mod audit_log_store;
 pub mod biometric_device;
 pub mod config_provider;
+pub mod dashboard_user_store;
+pub mod device_config_store;
+pub mod device_info_store;
+pub mod device_user_store;
 pub mod distributor;
-pub mod employee_repository;
+pub mod employee_store;
+pub mod endpoint_store;
+pub mod outbox_store;
 pub mod provider_registry;
+pub mod punch_store;
+pub mod settings_store;
 pub mod storage;
 
 // Re-export for convenience
+pub use api_key_store::ApiKeyStore;
+pub use audit_log_store::AuditLogStore;
+pub use biometric_device::BiometricDevice;
+pub use config_provider::ConfigProvider;
+pub use dashboard_user_store::DashboardUserStore;
+pub use device_config_store::DeviceConfigStore;
+pub use device_info_store::DeviceInfoStore;
+pub use device_user_store::DeviceUserStore;
 pub use distributor::Distributor;
-pub use employee_repository::EmployeeRepository;
+pub use employee_store::EmployeeStore;
+pub use endpoint_store::EndpointStore;
+pub use outbox_store::OutboxStore;
 pub use provider_registry::DeviceProvider;
+pub use punch_store::PunchStore;
+pub use settings_store::SettingsStore;
 pub use storage::Storage;

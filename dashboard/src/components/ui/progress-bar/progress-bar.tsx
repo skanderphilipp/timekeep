@@ -45,3 +45,5 @@ export function ProgressBar({
     </div>
   );
 }
+
+ProgressBar.displayName = "ProgressBar";

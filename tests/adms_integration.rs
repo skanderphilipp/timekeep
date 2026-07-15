@@ -23,18 +23,10 @@ use timekeep_core::model::{AttendancePunch, PunchStatus, VerifyMode};
 
 /// State shared with ADMS route handlers.
 ///
-/**
- * TODO(ENTERPRISE): Replace this inline ADMS handler with the real ADMS module
- *                   once it is implemented as a crate (e.g. `timekeep-adms`).
- *
- * Phase: ADMS push support (before production device onboarding)
- * Impact: Without this, devices cannot push attendance data via ADMS.
- *         The inline implementation below is sufficient for protocol testing
- *         but does not include authentication, rate limiting, or logging.
- * Fix: Implement `crates/timekeep-adms/` with proper error handling,
- *      input validation, and the full ADMS protocol spec (cdata, getrequest,
- *      devicecmd, etc.). Wire into the engine as an ADMS listener.
- */
+/// This test uses a minimal inline ADMS router for protocol-level integration
+/// testing. The production ADMS module lives at `timekeep-zkteco/src/adms/` and
+/// includes the full protocol spec (cdata, getrequest, devicecmd) with
+/// authentication, command queuing, and logging.
 #[derive(Clone)]
 struct AdmsState {
     event_bus: EventBus,
@@ -69,7 +61,7 @@ async fn handle_adms_get(Query(params): Query<AdmsQuery>) -> String {
         params.sn
     );
     response.push_str("ErrorDelay=60\nDelay=30\nTransTimes=00:00;23:59\nTransInterval=5\n");
-    response.push_str("TransFlag=1111001000\nRealtime=1\nEncrypt=0\n");
+    response.push_str("TransFlag=0000001111\nRealtime=1\nEncrypt=0\n");
     response
 }
 
@@ -115,15 +107,9 @@ fn parse_attlog_line(line: &str, device_sn: &str) -> Option<AttendancePunch> {
 
 /// Parse an ISO 8601 datetime like "2026-07-10T08:30:00" into a `jiff::Timestamp`.
 ///
-/**
- * TODO(ENTERPRISE): Use `jiff::Timestamp::from_str` or `jiff::civil::DateTime`
- *                   parsing once the jiff version is upgraded or the FromStr
- *                   impl is confirmed available.
- *
- * Phase: Production hardening
- * Impact: Manual parsing is fragile and doesn't handle timezone offsets.
- * Fix: Replace with `jiff::civil::DateTime::strptime` or similar.
- */
+/// Uses `jiff::civil::DateTime::new()` for construction, which is the idiomatic
+/// jiff approach. No dedicated `Timestamp::from_str` exists — timestamps are
+/// always constructed via `civil::DateTime` + timezone conversion.
 fn parse_iso_datetime(s: &str) -> Option<jiff::Timestamp> {
     // Format: "YYYY-MM-DDTHH:MM:SS"
     let (date_part, time_part) = s.split_once('T')?;

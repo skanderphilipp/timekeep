@@ -1,166 +1,153 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { fn } from "storybook/test";
-import { FilterBar, type ActiveFilter } from "./filter-bar";
-import { FilterInput } from "@/components/ui/filter-input";
-import { FilterSelect } from "@/components/ui/filter-select";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { Switch } from "@/components/ui/switch";
+import { type Meta, type StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+import { IconFilter } from "@tabler/icons-react";
 
-const sampleFilters: ActiveFilter[] = [
-  { key: "device", label: "Device: Main Gate", onRemove: fn() },
-  { key: "status", label: "Status: Check In", onRemove: fn() },
-  { key: "date", label: "From: 2026-07-01", onRemove: fn() },
-];
+import { FilterBar } from "./filter-bar";
+import { SearchInput } from "@/components/ui/search-input/search-input";
+import { FilterDropdown } from "@/components/ui/filter-dropdown/filter-dropdown";
+
+import type { FilterChip } from "@/components/ui/filter-chips";
+import type { FilterField } from "@/components/ui/filter-dropdown/filter-dropdown";
 
 /**
- * FilterBar — top-level search + filter controls for list pages.
+ * FilterBar — the single toolbar layout for all list pages.
  *
- * Used on Punches, Reports, Audit Logs, and Employee Directory pages.
- * Supports search input, filter dropdowns, active filter chips, result count,
- * column visibility toggles, and sticky positioning.
+ * Slots:
+ *   search      — SearchInput (renders inline in the toolbar)
+ *   children    — inline filter controls (Combobox, FilterDropdown, DatePicker)
+ *   actions     — right-side actions (column selector, export)
+ *   onClear     — reset all filters
+ *   activeFilters — chip data (passed to FilterChips)
+ *   resultCount — "N results" badge
+ *   sticky      — stick to top on scroll
+ *
+ * **FilterDropdown goes inside FilterBar as a child**, not as a standalone
+ * replacement. FilterBar owns the toolbar; FilterDropdown provides the
+ * "+ Filter" popover UI.
  */
 const meta: Meta<typeof FilterBar> = {
-  title: "UI/Inputs/FilterBar",
+  title: "UI/FilterBar",
   component: FilterBar,
-  tags: ["autodocs"],
-  argTypes: {
-    sticky: { control: "boolean" },
-    resultCount: { control: "number" },
-    hasActiveFilters: { control: "boolean" },
-  },
 };
 
 export default meta;
 type Story = StoryObj<typeof FilterBar>;
 
-export const Primary: Story = {
-  args: {
-    search: <FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />,
-    children: (
-      <>
-        <FilterSelect
-          label="Status"
-          value=""
-          options={[
-            { value: "", label: "All Statuses" },
-            { value: "check_in", label: "Check In" },
-            { value: "check_out", label: "Check Out" },
-            { value: "break_out", label: "Break Out" },
-            { value: "break_in", label: "Break In" },
-          ]}
-          onChange={fn()}
-        />
-      </>
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+const sampleFields: FilterField[] = [
+  {
+    key: "device",
+    label: "Device",
+    icon: <IconFilter size={14} />,
+    renderValueSelector: ({ onApply, onBack }) => (
+      <div style={{ padding: "8px" }}>
+        <p style={{ margin: 0, fontSize: "13px" }}>Device filter panel</p>
+        <button onClick={onApply} style={{ marginTop: "8px" }}>
+          Apply
+        </button>
+        <button onClick={onBack} style={{ marginTop: "8px", marginLeft: "8px" }}>
+          Back
+        </button>
+      </div>
     ),
-    resultCount: 128,
+  },
+  {
+    key: "status",
+    label: "Status",
+    renderValueSelector: ({ onApply, onBack }) => (
+      <div style={{ padding: "8px" }}>
+        <p style={{ margin: 0, fontSize: "13px" }}>Status filter panel</p>
+        <button onClick={onApply} style={{ marginTop: "8px" }}>
+          Apply
+        </button>
+        <button onClick={onBack} style={{ marginTop: "8px", marginLeft: "8px" }}>
+          Back
+        </button>
+      </div>
+    ),
+  },
+];
+
+const sampleChips: FilterChip[] = [
+  { key: "chip-1", label: "Device: Main Entrance", onRemove: () => {} },
+  { key: "chip-2", label: "Status: Late", onRemove: () => {} },
+];
+
+// ── Stories ────────────────────────────────────────────────────────────────────
+
+export const Empty: Story = {
+  name: "Empty — no filters",
+  render: () => (
+    <FilterBar>
+      <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: "13px" }}>
+        No filters applied
+      </span>
+    </FilterBar>
+  ),
+};
+
+export const WithSearch: Story = {
+  name: "With search",
+  render: () => {
+    const [query, setQuery] = useState("");
+    return (
+      <FilterBar search={<SearchInput value={query} onChange={setQuery} debounceMs={300} />}>
+        <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: "13px" }}>
+          Search across records
+        </span>
+      </FilterBar>
+    );
   },
 };
 
-export const AllVariants: Story = {
-  name: "All Variants",
-  parameters: { controls: { disable: true } },
+export const WithFilterDropdown: Story = {
+  name: "With FilterDropdown (child)",
   render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-8)" }}>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          Simple Search
-        </p>
-        <FilterBar>
-          <FilterInput placeholder="Search…" value="" onChange={fn()} />
-        </FilterBar>
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          With Result Count
-        </p>
-        <FilterBar resultCount={42}>
-          <FilterInput placeholder="Search…" value="" onChange={fn()} />
-        </FilterBar>
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          With Active Filters
-        </p>
-        <FilterBar
-          search={<FilterInput placeholder="Search by name or PIN…" value="145" onChange={fn()} />}
-          activeFilters={sampleFilters}
-          hasActiveFilters
-          onClear={fn()}
-          resultCount={12}
-        >
-          <FilterSelect
-            label="Status"
-            value="check_in"
-            options={[
-              { value: "", label: "All" },
-              { value: "check_in", label: "Check In" },
-            ]}
-            onChange={fn()}
-          />
-        </FilterBar>
-      </div>
-      <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
-          With Column Toggle
-        </p>
-        <FilterBar
-          actions={
-            <MultiSelect
-              options={[
-                { value: "time", label: "Time" },
-                { value: "employee", label: "Employee" },
-                { value: "device", label: "Device" },
-              ]}
-              values={["time", "employee", "device"]}
-              onChange={fn()}
-              placeholder="Columns"
-            />
-          }
-          resultCount={128}
-        >
-          <FilterInput placeholder="Search…" value="" onChange={fn()} />
-        </FilterBar>
-      </div>
-    </div>
+    <FilterBar>
+      <FilterDropdown fields={sampleFields} />
+    </FilterBar>
   ),
 };
 
-export const ContextPunchesFilter: Story = {
-  name: "Context: Punches Page Filter",
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <FilterBar
-      search={
-        <FilterInput placeholder="Search by employee name or PIN…" value="" onChange={fn()} />
-      }
-      activeFilters={[sampleFilters[0], sampleFilters[1]]}
-      hasActiveFilters
-      onClear={fn()}
-      resultCount={42}
-    >
-      <FilterSelect
-        label="Device"
-        value=""
-        options={[
-          { value: "", label: "All Devices" },
-          { value: "CQZ7232960836", label: "Main Gate" },
-          { value: "BKW8471209384", label: "Warehouse B" },
-        ]}
-        onChange={fn()}
-      />
-      <FilterSelect
-        label="Status"
-        value=""
-        options={[
-          { value: "", label: "All Statuses" },
-          { value: "check_in", label: "Check In" },
-          { value: "check_out", label: "Check Out" },
-          { value: "break_out", label: "Break Out" },
-          { value: "break_in", label: "Break In" },
-        ]}
-        onChange={fn()}
-      />
-      <Switch checked={false} label="Show only anomalies" onCheckedChange={fn()} />
-    </FilterBar>
-  ),
+export const WithFiltersAndChips: Story = {
+  name: "Full toolbar — search + dropdown + chips + count",
+  render: () => {
+    const [query, setQuery] = useState("");
+    return (
+      <FilterBar
+        search={<SearchInput value={query} onChange={setQuery} debounceMs={300} />}
+        activeFilters={sampleChips}
+        resultCount={42}
+        hasActiveFilters
+        onClear={() => {}}
+      >
+        <FilterDropdown fields={sampleFields} />
+      </FilterBar>
+    );
+  },
+};
+
+export const Sticky: Story = {
+  name: "Sticky variant",
+  render: () => {
+    const [query, setQuery] = useState("");
+    return (
+      <div style={{ height: "200px", overflow: "auto" }}>
+        <FilterBar
+          sticky
+          search={<SearchInput value={query} onChange={setQuery} debounceMs={300} />}
+          activeFilters={sampleChips}
+          resultCount={42}
+          hasActiveFilters
+          onClear={() => {}}
+        >
+          <FilterDropdown fields={sampleFields} />
+        </FilterBar>
+        <div style={{ padding: "16px", height: "400px" }}>
+          <p>Scroll down to test sticky behaviour</p>
+        </div>
+      </div>
+    );
+  },
 };

@@ -17,29 +17,32 @@ import { useChartTheme } from "./use-chart-theme";
  * as rgba(0,162,199,1) in the user's Storybook HTML means the browser
  * does resolve the tokens correctly.
  */
+// token-lint-ignore — jsdom does not process CSS imports, so we must inject
+// tokens manually for chart theme tests. This is a test-only concern.
+// All setProperty calls below are legitimate test setup for jsdom.
 function injectTokens() {
   const root = document.documentElement;
-  root.style.setProperty("--ao-chart-1", "#00a2c7");
-  root.style.setProperty("--ao-chart-2", "#0090ff");
-  root.style.setProperty("--ao-chart-3", "#30a46c");
-  root.style.setProperty("--ao-chart-4", "#ffc53d");
-  root.style.setProperty("--ao-chart-5", "#e5484d");
-  root.style.setProperty("--ao-chart-6", "#bbbbbb");
-  root.style.setProperty("--ao-font-family", "Inter, sans-serif");
-  root.style.setProperty("--ao-font-color-primary", "#202020");
-  root.style.setProperty("--ao-font-color-secondary", "#646464");
-  root.style.setProperty("--ao-font-color-tertiary", "#838383");
-  root.style.setProperty("--ao-border-color-light", "#e8e8e8");
-  root.style.setProperty("--ao-border-color-medium", "#cecece");
-  root.style.setProperty("--ao-background-primary", "#fcfcfc");
-  root.style.setProperty("--ao-radius-sm", "4px");
-  root.style.setProperty("--ao-shadow-sm", "0 1px 2px rgba(0,0,0,0.05)");
-  root.style.setProperty("--ao-chart-primary", "#00a2c7");
-  root.style.setProperty("--ao-chart-positive", "#30a46c");
-  root.style.setProperty("--ao-chart-negative", "#e5484d");
-  root.style.setProperty("--ao-chart-warning", "#ffc53d");
-  root.style.setProperty("--ao-chart-info", "#0090ff");
-  root.style.setProperty("--ao-chart-neutral", "#bbbbbb");
+  root.style.setProperty("--ao-chart-1", "#00a2c7"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-2", "#0090ff"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-3", "#30a46c"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-4", "#ffc53d"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-5", "#e5484d"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-6", "#bbbbbb"); // token-lint-ignore
+  root.style.setProperty("--ao-font-family", "Inter, sans-serif"); // token-lint-ignore
+  root.style.setProperty("--ao-font-color-primary", "#202020"); // token-lint-ignore
+  root.style.setProperty("--ao-font-color-secondary", "#646464"); // token-lint-ignore
+  root.style.setProperty("--ao-font-color-tertiary", "#838383"); // token-lint-ignore
+  root.style.setProperty("--ao-border-color-light", "#e8e8e8"); // token-lint-ignore
+  root.style.setProperty("--ao-border-color-medium", "#cecece"); // token-lint-ignore
+  root.style.setProperty("--ao-background-primary", "#fcfcfc"); // token-lint-ignore
+  root.style.setProperty("--ao-radius-sm", "4px"); // token-lint-ignore
+  root.style.setProperty("--ao-shadow-sm", "0 1px 2px rgba(0,0,0,0.05)"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-primary", "#00a2c7"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-positive", "#30a46c"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-negative", "#e5484d"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-warning", "#ffc53d"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-info", "#0090ff"); // token-lint-ignore
+  root.style.setProperty("--ao-chart-neutral", "#bbbbbb"); // token-lint-ignore
 }
 
 injectTokens();

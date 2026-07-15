@@ -15,6 +15,7 @@ import {
   IconFingerprint,
   IconReport,
   IconSettings,
+  IconUsers,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -47,6 +48,7 @@ const ICON_MAP: Record<string, Icon> = {
   IconFingerprint,
   IconReport,
   IconSettings,
+  IconUsers,
 };
 
 /**
@@ -66,6 +68,7 @@ export function useNavigation(): ResolvedNavItem[] {
       "nav.devices": () => _(/*i18n*/ { id: "nav.devices", message: "Devices" }),
       "nav.devices.list": () => _(/*i18n*/ { id: "nav.devices.list", message: "All Devices" }),
       "nav.punches": () => _(/*i18n*/ { id: "nav.punches", message: "Punches" }),
+      "nav.employees": () => _(/*i18n*/ { id: "nav.employees", message: "Employees" }),
       "nav.reports": () => _(/*i18n*/ { id: "nav.reports", message: "Reports" }),
       "nav.settings": () => _(/*i18n*/ { id: "nav.settings", message: "Settings" }),
       "nav.settings.system": () => _(/*i18n*/ { id: "nav.settings.system", message: "System" }),

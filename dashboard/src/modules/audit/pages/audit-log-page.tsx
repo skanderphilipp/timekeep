@@ -1,5 +1,4 @@
-import { PageLayout, PageBody } from "@/components/ui";
-
+import { PageLayout, PageBody } from "@/components/layout";
 import { AuditLogView } from "../components/audit-log-view";
 
 export function AuditLogPage() {

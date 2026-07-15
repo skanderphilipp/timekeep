@@ -62,8 +62,8 @@ mod tests {
     use async_trait::async_trait;
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex as StdMutex};
+    use timekeep_core::PunchFilter;
     use timekeep_core::model::{Device, DeviceConfig, User};
-    use timekeep_core::traits::storage::PunchFilter;
 
     // ─── Mock BiometricDevice ──────────────────────────────────────────
 

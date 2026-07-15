@@ -3,7 +3,8 @@ import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 import { messages as enMessages } from "@/locales/en";
 
-import type { FilterChip, FilterField } from "./filter-dropdown";
+import type { FilterChip } from "../filter-chips";
+import type { FilterField } from "./filter-dropdown";
 
 i18n.load({ en: enMessages });
 i18n.activate("en");

@@ -1,34 +1,12 @@
-// ── Card ──────────────────────────────────────────────────────────────────────
-
-.card {
-  width: 100%;
-  box-shadow: var(--ao-shadow-md);
-}
+// ── Card content ───────────────────────────────────────────────────────────────
 
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ao-spacing-5);
-  padding: var(--ao-spacing-10) var(--ao-spacing-8);
+  padding: var(--ao-spacing-8) var(--ao-spacing-6);
   text-align: center;
-}
-
-// ── Brand logo ────────────────────────────────────────────────────────────────
-
-.logo {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--ao-radius-md);
-  background: var(--ao-accent-accent9);
-  color: var(--ao-font-color-inverted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--ao-font-size-lg);
-  font-weight: var(--ao-font-weight-bold);
-  letter-spacing: -1px;
-  flex-shrink: 0;
 }
 
 // ── Form ──────────────────────────────────────────────────────────────────────
@@ -36,8 +14,4 @@
 .form {
   width: 100%;
   text-align: start;
-}
-
-.actionRow {
-  padding-top: var(--ao-spacing-2);
 }

@@ -59,7 +59,8 @@ const ACTION_MAP: &[(&str, &[(&str, &str)])] = &[
 ];
 
 /// Paths excluded from audit logging.
-const EXCLUDED_PREFIXES: &[&str] = &["/api/audit", "/api/health", "/api/metrics", "/api/docs"];
+const EXCLUDED_PREFIXES: &[&str] =
+    &["/api/audit", "/api/health", "/api/about", "/api/metrics", "/api/docs"];
 
 /// Derive an action string from HTTP method + path.
 fn derive_action(method: &str, path: &str) -> Option<String> {

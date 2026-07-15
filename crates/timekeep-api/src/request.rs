@@ -29,6 +29,9 @@ pub struct SetupRequest {
     /// Optional display name. Defaults to username.
     #[serde(default)]
     pub display_name: Option<String>,
+    /// Workspace / company name shown on the login screen.
+    #[serde(default)]
+    pub workspace_name: Option<String>,
 }
 
 // ─── Devices ────────────────────────────────────────────────────────
@@ -229,7 +232,7 @@ fn default_device_limit() -> u32 {
 /// Request to execute a batch action on multiple devices.
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct BatchActionRequest {
-    /// Action to execute: "sync_now", "enable", "disable", "restart".
+    /// Action to execute: "sync_now", "sync_clock", "enable", "disable", "restart".
     pub action: String,
     /// List of device serial numbers to act on.
     pub device_sns: Vec<String>,
@@ -420,6 +423,11 @@ pub struct UpdateSystemSettingsRequest {
 
     /// Work schedule update (partial).
     pub work_policy: Option<UpdateWorkPolicyRequest>,
+
+    /// Support email shown in the dashboard footer. Empty string clears it.
+    pub support_email: Option<String>,
+    /// Workspace / company name shown on the login screen.
+    pub workspace_name: Option<String>,
 }
 
 /// Partial update for work policy settings.
@@ -484,6 +492,9 @@ pub struct CreateDashboardUserRequest {
     /// Human-readable display name.
     #[serde(default)]
     pub display_name: Option<String>,
+    /// Workspace / company name shown on the login screen.
+    #[serde(default)]
+    pub workspace_name: Option<String>,
     /// Custom permission tokens. If omitted, the role's defaults are used.
     /// Accepts a JSON array of space-separated permission strings.
     #[serde(default)]
@@ -501,6 +512,9 @@ pub struct UpdateDashboardUserRequest {
     pub role: Option<String>,
     /// New display name.
     pub display_name: Option<String>,
+    /// Workspace / company name shown on the login screen.
+    #[serde(default)]
+    pub workspace_name: Option<String>,
     /// Enable or disable the user.
     pub active: Option<bool>,
     /// Custom permission tokens. If set, replaces all existing permissions.
@@ -553,6 +567,14 @@ pub struct EnrollEmployeeRequest {
     pub biometric_types: Vec<String>,
 }
 
+/// Request to transfer fingerprint templates from one device to another.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct TransferTemplatesRequest {
+    /// Optional employee ID to filter templates. If omitted, transfers all.
+    #[serde(default)]
+    pub employee_id: Option<String>,
+}
+
 // ─── Work Day Queries ─────────────────────────────────────────────────
 
 /// Query parameters for employee work-day listing.
@@ -584,4 +606,16 @@ pub struct FacetFilterParams {
 
 fn default_facet_limit() -> u32 {
     20
+}
+
+/// Generic facet filter params used by device, audit, and employee facet endpoints.
+#[derive(Debug, Deserialize, IntoParams)]
+pub struct GenericFacetParams {
+    /// Specific dimension to query (omit for all dimensions).
+    pub dimension: Option<String>,
+    /// Search term for Reference-type facets.
+    pub search: Option<String>,
+    /// Max options to return per dimension.
+    #[serde(default = "default_facet_limit")]
+    pub limit: u32,
 }

@@ -1,5 +1,7 @@
 import { clsx } from "clsx";
 
+import type { ComponentSize } from "@/lib/constants";
+
 import styles from "./avatar.module.scss";
 
 type AvatarProps = {
@@ -7,7 +9,7 @@ type AvatarProps = {
   name: string;
   /** Image URL. When provided, replaces initials. */
   src?: string;
-  size?: "sm" | "md" | "lg";
+  size?: ComponentSize;
   className?: string;
 };
 

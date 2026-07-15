@@ -1,7 +1,7 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { Suspense, useCallback } from "react";
 
-import { SidePanel } from "@/components/ui/side-panel";
+import { SidePanel } from "@/infrastructure/side-panel/components/side-panel";
 import { Spinner } from "@/components/ui/spinner";
 import {
   sidePanelOpenAtom,

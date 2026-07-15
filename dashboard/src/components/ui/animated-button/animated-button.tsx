@@ -1,27 +1,23 @@
 import { clsx } from "clsx";
 import { type ReactNode, useMemo } from "react";
 import { motion, type HTMLMotionProps } from "framer-motion";
-import { useLingui } from "@lingui/react";
-import { msg } from "@lingui/core/macro";
 
 import { Button } from "../button";
 
 import styles from "./animated-button.module.scss";
 
 /**
- * Extended button with motion animation.
+ * Button with framer-motion hover/active scale transitions.
  *
- * Wraps our base Button with framer-motion for smooth hover/active
- * transitions. Supports an animated SVG that plays on hover, plus a
- * "soon" badge for features that aren't ready yet.
+ * Thin wrapper around our base Button — adds spring-animated
+ * hover (1.02×) and tap (0.97×) transforms.
+ *
+ * For feature-flag "Coming Soon" badges, compose externally:
+ * wrap this component with a relative container + badge overlay.
  */
 export type AnimatedButtonProps = {
   /** Animated SVG or motion component rendered alongside the label. */
   animatedSvg?: ReactNode;
-  /** Shows a "Soon" pill when true — disables the button. */
-  soon?: boolean;
-  /** Custom label for the "Soon" badge. Defaults to "Soon". */
-  soonLabel?: string;
   /** The button label / children. */
   children: ReactNode;
   /** Disables the button. */
@@ -43,8 +39,6 @@ const transition = { type: "spring", stiffness: 400, damping: 25 } as const;
 
 export function AnimatedButton({
   animatedSvg,
-  soon = false,
-  soonLabel,
   children,
   disabled = false,
   loading = false,
@@ -53,17 +47,13 @@ export function AnimatedButton({
   size = "md",
   className,
 }: AnimatedButtonProps) {
-  const { _ } = useLingui();
-  const resolvedSoonLabel = soonLabel ?? _(msg`Soon`);
-  const isDisabled = soon || disabled;
-
   const motionProps: HTMLMotionProps<"div"> = useMemo(
     () => ({
-      whileHover: isDisabled ? undefined : hoverScale,
-      whileTap: isDisabled ? undefined : tapScale,
+      whileHover: disabled ? undefined : hoverScale,
+      whileTap: disabled ? undefined : tapScale,
       transition,
     }),
-    [isDisabled],
+    [disabled],
   );
 
   return (
@@ -71,7 +61,7 @@ export function AnimatedButton({
       <Button
         variant={variant}
         size={size}
-        disabled={isDisabled}
+        disabled={disabled}
         loading={loading}
         onClick={onClick}
         className={styles.button}
@@ -83,12 +73,6 @@ export function AnimatedButton({
         )}
         {children}
       </Button>
-
-      {soon && (
-        <span className={styles.soonBadge} aria-hidden="true">
-          {resolvedSoonLabel}
-        </span>
-      )}
     </motion.div>
   );
 }

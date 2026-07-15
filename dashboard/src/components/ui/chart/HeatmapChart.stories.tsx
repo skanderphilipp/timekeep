@@ -35,12 +35,7 @@ type Story = StoryObj<typeof HeatmapChart>;
 export const Primary: Story = {
   render: () => (
     <Chart title="Device Utilization" description="Punch count per hour per device.">
-      <HeatmapChart
-        data={utilizationData}
-        xLabel="Hour of Day"
-        yLabel="Device"
-        height={300}
-      />
+      <HeatmapChart data={utilizationData} xLabel="Hour of Day" yLabel="Device" height={300} />
     </Chart>
   ),
 };
@@ -103,7 +98,12 @@ export const ErrorState: Story = {
 export const Empty: Story = {
   name: "Empty State",
   render: () => (
-    <Chart title="Device Utilization" description="No utilization data." isEmpty emptyMessage="No data for this period">
+    <Chart
+      title="Device Utilization"
+      description="No utilization data."
+      isEmpty
+      emptyMessage="No data for this period"
+    >
       <HeatmapChart data={[]} height={300} />
     </Chart>
   ),

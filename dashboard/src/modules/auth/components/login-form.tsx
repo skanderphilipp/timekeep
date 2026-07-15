@@ -61,12 +61,8 @@ export function LoginForm() {
   });
 
   return (
-    <Card className={styles.card}>
+    <Card>
       <Card.Content className={styles.content}>
-        <Text variant="caption" color="tertiary" className={styles.logo}>
-          AO
-        </Text>
-
         <Heading level="h1">{_(msg`Sign in to timekeep`)}</Heading>
 
         <Text variant="caption" color="tertiary">

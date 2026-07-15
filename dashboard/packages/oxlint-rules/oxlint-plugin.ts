@@ -35,6 +35,10 @@ import {
 } from "./rules/no-raw-html-elements";
 import { rule as noLogicInPages, RULE_NAME as noLogicInPagesName } from "./rules/no-logic-in-pages";
 import {
+  rule as noCrossModuleImports,
+  RULE_NAME as noCrossModuleImportsName,
+} from "./rules/no-cross-module-imports";
+import {
   rule as noHardcodedColors,
   RULE_NAME as noHardcodedColorsName,
 } from "./rules/no-hardcoded-colors";
@@ -55,6 +59,18 @@ import {
   rule as sortCssPropertiesAlphabetically,
   RULE_NAME as sortCssPropertiesAlphabeticallyName,
 } from "./rules/sort-css-properties-alphabetically";
+import {
+  rule as noDeepUiImports,
+  RULE_NAME as noDeepUiImportsName,
+} from "./rules/no-deep-ui-imports";
+import {
+  rule as requireStoryLevelTag,
+  RULE_NAME as requireStoryLevelTagName,
+} from "./rules/require-story-level-tag";
+import {
+  rule as maxLinesPerFile,
+  RULE_NAME as maxLinesPerFileRuleName,
+} from "./rules/max-lines-per-file";
 
 export default definePlugin({
   meta: { name: "bentech" },
@@ -67,6 +83,7 @@ export default definePlugin({
     [matchingStateVariableName]: matchingStateVariable,
     [maxConstsPerFileName]: maxConstsPerFile,
     [noHardcodedColorsName]: noHardcodedColors,
+    [noCrossModuleImportsName]: noCrossModuleImports,
     [noNavigatePreferLinkName]: noNavigatePreferLink,
     [noPrimitiveDuplicationName]: noPrimitiveDuplication,
     [noStateUserefName]: noStateUseref,
@@ -75,5 +92,8 @@ export default definePlugin({
     [noBareConsoleName]: noBareConsole,
     [noRawHtmlElementsName]: noRawHtmlElements,
     [noLogicInPagesName]: noLogicInPages,
+    [noDeepUiImportsName]: noDeepUiImports,
+    [requireStoryLevelTagName]: requireStoryLevelTag,
+    [maxLinesPerFileRuleName]: maxLinesPerFile,
   },
 });

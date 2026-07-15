@@ -12,13 +12,20 @@ import { createDevice, fetchDevice, updateDevice, type DeviceConfig } from "@/li
 import { useToast } from "@/infrastructure/toast/toast";
 import { createDeviceFormSchema, type DeviceFormValues } from "../schemas/device-form.schema";
 
+type UseDeviceFormOptions = {
+  /** When true, stay on the current page after save. */
+  embedded?: boolean;
+  /** Called after a successful save in embedded mode. */
+  onSaved?: () => void;
+};
+
 /**
  * Device form state + mutation hook.
  *
  * Manages react-hook-form with zod validation, fetches existing device
  * data when editing, and handles the create/update mutation.
  */
-export function useDeviceForm() {
+export function useDeviceForm({ embedded = false, onSaved }: UseDeviceFormOptions = {}) {
   const { sn } = useParams<{ sn: string }>();
   const isEditing = !!sn;
   const navigate = useNavigate();
@@ -68,7 +75,12 @@ export function useDeviceForm() {
       toast.success(
         isEditing ? _(msg`Device updated successfully.`) : _(msg`Device added successfully.`),
       );
-      navigate(AppRoute.devices.list);
+      if (embedded && onSaved) {
+        // In embedded mode, call the callback (typically triggers a data refetch).
+        onSaved();
+      } else {
+        navigate(AppRoute.devices.list);
+      }
     },
     onError: (err: Error) => toast.error(err.message),
   });

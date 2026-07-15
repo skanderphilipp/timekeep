@@ -59,11 +59,20 @@ serde_with = "3"
 # Hash for deduplication
 sha2 = "0.10"
 
+# Password hashing (argon2id)
+argon2 = "0.5"
+
+# RNG for Argon2 salt generation
+rand_core = { version = "0.6", features = ["getrandom"] }
+
 # Async traits (for trait objects with Send bound)
 async-trait = "0.1"
 
 # Base64 encoding (cursor pagination)
 		base64 = "0.22"
+
+# Compile-time provider registration (inventory)
+inventory = "0.3"
 
 		# Network interface detection (local IP / subnet auto-detection)
 		local-ip-address = "0.6"
@@ -95,22 +104,70 @@ timekeep-dist-odoo = { path = "crates/timekeep-dist-odoo" }
 timekeep-api = { path = "crates/timekeep-api" }
 
 [workspace.lints.rust]
-unsafe_code = "warn"
-missing_docs = "warn"
-unreachable_pub = "warn"
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tokio_unstable)'] }
+# ── Safety ──────────────────────────────────────────────────
+unsafe_code = "deny"                         # No unsafe, period
+unexpected_cfgs = { level = "deny", check-cfg = ['cfg(tokio_unstable)'] }
+
+# ── Correctness ────────────────────────────────────────────
+unreachable_pub = "deny"                     # pub items actually used cross-crate
+unused_crate_dependencies = "warn"           # dead deps in Cargo.toml
+unused_macro_rules = "deny"                  # dead macros
+unused_qualifications = "deny"               # e.g., `std::fmt::Display` → `Display`
+unused_results = "deny"                      # ignored Results = bugs
+elided_lifetimes_in_paths = "warn"           # be explicit about lifetimes
+
+# ── Documentation ──────────────────────────────────────────
+missing_docs = "deny"                        # every pub item must be documented
+
+# ── Deprecation awareness ──────────────────────────────────
+deprecated = "deny"                          # no using deprecated APIs
+
+[workspace.lints.rustdoc]
+missing_crate_level_docs = "deny"            # every crate needs //! doc
+broken_intra_doc_links = "deny"              # broken doc links fail build
 
 [workspace.lints.clippy]
-dbg_macro = "warn"
-print_stdout = "warn"
-print_stderr = "warn"
-unwrap_used = "warn"
-expect_used = "warn"
-todo = "warn"
+# ── Correctness (deny = compile error) ─────────────────────
+dbg_macro = "deny"                          # no dbg!() in production
+todo = "deny"                               # no todo!() in production
 unimplemented = "deny"
-implicit_clone = "warn"
-large_enum_variant = "allow"
-module_inception = "allow"
+unwrap_used = "deny"                        # force proper error handling
+expect_used = "deny"                        # force proper error handling
+panic = "deny"                              # library code must not panic
+indexing_slicing = "deny"                   # use .get() instead of [index]
+string_slice = "deny"                       # slicing strings is UB-prone
+unchecked_duration_subtraction = "deny"
+cast_possible_truncation = "deny"           # u64 → u32 needs explicit check
+cast_sign_loss = "deny"                     # i32 → u32 loses sign info
+cast_possible_wrap = "deny"                 # integer overflow on cast
+cast_lossless = "warn"                      # unnecessary casts
+cast_precision_loss = "deny"                # f64 → f32 loses precision
+
+# ── Style ──────────────────────────────────────────────────
+print_stdout = "deny"                       # use tracing, not println!
+print_stderr = "deny"                       # use tracing, not eprintln!
+implicit_clone = "deny"                     # .clone() on Copy types
+redundant_clone = "deny"
+clone_on_ref_ptr = "deny"                   # cloning an Arc when you can clone the inner
+inefficient_to_string = "deny"              # use .to_owned() for &str
+manual_assert = "deny"                      # if !cond { panic!() } → assert!()
+needless_pass_by_value = "warn"             # pass large types by reference
+or_fun_call = "deny"                        # .unwrap_or(FnCall()) allocates eagerly
+
+# ── Complexity ─────────────────────────────────────────────
+cognitive_complexity = "warn"               # functions that are too complex
+too_many_arguments = "warn"                 # >7 args = refactor into struct
+type_complexity = "warn"                    # deeply nested generics
+
+# ── Perf ───────────────────────────────────────────────────
+large_stack_frames = "warn"                 # async tasks on stack
+mutex_atomic = "deny"                       # Mutex<bool> → AtomicBool
+redundant_async_block = "deny"             # unnecessary async {}
+
+# ── Allowed (explicit exceptions) ──────────────────────────
+large_enum_variant = "allow"                # domain enums have variant-size differences
+module_inception = "allow"                  # e.g., model::model is fine
+too_many_lines = "allow"                    # some files are large (until refactored)
 
 [profile.release]
 lto = true

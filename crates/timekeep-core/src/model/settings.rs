@@ -183,6 +183,17 @@ pub struct SystemSettings {
     /// Controls how attendance is evaluated across the entire app.
     #[serde(default)]
     pub work_policy: crate::model::WorkPolicy,
+
+    /// Support email shown in the dashboard footer and error pages.
+    /// Set by the admin during initial configuration. When empty,
+    /// no support contact is displayed.
+    #[serde(default)]
+    pub support_email: String,
+
+    /// Workspace / company name shown on the login and setup screens.
+    /// Set during initial setup. When empty, the app name is used as fallback.
+    #[serde(default)]
+    pub workspace_name: String,
 }
 
 fn default_poll_interval() -> u32 {
@@ -195,6 +206,8 @@ impl Default for SystemSettings {
             poll_interval_secs: 60,
             auto_discover: false,
             work_policy: crate::model::WorkPolicy::standard_9to5(),
+            support_email: String::new(),
+            workspace_name: String::new(),
         }
     }
 }

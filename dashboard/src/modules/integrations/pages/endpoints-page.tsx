@@ -1,5 +1,4 @@
-import { PageLayout, PageBody } from "@/components/ui";
-
+import { PageLayout, PageBody } from "@/components/layout";
 import { EndpointsView } from "../components/endpoints-view";
 
 export function EndpointsPage() {

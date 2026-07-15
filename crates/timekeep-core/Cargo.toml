@@ -13,10 +13,14 @@ thiserror = { workspace = true }
 async-trait = { workspace = true }
 uuid = { workspace = true }
 sha2 = { workspace = true }
+argon2 = { workspace = true }
+rand_core = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 utoipa = { workspace = true }
 local-ip-address = { workspace = true }
+base64 = { workspace = true }
+inventory = { workspace = true }
 
 # Optional: sqlx for shared row types (PunchRow, TimestampRow)
 # Only needed by storage crates and tests — not pulled into production builds

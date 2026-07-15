@@ -11,7 +11,7 @@
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { clsx } from "clsx";
 import { useState, useMemo, type ReactNode } from "react";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
@@ -136,6 +136,12 @@ export function Combobox({
           )}
           {selectedLabel ?? resolvedPlaceholder}
         </ComboboxPrimitive.Value>
+        <IconChevronDown
+          data-slot="combobox-chevron"
+          className={styles.chevron}
+          size={14}
+          aria-hidden="true"
+        />
       </ComboboxPrimitive.Trigger>
 
       <ComboboxPrimitive.Portal>

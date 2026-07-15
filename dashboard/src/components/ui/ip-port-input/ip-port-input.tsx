@@ -1,9 +1,10 @@
 import { clsx } from "clsx";
-import { useId, useCallback } from "react";
+import { useId, useCallback, useEffect } from "react";
 import { useIMask } from "react-imask";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
+import { isValidIpv4 } from "@/components/ui/ip-input";
 import { clampPort } from "@/components/ui/port-input";
 import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import styles from "./ip-port-input.module.scss";
@@ -11,8 +12,6 @@ import styles from "./ip-port-input.module.scss";
 /** Regex to parse "ip:port" or "ip port" strings. */
 const IP_PORT_REGEX =
   /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)[:\s](\d{1,5})$/;
-
-const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
 
 type IpPortValue = {
   ip: string;
@@ -26,12 +25,15 @@ type IpPortInputProps = {
   value?: IpPortValue;
   defaultValue?: Partial<IpPortValue>;
   onChange?: (value: IpPortValue) => void;
-  placeholder?: string;
   disabled?: boolean;
   required?: boolean;
   fullWidth?: boolean;
   className?: string;
   id?: string;
+  /** Name attribute for the IP input (form submission). */
+  ipName?: string;
+  /** Name attribute for the port input (form submission). */
+  portName?: string;
 };
 
 /**
@@ -49,36 +51,50 @@ export function IpPortInput({
   value,
   defaultValue,
   onChange,
-  placeholder: _placeholder,
   disabled = false,
   required = false,
   fullWidth = false,
   className,
   id: externalId,
+  ipName,
+  portName,
 }: IpPortInputProps) {
   const { _ } = useLingui();
   const autoId = useId();
   const inputId = externalId || autoId;
+  const portId = `${inputId}-port`;
   const errorId = `${inputId}-error`;
   const helperId = `${inputId}-helper`;
+  const describedBy = error ? errorId : helperText ? helperId : undefined;
 
   const currentIp = value?.ip ?? defaultValue?.ip ?? "";
   const currentPort = value?.port ?? defaultValue?.port ?? DEFAULT_ZKTECO_PORT;
 
   // IMask for the IP part
-  const { ref: ipInnerRef } = useIMask(
+  const { ref: ipInnerRef, setValue, maskRef } = useIMask(
     {
       mask: "0[0][0].0[0][0].0[0][0].0[0][0]",
       definitions: { "0": /[0-9]/ },
     },
     {
+      defaultValue: currentIp,
       onAccept: (_val, mask) => {
-        const raw = mask.unmaskedValue;
-        const newIp = IPV4_REGEX.test(raw) ? raw : currentIp;
+        const displayValue = mask.value;
+        const newIp = isValidIpv4(displayValue) ? displayValue : currentIp;
         onChange?.({ ip: newIp, port: currentPort });
       },
     },
   );
+
+  // Sync external value changes into the IMask input (e.g., when editing a device
+  // and form.reset() populates the host field after data loads from the API).
+  // Only updates when the mask is empty but the external value is non-empty —
+  // this avoids interfering with the user's own typing.
+  useEffect(() => {
+    if (currentIp && maskRef.current && !maskRef.current.value) {
+      setValue(currentIp);
+    }
+  }, [currentIp, maskRef, setValue]);
 
   // When pasting into the IP field, check for "ip:port" combos
   const handleIpPaste = useCallback(
@@ -152,6 +168,7 @@ export function IpPortInput({
             (ipInnerRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
           }}
           id={inputId}
+          name={ipName}
           data-slot="ip-port-input-ip"
           className={clsx(styles.ipInput, error && styles.ipInputError)}
           type="text"
@@ -161,6 +178,7 @@ export function IpPortInput({
           required={required}
           aria-label={_(msg`IP address`)}
           aria-invalid={!!error}
+          aria-describedby={describedBy}
           onPaste={handleIpPaste}
         />
 
@@ -169,6 +187,8 @@ export function IpPortInput({
         </span>
 
         <input
+          id={portId}
+          name={portName}
           data-slot="ip-port-input-port"
           className={clsx(styles.portInput, error && styles.portInputError)}
           type="text"
@@ -179,7 +199,8 @@ export function IpPortInput({
           required={required}
           aria-label={_(msg`Port`)}
           aria-invalid={!!error}
-          value={currentPort || ""}
+          aria-describedby={describedBy}
+          value={currentPort ?? ""}
           onChange={handlePortRawChange}
           onBlur={handlePortBlur}
         />
@@ -207,11 +228,11 @@ export function parseIpPort(raw: string): IpPortValue | null {
     const ipPart = match[0].split(/[:\s]/)[0];
     const portPart = match[1];
     const port = clampPort(Number.parseInt(portPart, 10));
-    if (IPV4_REGEX.test(ipPart)) {
+    if (isValidIpv4(ipPart)) {
       return { ip: ipPart, port };
     }
   }
-  if (IPV4_REGEX.test(trimmed)) {
+  if (isValidIpv4(trimmed)) {
     return { ip: trimmed, port: DEFAULT_ZKTECO_PORT };
   }
   return null;

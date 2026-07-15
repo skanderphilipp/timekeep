@@ -7,6 +7,7 @@ import { LoginPage } from "@/modules/auth/pages/login-page";
 import { SetupPage } from "@/modules/auth/pages/setup-page";
 import { DashboardPage } from "@/modules/dashboard/pages/dashboard-page";
 import { DeviceListPage } from "@/modules/devices/pages/device-list-page";
+import { DeviceDetailPage } from "@/modules/devices/pages/device-detail-page";
 import { DeviceFormPage } from "@/modules/devices/pages/device-form-page";
 import { PunchQueryPage } from "@/modules/punches/pages/punch-query-page";
 import { ReportsPage } from "@/modules/reports/pages/reports-page";
@@ -15,6 +16,8 @@ import { ApiKeysPage } from "@/modules/apikeys/pages/api-keys-page";
 import { EndpointsPage } from "@/modules/integrations/pages/endpoints-page";
 import { AuditLogPage } from "@/modules/audit/pages/audit-log-page";
 import { UsersPage } from "@/modules/users/pages/users-page";
+import { EmployeeListPage } from "@/modules/employees/pages/employee-list-page";
+import { EmployeeDetailPage } from "@/modules/employees/pages/employee-detail-page";
 import { NotFoundPage } from "@/modules/navigation/pages/not-found-page";
 import { AppShell } from "./app-shell";
 import { SidePanelCmdkHandler } from "@/infrastructure/side-panel/side-panel-shell";
@@ -41,6 +44,8 @@ export function App() {
                       </RequireRole>
                     }
                   />
+                  {/* Device detail (viewer+) */}
+                  <Route path="/devices/:sn" element={<DeviceDetailPage />} />
                   <Route
                     path="/devices/:sn/edit"
                     element={
@@ -50,6 +55,16 @@ export function App() {
                     }
                   />
                   <Route path={AppRoute.punches.list} element={<PunchQueryPage />} />
+                  <Route path={AppRoute.employees.list} element={<EmployeeListPage />} />
+                  <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+                  <Route
+                    path={AppRoute.employees.new}
+                    element={
+                      <RequireRole minimum="admin">
+                        <EmployeeListPage />
+                      </RequireRole>
+                    }
+                  />
                   <Route path={AppRoute.reports} element={<ReportsPage />} />
                   <Route path={AppRoute.settings.system} element={<SettingsPage />} />
                   <Route

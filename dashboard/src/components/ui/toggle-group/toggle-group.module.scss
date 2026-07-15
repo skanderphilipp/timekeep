@@ -1,0 +1,72 @@
+// ── Group ────────────────────────────────────────────────────────────────────────
+
+.group {
+  background: var(--ao-background-secondary);
+  border-radius: var(--ao-radius-sm);
+  display: inline-flex;
+  padding: var(--ao-spacing-0_5);
+}
+
+// ── Toggle ──────────────────────────────────────────────────────────────────────
+
+.toggle {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-1) var(--ao-spacing-2);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  white-space: nowrap;
+
+  // ── Pressed (active) state ──────────────────────────────────────────────────
+  // Pill highlight: white/primary background lifts the selected toggle above
+  // the group's secondary background, creating a clear "pressed" indicator.
+
+  &[aria-pressed="true"] {
+    background: var(--ao-background-primary);
+    box-shadow: var(--ao-shadow-sm);
+    color: var(--ao-font-color-primary);
+  }
+
+  // ── Hover ───────────────────────────────────────────────────────────────────
+
+  &:hover:not([aria-pressed="true"]):not(:disabled) {
+    color: var(--ao-font-color-primary);
+  }
+
+  // ── Disabled ────────────────────────────────────────────────────────────────
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  // ── Focus ───────────────────────────────────────────────────────────────────
+
+  &:focus-visible {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: -2px;
+  }
+}
+
+// ── Icon ────────────────────────────────────────────────────────────────────────
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+// ── Label ───────────────────────────────────────────────────────────────────────
+
+.label {
+  // Inherits everything from .toggle
+}

@@ -8,14 +8,36 @@ const meta: Meta<typeof SearchInput> = {
   tags: ["autodocs"],
   argTypes: {
     placeholder: { control: "text" },
+    debounceMs: { control: "number" },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof SearchInput>;
 
-export const Primary: Story = {
+export const Immediate: Story = {
+  name: "Immediate (default)",
   args: { value: "", onChange: fn(), placeholder: "Search by employee name or PIN…" },
+};
+
+export const Debounced: Story = {
+  name: "Debounced (300ms)",
+  args: {
+    value: "",
+    onChange: fn(),
+    placeholder: "Search with debounce…",
+    debounceMs: 300,
+  },
+};
+
+export const DebouncedLong: Story = {
+  name: "Debounced (1000ms)",
+  args: {
+    value: "",
+    onChange: fn(),
+    placeholder: "Slow debounce (1s)…",
+    debounceMs: 1000,
+  },
 };
 
 export const AllVariants: Story = {
@@ -31,8 +53,20 @@ export const AllVariants: Story = {
         maxWidth: 350,
       }}
     >
-      <SearchInput value="" onChange={fn()} placeholder="Search…" />
-      <SearchInput value="Ahmed" onChange={fn()} placeholder="Search…" />
+      <SearchInput value="" onChange={fn()} placeholder="Immediate mode…" />
+      <SearchInput value="Ahmed" onChange={fn()} placeholder="Immediate with value…" />
+      <SearchInput
+        value=""
+        onChange={fn()}
+        placeholder="Debounced mode…"
+        debounceMs={300}
+      />
+      <SearchInput
+        value="Mohamed"
+        onChange={fn()}
+        placeholder="Debounced with value…"
+        debounceMs={300}
+      />
     </div>
   ),
 };
@@ -49,7 +83,12 @@ export const ContextFilterBar: Story = {
         borderRadius: "var(--ao-radius-md)",
       }}
     >
-      <SearchInput value="" onChange={fn()} placeholder="Search by employee name or PIN…" />
+      <SearchInput
+        value=""
+        onChange={fn()}
+        placeholder="Search by employee name or PIN…"
+        debounceMs={300}
+      />
     </div>
   ),
 };

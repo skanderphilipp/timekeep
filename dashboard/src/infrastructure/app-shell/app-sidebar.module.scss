@@ -1,0 +1,212 @@
+@use "@/styles/mixins" as *;
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+
+.sidebar {
+  background: var(--ao-background-secondary);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  width: 240px;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
+  z-index: 10;
+}
+
+.sidebarCollapsed {
+  width: 64px;
+}
+
+.sidebarHeader {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-5) var(--ao-spacing-4);
+}
+
+.logo {
+  align-items: center;
+  background: var(--ao-accent-accent9);
+  border-radius: var(--ao-radius-md);
+  color: var(--ao-font-color-inverted);
+  display: flex;
+  font-size: var(--ao-font-size-md);
+  font-weight: var(--ao-font-weight-semibold);
+  height: 34px;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+}
+
+.brand {
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--ao-spacing-1);
+  overflow-y: auto;
+  padding: var(--ao-spacing-2);
+}
+
+.navItem {
+  align-items: center;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-3);
+  height: 36px;
+  padding: 0 var(--ao-spacing-3);
+  text-decoration: none;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.navItemActive {
+  background: var(--ao-accent-accent3);
+  color: var(--ao-accent-accent11);
+}
+
+.navItemNested {
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-regular);
+  height: 32px;
+}
+
+// ── Nav Groups (collapsible) ──────────────────────────────────────────────────
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.navGroupCollapsed {
+  display: contents;
+}
+
+.navGroupHeader {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  gap: var(--ao-spacing-3);
+  height: 36px;
+  padding: 0 var(--ao-spacing-3);
+  text-align: start;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+  width: 100%;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.navGroupHeaderActive {
+  color: var(--ao-font-color-primary);
+}
+
+.navGroupLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navGroupChevron {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.navGroupChevronOpen {
+  transform: rotate(180deg);
+}
+
+.navGroupChildren {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-1);
+  padding-inline-start: var(--ao-spacing-5);
+}
+
+// ── Sidebar Footer ───────────────────────────────────────────────────────────
+
+.sidebarFooter {
+  border-block-start: 1px solid var(--ao-border-color-light);
+  padding: var(--ao-spacing-2);
+}
+
+.collapseToggle {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--ao-font-size-sm);
+  gap: var(--ao-spacing-3);
+  height: 36px;
+  padding: 0 var(--ao-spacing-3);
+  width: 100%;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+  }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: $breakpoint-md) {
+  .sidebar {
+    inset-inline-start: 0;
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    top: 0;
+    width: 260px;
+  }
+
+  [dir="rtl"] .sidebar {
+    transform: translateX(100%);
+  }
+
+  .sidebarCollapsed {
+    width: 260px;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  [dir="rtl"] .sidebarOpen {
+    transform: translateX(0);
+  }
+}

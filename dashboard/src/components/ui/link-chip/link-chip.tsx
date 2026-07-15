@@ -1,40 +1,30 @@
-import { type ReactNode, type MouseEvent, useCallback } from "react";
+import { type MouseEvent, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
 
 import { OverflowingTextWithTooltip } from "@/components/ui/overflowing-text-with-tooltip";
+import tagStyles from "@/components/ui/tag/tag.module.scss";
 
 import styles from "./link-chip.module.scss";
-
-// ── Types ──────────────────────────────────────────────────────────────────────
 
 export type TriggerEventType = "MOUSE_DOWN" | "CLICK";
 
 export type LinkChipProps = {
   to: string;
   label: string;
-  /** When true, hides the label text (only icons/components visible). */
   isLabelHidden?: boolean;
-  /** Use medium font weight. */
   isBold?: boolean;
-  /** Optional content rendered before the label. */
-  leftComponent?: ReactNode | null;
-  /** Optional content rendered after the label. */
-  rightComponent?: ReactNode | null;
-  /** Show a divider before the right component. */
+  leftComponent?: React.ReactNode | null;
+  rightComponent?: React.ReactNode | null;
   rightComponentDivider?: boolean;
-  /** Max width before text truncation kicks in. */
   maxWidth?: number;
   className?: string;
   onClick?: (event: MouseEvent<HTMLElement>) => void;
   onMouseDown?: (event: MouseEvent<HTMLElement>) => void;
   triggerEvent?: TriggerEventType;
   target?: "_blank" | "_self";
-  /** Fallback text when label is empty. Defaults to "Untitled" (i18n). */
   emptyLabel?: string;
 };
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
 
 const LINK_CHIP_CLICK_OUTSIDE_ID = "link-chip-click-outside-id";
 
@@ -46,11 +36,10 @@ function isNavigationModifierPressed(
   return modifier || !isLeftClick;
 }
 
-/** Render the right component, optionally preceded by a divider. */
 function renderRightComponent(
-  rightComponent: ReactNode | null,
+  rightComponent: React.ReactNode | null,
   rightComponentDivider?: boolean,
-): ReactNode {
+): React.ReactNode {
   if (!rightComponent) return null;
   if (rightComponentDivider) {
     return (
@@ -63,17 +52,6 @@ function renderRightComponent(
   return rightComponent;
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
-/**
- * Navigation chip — a clickable label that acts as an internal link.
- *
- * Used in data tables and detail views for entity navigation (device serial
- * numbers, user PINs). Renders as a compact chip with optional icons and
- * text overflow truncation.
- *
- * Formerly wrapped `<Chip>`; now self-contained with its own rendering.
- */
 export const LinkChip = ({
   to,
   label,
@@ -115,13 +93,6 @@ export const LinkChip = ({
     [to, navigate, onClick, triggerEvent],
   );
 
-  const chipClasses = clsx(
-    styles.chip,
-    isBold && styles.bold,
-    maxWidth != null && styles.hasMaxWidth,
-    className,
-  );
-
   const chipStyle = maxWidth
     ? ({ "--chip-max-width": `${maxWidth}px` } as React.CSSProperties)
     : undefined;
@@ -142,7 +113,17 @@ export const LinkChip = ({
         data-click-outside-id={LINK_CHIP_CLICK_OUTSIDE_ID}
         target={target}
         rel={target === "_blank" ? "noopener noreferrer" : undefined}
-        className={chipClasses}
+        className={clsx(
+          tagStyles.tag,
+          tagStyles.label,
+          isBold && styles.bold,
+          maxWidth != null && styles.hasMaxWidth,
+          className,
+        )}
+        data-slot="tag"
+        data-color="accent"
+        data-variant="outline"
+        data-interactive
         style={chipStyle}
       >
         {leftComponent}
@@ -152,3 +133,5 @@ export const LinkChip = ({
     </span>
   );
 };
+
+LinkChip.displayName = "LinkChip";

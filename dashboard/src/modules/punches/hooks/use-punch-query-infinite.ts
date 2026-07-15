@@ -42,7 +42,7 @@ export function useInfinitePunchQuery() {
       ...filters,
       device_sns: deviceSns.length > 0 ? deviceSns : undefined,
       sort_by: sort?.column,
-      order_desc: sort?.direction === "desc" ? true : sort ? false : undefined,
+      sort_order: sort?.direction,
     }),
     [filters, deviceSns, sort],
   );
@@ -86,6 +86,7 @@ export function useInfinitePunchQuery() {
     error: query.error ? String(query.error) : null,
     handleSortChange,
     handleFilterChange,
+    deviceSns,
     setDeviceSns,
     handleClearFilters,
   };

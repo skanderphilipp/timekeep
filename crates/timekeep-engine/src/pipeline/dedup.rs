@@ -143,7 +143,7 @@ mod tests {
         }
         async fn query_punches(
             &self,
-            _filter: &timekeep_core::traits::storage::PunchFilter,
+            _filter: &timekeep_core::PunchFilter,
         ) -> Result<Vec<AttendancePunch>, Error> {
             Ok(vec![])
         }

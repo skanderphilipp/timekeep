@@ -8,5 +8,6 @@ declare const classNames: {
   readonly success: "success";
   readonly warning: "warning";
   readonly danger: "danger";
+  readonly indeterminate: "indeterminate";
 };
 export = classNames;

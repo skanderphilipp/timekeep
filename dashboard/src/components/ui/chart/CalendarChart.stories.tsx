@@ -26,7 +26,7 @@ function generateMonthData(year: number, month: number): CalendarDay[] {
       let value: number;
       let hours: number | null;
 
-      if (roll < 0.70) {
+      if (roll < 0.7) {
         // 70% of days: full attendance
         status = "full";
         value = 4;
@@ -125,11 +125,11 @@ export const ProblematicAttendance: Story = {
           status = "full";
           value = 4;
           hours = 8.0;
-        } else if (roll < 0.50) {
+        } else if (roll < 0.5) {
           status = "late";
           value = 2;
           hours = 7.5;
-        } else if (roll < 0.70) {
+        } else if (roll < 0.7) {
           status = "half";
           value = 3;
           hours = 5.0;

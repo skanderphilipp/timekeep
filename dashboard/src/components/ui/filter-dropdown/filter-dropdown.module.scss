@@ -3,31 +3,7 @@
 // ── Root ─────────────────────────────────────────────────────────────────────
 
 .root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ao-spacing-2);
-}
-
-// ── Toolbar row ──────────────────────────────────────────────────────────────
-
-.toolbar {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-2);
-  justify-content: space-between;
-}
-
-.filterArea {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-2);
-}
-
-.actions {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-2);
-  flex-shrink: 0;
+  position: relative;
 }
 
 // ── Filter button ────────────────────────────────────────────────────────────
@@ -36,7 +12,7 @@
   align-items: center;
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: inline-flex;
@@ -44,57 +20,23 @@
   font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-medium);
   gap: var(--ao-spacing-1_5);
-  height: var(--ao-spacing-9);
+  height: 32px;
   padding: 0 var(--ao-spacing-3);
   transition:
-    border-color 0.15s ease,
-    color 0.15s ease,
-    background 0.15s ease;
+    border-color duration(fast) ease,
+    color duration(fast) ease,
+    background duration(fast) ease;
 
   &:hover {
     border-color: var(--ao-border-color-strong);
     color: var(--ao-font-color-primary);
   }
-}
 
-.filterButtonOpen {
-  background: var(--ao-background-tertiary);
-  border-color: var(--ao-border-color-strong);
-  color: var(--ao-font-color-primary);
-}
-
-// ── Reset button ─────────────────────────────────────────────────────────────
-
-.resetButton {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-tertiary);
-  cursor: pointer;
-  display: inline-flex;
-  font-family: inherit;
-  font-size: var(--ao-font-size-xs);
-  gap: var(--ao-spacing-1);
-  height: var(--ao-spacing-7);
-  padding: 0 var(--ao-spacing-2);
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-
-  &:hover {
+  &[data-open="true"] {
     background: var(--ao-background-tertiary);
+    border-color: var(--ao-border-color-strong);
     color: var(--ao-font-color-primary);
   }
-}
-
-// ── Count ────────────────────────────────────────────────────────────────────
-
-.count {
-  color: var(--ao-font-color-secondary);
-  font-size: var(--ao-font-size-sm);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 // ── Backdrop ─────────────────────────────────────────────────────────────────
@@ -142,7 +84,7 @@
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-radius-sm);
+  border-radius: calc(var(--ao-radius-md) - var(--ao-spacing-1));
   color: var(--ao-font-color-primary);
   cursor: pointer;
   display: flex;
@@ -151,11 +93,11 @@
   gap: var(--ao-spacing-2);
   padding: var(--ao-spacing-1_5) var(--ao-spacing-2);
   text-align: left;
-  transition: background 0.1s ease;
+  transition: background duration(fast) ease;
   width: 100%;
 
   &:hover {
-    background: var(--ao-background-tertiary);
+    background: var(--ao-background-transparent-light);
   }
 
   &::after {
@@ -187,33 +129,30 @@
 
 .backButton {
   align-items: center;
-  background: none;
+  background: var(--ao-background-secondary);
   border: none;
-  border-bottom: 1px solid var(--ao-border-color-light);
+  border-bottom: 1px solid var(--ao-border-color-medium);
+  border-radius: 0;
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: flex;
   font-family: inherit;
   font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
   gap: var(--ao-spacing-2);
   padding: var(--ao-spacing-2) var(--ao-spacing-3);
   text-align: left;
-  transition: color 0.15s ease;
+  transition:
+    color duration(fast) ease,
+    background duration(fast) ease;
   width: 100%;
 
   &:hover {
+    background: var(--ao-background-tertiary);
     color: var(--ao-font-color-primary);
   }
 }
 
 .valueContent {
   padding: var(--ao-spacing-2);
-}
-
-// ── Active filter chips ──────────────────────────────────────────────────────
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ao-spacing-1);
 }

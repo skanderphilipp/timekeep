@@ -3,25 +3,14 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPlus, IconPencil, IconTrash, IconPower } from "@tabler/icons-react";
 
-import {
-  PageHeader,
-  Section,
-  DataTable,
-  Spinner,
-  EmptyState,
-  Badge,
-  Button,
-  IconButton,
-  Dialog,
-  FormActions,
-  ActionGroup,
-  PageError,
-  type DataTableColumn,
-} from "@/components/ui";
+import { Section, DataTable, Badge, Button, IconButton, Dialog, FormActions, ActionGroup, type DataTableColumn } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DataBoundary } from "@/modules/shared/components";
 import { useToast } from "@/infrastructure/toast/toast";
 import { useEndpoints } from "../hooks/use-endpoints";
 import { EndpointForm } from "./endpoint-form";
 import { updateEndpoint, type IntegrationEndpoint } from "@/lib/api";
+import { EndpointListLoading, EndpointListError, EndpointListEmpty } from "../states";
 
 function kindVariant(k: string): "success" | "warning" | "neutral" {
   if (k === "webhook") return "success";
@@ -32,7 +21,8 @@ function kindVariant(k: string): "success" | "warning" | "neutral" {
 /**
  * Integration endpoints view — table, create/edit dialog, delete confirm.
  *
- * Owns all endpoint page state; the page composes this inside PageLayout.
+ * Uses `DataBoundary` for the data pipeline. Local UI state (form, editing,
+ * deleting) stays via `useState` — no cross-component coordination needed.
  */
 export function EndpointsView() {
   const { _ } = useLingui();
@@ -70,6 +60,11 @@ export function EndpointsView() {
     } finally {
       setDeleting(undefined);
     }
+  };
+
+  const openCreateForm = () => {
+    setEditing(undefined);
+    setFormOpen(true);
   };
 
   const columns: DataTableColumn<IntegrationEndpoint, string>[] = useMemo(
@@ -125,32 +120,6 @@ export function EndpointsView() {
     [_],
   );
 
-  if (query.isLoading)
-    return (
-      <>
-        <PageHeader title={_(msg`Integration Endpoints`)} />
-        <Section>
-          <Spinner />
-        </Section>
-      </>
-    );
-
-  if (query.error) {
-    return (
-      <>
-        <PageHeader
-          title={_(msg`Integration Endpoints`)}
-          description={_(
-            msg`Configure where attendance events are delivered — webhooks, Odoo, SAP, Zapier.`,
-          )}
-        />
-        <PageError onRetry={() => query.refetch()} />
-      </>
-    );
-  }
-
-  const endpoints = query.data ?? [];
-
   return (
     <>
       <PageHeader
@@ -159,39 +128,26 @@ export function EndpointsView() {
           msg`Configure where attendance events are delivered — webhooks, Odoo, SAP, Zapier.`,
         )}
         actions={
-          <Button
-            size="sm"
-            icon={<IconPlus size={16} />}
-            onClick={() => {
-              setEditing(undefined);
-              setFormOpen(true);
-            }}
-          >
-            {_(msg`Add Endpoint`)}
-          </Button>
+          !query.isLoading && !query.error ? (
+            <Button size="sm" icon={<IconPlus size={16} />} onClick={openCreateForm}>
+              {_(msg`Add Endpoint`)}
+            </Button>
+          ) : undefined
         }
       />
 
       <Section>
-        {endpoints.length === 0 ? (
-          <EmptyState
-            title={_(msg`No endpoints`)}
-            description={_(msg`Add an endpoint to start sending attendance events.`)}
-            action={
-              <Button
-                icon={<IconPlus size={16} />}
-                onClick={() => {
-                  setEditing(undefined);
-                  setFormOpen(true);
-                }}
-              >
-                {_(msg`Add Endpoint`)}
-              </Button>
-            }
-          />
-        ) : (
-          <DataTable columns={columns} data={endpoints} getRowKey={(e) => e.id} />
-        )}
+        <DataBoundary<IntegrationEndpoint>
+          data={query.data ? query.data : undefined}
+          isLoading={query.isLoading}
+          error={query.error ?? null}
+          onRetry={() => query.refetch()}
+          loadingFallback={<EndpointListLoading />}
+          errorFallback={<EndpointListError onRetry={() => query.refetch()} />}
+          emptyFallback={<EndpointListEmpty onAddEndpoint={openCreateForm} />}
+        >
+          {(endpoints) => <DataTable columns={columns} data={endpoints} getRowKey={(e) => e.id} />}
+        </DataBoundary>
       </Section>
 
       <Dialog

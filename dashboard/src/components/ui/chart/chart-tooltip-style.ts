@@ -26,7 +26,7 @@ export function chartTooltipStyle(t: ChartTooltipTokens): React.CSSProperties {
     color: t.color,
     padding: "6px 10px",
     borderRadius: "4px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+    boxShadow: "var(--ao-shadow-md)",
     fontSize: "12px",
     fontFamily: t.fontFamily,
     lineHeight: 1.4,

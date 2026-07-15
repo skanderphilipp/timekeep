@@ -3,6 +3,7 @@ import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 
 import { Text, Badge, ListItem, EmptyState, Card } from "@/components/ui";
+import styles from "./dashboard-activity-feed.module.scss";
 import type { DashboardRecentEvent } from "@/lib/api";
 
 type DashboardActivityFeedProps = {
@@ -68,27 +69,27 @@ export function DashboardActivityFeed({ events }: DashboardActivityFeedProps) {
   return (
     <Card>
       <Card.Header title={_(msg`Recent Activity`)} />
-      <Card.Content>
+      <Card.Content data-slot="activity-feed-list" className={styles.scrollableContent}>
         {events.map((event, i) => (
-          <ListItem key={`${event.timestamp}-${event.user_pin}-${i}`}>
-            <ListItem.Leading>
-              <Text variant="body" weight="medium">
-                {event.employee_name ?? event.user_pin}
-              </Text>
-              <Text variant="caption" color="tertiary">
-                {event.device_sn}
-              </Text>
-            </ListItem.Leading>
-            <ListItem.Trailing>
-              <Badge variant={statusBadgeVariant(event.status)}>
-                {formatStatus(event.status, _)}
-              </Badge>
-              <Text variant="caption" color="tertiary">
-                {formatTimeAgo(event.timestamp, _)}
-              </Text>
-            </ListItem.Trailing>
-          </ListItem>
-        ))}
+            <ListItem key={`${event.timestamp}-${event.user_pin}-${i}`}>
+              <ListItem.Leading>
+                <Text variant="body" weight="medium">
+                  {event.employee_name ?? event.user_pin}
+                </Text>
+                <Text variant="caption" color="tertiary">
+                  {event.device_sn}
+                </Text>
+              </ListItem.Leading>
+              <ListItem.Trailing>
+                <Badge variant={statusBadgeVariant(event.status)}>
+                  {formatStatus(event.status, _)}
+                </Badge>
+                <Text variant="caption" color="tertiary">
+                  {formatTimeAgo(event.timestamp, _)}
+                </Text>
+              </ListItem.Trailing>
+            </ListItem>
+          ))}
       </Card.Content>
     </Card>
   );
