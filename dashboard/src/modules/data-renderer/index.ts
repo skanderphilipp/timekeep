@@ -34,8 +34,8 @@ export { useCellClickHandler, useTableInstanceId, useTableSort, useTableFilter, 
 export type { FilterDimensionMeta, FilterRenderContext, UseFilterFieldsResult, FacetSearchMeta, UseFacetSearchOptions, UseFacetSearchResult, FacetOptionItem } from "./hooks";
 
 // ── Components ─────────────────────────────────────────────────────────────
-export { DataTableContainer, DataTableFooter, DataTableRow, createCellRenderer, DataListView, ReferenceFacetSelector } from "./components";
-export type { DataListViewProps, ReferenceFacetSelectorProps } from "./components";
+export { DataTableContainer, DataTableFooter, DataTableRow, createCellRenderer, createEditableCellRenderer, DataListView, ReferenceFacetSelector } from "./components";
+export type { DataListViewProps, ReferenceFacetSelectorProps, CellEditingConfig } from "./components";
 
 // ── Filter Renderer ────────────────────────────────────────────────────────
 export { renderFilterDimensions } from "./components/filter-field-renderers";

@@ -1,9 +1,13 @@
 import { useState, useCallback } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react";
+import { msg } from "@lingui/core/macro";
 
 import { useZodForm } from "@/lib/form";
 import { createApiKeyFormSchema, type ApiKeyFormValues } from "../schemas/api-key-form.schema";
-import type { CreateApiKeyRequest, ApiKeyCreatedResponse } from "@/lib/api";
+import { createApiKey, type CreateApiKeyRequest, type ApiKeyCreatedResponse } from "@/lib/api";
+import { QueryKeys } from "@/lib/query-keys";
+import { useToast } from "@/infrastructure/toast/toast";
 
 /**
  * Compute the number of days until expiry from the ExpiryValue.
@@ -25,21 +29,18 @@ export function computeExpiryDays(expiry: NonNullable<ApiKeyFormValues["expiry"]
   return presetDays[expiry.preset] ?? null;
 }
 
-type UseApiKeyFormOptions = {
-  /** Called with the API-ready request. Returns the created key response. */
-  onCreateKey: (req: CreateApiKeyRequest) => Promise<ApiKeyCreatedResponse>;
-};
-
 /**
  * Form state hook for the API key creation dialog.
  *
  * Manages react-hook-form with Zod validation, converts form values to
  * the API request shape, and tracks the created key for display.
+ * Handles the API call internally via TanStack Query mutation.
  */
-export function useApiKeyForm({ onCreateKey }: UseApiKeyFormOptions) {
+export function useApiKeyForm() {
   const { _ } = useLingui();
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const [createdKey, setCreatedKey] = useState<ApiKeyCreatedResponse | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
   const form = useZodForm(createApiKeyFormSchema(_), {
     defaultValues: {
@@ -58,24 +59,28 @@ export function useApiKeyForm({ onCreateKey }: UseApiKeyFormOptions) {
     setCreatedKey(null);
   }, [form]);
 
-  const handleSubmit = form.handleSubmit(async (values: ApiKeyFormValues) => {
-    setSubmitting(true);
-    try {
-      const req: CreateApiKeyRequest = {
-        name: values.name,
-        permissions: values.permissions.join(" "),
-      };
-      const expiryDays = computeExpiryDays(values.expiry);
-      if (expiryDays !== null) {
-        req.expires_in_days = expiryDays;
-      }
-
-      const result = await onCreateKey(req);
+  const mutation = useMutation({
+    mutationFn: (req: CreateApiKeyRequest) => createApiKey(req),
+    onSuccess: (result) => {
       setCreatedKey(result);
-    } finally {
-      setSubmitting(false);
-    }
+      queryClient.invalidateQueries({ queryKey: QueryKeys.apiKeys.list() });
+      toast.success(_(msg`API key created successfully.`));
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  return { form, submitting, createdKey, handleSubmit, reset } as const;
+  const handleSubmit = form.handleSubmit(async (values: ApiKeyFormValues) => {
+    const req: CreateApiKeyRequest = {
+      name: values.name,
+      permissions: values.permissions.join(" "),
+    };
+    const expiryDays = computeExpiryDays(values.expiry);
+    if (expiryDays !== null) {
+      req.expires_in_days = expiryDays;
+    }
+
+    mutation.mutate(req);
+  });
+
+  return { form, isPending: mutation.isPending, createdKey, handleSubmit, reset } as const;
 }

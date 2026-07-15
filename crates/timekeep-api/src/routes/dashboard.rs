@@ -35,7 +35,7 @@ pub(crate) async fn today_summary(
 
     let now = jiff::Timestamp::now();
     let settings = state.storage.get_system_settings().await?;
-    let policy = &settings.work_policy;
+    let org_default = &settings.work_policy;
 
     // Today's date range (midnight to now)
     let today_start = {
@@ -57,6 +57,16 @@ pub(crate) async fn today_summary(
             ..Default::default()
         })
         .await?;
+
+    // ── Resolve per-employee policies for late detection ──
+    let unique_pins: HashSet<&str> = punches.iter().map(|p| p.user_pin.as_str()).collect();
+    let policy_map = resolve_policies_for_pins(
+        &*state.storage,
+        state.employees.as_deref(),
+        &unique_pins,
+        org_default,
+    )
+    .await;
 
     // ── Present / absent / late / on_time ──
     let mut all_users: HashSet<&str> = HashSet::new();
@@ -85,7 +95,14 @@ pub(crate) async fn today_summary(
     };
     let absent = total_employees.saturating_sub(present);
 
-    let late = first_check_in.values().filter(|(_, arrival)| policy.is_late(*arrival)).count();
+    // Late detection uses per-employee policy (department-specific thresholds)
+    let late = first_check_in
+        .iter()
+        .filter(|(pin, (_, arrival))| {
+            let effective = policy_map.get(&pin.to_string()).unwrap_or(org_default);
+            effective.is_late(*arrival)
+        })
+        .count();
     let on_time = first_check_in.len().saturating_sub(late);
 
     let check_ins = punches.iter().filter(|p| p.status == PunchStatus::CheckIn).count();
@@ -212,7 +229,7 @@ pub(crate) async fn report_summary(
 
     let now = jiff::Timestamp::now();
     let settings = state.storage.get_system_settings().await?;
-    let policy = &settings.work_policy;
+    let org_default = &settings.work_policy;
 
     // 1. Resolve date range
     let day_start = {
@@ -233,7 +250,7 @@ pub(crate) async fn report_summary(
 
     let from_date = date_from.to_zoned(jiff::tz::TimeZone::UTC).datetime().date();
     let to_date = date_to.to_zoned(jiff::tz::TimeZone::UTC).datetime().date();
-    let work_days_count = policy.count_working_days(from_date, to_date);
+    let work_days_count = org_default.count_working_days(from_date, to_date);
 
     // 2. Fetch raw data
     let filter = timekeep_core::PunchFilter {
@@ -284,22 +301,91 @@ pub(crate) async fn report_summary(
         }
     }
 
-    // 4. Pure domain computation
-    let work_days = AttendanceCalculator::compute_work_days(&punches, policy);
-    let daily_hours = AttendanceCalculator::aggregate_daily_hours(&work_days);
-    let weekly_hours = AttendanceCalculator::aggregate_weekly_hours(&daily_hours);
-    let status_dist =
-        AttendanceCalculator::compute_status_distribution(&work_days, policy, from_date, to_date);
-    let employees_kpi =
-        AttendanceCalculator::compute_employee_kpis(&work_days, policy, from_date, to_date);
+    // 4. Resolve per-employee policies and group computation
+    let unique_pins: HashSet<&str> = punches.iter().map(|p| p.user_pin.as_str()).collect();
+    let policy_map = resolve_policies_for_pins(
+        &*state.storage,
+        state.employees.as_deref(),
+        &unique_pins,
+        org_default,
+    )
+    .await;
 
-    // 5. Map to DTOs
+    // Group punches by their effective policy for correct per-department computation
+    let mut policy_groups: HashMap<String, Vec<&timekeep_core::model::AttendancePunch>> =
+        HashMap::new();
+    for p in &punches {
+        let policy = policy_map.get(p.user_pin.as_str()).unwrap_or(org_default);
+        // Use a deterministic string key for grouping (serialized policy)
+        let key = format!(
+            "{:02}:{:02}-{:02}:{:02}-{}-{}-{}-{:?}",
+            policy.work_start.hour(),
+            policy.work_start.minute(),
+            policy.work_end.hour(),
+            policy.work_end.minute(),
+            policy.late_threshold_secs,
+            policy.min_seconds_for_present,
+            policy.daily_overtime_after_secs,
+            policy.working_days,
+        );
+        policy_groups.entry(key).or_default().push(p);
+    }
+
+    // 5. Compute per policy group and merge results
+    let mut all_work_days: Vec<timekeep_core::model::work_day::WorkDay> = Vec::new();
+    let mut all_employee_kpis: Vec<timekeep_core::model::attendance_analytics::EmployeeKpi> =
+        Vec::new();
+    let mut total_full_days = 0u64;
+    let mut total_half_days = 0u64;
+    let mut total_absent_days = 0u64;
+
+    for (_policy_key, group_punches) in &policy_groups {
+        let punches_slice: Vec<timekeep_core::model::AttendancePunch> =
+            group_punches.iter().map(|&p| p.clone()).collect();
+        let group_policy = {
+            let first_pin = group_punches.first().map(|p| p.user_pin.as_str()).unwrap_or("");
+            policy_map.get(first_pin).cloned().unwrap_or_else(|| org_default.clone())
+        };
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches_slice, &group_policy);
+        let status_dist = AttendanceCalculator::compute_status_distribution(
+            &work_days,
+            &group_policy,
+            from_date,
+            to_date,
+        );
+        let kpis = AttendanceCalculator::compute_employee_kpis(
+            &work_days,
+            &group_policy,
+            from_date,
+            to_date,
+        );
+
+        total_full_days += status_dist.full_days;
+        total_half_days += status_dist.half_days;
+        total_absent_days += status_dist.absent_days;
+        all_work_days.extend(work_days);
+        all_employee_kpis.extend(kpis);
+    }
+
+    // 6. Aggregate across all policy groups
+    let daily_hours = AttendanceCalculator::aggregate_daily_hours(&all_work_days);
+    let weekly_hours = AttendanceCalculator::aggregate_weekly_hours(&daily_hours);
+
+    // Combined status distribution
+    let combined_status = timekeep_core::model::attendance_analytics::StatusDistribution {
+        full_days: total_full_days,
+        half_days: total_half_days,
+        absent_days: total_absent_days,
+    };
+
+    // 7. Map to DTOs
     let daily_hours_dto: Vec<DailyHoursBreakdown> =
         daily_hours.iter().map(DailyHoursBreakdown::from).collect();
     let weekly_hours_dto: Vec<WeeklyHours> = weekly_hours.iter().map(WeeklyHours::from).collect();
-    let status_dto = status_distribution_to_response(&status_dist);
+    let status_dto = status_distribution_to_response(&combined_status);
 
-    let employees: Vec<EmployeeReportKpi> = employees_kpi
+    let employees: Vec<EmployeeReportKpi> = all_employee_kpis
         .iter()
         .map(|ek| {
             let mut kpi = EmployeeReportKpi::from(ek);
@@ -332,7 +418,7 @@ pub(crate) async fn report_summary(
         work_days: work_days_count,
         avg_seconds_per_day,
         overtime_seconds,
-        absence_rate: status_dist.absence_rate_pct(),
+        absence_rate: combined_status.absence_rate_pct(),
         daily_hours: daily_hours_dto,
         weekly_hours: weekly_hours_dto,
         status_distribution: status_dto,
@@ -341,4 +427,59 @@ pub(crate) async fn report_summary(
     };
 
     Ok(Json(ApiEnvelope::success(summary)))
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+
+/// Resolve effective work policies for a set of user PINs.
+///
+/// For each PIN:
+/// 1. Look up the employee by PIN → get their department
+/// 2. Look up the department → check for custom work_policy
+/// 3. Fall back to `org_default` if no employee or no department policy
+async fn resolve_policies_for_pins(
+    storage: &dyn timekeep_core::traits::Storage,
+    employees: Option<&dyn timekeep_core::traits::employee_store::EmployeeStore>,
+    pins: &HashSet<&str>,
+    org_default: &timekeep_core::model::work_policy::WorkPolicy,
+) -> HashMap<String, timekeep_core::model::work_policy::WorkPolicy> {
+    let mut map = HashMap::new();
+
+    // Batch-load all departments once
+    let departments = match storage.list_departments().await {
+        Ok(depts) => depts,
+        Err(_) => {
+            // Fallback: all pins use org default
+            for pin in pins {
+                map.insert(pin.to_string(), org_default.clone());
+            }
+            return map;
+        },
+    };
+
+    // Build a name→policy lookup from departments
+    let dept_policies: HashMap<&str, &timekeep_core::model::work_policy::WorkPolicy> = departments
+        .iter()
+        .filter_map(|d| d.work_policy.as_ref().map(|p| (d.name.as_str(), p)))
+        .collect();
+
+    for pin in pins {
+        let policy = if let Some(repo) = employees {
+            match repo.find_employee_by_pin(pin).await {
+                Ok(Some(emp)) => match &emp.department {
+                    Some(dept_name) => dept_policies
+                        .get(dept_name.as_str())
+                        .map(|&p| p.clone())
+                        .unwrap_or_else(|| org_default.clone()),
+                    None => org_default.clone(),
+                },
+                _ => org_default.clone(),
+            }
+        } else {
+            org_default.clone()
+        };
+        map.insert(pin.to_string(), policy);
+    }
+
+    map
 }

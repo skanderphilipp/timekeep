@@ -1,7 +1,7 @@
 import { useMemo, useCallback, type ReactNode } from "react";
 import { DataTableContext } from "../contexts/data-table-context";
 import { DataTableFooter } from "./data-table-footer";
-import { createCellRenderer } from "./data-table-cell";
+import { createEditableCellRenderer, type CellEditingConfig } from "./create-editable-cell-renderer";
 import { useTableSort } from "../hooks/use-table-sort";
 import { useTableFilter } from "../hooks/use-table-filter";
 import { useTableInstanceId, useCellClickHandler } from "../hooks/use-cell-click-handler";
@@ -33,6 +33,21 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
     isFetchingNextPage: boolean;
     fetchNextPage: () => void;
   };
+  /**
+   * Inline editing configuration. When provided, columns marked `editable: true`
+   * become click-to-edit cells with Tab navigation.
+   *
+   * @example
+   * ```ts
+   * <DataTableContainer
+   *   editingConfig={{
+   *     onPersist: (rowId, field, value) => editMutation.mutate({ rowId, field, value }),
+   *     editableColumns: ["name", "department"],
+   *   }}
+   * />
+   * ```
+   */
+  editingConfig?: CellEditingConfig;
 };
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -41,13 +56,12 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
  * DataTableContainer — bridges the data-renderer architecture onto the
  * existing DataTable component.
  *
- * Converts ColumnDefinition[] → DataTableColumn[] via createCellRenderer,
+ * Converts ColumnDefinition[] → DataTableColumn[] via createEditableCellRenderer,
  * injects the context hierarchy, handles entity routing on cell clicks,
  * and adds infinite scroll / pagination support.
  *
- * Error/loading/empty display is delegated to the wrapping `DataBoundary`
- * (provided by the parent `PageShell`). DataTableContainer focuses only on
- * column conversion, cell routing, and scroll/pagination composition.
+ * When `editingConfig` is provided, columns with `editable: true` become
+ * inline-editable (Phase 4).
  */
 export function DataTableContainer<T extends Record<string, unknown>>({
   columns,
@@ -65,10 +79,12 @@ export function DataTableContainer<T extends Record<string, unknown>>({
   onRowClick,
   className,
   infiniteScroll,
+  editingConfig,
 }: DataTableContainerProps<T>) {
   const { _ } = useLingui();
   const instanceId = useTableInstanceId();
   const handleCellClick = useCellClickHandler();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { sorts: _internalSorts, toggleSort: _internalToggleSort } = useTableSort(instanceId);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { filters: _filters } = useTableFilter(instanceId);
@@ -84,8 +100,6 @@ export function DataTableContainer<T extends Record<string, unknown>>({
         case "employee_name":
           handleCellClick("user", recordId);
           break;
-        // For all other column types (timestamp, status, verify_method, user_pin, etc.),
-        // clicking opens the parent entity type's detail (e.g., punch detail).
         default:
           handleCellClick(entityType, recordId);
           break;
@@ -106,10 +120,10 @@ export function DataTableContainer<T extends Record<string, unknown>>({
             sortable: col.metadata?.isSortable ?? false,
             width: col.width,
             cellClassName: col.cellClassName,
-            cell: createCellRenderer(col, onCellClick, getRowKey),
+            cell: createEditableCellRenderer(col, onCellClick, getRowKey, editingConfig),
           }),
         ),
-    [columns, onCellClick, getRowKey],
+    [columns, onCellClick, getRowKey, editingConfig],
   );
 
   const sortState = externalSortState

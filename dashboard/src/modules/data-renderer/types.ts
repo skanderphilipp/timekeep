@@ -149,6 +149,11 @@ export type ColumnDefinition<T extends FieldMetadata = FieldMetadata> = FieldDef
    * Receives the row data and an onClick handler.
    */
   render?: (row: unknown) => React.ReactNode;
+  /**
+   * When true, this column supports click-to-edit inline editing.
+   * Requires `editingConfig` to be provided by the table container.
+   */
+  editable?: boolean;
 };
 
 // ── Sort state ───────────────────────────────────────────────────────────

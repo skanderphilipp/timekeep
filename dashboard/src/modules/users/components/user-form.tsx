@@ -26,7 +26,7 @@ type UserFormProps = {
 export function UserForm({ user, onSuccess }: UserFormProps) {
   const { _ } = useLingui();
   const isEditing = !!user;
-  const { form, isSaving, handleSubmit } = useUserForm(user, onSuccess);
+  const { form, isSaving, handleSubmit } = useUserForm(user?.id, onSuccess);
 
   // Memoize the form schema definition (labels are i18n'd)
   const formSchema = createUserFormDef(_, isEditing);

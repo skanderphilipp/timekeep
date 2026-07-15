@@ -30,7 +30,7 @@ import type { ApiKey } from "@/lib/api";
 export function ApiKeysView() {
   const { _ } = useLingui();
   const toast = useToast();
-  const { query, createKey, revokeKey } = useApiKeys();
+  const { query, revokeKey } = useApiKeys();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
@@ -114,8 +114,6 @@ export function ApiKeysView() {
       <CreateApiKeyDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        onCreateKey={(req) => createKey.mutateAsync(req)}
-        isCreating={createKey.isPending}
       />
 
       <ConfirmDialog

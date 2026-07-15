@@ -571,6 +571,14 @@ impl ZkConnection {
         let device_name = self.get_string_param("~DeviceName").await.unwrap_or_default();
         let mac = self.get_string_param("MAC").await.unwrap_or_default();
 
+        // Read device-level metadata: branch and location are set via device menu
+        // or CMD_OPTIONS_WRQ. They represent the organizational placement of the
+        // device (e.g. "HQ Floor 1", "Warehouse B"). These are display-only in our
+        // domain — organizational grouping for sync is handled by DeviceGroup in
+        // our config model.
+        let branch = self.get_string_param("~Branch").await.ok().filter(|s| !s.is_empty());
+        let location = self.get_string_param("~Location").await.ok().filter(|s| !s.is_empty());
+
         // Get firmware version
         let fw_response = self.send_and_receive(CMD_GET_VERSION, vec![]).await?;
         let fw_version = if fw_response.reply_code == CMD_ACK_OK
@@ -606,8 +614,8 @@ impl ZkConnection {
             last_sync_at: None,
             last_sync_cursor: None,
             label: None,
-            location: None,
-            branch: None,
+            location,
+            branch,
             installed_at: None,
             notes: None,
         })

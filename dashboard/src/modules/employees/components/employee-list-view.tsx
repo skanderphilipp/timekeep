@@ -14,6 +14,8 @@ import { EmployeeCalendarView } from "./employee-calendar-view";
  *
  * All state and logic delegated to {@link useEmployeeListPage}.
  * Supports table and calendar views via {@link DataListView} ViewPicker.
+ *
+ * Inline editing: name and department columns are click-to-edit (Phase 4).
  */
 export function EmployeeListView() {
   const { _ } = useLingui();
@@ -50,6 +52,7 @@ export function EmployeeListView() {
           viewOptions={page.viewOptions}
           currentView={page.currentView}
           onViewChange={page.onViewChange}
+          editingConfig={page.editingConfig}
           renderCustomView={(view) =>
             view === "calendar" ? (
               <EmployeeCalendarView

@@ -5,3 +5,4 @@
 //! detecting cross-day anomalies, computing aggregated statistics.
 
 pub mod attendance_calculator;
+pub mod policy_resolver;

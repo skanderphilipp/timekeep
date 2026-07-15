@@ -89,8 +89,9 @@ pub use query::{ListParams, ListResult, SortOrder, sanitize_search};
 
 pub use traits::{
     ApiKeyStore, AuditLogStore, BiometricDevice, ConfigProvider, DashboardUserStore,
-    DeviceConfigStore, DeviceInfoStore, DeviceProvider, DeviceUserStore, Distributor,
-    EmployeeStore, EndpointStore, OutboxStore, PunchStore, SearchStore, SettingsStore, Storage,
+    DepartmentStore, DeviceConfigStore, DeviceInfoStore, DeviceProvider, DeviceUserStore,
+    Distributor, EmployeeStore, EndpointStore, OutboxStore, PunchStore, SearchStore, SettingsStore,
+    Storage,
 };
 
 pub use events::{DomainEvent, EventBus};

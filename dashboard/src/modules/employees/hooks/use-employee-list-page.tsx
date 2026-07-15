@@ -5,6 +5,7 @@ import { IconTable, IconCalendar } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
 import { AppRoute } from "@/lib/navigation";
+import { QueryKeys } from "@/lib/query-keys";
 import { useEmployeeList } from "./use-employee-list";
 import { useEmployeeFacetOptions } from "./use-employee-facet-options";
 import { useSchemaColumns } from "@/modules/data-renderer/hooks/use-schema-columns";
@@ -15,6 +16,14 @@ import {
 import type { FilterRenderContext } from "@/modules/data-renderer";
 import type { ViewType } from "@/modules/shared/components";
 import type { Employee } from "@/lib/api/employees";
+import { updateEmployee } from "@/lib/api/employees";
+import { useInlineEditMutation } from "@/hooks";
+
+/**
+ * Fields that support inline editing in the employee list table.
+ * Each value is the `ColumnDefinition.id` (maps to the schema field name).
+ */
+const EDITABLE_EMPLOYEE_FIELDS = new Set(["name", "department"]);
 
 /**
  * Employee list page orchestration hook.
@@ -33,10 +42,40 @@ export function useEmployeeListPage() {
 
   const [currentView, setCurrentView] = useState<ViewType>("table");
 
+  // ── Inline editing mutation (Phase 4) ──────────────────────────────
+
+  const editEmployee = useInlineEditMutation<Employee>({
+    queryKey: QueryKeys.employees.list(),
+    getRowKey: (e) => e.id,
+    mutationFn: ({ rowId, field, value }) =>
+      updateEmployee(rowId, { [field]: value as string }),
+  });
+
   // ── Schema-driven columns ───────────────────────────────────────────
 
   const { columns: schemaColumns, isLoading: schemaLoading } = useSchemaColumns("employee");
-  const columns = schemaColumns.length > 0 ? schemaColumns : [];
+
+  // Mark editable fields on columns
+  const columns = useMemo(
+    () =>
+      schemaColumns.map((col) => ({
+        ...col,
+        editable: EDITABLE_EMPLOYEE_FIELDS.has(col.fieldId),
+      })),
+    [schemaColumns],
+  );
+
+  // ── Editing config passed to DataTableContainer ─────────────────────
+
+  const editingConfig = useMemo(
+    () => ({
+      onPersist: (rowId: string, field: string, value: unknown) => {
+        editEmployee.mutate({ rowId, field, value });
+      },
+      editableColumns: Array.from(EDITABLE_EMPLOYEE_FIELDS),
+    }),
+    [editEmployee.mutate],
+  );
 
   // ── Filter state ────────────────────────────────────────────────────
 
@@ -173,6 +212,9 @@ export function useEmployeeListPage() {
 
     // Row interaction
     onRowClick: handleRowClick,
+
+    // Inline editing (Phase 4)
+    editingConfig,
 
     // Derived
     hasEmployees,

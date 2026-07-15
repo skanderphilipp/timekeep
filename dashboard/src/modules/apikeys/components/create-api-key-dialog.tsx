@@ -16,13 +16,10 @@ import {
 } from "@/components/ui";
 import { useApiKeyForm } from "../hooks/use-api-key-form";
 import { createApiKeyFormDef } from "../schemas/api-key-form.schema";
-import type { CreateApiKeyRequest, ApiKeyCreatedResponse } from "@/lib/api";
 
 type CreateApiKeyDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateKey: (req: CreateApiKeyRequest) => Promise<ApiKeyCreatedResponse>;
-  isCreating: boolean;
 };
 
 /**
@@ -31,9 +28,9 @@ type CreateApiKeyDialogProps = {
  * Uses {@link SchemaForm} to render the form from the Zod schema + UI metadata
  * in `createApiKeyFormDef`. No manual field declarations, no raw useState.
  */
-export function CreateApiKeyDialog({ open, onOpenChange, onCreateKey }: CreateApiKeyDialogProps) {
+export function CreateApiKeyDialog({ open, onOpenChange }: CreateApiKeyDialogProps) {
   const { _ } = useLingui();
-  const { form, submitting, createdKey, handleSubmit, reset } = useApiKeyForm({ onCreateKey });
+  const { form, isPending, createdKey, handleSubmit, reset } = useApiKeyForm();
 
   const formSchema = createApiKeyFormDef(_);
 
@@ -41,8 +38,6 @@ export function CreateApiKeyDialog({ open, onOpenChange, onCreateKey }: CreateAp
     onOpenChange(false);
     reset();
   }, [onOpenChange, reset]);
-
-  const isPending = submitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

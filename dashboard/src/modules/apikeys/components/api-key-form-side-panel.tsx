@@ -6,10 +6,8 @@ import { SidePanelFormContainer } from "@/infrastructure/side-panel/components/s
 import { Form, SchemaForm, Input } from "@/components/ui";
 import { useApiKeyForm } from "../hooks/use-api-key-form";
 import { createApiKeyFormDef } from "../schemas/api-key-form.schema";
-import type { CreateApiKeyRequest, ApiKeyCreatedResponse } from "@/lib/api";
 
 type ApiKeyFormSidePanelProps = {
-  onCreateKey: (req: CreateApiKeyRequest) => Promise<ApiKeyCreatedResponse>;
   onClose: () => void;
 };
 
@@ -20,9 +18,9 @@ type ApiKeyFormSidePanelProps = {
  *
  * Delegates to `useApiKeyForm` (shared hook) + `SchemaForm` (UI library).
  */
-export function ApiKeyFormSidePanel({ onCreateKey, onClose }: ApiKeyFormSidePanelProps) {
+export function ApiKeyFormSidePanel({ onClose }: ApiKeyFormSidePanelProps) {
   const { _ } = useLingui();
-  const { form, submitting, createdKey, handleSubmit, reset } = useApiKeyForm({ onCreateKey });
+  const { form, isPending, createdKey, handleSubmit, reset } = useApiKeyForm();
   const formSchema = createApiKeyFormDef(_);
 
   const handleClose = useCallback(() => {
@@ -49,9 +47,9 @@ export function ApiKeyFormSidePanel({ onCreateKey, onClose }: ApiKeyFormSidePane
     <SidePanelFormContainer
       title={_(msg`Create API Key`)}
       description={_(msg`Generate a new API key with specific permissions and expiry.`)}
-      isPending={submitting}
+      isPending={isPending}
       onCancel={handleClose}
-      saveLabel={submitting ? _(msg`Creating…`) : _(msg`Create Key`)}
+      saveLabel={isPending ? _(msg`Creating…`) : _(msg`Create Key`)}
     >
       <Form id="side-panel-form" onSubmit={handleSubmit}>
         <SchemaForm formSchema={formSchema} form={form} />

@@ -95,6 +95,8 @@ export const QueryKeys = {
   endpoints: {
     /** Integration endpoint list. */
     list: () => ["endpoints"] as const,
+    /** Single integration endpoint by ID. */
+    detail: (id: string) => ["endpoint", id] as const,
     /** Also used by settings page under a different key. */
     settings: () => ["integration-endpoints"] as const,
   },

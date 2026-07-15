@@ -13,7 +13,10 @@ import { DetailViewSkeleton } from "./detail-views/detail-view-skeleton";
 // ── Side panel form imports (Phase 2b) ────────────────────────────────────
 
 import { DepartmentFormSidePanel } from "@/modules/departments/components/department-form-side-panel";
+import { EndpointFormSidePanel } from "@/modules/integrations/components/endpoint-form-side-panel";
 import { UserFormSidePanel } from "@/modules/users/components/user-form-side-panel";
+import { ApiKeyFormSidePanel } from "@/modules/apikeys/components/api-key-form-side-panel";
+import { DeviceRegisterWizard } from "@/modules/devices/components/device-register-wizard/device-register-root";
 
 /**
  * Routes between entity detail views AND edit/create forms
@@ -98,21 +101,18 @@ function SidePanelFormRouter({
         />
       );
 
-    // ── API Key / Endpoint (wired) ──────────────────────────────────────
+    // ── API Key (wired) ────────────────────────────────────────────────
     case "api_key":
       return (
-        /**
-         * TODO(ENTERPRISE): Wire ApiKeyFormSidePanel with createKey mutation.
-         *
-         * Phase: Side Panel Editing (Phase 2b)
-         * Impact: API key creation via side panel shows placeholder.
-         * Fix: Import ApiKeyFormSidePanel and pass onCreateKey callback
-         *       from the API key module's mutation hook.
-         */
-        <SidePanelFormPlaceholder
-          title={entry.title}
-          entityType={entry.entityType}
-          mode={mode}
+        <ApiKeyFormSidePanel onClose={close} />
+      );
+
+    // ── Endpoint (wired) ────────────────────────────────────────────────
+    case "endpoint":
+      return (
+        <EndpointFormSidePanel
+          endpointId={entityId}
+          onClose={close}
         />
       );
 
@@ -125,8 +125,11 @@ function SidePanelFormRouter({
         />
       );
 
-    // ── Device (Phase 3 — Guided Flow) ──────────────────────────────────
+    // ── Device (Phase 3 — Guided Flow wizard) ───────────────────────────
     case "device":
+      return <DeviceRegisterWizard onClose={close} />;
+
+    // ── Unwired entities ────────────────────────────────────────────────
     case "employee":
     case "audit":
     case "punch":

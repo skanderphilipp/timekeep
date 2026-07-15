@@ -164,6 +164,19 @@ in the database. No environment variables required.
 | OpenTelemetry distributed tracing (opt-in) | ✅ |
 | Health check endpoint (`/api/health`) | ✅ |
 
+### Search
+
+| Feature | Status |
+|---------|--------|
+| Full-text search across employees (name, PIN, department, external ID) | ✅ |
+| Full-text search across punches (employee, device, status) | ✅ |
+| Global cross-entity search (`GET /api/search?q=term`) | ✅ |
+| Typo-tolerant fuzzy matching (Levenshtein distance 1) | ✅ |
+| BM25 relevance ranking | ✅ |
+| Embedded Tantivy engine (no external service required) | ✅ |
+| Event-driven index updates (real-time sync from domain events) | ✅ |
+| Graceful fallback to SQL LIKE when Tantivy is not configured | ✅ |
+
 ### Dashboard
 
 | Feature | Status |
@@ -198,16 +211,18 @@ Scanner ◀──TCP pull─── SDK Poller            │
                   │ normalize   │    │  Webhook (HMAC)   │
                   │   → dedup   │    │  Odoo (JSON-2)    │
                   │   → enrich  │    │  Custom (trait)   │
-                  │   → store   │    │                   │
-                  │   → distrib.│    └───────────────────┘
+                  │   → store   │    └───────────────────┘
+                  │   → distrib.│
                   └──────┬──────┘
                          │
-                  ┌──────▼──────┐
-                  │   Storage   │
-                  │             │
-                  │  SQLite     │
-                  │  PostgreSQL │
-                  └─────────────┘
+          ┌──────────────┼──────────────┐
+          │              │              │
+   ┌──────▼──────┐ ┌─────▼──────┐ ┌─────▼──────────┐
+   │   Storage   │ │ Search     │ │  REST API      │
+   │             │ │ Indexer    │ │  :3000 (mgmt)  │
+   │  SQLite     │ │ (Tantivy)  │ │  :3001 (int)   │
+   │  PostgreSQL │ │ Fuzzy+BM25 │ │  :8085 (ADMS)  │
+   └─────────────┘ └────────────┘ └────────────────┘
 ```
 
 ### Data Flow
@@ -244,6 +259,7 @@ ZKTeco scanners provide two independent data paths, both running simultaneously:
 | `timekeep-zkteco` | ZKTeco provider — ADMS push server + SDK pull (TCP binary protocol) |
 | `timekeep-storage-sqlite` | SQLite storage backend with WAL mode |
 | `timekeep-storage-postgres` | PostgreSQL storage backend with connection pooling |
+| `timekeep-storage-tantivy` | Tantivy full-text search engine (embedded, no external service) |
 | `timekeep-dist-webhook` | Generic webhook distributor with HMAC signatures |
 | `timekeep-dist-odoo` | Odoo JSON-2 API distributor |
 | `timekeep-api` | REST API server (management + integration + Swagger UI) |
@@ -270,6 +286,16 @@ All configuration is via environment variables. No config files.
 | `TIMEKEEP_DB_PATH` | `./timekeep.db` | SQLite database file path |
 | `TIMEKEEP_DB_BACKEND` | `sqlite` | Storage backend: `sqlite` or `postgres` |
 | `DATABASE_URL` | — | PostgreSQL connection string (when `postgres` backend) |
+
+### Search (Tantivy)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TIMEKEEP_SEARCH_INDEX_PATH` | `<db_dir>/search/` | Tantivy full-text index directory. Set empty to disable. |
+
+When enabled (default), Timekeep indexes employees and punches for typo-tolerant
+full-text search with BM25 ranking. The index is stored alongside the database.
+When disabled (empty value), all search endpoints fall back to SQL `LIKE`.
 
 ### Network
 

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { TopBar, ViewPicker, DataBoundary, type ViewType } from "@/modules/shared/components";
 import { DataTableContainer } from "./data-table-container";
+import { type CellEditingConfig } from "./create-editable-cell-renderer";
 import type { ColumnDefinition } from "../types";
 import type { EntityType } from "@/types/entities";
 
@@ -36,9 +37,6 @@ export type DataListViewProps<T extends Record<string, unknown>> = {
 	/**
 	 * Required for `layout="grid"`. Renders one card per row.
 	 * Receives the row data; should return a React element (card, tile, etc.).
-	 *
-	 * @example
-	 * renderCard={(device) => <DeviceCard key={device.id} device={device} />}
 	 */
 	renderCard?: (row: T) => ReactNode;
 
@@ -56,6 +54,12 @@ export type DataListViewProps<T extends Record<string, unknown>> = {
 	onColumnToggle?: (columnId: string) => void;
 	/** Row click handler. Table mode only. */
 	onRowClick?: (row: T) => void;
+
+	/**
+	 * Inline editing configuration (Phase 4). When provided, columns marked
+	 * `editable: true` become click-to-edit cells with Tab navigation.
+	 */
+	editingConfig?: CellEditingConfig;
 
 	// ── Data ────────────────────────────────────────────────────────────
 
@@ -88,11 +92,6 @@ export type DataListViewProps<T extends Record<string, unknown>> = {
 	/**
 	 * Render a custom view for non-table layouts (timeline, calendar, etc.).
 	 * Receives the active view type. Only called when `currentView !== "table"`.
-	 * When provided, `DataListView` renders TopBar + this custom content
-	 * instead of the default table/grid.
-	 *
-	 * @example
-	 * renderCustomView={(view) => view === "timeline" ? <TimelineView /> : null}
 	 */
 	renderCustomView?: (view: ViewType) => ReactNode;
 
@@ -111,51 +110,6 @@ export type DataListViewProps<T extends Record<string, unknown>> = {
 
 // ── Component ──────────────────────────────────────────────────────────
 
-/**
- * DataListView — generic list page shell.
- *
- * Supports two layouts:
- * - **table** (default): TopBar + DataBoundary + DataTableContainer
- * - **grid**: TopBar + DataBoundary + Grid (with `renderCard`)
- *
- * Every list page in the app should use this component to ensure
- * consistent toolbar layout and state handling.
- *
- * @example Table mode
- * ```tsx
- * <DataListView
- *   entity="punch"
- *   columns={columns}
- *   data={punches}
- *   getRowKey={(p) => p.id}
- *   isLoading={isLoading}
- *   error={error}
- *   onRetry={refetch}
- *   searchValue={search}
- *   onSearchChange={setSearch}
- *   filterFields={filterFields}
- *   activeFilters={activeFilters}
- *   hasActiveFilters={hasActive}
- *   onClearFilters={clear}
- * />
- * ```
- *
- * @example Grid mode
- * ```tsx
- * <DataListView
- *   layout="grid"
- *   entity="device"
- *   data={devices}
- *   getRowKey={(d) => d.serial_number}
- *   isLoading={isLoading}
- *   error={error}
- *   onRetry={refetch}
- *   searchValue={search}
- *   onSearchChange={setSearch}
- *   renderCard={(device) => <DeviceCard key={device.serial_number} device={device} />}
- * />
- * ```
- */
 export function DataListView<T extends Record<string, unknown>>({
 	entity,
 	layout = "table",
@@ -185,6 +139,7 @@ export function DataListView<T extends Record<string, unknown>>({
 	infiniteScroll,
 	resultCount,
 	onRowClick,
+	editingConfig,
 }: DataListViewProps<T>) {
 	const { _ } = useLingui();
 
@@ -195,29 +150,20 @@ export function DataListView<T extends Record<string, unknown>>({
 	const hasColumnToggle = !isGrid && columnOptions && columnOptions.length > 0 && onColumnToggle;
 	const hasChips = activeFilters && activeFilters.length > 0;
 
-	// ── Build right-side actions ───────────────────────────────────────
-
 	const rightActions: ReactNode[] = [];
 
 	if (hasFilterDropdown) {
 		rightActions.push(<FilterDropdown key="filters" fields={filterFields!} />);
 	}
-
 	if (hasColumnToggle) {
 		rightActions.push(
 			<TableOptionsDropdown
 				key="columns"
-				columns={columnOptions!.map((o) => ({
-					id: o.id,
-					label: o.label,
-					visible: o.visible,
-				}))}
+				columns={columnOptions!.map((o) => ({ id: o.id, label: o.label, visible: o.visible }))}
 				onToggle={onColumnToggle!}
 			/>,
 		);
 	}
-
-	// ── Default empty state ───────────────────────────────────────────────
 
 	const defaultEmpty = (
 		<EmptyState
@@ -230,15 +176,12 @@ export function DataListView<T extends Record<string, unknown>>({
 		/>
 	);
 
-	// ── Render ────────────────────────────────────────────────────────────
+	const memoizedError = useMemo(
+		() => (error ? new Error(error) : null),
+		[error],
+	);
 
-// Memoize error object to avoid triggering DataBoundary's useEffect on every render.
-const memoizedError = useMemo(
-	() => (error ? new Error(error) : null),
-	[error],
-);
-
-return (
+	return (
 		<>
 			<TopBar
 				left={
@@ -261,49 +204,47 @@ return (
 				resultCount={resultCount}
 				hasActiveFilters={hasActiveFilters}
 				onClear={onClearFilters}
-				/>
+			/>
 
-				{/* Custom view (timeline, calendar, etc.) — renders instead of the table */}
-				{currentView !== "table" && renderCustomView ? (
-					renderCustomView(currentView)
-				) : (
-					<DataBoundary<T>
-				data={isLoading ? undefined : data}
-				isLoading={isLoading}
-				error={memoizedError}
-				onRetry={onRetry}
-				emptyFallback={emptyState ?? defaultEmpty}
-			>
-				{(boundaryData) => {
-					if (isGrid) {
-						if (!renderCard) {
-							return defaultEmpty;
+			{currentView !== "table" && renderCustomView ? (
+				renderCustomView(currentView)
+			) : (
+				<DataBoundary<T>
+					data={isLoading ? undefined : data}
+					isLoading={isLoading}
+					error={memoizedError}
+					onRetry={onRetry}
+					emptyFallback={emptyState ?? defaultEmpty}
+				>
+					{(boundaryData) => {
+						if (isGrid) {
+							if (!renderCard) return defaultEmpty;
+							return (
+								<Grid>
+									{boundaryData.map((row) => {
+										const key = getRowKey(row);
+										return <div key={key}>{renderCard(row)}</div>;
+									})}
+								</Grid>
+							);
 						}
-						return (
-							<Grid>
-								{boundaryData.map((row) => {
-									const key = getRowKey(row);
-									return <div key={key}>{renderCard(row)}</div>;
-								})}
-							</Grid>
-						);
-					}
 
-					return (
-						<DataTableContainer
-							columns={columns ?? []}
-							data={boundaryData}
-							getRowKey={getRowKey}
-							entityType={entity}
-							onSortChange={onSortChange}
-							onRowClick={onRowClick}
-							infiniteScroll={infiniteScroll}
-						/>
-					);
-				}}
-			</DataBoundary>
-		)}
-	</>
+						return (
+							<DataTableContainer
+								columns={columns ?? []}
+								data={boundaryData}
+								getRowKey={getRowKey}
+								entityType={entity}
+								onSortChange={onSortChange}
+								onRowClick={onRowClick}
+								infiniteScroll={infiniteScroll}
+								editingConfig={editingConfig}
+							/>
+						);
+					}}
+				</DataBoundary>
+			)}
+		</>
 	);
 }
 

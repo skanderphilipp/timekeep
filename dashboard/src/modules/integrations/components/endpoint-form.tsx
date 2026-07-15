@@ -19,8 +19,8 @@ type EndpointFormProps = {
  */
 export function EndpointForm({ endpoint, onSuccess }: EndpointFormProps) {
   const { _ } = useLingui();
-  const { form, isSaving, handleSubmit } = useEndpointForm(endpoint, onSuccess);
-  const isEdit = !!endpoint;
+  const existingId = endpoint?.id;
+  const { form, isEdit, isSaving, handleSubmit } = useEndpointForm(existingId, onSuccess);
 
   const formSchema = createEndpointFormDef(_, isEdit);
 

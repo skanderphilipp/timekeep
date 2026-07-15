@@ -65,6 +65,11 @@ export function fetchEndpoints(): Promise<IntegrationEndpoint[]> {
   return apiGet<IntegrationEndpoint[]>("endpoints").json();
 }
 
+/** Fetch a single integration endpoint by ID. Requires Viewer+. */
+export function fetchEndpoint(id: string): Promise<IntegrationEndpoint> {
+  return apiGet<IntegrationEndpoint>(`endpoints/${encodeURIComponent(id)}`).json();
+}
+
 /** Create a new integration endpoint. Requires Admin. */
 export function createEndpoint(req: CreateEndpointRequest): Promise<IntegrationEndpoint> {
   return apiPost<IntegrationEndpoint>("endpoints", req).json();

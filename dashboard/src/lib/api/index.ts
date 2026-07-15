@@ -215,6 +215,7 @@ export {
   INTEGRATION_KINDS,
   createIntegrationKinds,
   fetchEndpoints,
+  fetchEndpoint,
   createEndpoint,
   updateEndpoint,
   deleteEndpoint,

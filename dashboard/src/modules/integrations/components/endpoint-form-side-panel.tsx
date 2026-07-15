@@ -5,10 +5,9 @@ import { SidePanelFormContainer } from "@/infrastructure/side-panel/components/s
 import { Form, SchemaForm } from "@/components/ui";
 import { useEndpointForm } from "../hooks/use-endpoint-form";
 import { createEndpointFormDef } from "../schemas/endpoint-form.schema";
-import type { IntegrationEndpoint } from "@/lib/api";
 
 type EndpointFormSidePanelProps = {
-  endpoint?: IntegrationEndpoint;
+  endpointId?: string;
   onClose: () => void;
 };
 
@@ -17,10 +16,9 @@ type EndpointFormSidePanelProps = {
  *
  * Delegates to `useEndpointForm` (shared hook) + `SchemaForm` (UI library).
  */
-export function EndpointFormSidePanel({ endpoint, onClose }: EndpointFormSidePanelProps) {
+export function EndpointFormSidePanel({ endpointId, onClose }: EndpointFormSidePanelProps) {
   const { _ } = useLingui();
-  const isEdit = !!endpoint;
-  const { form, isSaving, handleSubmit } = useEndpointForm(endpoint, onClose);
+  const { form, isEdit, isLoadingEndpoint, isSaving, handleSubmit } = useEndpointForm(endpointId, onClose);
   const formSchema = createEndpointFormDef(_, isEdit);
 
   return (
@@ -31,6 +29,7 @@ export function EndpointFormSidePanel({ endpoint, onClose }: EndpointFormSidePan
           ? _(msg`Update integration endpoint configuration.`)
           : _(msg`Add a new webhook or API endpoint for integrations.`)
       }
+      isLoading={isEdit && isLoadingEndpoint}
       isPending={isSaving}
       onCancel={onClose}
       saveLabel={isEdit ? _(msg`Save Changes`) : _(msg`Create Endpoint`)}
