@@ -155,8 +155,12 @@ impl Storage for NoopStorage {
         pin: &str,
         name: &str,
         privilege: Option<i32>,
+        card_number: Option<&str>,
+        group_num: Option<i32>,
+        timezone: Option<i32>,
+        password_hash: Option<&str>,
     ) -> Result<(), Error> {
-        let _ = (device_sn, pin, name, privilege);
+        let _ = (device_sn, pin, name, privilege, card_number, group_num, timezone, password_hash);
         Ok(())
     }
     async fn get_user_name(&self, pin: &str) -> Result<Option<String>, Error> {

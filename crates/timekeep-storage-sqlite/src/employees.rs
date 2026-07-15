@@ -422,20 +422,22 @@ impl SqliteStorage {
     async fn facet_employee_departments(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         let limit = query.clamped_limit() as i64;
         let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
-            "SELECT department as value, COALESCE(department, 'No Department') as label, CAST(COUNT(*) AS INTEGER) as count
-             FROM employees WHERE department IS NOT NULL AND department != ''",
+            "SELECT e.department as value, COALESCE(e.department, 'No Department') as label, CAST(COUNT(*) AS INTEGER) as count
+             FROM employees e WHERE e.department IS NOT NULL AND e.department != ''",
         );
 
         if let Some(ref search) = query.search
             && !search.is_empty()
         {
             let pattern = timekeep_core::sanitize_search(search);
-            builder.push(" AND department LIKE ");
+            builder.push(" AND e.department LIKE ");
             builder.push_bind(pattern);
             builder.push(" ESCAPE '\\'");
         }
 
-        builder.push(" GROUP BY department ORDER BY count DESC LIMIT ");
+        self.push_generic_filters(&mut builder, &query.context, "e");
+
+        builder.push(" GROUP BY e.department ORDER BY count DESC LIMIT ");
         builder.push_bind(limit);
 
         let rows: Vec<FacetRow> = builder
@@ -456,19 +458,23 @@ impl SqliteStorage {
         })
     }
 
-    async fn facet_employee_active(&self, _query: &FacetQuery) -> Result<FacetGroup, Error> {
+    async fn facet_employee_active(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         use timekeep_core::facet::ACTIVE_VALUES;
 
         let mut options = Vec::with_capacity(ACTIVE_VALUES.len());
         for (value, label) in ACTIVE_VALUES {
             let bool_val: i32 = if *value == "true" { 1 } else { 0 };
-            let count: i64 = sqlx::query_scalar(
-                "SELECT CAST(COUNT(*) AS INTEGER) FROM employees WHERE active = ?",
-            )
-            .bind(bool_val)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| Error::storage(format!("facet employee active {value}: {e}")))?;
+            let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
+                "SELECT CAST(COUNT(*) AS INTEGER) FROM employees e WHERE e.active = ",
+            );
+            builder.push_bind(bool_val);
+            self.push_generic_filters(&mut builder, &query.context, "e");
+
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet employee active {value}: {e}")))?;
 
             options.push(FacetOption {
                 value: value.to_string(),

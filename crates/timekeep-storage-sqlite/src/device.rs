@@ -445,18 +445,22 @@ impl SqliteStorage {
         Ok(groups)
     }
 
-    async fn facet_device_vendors(&self, _query: &FacetQuery) -> Result<FacetGroup, Error> {
+    async fn facet_device_vendors(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         use timekeep_core::facet::DEVICE_VENDOR_VALUES;
 
         let mut options = Vec::with_capacity(DEVICE_VENDOR_VALUES.len());
         for (value, label) in DEVICE_VENDOR_VALUES {
-            let count: i64 = sqlx::query_scalar(
-                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_configs WHERE vendor = ?",
-            )
-            .bind(value)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| Error::storage(format!("facet device vendor {value}: {e}")))?;
+            let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
+                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_configs d WHERE d.vendor = ",
+            );
+            builder.push_bind(value);
+            self.push_generic_filters(&mut builder, &query.context, "d");
+
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet device vendor {value}: {e}")))?;
 
             options.push(FacetOption {
                 value: value.to_string(),
@@ -476,18 +480,22 @@ impl SqliteStorage {
         })
     }
 
-    async fn facet_device_statuses(&self, _query: &FacetQuery) -> Result<FacetGroup, Error> {
+    async fn facet_device_statuses(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         use timekeep_core::facet::DEVICE_STATUS_VALUES;
 
         let mut options = Vec::with_capacity(DEVICE_STATUS_VALUES.len());
         for (value, label) in DEVICE_STATUS_VALUES {
-            let count: i64 = sqlx::query_scalar(
-                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_info WHERE status = ?",
-            )
-            .bind(value)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| Error::storage(format!("facet device status {value}: {e}")))?;
+            let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
+                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_info di WHERE di.status = ",
+            );
+            builder.push_bind(value);
+            self.push_generic_filters(&mut builder, &query.context, "di");
+
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet device status {value}: {e}")))?;
 
             options.push(FacetOption {
                 value: value.to_string(),
@@ -507,19 +515,23 @@ impl SqliteStorage {
         })
     }
 
-    async fn facet_device_push_enabled(&self, _query: &FacetQuery) -> Result<FacetGroup, Error> {
+    async fn facet_device_push_enabled(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         use timekeep_core::facet::PUSH_ENABLED_VALUES;
 
         let mut options = Vec::with_capacity(PUSH_ENABLED_VALUES.len());
         for (value, label) in PUSH_ENABLED_VALUES {
             let bool_val: i32 = if *value == "true" { 1 } else { 0 };
-            let count: i64 = sqlx::query_scalar(
-                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_configs WHERE push_enabled = ?",
-            )
-            .bind(bool_val)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| Error::storage(format!("facet push_enabled {value}: {e}")))?;
+            let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
+                "SELECT CAST(COUNT(*) AS INTEGER) FROM device_configs d WHERE d.push_enabled = ",
+            );
+            builder.push_bind(bool_val);
+            self.push_generic_filters(&mut builder, &query.context, "d");
+
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet push_enabled {value}: {e}")))?;
 
             options.push(FacetOption {
                 value: value.to_string(),

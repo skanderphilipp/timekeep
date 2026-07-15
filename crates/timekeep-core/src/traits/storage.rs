@@ -18,7 +18,6 @@ use crate::Error;
 use crate::facet::{FacetGroup, FacetQuery};
 use crate::model::audit::AuditEvent;
 use crate::model::device_event::DeviceEvent;
-use crate::model::employee::EmployeeId;
 use crate::model::pending_delivery::PendingDelivery;
 use crate::model::{AttendancePunch, Device, DeviceConfig, ProviderInfo};
 use crate::query::ListResult;
@@ -133,8 +132,12 @@ pub trait Storage: Send + Sync {
         pin: &str,
         name: &str,
         privilege: Option<i32>,
+        card_number: Option<&str>,
+        group_num: Option<i32>,
+        timezone: Option<i32>,
+        password_hash: Option<&str>,
     ) -> Result<(), Error> {
-        let _ = (device_sn, pin, name, privilege);
+        let _ = (device_sn, pin, name, privilege, card_number, group_num, timezone, password_hash);
         Ok(())
     }
 
@@ -421,5 +424,49 @@ pub trait Storage: Send + Sync {
     /// Move a delivery that has exhausted retries to the dead letter table.
     async fn move_to_dead_letter(&self, _id: &str, _last_error: Option<&str>) -> Result<(), Error> {
         Ok(())
+    }
+
+    // ── Department management ────────────────────────────────────
+
+    /// List all departments.
+    async fn list_departments(&self) -> Result<Vec<crate::model::department::Department>, Error> {
+        Ok(vec![])
+    }
+
+    /// Get a single department by ID.
+    async fn get_department(
+        &self,
+        _id: &str,
+    ) -> Result<Option<crate::model::department::Department>, Error> {
+        Ok(None)
+    }
+
+    /// Get a department by name.
+    async fn get_department_by_name(
+        &self,
+        _name: &str,
+    ) -> Result<Option<crate::model::department::Department>, Error> {
+        Ok(None)
+    }
+
+    /// Create a new department.
+    async fn create_department(
+        &self,
+        _department: &crate::model::department::Department,
+    ) -> Result<(), Error> {
+        Err(Error::storage("department storage not implemented for this backend"))
+    }
+
+    /// Update an existing department.
+    async fn update_department(
+        &self,
+        _department: &crate::model::department::Department,
+    ) -> Result<(), Error> {
+        Err(Error::storage("department storage not implemented for this backend"))
+    }
+
+    /// Delete a department by ID.
+    async fn delete_department(&self, _id: &str) -> Result<(), Error> {
+        Err(Error::storage("department storage not implemented for this backend"))
     }
 }

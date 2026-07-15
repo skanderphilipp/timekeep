@@ -45,8 +45,18 @@ impl SqliteStorage {
                 .map_err(|e| Error::storage(format!("get system settings: {e}")))?;
 
         match row {
-            Some((json,)) => serde_json::from_str(&json)
-                .map_err(|e| Error::storage(format!("deserialize system settings: {e}"))),
+            Some((json,)) => match serde_json::from_str::<timekeep_core::SystemSettings>(&json) {
+                Ok(settings) => Ok(settings),
+                Err(e) => {
+                    tracing::warn!(
+                        error = %e,
+                        "failed to deserialize system settings — falling back to defaults. \
+                         This usually means the stored settings use an older schema. \
+                         Saving current defaults will overwrite the stale data on next upsert."
+                    );
+                    Ok(timekeep_core::SystemSettings::default())
+                },
+            },
             None => Ok(timekeep_core::SystemSettings::default()),
         }
     }

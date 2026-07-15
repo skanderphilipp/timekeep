@@ -76,7 +76,7 @@ impl FacetRow {
 // ── Facet helpers ───────────────────────────────────────────────
 
 impl SqliteStorage {
-    /// Build the WHERE clause fragment for contextual facet counts.
+    /// Build the WHERE clause fragment for contextual facet counts (punch-specific).
     fn push_context_clauses<'a>(
         &self,
         builder: &mut QueryBuilder<'a, sqlx::Sqlite>,
@@ -111,6 +111,39 @@ impl SqliteStorage {
         if context.anomalies_only.unwrap_or(false) {
             builder
                 .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+        }
+        // Also apply generic filters (e.g., from other entities that share punch context)
+        self.push_generic_filters(builder, context, "p");
+    }
+
+    /// Apply generic entity-agnostic context filters as SQL WHERE clauses.
+    ///
+    /// The `table_alias` is used to qualify column names (e.g. "p" for punches,
+    /// "d" for device_configs, "a" for audit_logs, "e" for employees).
+    /// Pass an empty string for no table prefix.
+    pub(crate) fn push_generic_filters<'a>(
+        &self,
+        builder: &mut QueryBuilder<'a, sqlx::Sqlite>,
+        context: &'a timekeep_core::FacetContext,
+        table_alias: &str,
+    ) {
+        let prefix = if table_alias.is_empty() { String::new() } else { format!("{table_alias}.") };
+
+        for (key, values) in &context.filters {
+            if values.is_empty() {
+                continue;
+            }
+            if values.len() == 1 {
+                builder.push(format!(" AND {prefix}{key} = "));
+                builder.push_bind(values[0].clone());
+            } else {
+                builder.push(format!(" AND {prefix}{key} IN ("));
+                let mut separated = builder.separated(", ");
+                for v in values {
+                    separated.push_bind(v.clone());
+                }
+                separated.push_unseparated(")");
+            }
         }
     }
 
@@ -382,6 +415,19 @@ impl SqliteStorage {
         if filter.anomalies_only.unwrap_or(false) {
             builder
                 .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+        }
+        // ── Batch ID lookup (used by Tantivy search cross-reference) ──
+        if let Some(ids) = &filter.ids {
+            if ids.is_empty() {
+                // Empty ID list: return nothing (can't match any punch)
+                return Ok(vec![]);
+            }
+            builder.push(" AND p.id IN (");
+            let mut separated = builder.separated(", ");
+            for id in ids {
+                separated.push_bind(id);
+            }
+            separated.push_unseparated(")");
         }
         if let Some(search) = &filter.params.search
             && !search.is_empty()
@@ -1184,5 +1230,45 @@ pub(crate) mod tests {
         assert_eq!(results.len(), 2);
         // Should be sorted by timestamp DESC (default)
         assert!(results[0].timestamp.as_second() > results[1].timestamp.as_second());
+    }
+
+    /// Verify the ids filter (batch lookup via IN clause) works correctly.
+    #[tokio::test]
+    async fn test_query_by_ids() {
+        let storage = crate::test_storage().await;
+
+        let p1 = test_punch("145", "SN001", 1_752_129_600, PunchStatus::CheckIn);
+        let p2 = test_punch("146", "SN001", 1_752_129_601, PunchStatus::CheckOut);
+        let p3 = test_punch("147", "SN002", 1_752_129_602, PunchStatus::CheckIn);
+
+        storage.store_punch(&p1).await.unwrap();
+        storage.store_punch(&p2).await.unwrap();
+        storage.store_punch(&p3).await.unwrap();
+
+        // Fetch only p1 and p3 by ID
+        let filter =
+            PunchFilter { ids: Some(vec![p1.id.clone(), p3.id.clone()]), ..Default::default() };
+        let results = storage.query_punches(&filter).await.unwrap();
+
+        assert_eq!(results.len(), 2);
+
+        let ids: Vec<&str> = results.iter().map(|p| p.id.as_str()).collect();
+        assert!(ids.contains(&p1.id.as_str()));
+        assert!(ids.contains(&p3.id.as_str()));
+        assert!(!ids.contains(&p2.id.as_str()));
+    }
+
+    /// Verify that an empty ids filter returns no results.
+    #[tokio::test]
+    async fn test_query_by_empty_ids_returns_nothing() {
+        let storage = crate::test_storage().await;
+
+        let p1 = test_punch("145", "SN001", 1_752_129_600, PunchStatus::CheckIn);
+        storage.store_punch(&p1).await.unwrap();
+
+        let filter = PunchFilter { ids: Some(vec![]), ..Default::default() };
+        let results = storage.query_punches(&filter).await.unwrap();
+
+        assert!(results.is_empty());
     }
 }

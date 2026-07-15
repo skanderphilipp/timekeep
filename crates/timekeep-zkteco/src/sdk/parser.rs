@@ -65,7 +65,7 @@ pub fn parse_attendance_record(data: &[u8], device_sn: &str) -> Option<Attendanc
 
 /// Parse a 72-byte ZK8 user record.
 ///
-/// Layout:
+/// Layout (matching the encoder in `protocol/encoding.rs`):
 /// ```text
 /// offset  size  description
 /// 0       2     user_sn (u16 LE)
@@ -73,9 +73,13 @@ pub fn parse_attendance_record(data: &[u8], device_sn: &str) -> Option<Attendanc
 /// 3       8     password (ASCII, null-padded)
 /// 11      24    name (ASCII, null-padded)
 /// 35      4     card_number (u32 LE)
-/// 39      7     group (ASCII, null-padded)
-/// 46      2     reserved
-/// 48      24    user_id / PIN (ASCII, null-padded)
+/// 39      1     group number (1-99)
+/// 40      2     user TZ flag (0 = use group timezones)
+/// 42      2     TZ1
+/// 44      2     TZ2
+/// 46      2     TZ3
+/// 48      9     user_id / PIN (ASCII, null-padded)
+/// 57      15    padding (zeros)
 /// ```
 pub fn parse_user_record_72(data: &[u8]) -> Option<User> {
     if data.len() < 72 {
@@ -84,19 +88,30 @@ pub fn parse_user_record_72(data: &[u8]) -> Option<User> {
 
     let uid = u16::from_le_bytes([data[0], data[1]]);
     let privilege = data[2];
-    let password = encoding::parse_name(&data[3..11]);
+    let password_raw = encoding::parse_name(&data[3..11]);
     let name = encoding::parse_name(&data[11..35]);
-    let _card = u32::from_le_bytes([data[35], data[36], data[37], data[38]]);
-    let _group = encoding::parse_name(&data[39..46]);
-    let user_id = encoding::parse_user_id(&data[48..72]);
+    let card_u32 = u32::from_le_bytes([data[35], data[36], data[37], data[38]]);
+    let group = data[39];
+    // TZ fields at offsets 40-47 are captured as a single u16 (the user TZ flag)
+    // Individual TZ1/TZ2/TZ3 are device-level timezone registers, not per-user.
+    let timezone_flag = u16::from_le_bytes([data[40], data[41]]);
+    let user_id = encoding::parse_user_id(&data[48..57]);
+
+    let card_number = if card_u32 > 0 { Some(card_u32.to_string()) } else { None };
+    let group = if group > 0 { Some(group) } else { None };
+    let password = if password_raw.is_empty() { None } else { Some(password_raw) };
+    let timezone = if timezone_flag > 0 { Some(timezone_flag) } else { None };
 
     Some(User {
         internal_sn: uid,
         pin: user_id,
         name,
         privilege,
-        card_number: None,
-        has_password: !password.is_empty(),
+        card_number,
+        group,
+        timezone,
+        password_raw: password.clone(),
+        has_password: password.is_some(),
         fingerprint_count: 0,
         has_face: false,
     })
@@ -124,20 +139,28 @@ pub fn parse_user_record_28(data: &[u8]) -> Option<User> {
 
     let uid = u16::from_le_bytes([data[0], data[1]]);
     let privilege = data[2];
-    let password = encoding::parse_name(&data[3..8]);
+    let password_raw = encoding::parse_name(&data[3..8]);
     let name = encoding::parse_name(&data[8..16]);
-    let _card = u32::from_le_bytes([data[16], data[17], data[18], data[19]]);
-    let _group = data[20];
-    let _tz = u16::from_le_bytes([data[21], data[22]]);
+    let card_u32 = u32::from_le_bytes([data[16], data[17], data[18], data[19]]);
+    let group = data[20];
+    let tz = u16::from_le_bytes([data[21], data[22]]);
     let user_id_raw = u32::from_le_bytes([data[24], data[25], data[26], data[27]]);
+
+    let card_number = if card_u32 > 0 { Some(card_u32.to_string()) } else { None };
+    let group = if group > 0 { Some(group) } else { None };
+    let password = if password_raw.is_empty() { None } else { Some(password_raw) };
+    let timezone = if tz > 0 { Some(tz) } else { None };
 
     Some(User {
         internal_sn: uid,
         pin: user_id_raw.to_string(),
         name,
         privilege,
-        card_number: None,
-        has_password: !password.is_empty(),
+        card_number,
+        group,
+        timezone,
+        password_raw: password.clone(),
+        has_password: password.is_some(),
         fingerprint_count: 0,
         has_face: false,
     })
@@ -431,9 +454,11 @@ mod tests {
         let name_bytes = name.as_bytes();
         let copy_len = name_bytes.len().min(24);
         buf[11..11 + copy_len].copy_from_slice(&name_bytes[..copy_len]);
-        // PIN at offset 48-71 (24 bytes)
+        // group at offset 39 (1 = default)
+        buf[39] = 1;
+        // PIN at offset 48-56 (9 bytes)
         let pin_bytes = pin.as_bytes();
-        let copy_len = pin_bytes.len().min(24);
+        let copy_len = pin_bytes.len().min(9);
         buf[48..48 + copy_len].copy_from_slice(&pin_bytes[..copy_len]);
         buf
     }
@@ -448,6 +473,8 @@ mod tests {
         assert_eq!(user.name, "Ali Zuhair");
         assert_eq!(user.privilege, 0);
         assert!(!user.has_password);
+        assert_eq!(user.group, Some(1), "default group should be captured");
+        assert!(user.card_number.is_none(), "no card set");
     }
 
     #[test]
@@ -480,6 +507,11 @@ mod tests {
 
         let user = parse_user_record_72(&record).expect("should parse");
         assert!(user.has_password);
+        assert_eq!(
+            user.password_raw.as_deref(),
+            Some("secret1"),
+            "password content should be preserved"
+        );
     }
 
     #[test]
@@ -509,6 +541,23 @@ mod tests {
         assert_eq!(user.pin, "145");
         assert_eq!(user.name, "Ali");
         assert_eq!(user.privilege, 0);
+        assert!(user.card_number.is_none(), "no card set");
+        assert!(user.group.is_none(), "no group set");
+        assert!(!user.has_password);
+    }
+
+    #[test]
+    fn test_parse_user_record_28_with_card_and_group() {
+        let mut record = make_user_record_28(7, 145, "Ali", 0);
+        // Card number at offset 16-19 (u32 LE = 12345678)
+        let card: u32 = 12345678;
+        record[16..20].copy_from_slice(&card.to_le_bytes());
+        // Group at offset 20
+        record[20] = 3;
+
+        let user = parse_user_record_28(&record).expect("should parse");
+        assert_eq!(user.card_number.as_deref(), Some("12345678"));
+        assert_eq!(user.group, Some(3));
     }
 
     #[test]

@@ -19,7 +19,7 @@ use crate::BiometricDevice;
 use crate::Error;
 use crate::events::EventBus;
 use crate::model::{DeviceConfig, DeviceProbe, ProviderCapabilities, ProviderInfo};
-use crate::provider_manifest::ProviderManifest;
+use crate::provider_manifest::{DeviceCreateFn, DeviceProbeFn, ProviderManifest};
 use crate::traits::DeviceProvider;
 
 use async_trait::async_trait;
@@ -274,10 +274,10 @@ struct ManifestProvider {
     display_name: &'static str,
     capabilities: ProviderCapabilities,
     default_port: u16,
-    create_fn: fn(DeviceConfig, EventBus) -> Box<dyn BiometricDevice>,
+    create_fn: DeviceCreateFn,
     // Probe is optional — manifests can provide a custom probe or default
     // to a simple TCP-connect based detection.
-    probe_fn: Option<fn(&str, u16) -> Result<DeviceProbe, Error>>,
+    probe_fn: Option<DeviceProbeFn>,
 }
 
 impl ManifestProvider {

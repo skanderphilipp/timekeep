@@ -10,6 +10,8 @@
 
 pub mod api_keys;
 pub mod audit;
+pub mod dashboard;
+pub mod departments;
 pub mod device;
 pub mod device_users;
 pub mod employees;
@@ -20,7 +22,11 @@ pub mod settings;
 
 use async_trait::async_trait;
 use sqlx::postgres::{PgPool, PgPoolOptions};
-use timekeep_core::{Error, FacetQuery, PunchFilter, model::AttendancePunch, traits::Storage};
+use timekeep_core::{
+    Error, FacetQuery, PunchFilter,
+    model::{AttendancePunch, Department},
+    traits::Storage,
+};
 
 /// PostgreSQL-backed attendance storage.
 pub struct PostgresStorage {
@@ -64,6 +70,18 @@ impl Storage for PostgresStorage {
     ) -> Result<Vec<timekeep_core::FacetGroup>, Error> {
         self.punch_facets(query).await
     }
+    async fn device_facets(
+        &self,
+        query: &FacetQuery,
+    ) -> Result<Vec<timekeep_core::FacetGroup>, Error> {
+        self.device_facets(query).await
+    }
+    async fn employee_facets(
+        &self,
+        query: &FacetQuery,
+    ) -> Result<Vec<timekeep_core::FacetGroup>, Error> {
+        self.employee_facets(query).await
+    }
     async fn latest_punch_for_device(
         &self,
         device_sn: &str,
@@ -90,8 +108,11 @@ impl Storage for PostgresStorage {
     async fn list_device_configs(&self) -> Result<Vec<timekeep_core::DeviceConfig>, Error> {
         self.list_device_configs().await
     }
-    async fn delete_device_config(&self, serial_number: &str) -> Result<(), Error> {
-        self.delete_device_config(serial_number).await
+    async fn list_device_configs_filtered(
+        &self,
+        filter: &timekeep_core::DeviceFilter,
+    ) -> Result<timekeep_core::ListResult<timekeep_core::DeviceConfig>, Error> {
+        self.list_device_configs_filtered(filter).await
     }
     async fn upsert_device_info(&self, device: &timekeep_core::Device) -> Result<(), Error> {
         self.upsert_device_info(device).await
@@ -102,6 +123,9 @@ impl Storage for PostgresStorage {
     ) -> Result<Option<timekeep_core::Device>, Error> {
         self.get_device_info(serial_number).await
     }
+    async fn delete_device_config(&self, serial_number: &str) -> Result<(), Error> {
+        self.delete_device_config(serial_number).await
+    }
 
     // device_users.rs
     async fn upsert_user(
@@ -110,8 +134,22 @@ impl Storage for PostgresStorage {
         pin: &str,
         name: &str,
         privilege: Option<i32>,
+        card_number: Option<&str>,
+        group_num: Option<i32>,
+        timezone: Option<i32>,
+        password_hash: Option<&str>,
     ) -> Result<(), Error> {
-        self.upsert_user(device_sn, pin, name, privilege).await
+        self.upsert_user(
+            device_sn,
+            pin,
+            name,
+            privilege,
+            card_number,
+            group_num,
+            timezone,
+            password_hash,
+        )
+        .await
     }
     async fn get_user_name(&self, pin: &str) -> Result<Option<String>, Error> {
         self.get_user_name(pin).await
@@ -135,6 +173,39 @@ impl Storage for PostgresStorage {
     }
     async fn list_providers(&self) -> Result<Vec<timekeep_core::ProviderInfo>, Error> {
         self.list_providers().await
+    }
+    async fn get_system_settings(&self) -> Result<timekeep_core::SystemSettings, Error> {
+        self.get_system_settings().await
+    }
+    async fn upsert_system_settings(
+        &self,
+        settings: &timekeep_core::SystemSettings,
+    ) -> Result<(), Error> {
+        self.upsert_system_settings(settings).await
+    }
+    async fn list_endpoints(&self) -> Result<Vec<timekeep_core::IntegrationEndpoint>, Error> {
+        self.list_endpoints().await
+    }
+    async fn list_endpoints_filtered(
+        &self,
+        filter: &timekeep_core::EndpointFilter,
+    ) -> Result<timekeep_core::ListResult<timekeep_core::IntegrationEndpoint>, Error> {
+        self.list_endpoints_filtered(filter).await
+    }
+    async fn create_endpoint(
+        &self,
+        endpoint: &timekeep_core::IntegrationEndpoint,
+    ) -> Result<(), Error> {
+        self.create_endpoint(endpoint).await
+    }
+    async fn update_endpoint(
+        &self,
+        endpoint: &timekeep_core::IntegrationEndpoint,
+    ) -> Result<(), Error> {
+        self.update_endpoint(endpoint).await
+    }
+    async fn delete_endpoint(&self, id: &str) -> Result<(), Error> {
+        self.delete_endpoint(id).await
     }
 
     // api_keys.rs
@@ -167,6 +238,64 @@ impl Storage for PostgresStorage {
     ) -> Result<timekeep_core::ListResult<timekeep_core::DeviceEvent>, Error> {
         self.query_device_events(filter).await
     }
+    async fn count_device_events(
+        &self,
+        filter: &timekeep_core::DeviceEventFilter,
+    ) -> Result<u64, Error> {
+        self.count_device_events(filter).await
+    }
+    async fn record_audit(&self, event: &timekeep_core::AuditEvent) -> Result<(), Error> {
+        self.record_audit(event).await
+    }
+    async fn query_audit_logs(
+        &self,
+        filter: &timekeep_core::AuditFilter,
+    ) -> Result<timekeep_core::ListResult<timekeep_core::AuditEvent>, Error> {
+        self.query_audit_logs(filter).await
+    }
+    async fn audit_facets(
+        &self,
+        query: &FacetQuery,
+    ) -> Result<Vec<timekeep_core::FacetGroup>, Error> {
+        self.audit_facets(query).await
+    }
+
+    // dashboard.rs
+    async fn create_dashboard_user(
+        &self,
+        user: &timekeep_core::DashboardUser,
+    ) -> Result<(), Error> {
+        self.create_dashboard_user(user).await
+    }
+    async fn find_dashboard_user_by_username(
+        &self,
+        username: &str,
+    ) -> Result<Option<timekeep_core::DashboardUser>, Error> {
+        self.find_dashboard_user_by_username(username).await
+    }
+    async fn list_dashboard_users(
+        &self,
+        params: &timekeep_core::ListParams,
+    ) -> Result<timekeep_core::ListResult<timekeep_core::DashboardUser>, Error> {
+        self.list_dashboard_users(params).await
+    }
+    async fn update_dashboard_user(
+        &self,
+        user: &timekeep_core::DashboardUser,
+    ) -> Result<(), Error> {
+        self.update_dashboard_user(user).await
+    }
+    async fn delete_dashboard_user(&self, id: &str) -> Result<(), Error> {
+        self.delete_dashboard_user(id).await
+    }
+    async fn update_dashboard_user_password(
+        &self,
+        id: &str,
+        password_hash: &str,
+        salt: &str,
+    ) -> Result<(), Error> {
+        self.update_dashboard_user_password(id, password_hash, salt).await
+    }
 
     // outbox.rs
     async fn enqueue_pending_delivery(
@@ -191,6 +320,26 @@ impl Storage for PostgresStorage {
     }
     async fn move_to_dead_letter(&self, id: &str, last_error: Option<&str>) -> Result<(), Error> {
         self.move_to_dead_letter(id, last_error).await
+    }
+
+    // departments.rs
+    async fn list_departments(&self) -> Result<Vec<Department>, Error> {
+        self.list_departments().await
+    }
+    async fn get_department(&self, id: &str) -> Result<Option<Department>, Error> {
+        self.get_department(id).await
+    }
+    async fn get_department_by_name(&self, name: &str) -> Result<Option<Department>, Error> {
+        self.get_department_by_name(name).await
+    }
+    async fn create_department(&self, department: &Department) -> Result<(), Error> {
+        self.create_department(department).await
+    }
+    async fn update_department(&self, department: &Department) -> Result<(), Error> {
+        self.update_department(department).await
+    }
+    async fn delete_department(&self, id: &str) -> Result<(), Error> {
+        self.delete_department(id).await
     }
 }
 

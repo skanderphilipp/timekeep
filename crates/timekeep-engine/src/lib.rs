@@ -275,6 +275,40 @@ impl Engine {
                 }
             },
             _other => {
+                // Persist ADMS-pushed user lists to local device-user store
+                if let DomainEvent::DeviceUsersReceived { device_sn, users } = event {
+                    let count = users.len();
+                    for storage in &self.storages {
+                        for user in users {
+                            if let Err(e) = storage
+                                .upsert_user(
+                                    device_sn,
+                                    &user.pin,
+                                    &user.name,
+                                    Some(user.privilege as i32),
+                                    user.card_number.as_deref(),
+                                    user.group.map(|g| g as i32),
+                                    user.timezone.map(|t| t as i32),
+                                    user.password_raw.as_deref(),
+                                )
+                                .await
+                            {
+                                tracing::warn!(
+                                    device = %device_sn,
+                                    pin = %user.pin,
+                                    error = %e,
+                                    "failed to persist ADMS user"
+                                );
+                            }
+                        }
+                    }
+                    tracing::info!(
+                        device = %device_sn,
+                        count = count,
+                        "persisted ADMS-pushed user list"
+                    );
+                }
+
                 // Auto-register devices discovered via ADMS push
                 if let DomainEvent::DeviceDiscovered { probe } = event {
                     let config = timekeep_core::DeviceConfig {

@@ -101,15 +101,40 @@ pub fn parse_users(body: &str, _device_sn: &str) -> Vec<User> {
         let mut pin = String::new();
         let mut name = String::new();
         let mut privilege = 0u8;
+        let mut card_number: Option<String> = None;
+        let mut group: Option<u8> = None;
+        let mut password_raw: Option<String> = None;
+        let mut timezone: Option<u16> = None;
 
         // Parse key=value pairs separated by tab
         for part in line.split('\t') {
             if let Some((key, value)) = part.split_once('=') {
+                let v = value.trim();
                 match key.trim() {
-                    "PIN" => pin = value.trim().to_string(),
-                    "Name" => name = value.trim().to_string(),
-                    "Privilege" => {
-                        privilege = value.trim().parse().unwrap_or(0);
+                    "PIN" => pin = v.to_string(),
+                    "Name" => name = v.to_string(),
+                    "Privilege" | "Pri" => {
+                        privilege = v.parse().unwrap_or(0);
+                    },
+                    "Card" => {
+                        if !v.is_empty() {
+                            card_number = Some(v.to_string());
+                        }
+                    },
+                    "Grp" | "Group" => {
+                        if let Ok(g) = v.parse::<u8>() {
+                            group = if g > 0 { Some(g) } else { None };
+                        }
+                    },
+                    "Password" | "Passwd" => {
+                        if !v.is_empty() {
+                            password_raw = Some(v.to_string());
+                        }
+                    },
+                    "TZ" | "TimeZone" => {
+                        if let Ok(t) = v.parse::<u16>() {
+                            timezone = if t > 0 { Some(t) } else { None };
+                        }
                     },
                     _ => {},
                 }
@@ -117,13 +142,17 @@ pub fn parse_users(body: &str, _device_sn: &str) -> Vec<User> {
         }
 
         if !pin.is_empty() {
+            let has_password = password_raw.is_some();
             users.push(User {
-                internal_sn: 0, // Not available via ADMS
+                internal_sn: 0, // Not available via ADMS text protocol
                 pin,
                 name,
                 privilege,
-                card_number: None,
-                has_password: false,
+                card_number,
+                group,
+                timezone,
+                password_raw: password_raw.clone(),
+                has_password,
                 fingerprint_count: 0,
                 has_face: false,
             });

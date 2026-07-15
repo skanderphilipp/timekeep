@@ -12,6 +12,7 @@ pub mod endpoint_store;
 pub mod outbox_store;
 pub mod provider_registry;
 pub mod punch_store;
+pub mod search_store;
 pub mod settings_store;
 pub mod storage;
 
@@ -30,5 +31,6 @@ pub use endpoint_store::EndpointStore;
 pub use outbox_store::OutboxStore;
 pub use provider_registry::DeviceProvider;
 pub use punch_store::PunchStore;
+pub use search_store::SearchStore;
 pub use settings_store::SettingsStore;
 pub use storage::Storage;

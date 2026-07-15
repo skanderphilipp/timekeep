@@ -61,6 +61,10 @@ pub enum DomainEvent {
     /// Bulk user sync completed for a device.
     UsersBulkSynced { device_sn: String, pushed: u32, deleted: u32, failed: u32, duration_ms: u64 },
 
+    /// Device pushed its complete user list via ADMS (USERINFO table).
+    /// The handler should upsert these into the local device-users store.
+    DeviceUsersReceived { device_sn: String, users: Vec<User> },
+
     /// A specific user sync to a device failed.
     UserSyncFailed { device_sn: String, employee_pin: String, error: String },
 
@@ -95,6 +99,8 @@ pub enum DomainEvent {
     // ── Employee lifecycle events ─────────────────────────────
     /// A new employee was registered in the system.
     EmployeeCreated { pin: String, name: String },
+    /// An existing employee was updated (name, department, external_id changed).
+    EmployeeUpdated { id: String, name: String, pin: String },
     /// An employee was deactivated (soft-delete).
     EmployeeDeactivated { pin: String },
     /// An employee was enrolled on a specific device.
@@ -127,6 +133,14 @@ pub enum DomainEvent {
         failed: u32,
         duration_ms: u64,
     },
+
+    // ── Department lifecycle events ───────────────────────────
+    /// A new department was created.
+    DepartmentCreated { id: String, name: String },
+    /// A department was updated (name or policy changed).
+    DepartmentUpdated { id: String, name: String },
+    /// A department was deleted.
+    DepartmentDeleted { id: String },
 }
 
 impl DomainEvent {
@@ -149,6 +163,7 @@ impl DomainEvent {
             Self::DeviceToDeviceSyncRequested { .. } => "device_to_device_sync_requested",
             Self::DeviceResyncRequested { .. } => "device_resync_requested",
             Self::UsersBulkSynced { .. } => "users_bulk_synced",
+            Self::DeviceUsersReceived { .. } => "device_users_received",
             Self::UserSyncFailed { .. } => "user_sync_failed",
             Self::OperationLogReceived { .. } => "operation_log_received",
             Self::DeviceCommandEnqueueRequested { .. } => "device_command_enqueue_requested",
@@ -160,6 +175,7 @@ impl DomainEvent {
             Self::DeviceFirmwareUpdated { .. } => "device_firmware_updated",
             Self::DeviceInfoUpdated { .. } => "device_info_updated",
             Self::EmployeeCreated { .. } => "employee_created",
+            Self::EmployeeUpdated { .. } => "employee_updated",
             Self::EmployeeDeactivated { .. } => "employee_deactivated",
             Self::EmployeeEnrolled { .. } => "employee_enrolled",
             Self::DashboardUserCreated { .. } => "dashboard_user_created",
@@ -168,6 +184,9 @@ impl DomainEvent {
             Self::SettingsChanged { .. } => "settings_changed",
             Self::FingerprintTransferRequested { .. } => "fingerprint_transfer_requested",
             Self::FingerprintTransferCompleted { .. } => "fingerprint_transfer_completed",
+            Self::DepartmentCreated { .. } => "department_created",
+            Self::DepartmentUpdated { .. } => "department_updated",
+            Self::DepartmentDeleted { .. } => "department_deleted",
         }
     }
 
@@ -184,6 +203,7 @@ impl DomainEvent {
             | Self::UserSetRequested { device_sn, .. }
             | Self::UserDeleteRequested { device_sn, .. }
             | Self::UsersBulkSynced { device_sn, .. }
+            | Self::DeviceUsersReceived { device_sn, .. }
             | Self::UserSyncFailed { device_sn, .. }
             | Self::DeviceToDeviceSyncRequested { target_sn: device_sn, .. }
             | Self::DeviceResyncRequested { device_sn, .. }
@@ -202,6 +222,7 @@ impl DomainEvent {
             | Self::EmployeeSyncRequested { .. }
             | Self::EmployeeRemoveRequested { .. }
             | Self::EmployeeCreated { .. }
+            | Self::EmployeeUpdated { .. }
             | Self::EmployeeDeactivated { .. }
             | Self::DashboardUserCreated { .. }
             | Self::DashboardUserDeleted { .. }
@@ -209,6 +230,9 @@ impl DomainEvent {
             | Self::SettingsChanged { .. }
             | Self::FingerprintTransferRequested { .. }
             | Self::FingerprintTransferCompleted { .. } => None,
+            Self::DepartmentCreated { .. }
+            | Self::DepartmentUpdated { .. }
+            | Self::DepartmentDeleted { .. } => None,
         }
     }
 }
@@ -268,6 +292,9 @@ mod tests {
                     name: "Test".into(),
                     privilege: 0,
                     card_number: None,
+                    group: None,
+                    timezone: None,
+                    password_raw: None,
                     has_password: false,
                     fingerprint_count: 1,
                     has_face: false,

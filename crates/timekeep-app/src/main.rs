@@ -112,6 +112,7 @@ async fn start_server(
     let wiring::AppDependencies {
         storage,
         employees,
+        search,
         engine,
         provider_registry,
         device_registry,
@@ -127,6 +128,7 @@ async fn start_server(
         event_bus.clone(),
         storage.clone(),
         employees.clone(),
+        search.clone(),
         device_state.clone(),
         provider_registry.clone(),
         engine_health.clone(),
@@ -136,6 +138,7 @@ async fn start_server(
         event_bus.clone(),
         storage.clone(),
         employees.clone(),
+        search.clone(),
         device_state.clone(),
         provider_registry.clone(),
         engine_health.clone(),

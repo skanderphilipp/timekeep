@@ -167,12 +167,34 @@ pub(crate) async fn create_employee(
     Ok((StatusCode::CREATED, Json(ApiEnvelope::success(EmployeeResponse::from(&employee)))))
 }
 
-/// List all tracked employees.
+/// List all tracked employees with optional filtering and pagination.
+#[utoipa::path(
+    get,
+    path = "/api/employees",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(crate::request::EmployeeListQuery),
+    responses(
+        (status = 200, description = "Paginated employee list"),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn list_employees(
     State(state): State<AppState>,
-    Query(params): Query<timekeep_core::ListParams>,
+    Query(q): Query<crate::request::EmployeeListQuery>,
 ) -> Result<Json<ApiEnvelope<Vec<EmployeeResponse>>>, AppError> {
-    let result = employees(&state)?.list_employees(&params).await?;
+    // ── Tantivy full-text search path ──────────────────────────────
+    if q.q.as_ref().is_some_and(|s| !s.trim().is_empty()) {
+        return list_employees_via_search(&state, &q).await;
+    }
+
+    // ── Legacy SQL LIKE path ───────────────────────────────────────
+    let filter = timekeep_core::EmployeeFilter {
+        params: q.params,
+        department: q.department,
+        active: q.active.and_then(|a| a.parse::<bool>().ok()),
+    };
+    let result = employees(&state)?.list_employees_filtered(&filter).await?;
     let responses: Vec<EmployeeResponse> =
         result.items.iter().map(EmployeeResponse::from).collect();
     let meta = if result.has_more {
@@ -180,6 +202,75 @@ pub(crate) async fn list_employees(
     } else {
         crate::response::PageMeta::single()
     };
+    Ok(Json(ApiEnvelope::paginated(responses, meta)))
+}
+
+/// Execute full-text search via Tantivy, then cross-reference with the DB.
+async fn list_employees_via_search(
+    state: &AppState,
+    q: &crate::request::EmployeeListQuery,
+) -> Result<Json<ApiEnvelope<Vec<EmployeeResponse>>>, AppError> {
+    let search_term = q.q.as_deref().unwrap_or("");
+
+    let search_query = timekeep_core::SearchQuery {
+        q: search_term.to_string(),
+        entity_type: Some("employee".to_string()),
+        limit: q.params.clamped_limit(),
+        offset: 0,
+    };
+
+    // If SearchStore is available, use it. Otherwise fall back to SQL LIKE.
+    let results = if let Some(ref search) = state.search {
+        search
+            .search(&search_query)
+            .await
+            .map_err(|e| AppError::Internal(format!("search failed: {e}")))?
+    } else {
+        // No search store — fall back to SQL LIKE path
+        let filter = timekeep_core::EmployeeFilter {
+            params: q.params.clone(),
+            department: q.department.clone(),
+            active: q.active.as_deref().and_then(|a| a.parse::<bool>().ok()),
+        };
+        let result = employees(state)?.list_employees_filtered(&filter).await?;
+        let responses: Vec<EmployeeResponse> =
+            result.items.iter().map(EmployeeResponse::from).collect();
+        return Ok(Json(ApiEnvelope::paginated(responses, crate::response::PageMeta::single())));
+    };
+
+    // Cross-reference search results with the database
+    let repo = employees(state)?;
+    let mut responses = Vec::with_capacity(results.hits.len());
+
+    for hit in &results.hits {
+        let emp_id = timekeep_core::EmployeeId::from(hit.entity_id.as_str());
+        if let Some(emp) = repo.find_employee(&emp_id).await? {
+            // Apply department/active filters (Tantivy may return extra results)
+            if let Some(ref dept) = q.department {
+                if emp.department.as_deref() != Some(dept.as_str()) {
+                    continue;
+                }
+            }
+            if let Some(active_str) = &q.active {
+                if let Ok(active) = active_str.parse::<bool>() {
+                    if emp.active != active {
+                        continue;
+                    }
+                }
+            }
+            responses.push(EmployeeResponse::from(&emp));
+        }
+    }
+
+    let has_more = responses.len() as u32 >= q.params.clamped_limit();
+    let meta = if has_more {
+        let next_idx = q.params.clamped_limit();
+        let next_cursor = timekeep_core::encode_offset_cursor(next_idx as i64);
+        crate::response::PageMeta::has_more(next_cursor)
+    } else {
+        crate::response::PageMeta::single()
+    };
+
     Ok(Json(ApiEnvelope::paginated(responses, meta)))
 }
 
@@ -222,6 +313,13 @@ pub(crate) async fn update_employee(
         employee.external_id = Some(ext_id);
     }
     repo.update_employee(&employee).await?;
+
+    state.event_bus.publish(timekeep_core::DomainEvent::EmployeeUpdated {
+        id: emp_id.to_string(),
+        name: employee.name.clone(),
+        pin: employee.pin.clone(),
+    });
+
     Ok(Json(ApiEnvelope::success(EmployeeResponse::from(&employee))))
 }
 
@@ -472,13 +570,22 @@ pub(crate) async fn employee_filters(
     State(state): State<AppState>,
     Query(q): Query<crate::request::GenericFacetParams>,
 ) -> Result<Json<ApiEnvelope<Vec<timekeep_core::FacetGroup>>>, AppError> {
+    use std::collections::HashMap;
     use timekeep_core::{FacetContext, FacetQuery};
+
+    let mut filters = HashMap::new();
+    if let Some(ref v) = q.department {
+        filters.insert("department".to_string(), vec![v.clone()]);
+    }
+    if let Some(ref v) = q.active {
+        filters.insert("active".to_string(), vec![v.clone()]);
+    }
 
     let query = FacetQuery {
         dimension: q.dimension.clone(),
         search: q.search.clone(),
         limit: q.limit.clamp(1, 100),
-        context: FacetContext::default(),
+        context: FacetContext { filters, ..FacetContext::default() },
     };
 
     let groups = state.storage.employee_facets(&query).await?;

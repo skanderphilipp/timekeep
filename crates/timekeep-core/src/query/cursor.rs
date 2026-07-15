@@ -147,12 +147,12 @@ impl Cursor {
 
         // Fall back to legacy format: "timestamp:id"
         // This ensures backward compatibility during deployment.
-        if let Some((ts_str, id)) = payload.split_once(':') {
-            if let Ok(ts) = ts_str.parse::<i64>() {
-                return Some(Self {
-                    values: vec![CursorValue::Int(ts), CursorValue::Text(id.to_string())],
-                });
-            }
+        if let Some((ts_str, id)) = payload.split_once(':')
+            && let Ok(ts) = ts_str.parse::<i64>()
+        {
+            return Some(Self {
+                values: vec![CursorValue::Int(ts), CursorValue::Text(id.to_string())],
+            });
         }
 
         None
@@ -209,13 +209,13 @@ impl Cursor {
             if i == 0 {
                 parts.push(KeysetFragment::Sql(format!("(({} {} ", columns[i], cmp_op)));
             } else {
-                parts.push(KeysetFragment::Sql(format!(") OR (")));
+                parts.push(KeysetFragment::Sql(") OR (".to_string()));
                 // Equality conditions for all columns before i
-                for j in 0..i {
+                for (j, col) in columns.iter().enumerate().take(i) {
                     if j > 0 {
                         parts.push(KeysetFragment::Sql(" AND ".into()));
                     }
-                    parts.push(KeysetFragment::Sql(format!("{} = ", columns[j])));
+                    parts.push(KeysetFragment::Sql(format!("{} = ", col)));
                     parts.push(KeysetFragment::Bind(self.values[j].clone()));
                 }
                 parts.push(KeysetFragment::Sql(format!(" AND {} {} ", columns[i], cmp_op)));

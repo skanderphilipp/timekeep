@@ -88,6 +88,35 @@ impl PostgresStorage {
             .await
             .map_err(|e| Error::storage(format!("users index creation failed: {e}")))?;
 
+        // v13 — expand users table with device-native fields
+        for col in [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS card_number TEXT",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS group_num INTEGER",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone INTEGER",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT",
+        ] {
+            sqlx::query(col)
+                .execute(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("users migration v13: {e}")))?;
+        }
+
+        // v14 — departments table
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS departments (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                work_policy_json TEXT,
+                created_at BIGINT NOT NULL,
+                updated_at BIGINT NOT NULL
+            );
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("departments table: {e}")))?;
+
         // API keys table — for integration partners (Odoo, Zapier, SAP, etc.)
         sqlx::query(
             r#"
@@ -360,6 +389,65 @@ impl PostgresStorage {
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("idx_ft_device: {e}")))?;
+
+        // ── v13: Audit logs ────────────────────────────────────────
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS audit_logs (
+                id TEXT PRIMARY KEY,
+                timestamp BIGINT NOT NULL,
+                actor TEXT NOT NULL,
+                action TEXT NOT NULL,
+                resource TEXT NOT NULL DEFAULT '',
+                detail_json JSONB,
+                ip_address TEXT,
+                status TEXT NOT NULL DEFAULT 'success',
+                error_message TEXT
+            );",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("audit_logs table: {e}")))?;
+
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("idx_audit_timestamp: {e}")))?;
+
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_audit_actor ON audit_logs(actor);")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("idx_audit_actor: {e}")))?;
+
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("idx_audit_action: {e}")))?;
+
+        // ── v14: Dashboard users ────────────────────────────────────
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS dashboard_users (
+                id TEXT PRIMARY KEY,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL DEFAULT '',
+                role TEXT NOT NULL DEFAULT 'viewer',
+                permissions_text TEXT NOT NULL DEFAULT '',
+                display_name TEXT NOT NULL DEFAULT '',
+                active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at BIGINT NOT NULL,
+                updated_at BIGINT NOT NULL
+            );",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("dashboard_users table: {e}")))?;
+
+        sqlx::query(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_users_username ON dashboard_users(username);",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("idx_dashboard_users_username: {e}")))?;
 
         Ok(())
     }

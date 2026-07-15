@@ -50,6 +50,12 @@ export const AppRoute = {
 
   reports: "/reports",
 
+  departments: {
+    list: "/departments",
+    /** @param id — department UUID */
+    detail: (id: string) => `/departments/${encodeURIComponent(id)}`,
+  },
+
   settings: {
     system: "/settings",
     users: "/settings/users",
@@ -146,6 +152,14 @@ export const ApiPath = {
   revokeApiKey: (id: string) => `api-keys/${encodeURIComponent(id)}/revoke`,
 
   audit: "audit",
+
+  employees: "employees",
+
+  departments: "departments",
+  /** Department-specific operations. */
+  department: (id: string) => `departments/${encodeURIComponent(id)}`,
+  /** Employee-specific operations. */
+  employee: (id: string) => `employees/${encodeURIComponent(id)}`,
 
   users: "users",
   /** User-specific operations. */

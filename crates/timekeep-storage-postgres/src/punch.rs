@@ -57,14 +57,14 @@ pub(super) struct TimestampRow {
 
 /// Row type for facet queries (value, label, count).
 #[derive(sqlx::FromRow)]
-pub(super) struct FacetRow {
+pub(crate) struct FacetRow {
     value: String,
     label: String,
     count: i64,
 }
 
 impl FacetRow {
-    fn into_option(self) -> timekeep_core::FacetOption {
+    pub(super) fn into_option(self) -> timekeep_core::FacetOption {
         timekeep_core::FacetOption {
             value: self.value,
             label: self.label,
@@ -76,7 +76,7 @@ impl FacetRow {
 // ── Facet helpers ─────────────────────────────────────────────
 
 impl PostgresStorage {
-    /// Build the WHERE clause fragment for contextual facet counts.
+    /// Build the WHERE clause fragment for contextual facet counts (punch-specific).
     fn pg_push_context_clauses<'a>(
         &self,
         builder: &mut QueryBuilder<'a, sqlx::Postgres>,
@@ -111,6 +111,35 @@ impl PostgresStorage {
         if context.anomalies_only.unwrap_or(false) {
             builder
                 .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+        }
+        // Also apply generic filters
+        self.pg_push_generic_filters(builder, context, "p");
+    }
+
+    /// Apply generic entity-agnostic context filters as SQL WHERE clauses (Postgres).
+    pub(crate) fn pg_push_generic_filters<'a>(
+        &self,
+        builder: &mut QueryBuilder<'a, sqlx::Postgres>,
+        context: &'a timekeep_core::FacetContext,
+        table_alias: &str,
+    ) {
+        let prefix = if table_alias.is_empty() { String::new() } else { format!("{table_alias}.") };
+
+        for (key, values) in &context.filters {
+            if values.is_empty() {
+                continue;
+            }
+            if values.len() == 1 {
+                builder.push(format!(" AND {prefix}{key} = "));
+                builder.push_bind(values[0].clone());
+            } else {
+                builder.push(format!(" AND {prefix}{key} IN ("));
+                let mut separated = builder.separated(", ");
+                for v in values {
+                    separated.push_bind(v.clone());
+                }
+                separated.push_unseparated(")");
+            }
         }
     }
 
@@ -363,6 +392,19 @@ impl PostgresStorage {
         if filter.anomalies_only.unwrap_or(false) {
             builder
                 .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+        }
+        // ── Batch ID lookup (used by Tantivy search cross-reference) ──
+        if let Some(ids) = &filter.ids {
+            if ids.is_empty() {
+                // Empty ID list: return nothing (can't match any punch)
+                return Ok(vec![]);
+            }
+            builder.push(" AND p.id IN (");
+            let mut separated = builder.separated(", ");
+            for id in ids {
+                separated.push_bind(id);
+            }
+            separated.push_unseparated(")");
         }
         if let Some(search) = &filter.params.search
             && !search.is_empty()

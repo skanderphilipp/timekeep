@@ -1,5 +1,5 @@
 use super::PostgresStorage;
-use timekeep_core::Error;
+use timekeep_core::{Error, FacetGroup, FacetKind, FacetOption, FacetQuery};
 
 // ─── Row types for sqlx query_as ────────────────────────────────────
 
@@ -201,6 +201,91 @@ impl PostgresStorage {
         Ok(())
     }
 
+    pub(super) async fn list_device_configs_filtered(
+        &self,
+        filter: &timekeep_core::DeviceFilter,
+    ) -> Result<timekeep_core::ListResult<timekeep_core::DeviceConfig>, Error> {
+        use timekeep_core::sanitize_search;
+
+        let sort_col = match filter.params.sort_by.as_deref().unwrap_or("label") {
+            "label" => "label",
+            "serial_number" => "serial_number",
+            "host" => "host",
+            "last_seen" => "last_seen",
+            _ => "label",
+        };
+        let sort_dir = filter.params.sort_order.as_sql();
+        let limit = filter.params.clamped_limit() as i64;
+
+        let mut where_clauses: Vec<String> = Vec::new();
+        let mut where_values: Vec<String> = Vec::new();
+
+        if let Some(ref search) = filter.params.search
+            && !search.is_empty()
+        {
+            let pattern = sanitize_search(search);
+            let n = where_values.len() + 1;
+            where_clauses.push(format!(
+                "(label LIKE ${n} ESCAPE '\\' OR serial_number LIKE ${n2} ESCAPE '\\')",
+                n2 = n + 1
+            ));
+            where_values.push(pattern.clone());
+            where_values.push(pattern);
+        }
+
+        let where_sql = if where_clauses.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_clauses.join(" AND "))
+        };
+
+        // Count total
+        let count_sql = format!("SELECT COUNT(*) FROM devices {where_sql}");
+        let mut count_query = sqlx::query_scalar::<_, i64>(&count_sql);
+        for val in &where_values {
+            count_query = count_query.bind(val);
+        }
+        let total: i64 = count_query
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("count devices: {e}")))?;
+
+        let query_sql = format!(
+            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone
+             FROM devices {where_sql} ORDER BY {sort_col} {sort_dir} LIMIT {limit}"
+        );
+        let mut query = sqlx::query_as::<_, DeviceConfigRow>(&query_sql);
+        for val in &where_values {
+            query = query.bind(val);
+        }
+
+        let rows: Vec<DeviceConfigRow> = query
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("list devices filtered: {e}")))?;
+
+        let items: Vec<timekeep_core::DeviceConfig> = rows
+            .into_iter()
+            .map(|r| timekeep_core::DeviceConfig {
+                serial_number: r.serial_number,
+                label: r.label,
+                host: r.host,
+                port: r.port as u16,
+                comm_key: r.comm_key as u64 as u32,
+                push_enabled: r.push_enabled != 0,
+                timezone: r.timezone,
+                vendor: "zkteco".into(),
+                location: None,
+                poll_interval_secs: None,
+            })
+            .collect();
+
+        let total_u64 = total as u64;
+        let has_more = (items.len() as u64) < total_u64;
+
+        Ok(timekeep_core::ListResult::paginated(items, total_u64, has_more, None))
+    }
+
     pub(super) async fn upsert_device_info(
         &self,
         device: &timekeep_core::Device,
@@ -297,6 +382,118 @@ impl PostgresStorage {
         .map_err(|e| Error::storage(format!("get device info: {e}")))?;
 
         Ok(row.map(|r| r.into_device()))
+    }
+
+    /// Return faceted filter metadata for devices.
+    pub(super) async fn device_facets(&self, query: &FacetQuery) -> Result<Vec<FacetGroup>, Error> {
+        let dimension = query.dimension.as_deref();
+        let mut groups = Vec::new();
+
+        if dimension.is_none() || dimension == Some("vendor") {
+            groups.push(self.pg_facet_device_vendors(query).await?);
+        }
+        if dimension.is_none() || dimension == Some("status") {
+            groups.push(self.pg_facet_device_statuses(query).await?);
+        }
+        if dimension.is_none() || dimension == Some("push_enabled") {
+            groups.push(self.pg_facet_device_push_enabled(query).await?);
+        }
+
+        Ok(groups)
+    }
+
+    async fn pg_facet_device_vendors(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
+        use timekeep_core::facet::DEVICE_VENDOR_VALUES;
+        let mut options = Vec::with_capacity(DEVICE_VENDOR_VALUES.len());
+        for (value, label) in DEVICE_VENDOR_VALUES {
+            let mut builder = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+                "SELECT CAST(COUNT(*) AS BIGINT) FROM device_info di WHERE di.vendor = ",
+            );
+            builder.push_bind(value);
+            self.pg_push_generic_filters(&mut builder, &query.context, "di");
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet device vendor {value}: {e}")))?;
+            options.push(FacetOption {
+                value: value.to_string(),
+                label: label.to_string(),
+                count: Some(count as u64),
+            });
+        }
+        options.sort_by_key(|a| std::cmp::Reverse(a.count.unwrap_or(0)));
+        Ok(FacetGroup {
+            key: "vendor".into(),
+            label: "Vendor".into(),
+            kind: FacetKind::Enum,
+            options,
+            has_more: false,
+            total: None,
+        })
+    }
+
+    async fn pg_facet_device_statuses(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
+        use timekeep_core::facet::DEVICE_STATUS_VALUES;
+        let mut options = Vec::with_capacity(DEVICE_STATUS_VALUES.len());
+        for (value, label) in DEVICE_STATUS_VALUES {
+            let mut builder = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+                "SELECT CAST(COUNT(*) AS BIGINT) FROM device_info di WHERE di.status = ",
+            );
+            builder.push_bind(value);
+            self.pg_push_generic_filters(&mut builder, &query.context, "di");
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet device status {value}: {e}")))?;
+            options.push(FacetOption {
+                value: value.to_string(),
+                label: label.to_string(),
+                count: Some(count as u64),
+            });
+        }
+        options.sort_by_key(|a| std::cmp::Reverse(a.count.unwrap_or(0)));
+        Ok(FacetGroup {
+            key: "status".into(),
+            label: "Status".into(),
+            kind: FacetKind::Enum,
+            options,
+            has_more: false,
+            total: None,
+        })
+    }
+
+    async fn pg_facet_device_push_enabled(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
+        use timekeep_core::facet::PUSH_ENABLED_VALUES;
+        let mut options = Vec::with_capacity(PUSH_ENABLED_VALUES.len());
+        for (value, label) in PUSH_ENABLED_VALUES {
+            let bool_val: i32 = if *value == "true" { 1 } else { 0 };
+            let mut builder = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+                "SELECT CAST(COUNT(*) AS BIGINT) FROM devices d WHERE d.push_enabled = ",
+            );
+            builder.push_bind(bool_val);
+            self.pg_push_generic_filters(&mut builder, &query.context, "d");
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet push_enabled {value}: {e}")))?;
+            options.push(FacetOption {
+                value: value.to_string(),
+                label: label.to_string(),
+                count: Some(count as u64),
+            });
+        }
+        options.sort_by_key(|a| std::cmp::Reverse(a.count.unwrap_or(0)));
+        Ok(FacetGroup {
+            key: "push_enabled".into(),
+            label: "Push Enabled".into(),
+            kind: FacetKind::Enum,
+            options,
+            has_more: false,
+            total: None,
+        })
     }
 }
 

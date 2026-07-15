@@ -190,6 +190,7 @@ pub(crate) async fn export_punches(
         status: None,
         verify_mode: None,
         anomalies_only: None,
+        ids: None,
         cursor_after: None,
         params: timekeep_core::ListParams {
             sort_by: Some("timestamp".into()),
@@ -702,13 +703,25 @@ pub(crate) async fn audit_filters(
     State(state): State<AppState>,
     Query(q): Query<crate::request::GenericFacetParams>,
 ) -> Result<Json<ApiEnvelope<Vec<timekeep_core::FacetGroup>>>, AppError> {
+    use std::collections::HashMap;
     use timekeep_core::{FacetContext, FacetQuery};
+
+    let mut filters = HashMap::new();
+    if let Some(ref v) = q.actor {
+        filters.insert("actor".to_string(), vec![v.clone()]);
+    }
+    if let Some(ref v) = q.action {
+        filters.insert("action".to_string(), vec![v.clone()]);
+    }
+    if let Some(ref v) = q.status {
+        filters.insert("status".to_string(), vec![v.clone()]);
+    }
 
     let query = FacetQuery {
         dimension: q.dimension.clone(),
         search: q.search.clone(),
         limit: q.limit.clamp(1, 100),
-        context: FacetContext::default(),
+        context: FacetContext { filters, ..FacetContext::default() },
     };
 
     let groups = state.storage.audit_facets(&query).await?;

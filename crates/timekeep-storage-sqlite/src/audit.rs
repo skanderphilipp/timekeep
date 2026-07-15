@@ -333,20 +333,22 @@ impl SqliteStorage {
     async fn facet_audit_actors(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         let limit = query.clamped_limit() as i64;
         let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
-            "SELECT actor as value, actor as label, CAST(COUNT(*) AS INTEGER) as count
-             FROM audit_logs WHERE 1=1",
+            "SELECT a.actor as value, a.actor as label, CAST(COUNT(*) AS INTEGER) as count
+             FROM audit_logs a WHERE 1=1",
         );
 
         if let Some(ref search) = query.search
             && !search.is_empty()
         {
             let pattern = timekeep_core::sanitize_search(search);
-            builder.push(" AND actor LIKE ");
+            builder.push(" AND a.actor LIKE ");
             builder.push_bind(pattern);
             builder.push(" ESCAPE '\\'");
         }
 
-        builder.push(" GROUP BY actor ORDER BY count DESC LIMIT ");
+        self.push_generic_filters(&mut builder, &query.context, "a");
+
+        builder.push(" GROUP BY a.actor ORDER BY count DESC LIMIT ");
         builder.push_bind(limit);
 
         let rows: Vec<FacetRow> = builder
@@ -370,20 +372,22 @@ impl SqliteStorage {
     async fn facet_audit_actions(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         let limit = query.clamped_limit() as i64;
         let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
-            "SELECT action as value, action as label, CAST(COUNT(*) AS INTEGER) as count
-             FROM audit_logs WHERE 1=1",
+            "SELECT a.action as value, a.action as label, CAST(COUNT(*) AS INTEGER) as count
+             FROM audit_logs a WHERE 1=1",
         );
 
         if let Some(ref search) = query.search
             && !search.is_empty()
         {
             let pattern = timekeep_core::sanitize_search(search);
-            builder.push(" AND action LIKE ");
+            builder.push(" AND a.action LIKE ");
             builder.push_bind(pattern);
             builder.push(" ESCAPE '\\'");
         }
 
-        builder.push(" GROUP BY action ORDER BY count DESC LIMIT ");
+        self.push_generic_filters(&mut builder, &query.context, "a");
+
+        builder.push(" GROUP BY a.action ORDER BY count DESC LIMIT ");
         builder.push_bind(limit);
 
         let rows: Vec<FacetRow> = builder
@@ -404,18 +408,22 @@ impl SqliteStorage {
         })
     }
 
-    async fn facet_audit_statuses(&self, _query: &FacetQuery) -> Result<FacetGroup, Error> {
+    async fn facet_audit_statuses(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
         use timekeep_core::facet::AUDIT_STATUS_VALUES;
 
         let mut options = Vec::with_capacity(AUDIT_STATUS_VALUES.len());
         for (value, label) in AUDIT_STATUS_VALUES {
-            let count: i64 = sqlx::query_scalar(
-                "SELECT CAST(COUNT(*) AS INTEGER) FROM audit_logs WHERE status = ?",
-            )
-            .bind(value)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| Error::storage(format!("facet audit status {value}: {e}")))?;
+            let mut builder = sqlx::QueryBuilder::<sqlx::Sqlite>::new(
+                "SELECT CAST(COUNT(*) AS INTEGER) FROM audit_logs a WHERE a.status = ",
+            );
+            builder.push_bind(value);
+            self.push_generic_filters(&mut builder, &query.context, "a");
+
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet audit status {value}: {e}")))?;
 
             options.push(FacetOption {
                 value: value.to_string(),

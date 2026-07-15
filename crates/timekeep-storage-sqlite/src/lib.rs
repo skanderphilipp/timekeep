@@ -6,6 +6,7 @@
 pub mod api_keys;
 pub mod audit;
 pub mod dashboard;
+pub mod departments;
 pub mod device;
 pub mod device_users;
 pub mod employees;
@@ -21,7 +22,7 @@ use timekeep_core::{
     ApiKey as CoreApiKey, AuditEvent, AuditFilter, DashboardUser, DeviceEvent, DeviceEventFilter,
     EndpointFilter, Error, FacetQuery, IntegrationEndpoint, ListParams, ListResult,
     PendingDelivery, ProviderInfo, PunchFilter, SystemSettings,
-    model::{AttendancePunch, Device, DeviceConfig},
+    model::{AttendancePunch, Department, Device, DeviceConfig},
     traits::Storage,
 };
 
@@ -162,8 +163,22 @@ impl Storage for SqliteStorage {
         pin: &str,
         name: &str,
         privilege: Option<i32>,
+        card_number: Option<&str>,
+        group_num: Option<i32>,
+        timezone: Option<i32>,
+        password_hash: Option<&str>,
     ) -> Result<(), Error> {
-        self.upsert_user(device_sn, pin, name, privilege).await
+        self.upsert_user(
+            device_sn,
+            pin,
+            name,
+            privilege,
+            card_number,
+            group_num,
+            timezone,
+            password_hash,
+        )
+        .await
     }
     async fn get_user_name(&self, pin: &str) -> Result<Option<String>, Error> {
         self.get_user_name(pin).await
@@ -306,6 +321,26 @@ impl Storage for SqliteStorage {
     }
     async fn move_to_dead_letter(&self, id: &str, last_error: Option<&str>) -> Result<(), Error> {
         self.move_to_dead_letter(id, last_error).await
+    }
+
+    // departments.rs
+    async fn list_departments(&self) -> Result<Vec<Department>, Error> {
+        self.list_departments().await
+    }
+    async fn get_department(&self, id: &str) -> Result<Option<Department>, Error> {
+        self.get_department(id).await
+    }
+    async fn get_department_by_name(&self, name: &str) -> Result<Option<Department>, Error> {
+        self.get_department_by_name(name).await
+    }
+    async fn create_department(&self, department: &Department) -> Result<(), Error> {
+        self.create_department(department).await
+    }
+    async fn update_department(&self, department: &Department) -> Result<(), Error> {
+        self.update_department(department).await
+    }
+    async fn delete_department(&self, id: &str) -> Result<(), Error> {
+        self.delete_department(id).await
     }
 }
 

@@ -841,10 +841,10 @@ impl ZkConnection {
     /// 4. Enable device
     pub async fn set_user(&mut self, user: &timekeep_core::model::User) -> Result<(), Error> {
         // Build the user record in the appropriate format
-        let card_number: u32 =
-            user.card_number.as_deref().and_then(|c| c.parse::<u32>().ok()).unwrap_or(0);
-
-        let password = if user.has_password { "*" } else { "" };
+        let card_number = user.card_number_u32();
+        let password = user.password_for_encode();
+        let group = user.group.unwrap_or(1);
+        let timezone = user.timezone.unwrap_or(0);
 
         let record: Vec<u8> = if self.is_zk8 {
             let buf = crate::protocol::encoding::encode_user_record_72(
@@ -854,6 +854,8 @@ impl ZkConnection {
                 password,
                 user.privilege,
                 card_number,
+                group,
+                timezone,
             );
             buf.to_vec()
         } else {
@@ -864,6 +866,8 @@ impl ZkConnection {
                 password,
                 user.privilege,
                 card_number,
+                group,
+                timezone,
             );
             buf.to_vec()
         };
@@ -984,11 +988,11 @@ impl ZkConnection {
                 if let Some(punch) = parser::parse_attendance_record(record, &device_sn) {
                     // Client-side `since` filtering: the protocol returns the full
                     // buffer so we discard records already persisted.
-                    if let Some(since_ts) = &since {
-                        if punch.timestamp.as_second() <= since_ts.as_second() {
-                            offset += 40;
-                            continue;
-                        }
+                    if let Some(since_ts) = &since
+                        && punch.timestamp.as_second() <= since_ts.as_second()
+                    {
+                        offset += 40;
+                        continue;
                     }
                     punches.push(punch);
                 }

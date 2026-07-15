@@ -277,27 +277,26 @@ impl Outbox {
             };
 
             // ── Persist to DB on first receipt ──
-            if entry.db_delivery_id.is_none() {
-                if let Some(ref storage) = self.storage {
-                    // Serialize the punch from the event
-                    if let DomainEvent::PunchReceived { ref punch } = entry.event {
-                        let event_json = serde_json::to_string(punch).unwrap_or_default();
-                        if !event_json.is_empty() && event_json != "null" {
-                            let delivery =
-                                PendingDelivery::new(&entry.distributor_name, &event_json);
-                            match storage.enqueue_pending_delivery(&delivery).await {
-                                Ok(()) => {
-                                    entry.db_delivery_id = Some(delivery.id.clone());
-                                    tracing::debug!(
-                                        entry_id = %entry.id,
-                                        db_id = %delivery.id,
-                                        "outbox: entry persisted to DB"
-                                    );
-                                },
-                                Err(e) => {
-                                    tracing::error!(entry_id = %entry.id, error = %e, "outbox: failed to persist to DB");
-                                },
-                            }
+            if entry.db_delivery_id.is_none()
+                && let Some(ref storage) = self.storage
+            {
+                // Serialize the punch from the event
+                if let DomainEvent::PunchReceived { ref punch } = entry.event {
+                    let event_json = serde_json::to_string(punch).unwrap_or_default();
+                    if !event_json.is_empty() && event_json != "null" {
+                        let delivery = PendingDelivery::new(&entry.distributor_name, &event_json);
+                        match storage.enqueue_pending_delivery(&delivery).await {
+                            Ok(()) => {
+                                entry.db_delivery_id = Some(delivery.id.clone());
+                                tracing::debug!(
+                                    entry_id = %entry.id,
+                                    db_id = %delivery.id,
+                                    "outbox: entry persisted to DB"
+                                );
+                            },
+                            Err(e) => {
+                                tracing::error!(entry_id = %entry.id, error = %e, "outbox: failed to persist to DB");
+                            },
                         }
                     }
                 }
@@ -331,10 +330,10 @@ impl Outbox {
             match handle.distributor.on_event(&entry.event).await {
                 Ok(()) => {
                     // Delete from DB if persisted
-                    if let Some(ref db_id) = entry.db_delivery_id {
-                        if let Some(ref storage) = self.storage {
-                            let _ = storage.delete_pending_delivery(db_id).await;
-                        }
+                    if let Some(ref db_id) = entry.db_delivery_id
+                        && let Some(ref storage) = self.storage
+                    {
+                        let _ = storage.delete_pending_delivery(db_id).await;
                     }
                     handle.stats.delivered.fetch_add(1, Ordering::Relaxed);
                     handle.stats.queued.fetch_sub(1, Ordering::Relaxed);
@@ -349,18 +348,18 @@ impl Outbox {
                     entry.retry_count += 1;
                     if entry.retry_count > self.max_retries {
                         // Move to dead letter in DB if persisted
-                        if let Some(ref db_id) = entry.db_delivery_id {
-                            if let Some(ref storage) = self.storage {
-                                let _ = storage
-                                    .move_to_dead_letter(
-                                        db_id,
-                                        Some(&format!(
-                                            "max retries ({}) exceeded: {e}",
-                                            entry.retry_count
-                                        )),
-                                    )
-                                    .await;
-                            }
+                        if let Some(ref db_id) = entry.db_delivery_id
+                            && let Some(ref storage) = self.storage
+                        {
+                            let _ = storage
+                                .move_to_dead_letter(
+                                    db_id,
+                                    Some(&format!(
+                                        "max retries ({}) exceeded: {e}",
+                                        entry.retry_count
+                                    )),
+                                )
+                                .await;
                         }
                         handle.stats.dead.fetch_add(1, Ordering::Relaxed);
                         handle.stats.queued.fetch_sub(1, Ordering::Relaxed);

@@ -845,13 +845,25 @@ pub(crate) async fn device_filters(
     State(state): State<AppState>,
     Query(q): Query<crate::request::GenericFacetParams>,
 ) -> Result<Json<ApiEnvelope<Vec<timekeep_core::FacetGroup>>>, AppError> {
+    use std::collections::HashMap;
     use timekeep_core::{FacetContext, FacetQuery};
+
+    let mut filters = HashMap::new();
+    if let Some(ref v) = q.vendor {
+        filters.insert("vendor".to_string(), vec![v.clone()]);
+    }
+    if let Some(ref v) = q.status {
+        filters.insert("status".to_string(), vec![v.clone()]);
+    }
+    if let Some(ref v) = q.push_enabled {
+        filters.insert("push_enabled".to_string(), vec![v.clone()]);
+    }
 
     let query = FacetQuery {
         dimension: q.dimension.clone(),
         search: q.search.clone(),
         limit: q.limit.clamp(1, 100),
-        context: FacetContext::default(),
+        context: FacetContext { filters, ..FacetContext::default() },
     };
 
     let groups = state.storage.device_facets(&query).await?;

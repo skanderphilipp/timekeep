@@ -23,16 +23,35 @@ pub struct User {
     /// - 14 = Admin (can access device menu)
     pub privilege: u8,
 
-    /// RF card number, if enrolled
+    /// RF card number, if enrolled.
+    /// Populated from the device's binary protocol (u32 LE → decimal string).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub card_number: Option<String>,
 
-    /// Whether the user has a password set
+    /// Device access control group (1–99).
+    /// Used by the device for time schedules and door unlock rules.
+    /// Maps to organizational department via admin configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<u8>,
+
+    /// Per-user timezone offset (device-specific encoding).
+    /// 0 = use device/group default timezone.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timezone: Option<u16>,
+
+    /// Raw password string, if one is set on the device.
+    /// Preserved for exact user restoration during device-to-device sync.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password_raw: Option<String>,
+
+    /// Whether the user has a password set.
+    /// Derived from `password_raw.is_some()` on parse.
     pub has_password: bool,
 
-    /// Number of fingerprint templates enrolled
+    /// Number of fingerprint templates enrolled.
     pub fingerprint_count: u8,
 
-    /// Whether the user has a face template enrolled
+    /// Whether the user has a face template enrolled.
     pub has_face: bool,
 }
 
@@ -45,6 +64,23 @@ impl User {
     /// Whether the user has at least one biometric credential enrolled.
     pub fn has_biometric(&self) -> bool {
         self.fingerprint_count > 0 || self.has_face
+    }
+
+    /// The card number as a u32, for the binary protocol encoder.
+    /// Returns 0 if no card is assigned.
+    pub fn card_number_u32(&self) -> u32 {
+        self.card_number.as_deref().and_then(|c| c.parse::<u32>().ok()).unwrap_or(0)
+    }
+
+    /// The password string for protocol encoding.
+    /// Returns the raw password if available, or "*" if password exists
+    /// but content is unknown (legacy data). Returns "" if no password.
+    pub fn password_for_encode(&self) -> &str {
+        match (&self.password_raw, self.has_password) {
+            (Some(pwd), _) => pwd.as_str(),
+            (None, true) => "*",
+            (None, false) => "",
+        }
     }
 }
 
@@ -59,6 +95,9 @@ mod tests {
             name: "Test User".into(),
             privilege,
             card_number: None,
+            group: None,
+            timezone: None,
+            password_raw: None,
             has_password: false,
             fingerprint_count,
             has_face,

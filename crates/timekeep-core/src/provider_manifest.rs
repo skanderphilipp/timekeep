@@ -27,6 +27,12 @@ use crate::BiometricDevice;
 use crate::events::EventBus;
 use crate::model::{DeviceConfig, DeviceProbe, ProviderCapabilities};
 
+/// Type alias for the device factory function pointer.
+pub type DeviceCreateFn = fn(DeviceConfig, EventBus) -> Box<dyn BiometricDevice>;
+
+/// Type alias for the optional custom probe function pointer.
+pub type DeviceProbeFn = fn(&str, u16) -> Result<DeviceProbe, crate::Error>;
+
 /// Compile-time registration point for a device provider.
 ///
 /// Submitted via `inventory::submit!` in each adapter crate.
@@ -43,10 +49,10 @@ pub struct ProviderManifest {
     pub default_port: u16,
     /// Factory function — creates a new device instance from config.
     /// Called at startup for each configured device matching this vendor.
-    pub create: fn(DeviceConfig, EventBus) -> Box<dyn BiometricDevice>,
+    pub create: DeviceCreateFn,
     /// Optional custom probe function. If `None`, a simple TCP-connect
     /// check is used as the default probe.
-    pub probe: Option<fn(&str, u16) -> Result<DeviceProbe, crate::Error>>,
+    pub probe: Option<DeviceProbeFn>,
 }
 
 // inventory uses this to collect all submitted manifests at link time.

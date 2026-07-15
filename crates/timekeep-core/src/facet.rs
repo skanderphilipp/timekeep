@@ -134,7 +134,6 @@ pub struct FacetContext {
     /// // Employee: filter by department
     /// filters.insert("department".into(), vec!["Engineering".into()]);
     /// ```
-    #[serde(skip)]
     pub filters: std::collections::HashMap<String, Vec<String>>,
 }
 
@@ -305,6 +304,15 @@ pub fn audit_facet_dimensions() -> Vec<FacetDimension> {
     ]
 }
 
+/// Available facet dimensions for departments.
+pub fn department_facet_dimensions() -> Vec<FacetDimension> {
+    vec![FacetDimension {
+        key: FacetDimension::DEPARTMENT_POLICY.into(),
+        label: FacetDimension::POLICY_LABEL.into(),
+        kind: FacetKind::Enum,
+    }]
+}
+
 /// Available facet dimensions for employees.
 pub fn employee_facet_dimensions() -> Vec<FacetDimension> {
     vec![
@@ -336,6 +344,9 @@ impl FacetDimension {
     pub const EMPLOYEE_DEPARTMENT: &'static str = "department";
     pub const EMPLOYEE_ACTIVE: &'static str = "active";
 
+    // ── Department dimension keys ───────────────────────────────
+    pub const DEPARTMENT_POLICY: &'static str = "has_custom_policy";
+
     // ── Shared labels ───────────────────────────────────────────
     pub const VENDOR_LABEL: &'static str = "Vendor";
     pub const PUSH_ENABLED_LABEL: &'static str = "Push Enabled";
@@ -343,6 +354,7 @@ impl FacetDimension {
     pub const ACTION_LABEL: &'static str = "Action";
     pub const DEPARTMENT_LABEL: &'static str = "Department";
     pub const ACTIVE_LABEL: &'static str = "Status";
+    pub const POLICY_LABEL: &'static str = "Policy";
 
     /// All valid dimension keys for device facets.
     pub fn is_valid_device_dimension(key: &str) -> bool {
@@ -357,6 +369,11 @@ impl FacetDimension {
     /// All valid dimension keys for employee facets.
     pub fn is_valid_employee_dimension(key: &str) -> bool {
         matches!(key, Self::EMPLOYEE_DEPARTMENT | Self::EMPLOYEE_ACTIVE)
+    }
+
+    /// All valid dimension keys for department facets.
+    pub fn is_valid_department_dimension(key: &str) -> bool {
+        matches!(key, Self::DEPARTMENT_POLICY)
     }
 }
 
@@ -384,3 +401,7 @@ pub const AUDIT_STATUS_VALUES: &[(&str, &str)] = &[("success", "Success"), ("err
 
 /// Employee active status values.
 pub const ACTIVE_VALUES: &[(&str, &str)] = &[("true", "Active"), ("false", "Inactive")];
+
+/// Department custom policy values (derived from work_policy_json presence).
+pub const POLICY_VALUES: &[(&str, &str)] =
+    &[("custom", "Custom Policy"), ("default", "Inherits Default")];

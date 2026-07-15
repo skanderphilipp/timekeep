@@ -40,6 +40,8 @@ pub use model::{
     AuditEvent,
     AuditFilter,
     DashboardUser,
+    Department,
+    DepartmentId,
     DeviceConfig,
     IntegrationEndpoint,
     IntegrationKind,
@@ -71,21 +73,24 @@ pub use provider_registry::ProviderRegistry;
 
 pub use facet::{
     FacetContext, FacetDimension, FacetGroup, FacetKind, FacetOption, FacetQuery,
-    audit_facet_dimensions, device_facet_dimensions, employee_facet_dimensions,
-    punch_facet_dimensions,
+    audit_facet_dimensions, department_facet_dimensions, device_facet_dimensions,
+    employee_facet_dimensions, punch_facet_dimensions,
 };
 pub use query::cursor::{Cursor, CursorValue, decode_cursor, encode_cursor, encode_offset_cursor};
-pub use query::filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter};
-pub use query::schema::{
-    AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEVICE_SCHEMA, EMPLOYEE_SCHEMA, EntitySchema,
-    PUNCH_SCHEMA, entity_schema,
+pub use query::filters::{
+    DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter,
 };
+pub use query::schema::{
+    AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEPARTMENT_SCHEMA, DEVICE_SCHEMA, EMPLOYEE_SCHEMA,
+    EntitySchema, PUNCH_SCHEMA, entity_schema,
+};
+pub use query::search::{SearchHit, SearchQuery, SearchResults};
 pub use query::{ListParams, ListResult, SortOrder, sanitize_search};
 
 pub use traits::{
     ApiKeyStore, AuditLogStore, BiometricDevice, ConfigProvider, DashboardUserStore,
     DeviceConfigStore, DeviceInfoStore, DeviceProvider, DeviceUserStore, Distributor,
-    EmployeeStore, EndpointStore, OutboxStore, PunchStore, SettingsStore, Storage,
+    EmployeeStore, EndpointStore, OutboxStore, PunchStore, SearchStore, SettingsStore, Storage,
 };
 
 pub use events::{DomainEvent, EventBus};

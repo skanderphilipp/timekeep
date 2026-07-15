@@ -1,5 +1,5 @@
 use super::PostgresStorage;
-use timekeep_core::Error;
+use timekeep_core::{Error, FacetGroup, FacetKind, FacetOption, FacetQuery};
 
 // ── Cursor helpers ────────────────────────────────────────────────
 
@@ -401,5 +401,88 @@ impl PostgresStorage {
                     .map_err(|e| Error::storage(format!("invalid timestamp: {e}")))
             })
             .collect()
+    }
+
+    /// Return faceted filter metadata for employees.
+    pub(super) async fn employee_facets(
+        &self,
+        query: &FacetQuery,
+    ) -> Result<Vec<FacetGroup>, Error> {
+        let dimension = query.dimension.as_deref();
+        let mut groups = Vec::new();
+
+        if dimension.is_none() || dimension == Some("department") {
+            groups.push(self.pg_facet_employee_departments(query).await?);
+        }
+        if dimension.is_none() || dimension == Some("active") {
+            groups.push(self.pg_facet_employee_active(query).await?);
+        }
+
+        Ok(groups)
+    }
+
+    async fn pg_facet_employee_departments(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
+        let limit = query.clamped_limit() as i64;
+        let mut builder = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+            "SELECT e.department as value, COALESCE(e.department, 'No Department') as label, CAST(COUNT(*) AS BIGINT) as count
+             FROM employees e WHERE e.department IS NOT NULL AND e.department != ''",
+        );
+        if let Some(ref search) = query.search
+            && !search.is_empty()
+        {
+            let pattern = timekeep_core::sanitize_search(search);
+            builder.push(" AND e.department LIKE ");
+            builder.push_bind(pattern);
+            builder.push(" ESCAPE '\\'");
+        }
+        self.pg_push_generic_filters(&mut builder, &query.context, "e");
+        builder.push(" GROUP BY e.department ORDER BY count DESC LIMIT ");
+        builder.push_bind(limit);
+        let rows = builder
+            .build_query_as()
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("facet employee departments: {e}")))?;
+        let has_more = rows.len() >= query.clamped_limit() as usize;
+        Ok(FacetGroup {
+            key: "department".into(),
+            label: "Department".into(),
+            kind: FacetKind::Reference,
+            options: rows.into_iter().map(|r: super::punch::FacetRow| r.into_option()).collect(),
+            has_more,
+            total: None,
+        })
+    }
+
+    async fn pg_facet_employee_active(&self, query: &FacetQuery) -> Result<FacetGroup, Error> {
+        use timekeep_core::facet::ACTIVE_VALUES;
+        let mut options = Vec::with_capacity(ACTIVE_VALUES.len());
+        for (value, label) in ACTIVE_VALUES {
+            let bool_val: i32 = if *value == "true" { 1 } else { 0 };
+            let mut builder = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+                "SELECT CAST(COUNT(*) AS BIGINT) FROM employees e WHERE e.active = ",
+            );
+            builder.push_bind(bool_val);
+            self.pg_push_generic_filters(&mut builder, &query.context, "e");
+            let count: i64 = builder
+                .build_query_scalar()
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| Error::storage(format!("facet employee active {value}: {e}")))?;
+            options.push(FacetOption {
+                value: value.to_string(),
+                label: label.to_string(),
+                count: Some(count as u64),
+            });
+        }
+        options.sort_by_key(|a| std::cmp::Reverse(a.count.unwrap_or(0)));
+        Ok(FacetGroup {
+            key: "active".into(),
+            label: "Status".into(),
+            kind: FacetKind::Enum,
+            options,
+            has_more: false,
+            total: None,
+        })
     }
 }

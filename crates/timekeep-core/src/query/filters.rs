@@ -32,6 +32,11 @@ pub struct PunchFilter {
     /// When `true`, return only punches flagged as anomalous.
     pub anomalies_only: Option<bool>,
 
+    /// Filter by specific deduplication IDs (exact match, IN clause).
+    /// Used by the search layer to cross-reference Tantivy hits with the DB.
+    /// When set, other filters (except `params.limit`) are ignored.
+    pub ids: Option<Vec<String>>,
+
     /// Decoded keyset cursor for stable pagination.
     ///
     /// When set, the storage layer generates a keyset WHERE clause instead of
@@ -58,6 +63,7 @@ impl Default for PunchFilter {
             status: None,
             verify_mode: None,
             anomalies_only: None,
+            ids: None,
             cursor_after: None,
         }
     }
@@ -78,6 +84,31 @@ impl Default for DeviceFilter {
                 sort_order: SortOrder::Asc,
                 ..Default::default()
             },
+        }
+    }
+}
+
+/// Filters for listing employees.
+#[derive(Debug, Clone)]
+pub struct EmployeeFilter {
+    /// Shared search/sort/page params.
+    pub params: ListParams,
+    /// Filter by department name (exact match).
+    pub department: Option<String>,
+    /// Filter by active status.
+    pub active: Option<bool>,
+}
+
+impl Default for EmployeeFilter {
+    fn default() -> Self {
+        Self {
+            params: ListParams {
+                sort_by: Some("name".into()),
+                sort_order: SortOrder::Asc,
+                ..Default::default()
+            },
+            department: None,
+            active: None,
         }
     }
 }

@@ -139,10 +139,10 @@ impl EntitySchema {
             cols.push((c.field, c.sql_column, c.value_type));
         }
         // Only add tiebreaker if it's different from the sort column
-        if let Some(c) = tie_col {
-            if c.field != sort_field {
-                cols.push((c.field, c.sql_column, c.value_type));
-            }
+        if let Some(c) = tie_col
+            && c.field != sort_field
+        {
+            cols.push((c.field, c.sql_column, c.value_type));
         }
         cols
     }
@@ -408,6 +408,61 @@ pub const AUDIT_SCHEMA: EntitySchema = EntitySchema {
 };
 
 /// Schema for employees (directory list view).
+pub const DEPARTMENT_SCHEMA: EntitySchema = EntitySchema {
+    entity: "department",
+    columns: &[
+        ColumnMeta {
+            field: "name",
+            label: "Name",
+            sql_column: "d.name",
+            value_type: CursorValueType::Text,
+            sortable: true,
+            filterable: true,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "employee_count",
+            label: "Employees",
+            sql_column: "d.employee_count",
+            value_type: CursorValueType::Int,
+            sortable: true,
+            filterable: false,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "has_custom_policy",
+            label: "Custom Policy",
+            sql_column: "d.work_policy_json",
+            value_type: CursorValueType::Int,
+            sortable: true,
+            filterable: true,
+            facet_kind: Some(FacetKind::Enum),
+        },
+        ColumnMeta {
+            field: "created_at",
+            label: "Created",
+            sql_column: "d.created_at",
+            value_type: CursorValueType::Int,
+            sortable: true,
+            filterable: false,
+            facet_kind: None,
+        },
+        // Tiebreaker
+        ColumnMeta {
+            field: "id",
+            label: "ID",
+            sql_column: "d.id",
+            value_type: CursorValueType::Text,
+            sortable: false,
+            filterable: false,
+            facet_kind: None,
+        },
+    ],
+    default_sort: "name",
+    default_sort_order: SortOrder::Asc,
+    tiebreaker: "id",
+};
+
 pub const EMPLOYEE_SCHEMA: EntitySchema = EntitySchema {
     entity: "employee",
     columns: &[
@@ -488,6 +543,7 @@ pub fn entity_schema(entity: &str) -> Option<&'static EntitySchema> {
         "device" => Some(&DEVICE_SCHEMA),
         "audit" => Some(&AUDIT_SCHEMA),
         "employee" => Some(&EMPLOYEE_SCHEMA),
+        "department" => Some(&DEPARTMENT_SCHEMA),
         _ => None,
     }
 }

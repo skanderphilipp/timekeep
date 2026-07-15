@@ -1,0 +1,28 @@
+[package]
+name = "timekeep-storage-tantivy"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Workspace
+timekeep-core = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+uuid = { workspace = true }
+
+# Tantivy — embedded full-text search engine
+tantivy = "0.26"
+
+# Stemming support for multiple languages (used for Arabic n-gram fallback, English stemmer)
+tantivy-stemmers = "0.4"
+
+[dev-dependencies]
+tempfile = "3"
+jiff = { workspace = true }

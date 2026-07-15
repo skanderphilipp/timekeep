@@ -14,6 +14,7 @@ resolver = "3"
 	    "crates/timekeep-zkteco",
 	    "crates/timekeep-storage-sqlite",
 	    "crates/timekeep-storage-postgres",
+	    "crates/timekeep-storage-tantivy",
 	    "crates/timekeep-dist-webhook",
 	    "crates/timekeep-dist-odoo",
 	    "crates/timekeep-api",
@@ -90,6 +91,9 @@ axum-prometheus = "0.8"
 # JWT authentication
 jsonwebtoken = "9"
 
+# Full-text search (Tantivy)
+tantivy = "0.26"
+
 # Timekeep-circuit (internal)
 	timekeep-circuit = { path = "crates/timekeep-circuit" }
 
@@ -99,6 +103,7 @@ timekeep-engine = { path = "crates/timekeep-engine" }
 timekeep-zkteco = { path = "crates/timekeep-zkteco" }
 timekeep-storage-sqlite = { path = "crates/timekeep-storage-sqlite" }
 timekeep-storage-postgres = { path = "crates/timekeep-storage-postgres" }
+timekeep-storage-tantivy = { path = "crates/timekeep-storage-tantivy" }
 timekeep-dist-webhook = { path = "crates/timekeep-dist-webhook" }
 timekeep-dist-odoo = { path = "crates/timekeep-dist-odoo" }
 timekeep-api = { path = "crates/timekeep-api" }

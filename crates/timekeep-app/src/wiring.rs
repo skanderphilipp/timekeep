@@ -15,7 +15,7 @@ use timekeep_circuit::CircuitBreaker;
 use timekeep_core::{
     BiometricDevice,
     events::{DomainEvent, EventBus},
-    traits::{Distributor, Storage},
+    traits::{Distributor, SearchStore, Storage},
 };
 use timekeep_engine::Engine;
 use timekeep_engine::distribution::DistributorHandle;
@@ -33,6 +33,7 @@ use crate::config::AppConfig;
 pub(crate) struct AppDependencies {
     pub storage: Arc<dyn Storage>,
     pub employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    pub search: Option<Arc<dyn timekeep_core::SearchStore>>,
     pub engine: Engine,
     pub provider_registry: Arc<timekeep_core::ProviderRegistry>,
     pub device_registry: DeviceRegistry,
@@ -74,6 +75,26 @@ pub(crate) async fn wire(
             let sqlite = Arc::new(timekeep_storage_sqlite::SqliteStorage::new(db_path).await?);
             storage = sqlite.clone() as Arc<dyn Storage>;
             employees = Some(sqlite as Arc<dyn timekeep_core::EmployeeStore>);
+        },
+    };
+
+    // ─── Full-Text Search (Tantivy) ────────────────────────────────
+    let search: Option<Arc<dyn timekeep_core::SearchStore>> = match &config.search_index_path {
+        Some(index_path) => {
+            let path = std::path::Path::new(index_path);
+            let tantivy = Arc::new(
+                timekeep_storage_tantivy::TantivySearchStore::open(path)
+                    .map_err(|e| format!("failed to open Tantivy search index: {e}"))?,
+            );
+            tracing::info!(
+                path = %index_path,
+                "Tantivy full-text search enabled"
+            );
+            Some(tantivy as Arc<dyn timekeep_core::SearchStore>)
+        },
+        None => {
+            tracing::info!("full-text search disabled (no search_index_path configured)");
+            None
         },
     };
 
@@ -172,6 +193,18 @@ pub(crate) async fn wire(
         outbox_worker::run_outbox_worker(outbox_storage, outbox_handles).await;
     });
     tracing::info!("outbox worker spawned");
+
+    // ─── Search Indexer (keeps Tantivy in sync with domain events) ────
+    if let (Some(ref search), Some(ref employees)) = (&search, &employees) {
+        let search_rx = event_bus.subscribe();
+        let indexer = timekeep_storage_tantivy::indexer::SearchIndexer::new(
+            search.clone(),
+            employees.clone(),
+            search_rx,
+        );
+        tokio::spawn(async move { indexer.run().await });
+        tracing::info!("search indexer spawned");
+    }
 
     // ─── ADMS Server (shared — handles all devices on one port) ─────
     //
@@ -660,6 +693,9 @@ pub(crate) async fn wire(
                             name: employee.name.clone(),
                             privilege: 0,
                             card_number: None,
+                            group: None,
+                            timezone: None,
+                            password_raw: None,
                             has_password: false,
                             fingerprint_count: 0,
                             has_face: false,
@@ -966,6 +1002,9 @@ pub(crate) async fn wire(
                                                             card_number: enrollment
                                                                 .card_number
                                                                 .clone(),
+                                                            group: None,
+                                                            timezone: None,
+                                                            password_raw: None,
                                                             has_password: false,
                                                             fingerprint_count: enrollment
                                                                 .fingerprint_count
@@ -1156,15 +1195,13 @@ pub(crate) async fn wire(
     // Collect background task handles.
     // Index 0 = poll handle (explicitly aborted on shutdown).
     // Remaining handles are dropped naturally when AppDependencies is dropped.
-    let mut device_handles: Vec<tokio::task::JoinHandle<()>> = Vec::new();
-    device_handles.push(poll_handle);
-    device_handles.push(user_event_handle);
-    device_handles.push(device_online_handle);
-    device_handles.push(discovery_handle);
+    let device_handles: Vec<tokio::task::JoinHandle<()>> =
+        vec![poll_handle, user_event_handle, device_online_handle, discovery_handle];
 
     Ok(AppDependencies {
         storage,
         employees,
+        search,
         engine,
         provider_registry,
         device_registry,

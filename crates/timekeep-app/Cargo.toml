@@ -11,6 +11,7 @@ timekeep-circuit = { workspace = true }
 timekeep-zkteco = { workspace = true }
 timekeep-storage-sqlite = { workspace = true }
 timekeep-storage-postgres = { workspace = true }
+timekeep-storage-tantivy = { workspace = true }
 timekeep-dist-webhook = { workspace = true }
 timekeep-dist-odoo = { workspace = true }
 timekeep-api = { workspace = true }

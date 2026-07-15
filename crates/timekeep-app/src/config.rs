@@ -12,6 +12,7 @@ pub(crate) struct AppConfig {
     pub db_backend: String,
     pub db_url: String,
     pub db_path: String,
+    pub search_index_path: Option<String>,
     pub jwt_secret: String,
     pub admin_user: String,
     pub admin_password: String,
@@ -25,11 +26,23 @@ pub(crate) struct AppConfig {
 /// Calls `validate_config` internally so callers don't need to
 /// remember to validate separately.
 pub(crate) fn load() -> AppConfig {
+    // Determine the default search index path alongside the DB
+    let db_path = std::env::var("TIMEKEEP_DB_PATH").unwrap_or_else(|_| "timekeep.db".to_string());
+    let default_search_path = std::path::Path::new(&db_path)
+        .parent()
+        .unwrap_or(std::path::Path::new("."))
+        .join("search")
+        .to_string_lossy()
+        .to_string();
+
     let config = AppConfig {
         db_backend: std::env::var("TIMEKEEP_DB_BACKEND").unwrap_or_else(|_| "sqlite".to_string()),
         db_url: std::env::var("DATABASE_URL")
             .unwrap_or_else(|_| "postgres://timekeep:password@localhost:5432/timekeep".to_string()),
-        db_path: std::env::var("TIMEKEEP_DB_PATH").unwrap_or_else(|_| "timekeep.db".to_string()),
+        db_path,
+        search_index_path: std::env::var("TIMEKEEP_SEARCH_INDEX_PATH")
+            .ok()
+            .or(Some(default_search_path)),
         jwt_secret: std::env::var("TIMEKEEP_JWT_SECRET").unwrap_or_default(),
         admin_user: std::env::var("TIMEKEEP_ADMIN_USER").unwrap_or_default(),
         admin_password: std::env::var("TIMEKEEP_ADMIN_PASSWORD").unwrap_or_default(),

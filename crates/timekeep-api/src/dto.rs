@@ -11,6 +11,8 @@ use timekeep_core::model::{
 };
 use utoipa::ToSchema;
 
+use crate::response::WorkPolicyResponse;
+
 // ─── Auth ───────────────────────────────────────────────────────────
 
 /// Response returned by `POST /api/auth/login`.
@@ -233,6 +235,7 @@ impl DeviceDetailResponse {
     /// (synced from devices at startup). They take precedence over the live Device
     /// struct values when provided (non-zero). This ensures the dashboard shows real
     /// numbers even when the device is offline.
+    #[allow(clippy::too_many_arguments)]
     pub fn from_parts(
         config: &DeviceConfig,
         device: Option<&Device>,
@@ -1119,6 +1122,35 @@ impl From<&timekeep_core::Employee> for EmployeeResponse {
             active: e.active,
             created_at: e.created_at.as_second(),
             updated_at: e.updated_at.as_second(),
+        }
+    }
+}
+
+// ─── Department Responses ───────────────────────────────────────────────
+
+/// Response body for a single department.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DepartmentResponse {
+    pub id: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub work_policy: Option<WorkPolicyResponse>,
+    /// Number of employees assigned to this department.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub employee_count: Option<u64>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl DepartmentResponse {
+    pub fn from_department(dept: &timekeep_core::Department, employee_count: Option<u64>) -> Self {
+        Self {
+            id: dept.id.to_string(),
+            name: dept.name.clone(),
+            work_policy: dept.work_policy.as_ref().map(|p| WorkPolicyResponse::from(p)),
+            employee_count,
+            created_at: dept.created_at.as_second(),
+            updated_at: dept.updated_at.as_second(),
         }
     }
 }

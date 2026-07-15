@@ -48,6 +48,10 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         crate::routes::devices::devices_health,
         crate::routes::devices::device_events,
 
+        // ── Device Metadata ──
+        crate::routes::devices::device_schema,
+        crate::routes::devices::device_filters,
+
         // ── Device Batch ──
         crate::routes::devices::batch_action,
 
@@ -61,6 +65,8 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Punches (Management) ──
         crate::routes::punches::query_punches_mgmt,
         crate::routes::punches::correct_punch,
+        crate::routes::punches::punch_schema,
+        crate::routes::punches::punch_filters,
 
         // ── Punches (Integration) ──
         crate::routes::punches::query_punches_integration,
@@ -89,6 +95,8 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
         // ── Audit ──
         crate::management::query_audit,
+        crate::management::audit_schema,
+        crate::management::audit_filters,
 
         // ── Export ──
         crate::management::export_punches,
@@ -99,6 +107,20 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         crate::users::update_user,
         crate::users::delete_user,
         crate::users::change_password,
+
+        // ── Employees ──
+        crate::employees::list_employees,
+        crate::employees::employee_schema,
+        crate::employees::employee_filters,
+
+        // ── Departments ──
+        crate::routes::departments::list_departments,
+        crate::routes::departments::get_department,
+        crate::routes::departments::create_department,
+        crate::routes::departments::update_department,
+        crate::routes::departments::delete_department,
+        crate::routes::departments::department_schema,
+        crate::routes::departments::department_filters,
     ),
     components(
         schemas(
@@ -194,6 +216,13 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             // Export
             ExportFormat,
 
+            // Departments
+            CreateDepartmentRequest,
+            UpdateDepartmentRequest,
+            DepartmentResponse,
+            WorkPolicyInput,
+            EmployeeListQuery,
+
             // Status
             StatusResponse,
 
@@ -217,6 +246,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         (name = "Audit", description = "Audit log — complete timeline of all system activity"),
         (name = "Export", description = "Data export endpoints — CSV and Excel downloads"),
         (name = "Integration", description = "Machine-to-machine integration API (API key auth, port 3001)"),
+        (name = "Departments", description = "Organizational departments with work policy overrides — groups employees for scheduling and reporting"),
     )
 )]
 pub struct ApiDoc;

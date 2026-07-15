@@ -140,10 +140,7 @@ pub fn parse_name(bytes: &[u8]) -> String {
     String::from_utf8_lossy(&bytes[..end]).trim().to_string()
 }
 
-/// Encode a user into a 72-byte binary record (ZK8 / modern firmware format).
-///
-/// This is the format expected by CMD_USER_WRQ (0x08) on ZK8+ devices.
-/// The record layout matches the "Read All User IDs" section of zk-protocol.
+/// Encode a user into a 72-byte binary record (ZK8 / new firmware format).
 ///
 /// # Record Layout (72 bytes)
 ///
@@ -155,7 +152,7 @@ pub fn parse_name(bytes: &[u8]) -> String {
 /// | 11     | 24   | Name (string)       |
 /// | 35     | 4    | Card number (u32 LE)|
 /// | 39     | 1    | Group number        |
-/// | 40     | 2    | User TZ flag (u16)  |
+/// | 40     | 2    | User TZ flag        |
 /// | 42     | 2    | TZ1                 |
 /// | 44     | 2    | TZ2                 |
 /// | 46     | 2    | TZ3                 |
@@ -168,6 +165,8 @@ pub fn encode_user_record_72(
     password: &str,
     privilege: u8,
     card_number: u32,
+    group: u8,
+    timezone: u16,
 ) -> [u8; 72] {
     let mut record = [0u8; 72];
 
@@ -175,8 +174,6 @@ pub fn encode_user_record_72(
     record[0..2].copy_from_slice(&uid.to_le_bytes());
 
     // Offset 2: Permission token
-    // Bit 0: E0 (0 = enabled, 1 = disabled)
-    // Bits 3-1: P2P1P0 (admin level: 0=common, 1=enroll, 3=admin, 7=super admin)
     record[2] = encode_permission_token(privilege, true);
 
     // Offset 3-10: Password (8 bytes, null-terminated)
@@ -192,11 +189,13 @@ pub fn encode_user_record_72(
     // Offset 35-38: Card number (u32 LE)
     record[35..39].copy_from_slice(&card_number.to_le_bytes());
 
-    // Offset 39: Group number (default: 1)
-    record[39] = 1;
+    // Offset 39: Group number
+    record[39] = group;
 
-    // Offset 40-41: User TZ flag (0 = use group timezones)
-    // Offset 42-47: TZ1, TZ2, TZ3 (all 0 = use group defaults)
+    // Offset 40-41: User TZ flag
+    record[40..42].copy_from_slice(&timezone.to_le_bytes());
+
+    // Offset 42-47: TZ1, TZ2, TZ3 (device-level, zero for now)
     // (already zero-initialized)
 
     // Offset 48-56: User ID / PIN (9 bytes, null-terminated)
@@ -231,6 +230,8 @@ pub fn encode_user_record_28(
     password: &str,
     privilege: u8,
     card_number: u32,
+    group: u8,
+    timezone: u16,
 ) -> [u8; 28] {
     let mut record = [0u8; 28];
 
@@ -253,8 +254,11 @@ pub fn encode_user_record_28(
     // Offset 16-19: Card number (u32 LE)
     record[16..20].copy_from_slice(&card_number.to_le_bytes());
 
-    // Offset 20: Group number (default: 1)
-    record[20] = 1;
+    // Offset 20: Group number
+    record[20] = group;
+
+    // Offset 21-22: User TZ flag
+    record[21..23].copy_from_slice(&timezone.to_le_bytes());
 
     // Offset 24-27: User ID / PIN (u32 LE — numeric PIN only for ZK6)
     if let Ok(pin_num) = pin.parse::<u32>() {
@@ -292,14 +296,16 @@ fn encode_permission_token(privilege: u8, enabled: bool) -> u8 {
 ///
 /// Inverse of `encode_user_record_72`. Used for testing round-trips.
 #[cfg(test)]
-pub fn decode_user_record_72(record: &[u8; 72]) -> (u16, String, String, String, u8, u32) {
+pub fn decode_user_record_72(record: &[u8; 72]) -> (u16, String, String, String, u8, u32, u8, u16) {
     let uid = u16::from_le_bytes([record[0], record[1]]);
     let privilege = decode_privilege_from_token(record[2]);
     let password = parse_name(&record[3..11]);
     let name = parse_name(&record[11..35]);
     let card = u32::from_le_bytes([record[35], record[36], record[37], record[38]]);
+    let group = record[39];
+    let timezone = u16::from_le_bytes([record[40], record[41]]);
     let pin = parse_user_id(&record[48..57]);
-    (uid, pin, name, password, privilege, card)
+    (uid, pin, name, password, privilege, card, group, timezone)
 }
 
 /// Decode privilege level from a permission token byte.
@@ -496,17 +502,18 @@ mod tests {
 
     #[test]
     fn test_encode_user_record_72_basic() {
-        let record = encode_user_record_72(1, "12345", "Test User", "", 0, 0);
+        let record = encode_user_record_72(1, "12345", "Test User", "", 0, 0, 1, 0);
         assert_eq!(record.len(), 72);
         assert_eq!(u16::from_le_bytes([record[0], record[1]]), 1);
         assert_eq!(&record[48..53], b"12345");
         assert_eq!(&record[11..20], b"Test User");
         assert_eq!(record[2], 0x00); // privilege 0, enabled
+        assert_eq!(record[39], 1); // default group
     }
 
     #[test]
     fn test_encode_user_record_72_admin() {
-        let record = encode_user_record_72(5, "999", "Admin", "", 14, 0);
+        let record = encode_user_record_72(5, "999", "Admin", "", 14, 0, 1, 0);
         // Super admin: bits 3-1 = 111, bit 0 = 0 -> 0x0E
         assert_eq!(record[2], 0x0E);
     }
@@ -533,7 +540,7 @@ mod tests {
 
     #[test]
     fn test_encode_user_record_72_with_password() {
-        let record = encode_user_record_72(2, "555", "Ned", "444", 0, 0xDE);
+        let record = encode_user_record_72(2, "555", "Ned", "444", 0, 0xDE, 1, 0);
         assert_eq!(&record[3..6], b"444");
         assert_eq!(record[6], 0);
         let card = u32::from_le_bytes([record[35], record[36], record[37], record[38]]);
@@ -543,7 +550,7 @@ mod tests {
     #[test]
     fn test_encode_user_record_72_long_name_truncated() {
         let long_name = "A".repeat(50);
-        let record = encode_user_record_72(1, "1", &long_name, "", 0, 0);
+        let record = encode_user_record_72(1, "1", &long_name, "", 0, 0, 1, 0);
         let name_from_record = parse_name(&record[11..35]);
         assert_eq!(name_from_record.len(), 23);
         assert!(long_name.starts_with(&name_from_record));
@@ -552,7 +559,7 @@ mod tests {
     #[test]
     fn test_encode_user_record_72_long_pin_truncated() {
         let long_pin = "1234567890";
-        let record = encode_user_record_72(1, long_pin, "Test", "", 0, 0);
+        let record = encode_user_record_72(1, long_pin, "Test", "", 0, 0, 1, 0);
         let pin_from_record = parse_user_id(&record[48..57]);
         assert_eq!(pin_from_record.len(), 8);
         assert_eq!(pin_from_record, "12345678");
@@ -560,48 +567,67 @@ mod tests {
 
     #[test]
     fn test_encode_user_record_72_group_default() {
-        let record = encode_user_record_72(1, "1", "User", "", 0, 0);
+        let record = encode_user_record_72(1, "1", "User", "", 0, 0, 1, 0);
         assert_eq!(record[39], 1);
     }
 
     #[test]
+    fn test_encode_user_record_72_group_custom() {
+        let record = encode_user_record_72(1, "1", "User", "", 0, 0, 5, 0);
+        assert_eq!(record[39], 5, "custom group should be written");
+    }
+
+    #[test]
+    fn test_encode_user_record_72_timezone_custom() {
+        let tz: u16 = 0x1234;
+        let record = encode_user_record_72(1, "1", "User", "", 0, 0, 1, tz);
+        let written_tz = u16::from_le_bytes([record[40], record[41]]);
+        assert_eq!(written_tz, tz, "custom timezone should be written");
+    }
+
+    #[test]
     fn test_roundtrip_user_record_72() {
-        let record = encode_user_record_72(0x0D, "555", "Ned", "444", 0, 0xDE);
-        let (uid, pin, name, password, privilege, card) = decode_user_record_72(&record);
+        let record = encode_user_record_72(0x0D, "555", "Ned", "444", 0, 0xDE, 3, 0x42);
+        let (uid, pin, name, password, privilege, card, group, tz) = decode_user_record_72(&record);
         assert_eq!(uid, 0x0D);
         assert_eq!(pin, "555");
         assert_eq!(name, "Ned");
         assert_eq!(password, "444");
         assert_eq!(privilege, 0);
         assert_eq!(card, 0xDE);
+        assert_eq!(group, 3);
+        assert_eq!(tz, 0x42);
     }
 
     #[test]
     fn test_roundtrip_user_record_72_admin() {
-        let record = encode_user_record_72(0x0E, "11224488", "Nuevo", "123456", 14, 6543);
-        let (uid, pin, name, password, privilege, card) = decode_user_record_72(&record);
+        let record = encode_user_record_72(0x0E, "11224488", "Nuevo", "123456", 14, 6543, 1, 0);
+        let (uid, pin, name, password, privilege, card, group, tz) = decode_user_record_72(&record);
         assert_eq!(uid, 0x0E);
         assert_eq!(pin, "11224488");
         assert_eq!(name, "Nuevo");
         assert_eq!(password, "123456");
         assert_eq!(privilege, 14);
         assert_eq!(card, 6543);
+        assert_eq!(group, 1);
+        assert_eq!(tz, 0);
     }
 
     // --- User record 28-byte format tests ---
 
     #[test]
     fn test_encode_user_record_28_basic() {
-        let record = encode_user_record_28(1, "12345", "Test", "", 0, 0);
+        let record = encode_user_record_28(1, "12345", "Test", "", 0, 0, 1, 0);
         assert_eq!(record.len(), 28);
         assert_eq!(u16::from_le_bytes([record[0], record[1]]), 1);
         let pin = u32::from_le_bytes([record[24], record[25], record[26], record[27]]);
         assert_eq!(pin, 12345);
+        assert_eq!(record[20], 1, "default group");
     }
 
     #[test]
     fn test_encode_user_record_28_non_numeric_pin() {
-        let record = encode_user_record_28(1, "ABC", "Test", "", 0, 0);
+        let record = encode_user_record_28(1, "ABC", "Test", "", 0, 0, 1, 0);
         let pin = u32::from_le_bytes([record[24], record[25], record[26], record[27]]);
         assert_eq!(pin, 0);
     }

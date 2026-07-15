@@ -247,6 +247,10 @@ pub struct PunchListQuery {
     #[serde(flatten)]
     pub params: timekeep_core::ListParams,
 
+    /// Full-text search across user_pin, employee_name, device_sn, device_label, and status.
+    /// Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
+    pub q: Option<String>,
+
     /// Filter by device serial number (single, backward compat).
     pub device_sn: Option<String>,
     /// Filter by multiple device serial numbers (OR logic).
@@ -546,6 +550,70 @@ pub struct CreateEmployeeRequest {
     pub external_id: Option<String>,
 }
 
+/// Create a new department with optional work policy.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateDepartmentRequest {
+    /// Unique department name (e.g. "Engineering", "Warehouse").
+    pub name: String,
+    /// Optional department-specific work policy. Null = inherit org default.
+    pub work_policy: Option<WorkPolicyInput>,
+}
+
+/// Update an existing department.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct UpdateDepartmentRequest {
+    /// New department name.
+    pub name: Option<String>,
+    /// New work policy. Null = clear custom policy and inherit org default.
+    #[serde(default, deserialize_with = "deserialize_optional_work_policy")]
+    pub work_policy: Option<Option<WorkPolicyInput>>,
+}
+
+/// Work policy input from JSON (mirrors WorkPolicy but uses human-friendly units).
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+pub struct WorkPolicyInput {
+    /// Work start time in HH:MM format (e.g. "09:00", "22:00").
+    pub work_start: String,
+    /// Work end time in HH:MM format (e.g. "17:00", "06:00").
+    pub work_end: String,
+    /// Late threshold in minutes (default: 15).
+    #[serde(default = "default_late_threshold")]
+    pub late_threshold_minutes: u32,
+    /// Minimum hours for a full work day (default: 4.0).
+    #[serde(default = "default_min_hours")]
+    pub min_hours_for_full_day: f64,
+    /// Hours after which overtime starts (default: 8.0).
+    #[serde(default = "default_overtime_after")]
+    pub daily_overtime_after_hours: f64,
+    /// Working days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun] — true = working day.
+    #[serde(default = "default_working_days")]
+    pub working_days: [bool; 7],
+}
+
+fn default_late_threshold() -> u32 {
+    15
+}
+fn default_min_hours() -> f64 {
+    4.0
+}
+fn default_overtime_after() -> f64 {
+    8.0
+}
+fn default_working_days() -> [bool; 7] {
+    [true, true, true, true, true, false, false]
+}
+
+/// Custom deserializer for `Option<Option<WorkPolicyInput>>` —
+/// distinguishes "field absent" from "field set to null".
+fn deserialize_optional_work_policy<'de, D>(
+    deserializer: D,
+) -> Result<Option<Option<WorkPolicyInput>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Option::<Option<WorkPolicyInput>>::deserialize(deserializer)?)
+}
+
 /// Update an existing employee.
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateEmployeeRequest {
@@ -555,6 +623,21 @@ pub struct UpdateEmployeeRequest {
     pub department: Option<String>,
     /// New external ERP reference.
     pub external_id: Option<String>,
+}
+
+/// Query parameters for listing employees with optional filtering.
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+pub struct EmployeeListQuery {
+    #[serde(flatten)]
+    pub params: timekeep_core::ListParams,
+    /// Full-text search query (uses Tantivy for smart search:
+    /// typo-tolerant, ranked, across name/pin/department/external_id).
+    /// Takes priority over `params.search` when both are present.
+    pub q: Option<String>,
+    /// Filter by department name (exact match).
+    pub department: Option<String>,
+    /// Filter by active status ("true" or "false").
+    pub active: Option<String>,
 }
 
 /// Enroll an employee on a device.
@@ -609,6 +692,9 @@ fn default_facet_limit() -> u32 {
 }
 
 /// Generic facet filter params used by device, audit, and employee facet endpoints.
+///
+/// Filter fields (vendor, status, actor, etc.) are mapped into
+/// `FacetContext.filters` as key-value pairs for contextual counting.
 #[derive(Debug, Deserialize, IntoParams)]
 pub struct GenericFacetParams {
     /// Specific dimension to query (omit for all dimensions).
@@ -618,4 +704,18 @@ pub struct GenericFacetParams {
     /// Max options to return per dimension.
     #[serde(default = "default_facet_limit")]
     pub limit: u32,
+    /// Context filter: device vendor (e.g. "zkteco").
+    pub vendor: Option<String>,
+    /// Context filter: device status (e.g. "online").
+    pub status: Option<String>,
+    /// Context filter: device push_enabled ("true" or "false").
+    pub push_enabled: Option<String>,
+    /// Context filter: audit actor username.
+    pub actor: Option<String>,
+    /// Context filter: audit action prefix (e.g. "device.").
+    pub action: Option<String>,
+    /// Context filter: employee department.
+    pub department: Option<String>,
+    /// Context filter: employee active status ("true" or "false").
+    pub active: Option<String>,
 }

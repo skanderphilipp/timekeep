@@ -35,6 +35,7 @@
 pub mod cursor;
 pub mod filters;
 pub mod schema;
+pub mod search;
 
 use serde::Deserialize;
 use serde::de::{self, Deserializer, Visitor};
@@ -204,7 +205,7 @@ pub fn sanitize_search(raw: &str) -> String {
 }
 
 // Re-export filter types from the sub-module
-pub use filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter};
+pub use filters::{DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter};
 
 #[cfg(test)]
 mod tests {

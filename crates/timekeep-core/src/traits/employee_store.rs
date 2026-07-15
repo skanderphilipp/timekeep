@@ -12,7 +12,7 @@ use async_trait::async_trait;
 use crate::Error;
 use crate::model::employee::{Employee, EmployeeId};
 use crate::model::enrollment::{DeviceEnrollment, FingerprintTemplate};
-use crate::query::ListResult;
+use crate::query::{EmployeeFilter, ListResult};
 
 /// Persistence operations for the Employee aggregate.
 #[async_trait]
@@ -37,6 +37,24 @@ pub trait EmployeeStore: Send + Sync {
         &self,
         params: &crate::query::ListParams,
     ) -> Result<ListResult<Employee>, Error>;
+
+    /// List employees with domain-specific filters (department, active status).
+    ///
+    /// Default implementation falls back to `list_employees` and filters in-memory.
+    /// Storage backends SHOULD override this for SQL-level filtering.
+    async fn list_employees_filtered(
+        &self,
+        filter: &EmployeeFilter,
+    ) -> Result<ListResult<Employee>, Error> {
+        let mut result = self.list_employees(&filter.params).await?;
+        if let Some(ref dept) = filter.department {
+            result.items.retain(|e| e.department.as_deref() == Some(dept.as_str()));
+        }
+        if let Some(active) = filter.active {
+            result.items.retain(|e| e.active == active);
+        }
+        Ok(result)
+    }
 
     /// Update an employee's name, department, or external_id.
     /// Returns an error if the employee doesn't exist.

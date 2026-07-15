@@ -34,15 +34,47 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::middleware as axum_mw;
+use axum::response::Html;
 use axum::routing::{delete, get, post, put};
 use axum_prometheus::PrometheusMetricLayer;
 use timekeep_core::{ProviderRegistry, events::EventBus, traits::Storage};
 use timekeep_engine::health::EngineHealth;
 use tower_http::limit::RequestBodyLimitLayer;
 use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
 
 use app_state::{AppState, DeviceConnectionState};
+
+/// Serve the Swagger UI HTML page that fetches the OpenAPI spec from `/api/docs/openapi.json`.
+///
+/// Uses unpkg CDN for swagger-ui-dist (v5). The inline approach avoids the
+/// utoipa-swagger-ui v9 + axum 0.8 compatibility issue where the crate's
+/// internal router returns 404 on trailing-slash redirects.
+async fn swagger_ui_html() -> Html<&'static str> {
+    Html(
+        r###"<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>timekeep API Documentation</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin></script>
+  <script>
+    SwaggerUIBundle({
+      url: "/api/docs/openapi.json",
+      dom_id: "#swagger-ui",
+      deepLinking: true,
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+      layout: "StandaloneLayout"
+    });
+  </script>
+</body>
+</html>"###,
+    )
+}
 
 // ─── Global Prometheus layer ────────────────────────────────────────
 
@@ -63,6 +95,7 @@ pub fn management_router(
     event_bus: EventBus,
     storage: Arc<dyn Storage>,
     employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    search: Option<Arc<dyn timekeep_core::SearchStore>>,
     device_state: DeviceConnectionState,
     provider_registry: Arc<ProviderRegistry>,
     engine_health: EngineHealth,
@@ -83,6 +116,7 @@ pub fn management_router(
         event_bus,
         storage,
         employees,
+        search,
         jwt_secret: jwt_secret.clone(),
         admin_user: admin_user.clone(),
         admin_password: admin_password.clone(),
@@ -105,6 +139,7 @@ pub fn management_router(
 
     // Viewer: read-only access (lowest privilege)
     let viewer_routes = Router::new()
+        .route("/api/search", get(routes::search::global_search))
         .route("/api/devices", get(routes::devices::list_devices))
         .route("/api/devices/search", get(routes::devices::search_devices))
         .route("/api/devices/health", get(routes::devices::devices_health))
@@ -137,6 +172,11 @@ pub fn management_router(
         .route("/api/employees/schema", get(employees::employee_schema))
         .route("/api/employees/filters", get(employees::employee_filters))
         .route("/api/employees/{id}", get(employees::get_employee))
+        // Department management (viewer can see)
+        .route("/api/departments", get(routes::departments::list_departments))
+        .route("/api/departments/schema", get(routes::departments::department_schema))
+        .route("/api/departments/filters", get(routes::departments::department_filters))
+        .route("/api/departments/{id}", get(routes::departments::get_department))
         // Enhanced dashboard quick stats
         .route("/api/dashboard/quick-stats", get(employees::dashboard_quick_stats));
 
@@ -183,6 +223,13 @@ pub fn management_router(
             "/api/employees/{id}",
             put(employees::update_employee).delete(employees::deactivate_employee),
         )
+        // Department management (admin)
+        .route("/api/departments", post(routes::departments::create_department))
+        .route(
+            "/api/departments/{id}",
+            put(routes::departments::update_department)
+                .delete(routes::departments::delete_department),
+        )
         // Device enrollment
         .route("/api/devices/{sn}/enrollments", post(employees::enroll_employee))
         .route("/api/devices/{sn}/enrollments", get(employees::list_device_enrollments))
@@ -215,9 +262,11 @@ pub fn management_router(
         .layer(axum_mw::from_fn_with_state(state.clone(), auth::require_jwt));
 
     Router::new()
-        .merge(
-            SwaggerUi::new("/api/docs")
-                .url("/api/docs/openapi.json", crate::openapi::ApiDoc::openapi()),
+        .route("/api/docs", get(swagger_ui_html))
+        .route("/api/docs/", get(swagger_ui_html))
+        .route(
+            "/api/docs/openapi.json",
+            get(|| async { axum::Json(crate::openapi::ApiDoc::openapi()) }),
         )
         .route("/api/auth/login", post(routes::auth::login))
         .route("/api/health", get(routes::auth::health_check))
@@ -239,6 +288,7 @@ pub fn integration_router(
     event_bus: EventBus,
     storage: Arc<dyn Storage>,
     employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    _search: Option<Arc<dyn timekeep_core::SearchStore>>,
     device_state: DeviceConnectionState,
     provider_registry: Arc<ProviderRegistry>,
     engine_health: EngineHealth,
@@ -250,6 +300,7 @@ pub fn integration_router(
         event_bus,
         storage,
         employees,
+        search: None,
         jwt_secret: String::new(),
         admin_user: String::new(),
         admin_password: String::new(),
@@ -399,6 +450,7 @@ mod tests {
             event_bus: EventBus::default(),
             storage: Arc::new(FakeStorage::new()),
             employees: None,
+            search: None,
             jwt_secret: "test-jwt".into(),
             admin_user: "admin".into(),
             admin_password: "test123".into(),

@@ -78,6 +78,13 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     iconName: "IconUsers",
   },
   {
+    key: "departments",
+    labelKey: "nav.departments",
+    path: "/departments",
+    iconName: "IconBuilding",
+    minRole: "admin",
+  },
+  {
     key: "reports",
     labelKey: "nav.reports",
     path: "/reports",

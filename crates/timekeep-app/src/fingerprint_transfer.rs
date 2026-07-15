@@ -17,7 +17,6 @@ use timekeep_core::events::{DomainEvent, EventBus};
 use timekeep_core::traits::EmployeeStore;
 use timekeep_core::{EmployeeId, Error, FingerprintTemplate};
 use timekeep_zkteco::ZkTecoDevice;
-use timekeep_zkteco::sdk::connection::FingerprintTemplate as ZkTemplate;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -80,10 +79,10 @@ pub async fn transfer_templates(
         };
 
         // Store the template centrally if employee store is available
-        if let Some(store) = employee_store {
-            if let Err(e) = store.store_fingerprint_template(&emp_id, "", &ft).await {
-                tracing::warn!(user_sn = tpl.user_sn, finger = tpl.finger_index, error = %e, "failed to store template centrally");
-            }
+        if let Some(store) = employee_store
+            && let Err(e) = store.store_fingerprint_template(&emp_id, "", &ft).await
+        {
+            tracing::warn!(user_sn = tpl.user_sn, finger = tpl.finger_index, error = %e, "failed to store template centrally");
         }
 
         // Step 3: Upload to target device

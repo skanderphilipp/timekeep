@@ -35,6 +35,9 @@ async fn set_user_roundtrip_staff03() {
         name: "Diag Test".to_string(),
         privilege: 0, // common user
         card_number: None,
+        group: None,
+        timezone: None,
+        password_raw: None,
         has_password: false,
         fingerprint_count: 0,
         has_face: false,

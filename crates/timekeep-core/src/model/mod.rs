@@ -2,6 +2,7 @@ pub mod anomaly;
 pub mod attendance_analytics;
 pub mod audit;
 pub mod dashboard_user;
+pub mod department;
 pub mod device;
 pub mod device_event;
 pub mod employee;
@@ -26,6 +27,7 @@ pub use attendance_analytics::{
 };
 pub use audit::{AuditEvent, AuditFilter};
 pub use dashboard_user::DashboardUser;
+pub use department::{Department, DepartmentId};
 pub use device::{Device, DeviceStatus, DeviceVendor};
 pub use device_event::{DeviceEvent, DeviceEventType};
 pub use employee::{Employee, EmployeeId};

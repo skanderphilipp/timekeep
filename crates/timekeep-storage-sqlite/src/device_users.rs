@@ -1,12 +1,15 @@
 use super::SqliteStorage;
 use timekeep_core::Error;
 
-/// Minimal row for listing device users (pin, name, privilege).
+/// Minimal row for listing device users (pin, name, privilege, group, card).
 #[derive(sqlx::FromRow)]
+#[allow(dead_code)]
 pub(super) struct UserListRow {
     pin: String,
     name: String,
     privilege: Option<i32>,
+    card_number: Option<String>,
+    group_num: Option<i32>,
 }
 
 impl SqliteStorage {
@@ -16,19 +19,31 @@ impl SqliteStorage {
         pin: &str,
         name: &str,
         privilege: Option<i32>,
+        card_number: Option<&str>,
+        group_num: Option<i32>,
+        timezone: Option<i32>,
+        password_hash: Option<&str>,
     ) -> Result<(), Error> {
         sqlx::query(
-            "INSERT INTO users (pin, device_sn, name, privilege, synced_at)
-             VALUES (?, ?, ?, ?, datetime('now'))
+            "INSERT INTO users (pin, device_sn, name, privilege, card_number, group_num, timezone, password_hash, synced_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
              ON CONFLICT(pin, device_sn) DO UPDATE SET
                 name = EXCLUDED.name,
                 privilege = EXCLUDED.privilege,
+                card_number = EXCLUDED.card_number,
+                group_num = EXCLUDED.group_num,
+                timezone = EXCLUDED.timezone,
+                password_hash = EXCLUDED.password_hash,
                 synced_at = datetime('now')",
         )
         .bind(pin)
         .bind(device_sn)
         .bind(name)
         .bind(privilege)
+        .bind(card_number)
+        .bind(group_num)
+        .bind(timezone)
+        .bind(password_hash)
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("upsert user: {e}")))?;
@@ -79,7 +94,7 @@ mod tests {
         let storage = crate::test_storage().await;
 
         storage
-            .upsert_user("SN001", "145", "Ahmed Al-Farsi", Some(0))
+            .upsert_user("SN001", "145", "Ahmed Al-Farsi", Some(0), None, None, None, None)
             .await
             .expect("should upsert user");
 

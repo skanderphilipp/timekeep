@@ -366,13 +366,21 @@ async fn handle_cdata(
         },
         "USERINFO" => {
             let users = parser::parse_users(&body, sn);
+            let count = users.len();
+
+            if count > 0 {
+                state
+                    .event_bus
+                    .publish(DomainEvent::DeviceUsersReceived { device_sn: sn.to_string(), users });
+            }
+
             tracing::info!(
                 table = "USERINFO",
                 device = %sn,
-                count = users.len(),
-                "user records received",
+                count = count,
+                "user records received and published",
             );
-            (StatusCode::OK, "OK".to_string()).into_response()
+            (StatusCode::OK, format!("OK: {count}")).into_response()
         },
         _ => {
             // Default case: may be device INFO push or unknown table
@@ -701,9 +709,11 @@ mod tests {
             .await
             .unwrap();
 
-        let status = state.status.lock().unwrap();
-        assert!(status.is_online);
-        assert!(status.last_seen.is_some());
+        {
+            let status = state.status.lock().unwrap();
+            assert!(status.is_online);
+            assert!(status.last_seen.is_some());
+        } // drop MutexGuard before .await
 
         // Verify DeviceOnline was published on first activation (offline → online).
         let events: Vec<_> = collect_events(&mut rx, 2).await;

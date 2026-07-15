@@ -24,6 +24,9 @@ fn make_test_user(sn: u16, pin: &str, name: &str, privilege: u8) -> timekeep_cor
         name: name.to_string(),
         privilege,
         card_number: None,
+        group: None,
+        timezone: None,
+        password_raw: None,
         has_password: false,
         fingerprint_count: 0,
         has_face: false,
@@ -107,9 +110,12 @@ async fn transfer_users_staff03_to_staff02() {
             name: u.name.clone(),
             privilege: u.privilege,
             card_number: u.card_number.clone(),
+            group: u.group,
+            timezone: u.timezone,
+            password_raw: u.password_raw.clone(),
             has_password: u.has_password,
-            fingerprint_count: 0,
-            has_face: false,
+            fingerprint_count: u.fingerprint_count,
+            has_face: u.has_face,
         };
         conn02.set_user(&transfer_user).await.expect("set_user on STAFF02");
         println!("✅");

@@ -269,6 +269,22 @@ pub(crate) const MIGRATIONS: &[(i64, &str)] = &[
     ),
     (12, "CREATE INDEX IF NOT EXISTS idx_ft_employee ON fingerprint_templates(employee_id)"),
     (12, "CREATE INDEX IF NOT EXISTS idx_ft_device ON fingerprint_templates(device_sn)"),
+    // v13 — expand users table with device-native fields (group, timezone, password, card_number)
+    (13, "ALTER TABLE users ADD COLUMN card_number TEXT"),
+    (13, "ALTER TABLE users ADD COLUMN group_num INTEGER"),
+    (13, "ALTER TABLE users ADD COLUMN timezone INTEGER"),
+    (13, "ALTER TABLE users ADD COLUMN password_hash TEXT"),
+    // v14 — departments table for organizational grouping with work policies
+    (
+        14,
+        "CREATE TABLE IF NOT EXISTS departments (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                work_policy_json TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )",
+    ),
 ];
 
 impl SqliteStorage {

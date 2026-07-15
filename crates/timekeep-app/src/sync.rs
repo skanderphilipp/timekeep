@@ -32,7 +32,16 @@ pub async fn sync_users_to_storage(
     let mut synced = 0usize;
     for user in &users {
         match storage
-            .upsert_user(&device_sn, &user.pin, &user.name, Some(user.privilege as i32))
+            .upsert_user(
+                &device_sn,
+                &user.pin,
+                &user.name,
+                Some(user.privilege as i32),
+                user.card_number.as_deref(),
+                user.group.map(|g| g as i32),
+                user.timezone.map(|t| t as i32),
+                user.password_raw.as_deref(),
+            )
             .await
         {
             Ok(()) => synced += 1,
@@ -209,6 +218,10 @@ mod tests {
             pin: &str,
             name: &str,
             _privilege: Option<i32>,
+            _card_number: Option<&str>,
+            _group_num: Option<i32>,
+            _timezone: Option<i32>,
+            _password_hash: Option<&str>,
         ) -> Result<(), Error> {
             let key = format!("{pin}:{device_sn}");
             self.users.lock().unwrap().insert(key, name.to_string());
@@ -232,6 +245,9 @@ mod tests {
             name: name.to_string(),
             privilege: 0,
             card_number: None,
+            group: None,
+            timezone: None,
+            password_raw: None,
             has_password: false,
             fingerprint_count: 1,
             has_face: false,

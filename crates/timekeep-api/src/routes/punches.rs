@@ -32,6 +32,12 @@ pub(crate) async fn query_punches_mgmt(
     State(state): State<AppState>,
     Query(q): Query<PunchListQuery>,
 ) -> Result<Json<ApiEnvelope<PunchListResponse>>, AppError> {
+    // ── Tantivy full-text search path ────────────────────────────
+    if q.q.as_ref().is_some_and(|s| !s.trim().is_empty()) {
+        return query_punches_via_search(&state, &q).await;
+    }
+
+    // ── Legacy SQL path ─────────────────────────────────────────
     let filter = build_punch_filter(&q);
     let is_cursor = filter.cursor_after.is_some();
     let punches = state.storage.query_punches(&filter).await?;
@@ -53,6 +59,61 @@ pub(crate) async fn query_punches_mgmt(
             PageMeta::single()
         }
     };
+
+    Ok(Json(ApiEnvelope::paginated(PunchListResponse { punches: responses }, meta)))
+}
+
+/// Query punches through Tantivy full-text search.
+async fn query_punches_via_search(
+    state: &AppState,
+    q: &PunchListQuery,
+) -> Result<Json<ApiEnvelope<PunchListResponse>>, AppError> {
+    let search_term = q.q.as_deref().unwrap_or("");
+
+    let search_query = timekeep_core::SearchQuery {
+        q: search_term.to_string(),
+        entity_type: Some("punch".to_string()),
+        limit: q.params.clamped_limit(),
+        offset: 0,
+    };
+
+    let results = match &state.search {
+        Some(search) => search
+            .search(&search_query)
+            .await
+            .map_err(|e| AppError::Internal(format!("search failed: {e}")))?,
+        None => {
+            // Fall back to SQL path
+            let filter = build_punch_filter(q);
+            let punches = state.storage.query_punches(&filter).await?;
+            let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
+            return Ok(Json(ApiEnvelope::paginated(
+                PunchListResponse { punches: responses },
+                PageMeta::single(),
+            )));
+        },
+    };
+
+    // Cross-reference search results with the database using batch ID lookup
+    let ids: Vec<String> = results.hits.iter().map(|h| h.entity_id.clone()).collect();
+
+    if ids.is_empty() {
+        return Ok(Json(ApiEnvelope::paginated(
+            PunchListResponse { punches: vec![] },
+            PageMeta::single(),
+        )));
+    }
+
+    let filter = PunchFilter {
+        ids: Some(ids),
+        params: timekeep_core::ListParams { limit: q.params.clamped_limit(), ..Default::default() },
+        ..Default::default()
+    };
+
+    let punches = state.storage.query_punches(&filter).await?;
+    let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
+    let has_more = results.has_more;
+    let meta = if has_more { PageMeta::has_more(String::new()) } else { PageMeta::single() };
 
     Ok(Json(ApiEnvelope::paginated(PunchListResponse { punches: responses }, meta)))
 }
@@ -95,6 +156,7 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         status,
         verify_mode,
         anomalies_only,
+        ids: None,
         cursor_after,
     }
 }
@@ -194,6 +256,7 @@ pub(crate) async fn punch_filters(
         status,
         verify_mode,
         anomalies_only,
+        filters: std::collections::HashMap::new(),
     };
 
     let query = FacetQuery {
