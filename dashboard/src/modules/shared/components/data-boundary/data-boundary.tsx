@@ -1,8 +1,9 @@
-import { type ReactNode } from "react";
+import { useEffect, useId, type ReactNode } from "react";
 
-import { PageError } from "../page-error";
+import { PageError } from "@/modules/shared/components";
 import { ListLoading } from "@/components/ui/list-loading";
 import { EmptyState } from "@/components/ui/empty-state";
+import { usePageErrorContext } from "@/lib/page-error-context";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,11 @@ type DataBoundaryProps<T> = {
  * Every page that fetches a list of records should use this component
  * to ensure consistent state handling. Do NOT write manual if/else chains.
  *
+ * When wrapped in a `<PageShell>`, `DataBoundary` reports its error state
+ * to the shell. If ALL boundaries in the subtree report errors, the shell
+ * replaces all children with one unified `PageError` — preventing stacked
+ * duplicate errors.
+ *
  * @example
  * <DataBoundary
  *   data={devices}
@@ -54,7 +60,24 @@ export function DataBoundary<T>({
   emptyFallback,
   onRetry,
 }: DataBoundaryProps<T>) {
-  // Error state — has priority over loading
+  const id = useId();
+  const { register, reportError } = usePageErrorContext();
+
+  // Register with the nearest PageShell so it can coordinate errors.
+  // `register` is stable (useCallback with stable deps), so this
+  // effect runs once on mount / cleanup on unmount.
+  useEffect(() => {
+    const unregister = register(id);
+    return unregister;
+  }, [register, id]);
+
+  // Report error state changes to the shell.
+  // `reportError` is stable (useCallback with stable deps).
+  useEffect(() => {
+    reportError(id, !!error);
+  }, [reportError, id, error]);
+
+  // Error state
   if (error) {
     return <>{errorFallback ?? <PageError onRetry={onRetry} />}</>;
   }

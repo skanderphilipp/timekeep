@@ -21,9 +21,26 @@ export function usePunchFilterHandlers(
 		[handleFilterChange],
 	);
 
-	/** Unified search across employee name + PIN. */
+	/**
+	 * Unified search across employee name + PIN.
+	 *
+	 * Digit-only input → exact PIN match (`user_pin`).
+	 * Text input → full-text search (`search`).
+	 *
+	 * The two params are mutually exclusive — setting one clears the other.
+	 */
 	const handleSearchChange = useCallback(
-		(v: string) => handleFilterChange({ user_pin: v || undefined }),
+		(v: string) => {
+			if (!v) {
+				handleFilterChange({ user_pin: undefined, search: undefined });
+			} else if (/^\d+$/.test(v)) {
+				// Pure digits → exact PIN match
+				handleFilterChange({ user_pin: v, search: undefined });
+			} else {
+				// Text → full-text search
+				handleFilterChange({ search: v, user_pin: undefined });
+			}
+		},
 		[handleFilterChange],
 	);
 

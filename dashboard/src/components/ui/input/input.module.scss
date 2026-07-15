@@ -2,6 +2,20 @@
 @use "@/styles/form-control-base" as *;
 @use "@/styles/input-base" as *;
 
+// ── Size variant maps (height: sm=28px, md=32px) ──────────────
+
+.sm {
+  height: 28px;
+  padding: 0 var(--ao-spacing-2);
+}
+
+.md {
+  height: 32px;
+  padding: 0 var(--ao-spacing-3);
+}
+
+// ── Wrapper & adornments ──────────────────────────────────────
+
 .inputWrapper {
   align-items: center;
   display: flex;
@@ -31,4 +45,62 @@
   &:last-child {
     inset-inline-end: var(--ao-spacing-3);
   }
+}
+
+.adornmentButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-xs);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: flex;
+  height: var(--ao-spacing-5);
+  justify-content: center;
+  padding: 0;
+  width: var(--ao-spacing-5);
+
+  &:hover {
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: -2px;
+  }
+}
+
+// ── autoGrow ──────────────────────────────────────────────────
+// Hidden span measures text width; the input is styled as an
+// inline-block that grows to match. The container stays flex but
+// doesn't force 100% width.
+
+.autoGrowContainer {
+  display: inline-flex;
+  width: auto;
+}
+
+.autoGrow {
+  box-sizing: content-box;
+  display: inline-block;
+  min-width: 40px;
+  width: auto;
+}
+
+// Hidden span mirrors input text for measurement. It must match
+// the input's font, size, and padding so offsetWidth is accurate.
+.measure {
+  font-family: var(--ao-font-family);
+  font-size: var(--ao-font-size-sm);
+  height: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  white-space: pre;
+  // Match the input's horizontal padding
+  padding: 0 var(--ao-spacing-3);
 }

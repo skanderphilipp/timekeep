@@ -4,4 +4,8 @@ export { useTableFilter } from "./use-table-filter";
 export { useTableRowSelection } from "./use-table-row-selection";
 export { useColumnDefinitions } from "./use-column-definitions";
 export { useSchemaColumns } from "./use-schema-columns";
+export { useFilterFields } from "./use-filter-fields";
+export type { FilterDimensionMeta, FilterRenderContext, UseFilterFieldsResult, FacetSearchMeta } from "./use-filter-fields";
+export { useFacetSearch } from "./use-facet-search";
+export type { UseFacetSearchOptions, UseFacetSearchResult, FacetOptionItem } from "./use-facet-search";
 export { useInfiniteScrollSentinel } from "./use-infinite-scroll-sentinel";

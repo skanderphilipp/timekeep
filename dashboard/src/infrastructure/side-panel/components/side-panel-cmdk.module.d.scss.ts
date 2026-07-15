@@ -6,6 +6,8 @@ declare const classNames: {
   readonly item: "item";
   readonly itemSelected: "itemSelected";
   readonly itemIcon: "itemIcon";
+  readonly groupLabel: "groupLabel";
+  readonly groupDivider: "groupDivider";
   readonly itemText: "itemText";
   readonly itemLabel: "itemLabel";
   readonly itemDesc: "itemDesc";

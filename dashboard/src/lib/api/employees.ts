@@ -1,4 +1,6 @@
 import { apiGet, apiPost, apiPut, apiDelete } from "./client";
+import type { FacetGroup } from "./client";
+import type { EntitySchema } from "@/types/metadata";
 
 // ── Employee CRUD ──────────────────────────────────────────────────────────
 
@@ -151,4 +153,36 @@ export function fetchEmployeeCalendar(
   return apiGet<CalendarDay[]>(
     `employees/${encodeURIComponent(pin)}/calendar${qs ? `?${qs}` : ""}`,
   ).json();
+}
+
+// ── Schema (Metadata System) ────────────────────────────────────────────────
+
+/** Fetch entity schema for employees (column metadata, sortability, filterability). */
+export function fetchEmployeeSchema(): Promise<EntitySchema> {
+  return apiGet<EntitySchema>("employees/schema").json();
+}
+
+/**
+ * Facet filter params for employee queries.
+ *
+ * Matches the Rust facet endpoint at GET /api/employees/filters.
+ */
+export type EmployeeFacetParams = {
+  dimension?: string;
+  search?: string;
+  limit?: number;
+};
+
+function buildEmployeeFacetParams(filter: EmployeeFacetParams): string {
+  const params = new URLSearchParams();
+  if (filter.dimension) params.set("dimension", filter.dimension);
+  if (filter.search) params.set("search", filter.search);
+  if (filter.limit !== undefined) params.set("limit", String(filter.limit));
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+/** Fetch faceted filter metadata for employee queries. */
+export function fetchEmployeeFilters(filter: EmployeeFacetParams = {}): Promise<FacetGroup[]> {
+  return apiGet<FacetGroup[]>(`employees/filters${buildEmployeeFacetParams(filter)}`).json();
 }

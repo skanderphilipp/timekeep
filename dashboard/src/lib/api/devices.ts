@@ -1,8 +1,10 @@
 import { apiGet, apiPost, apiPut, apiDelete } from "./client";
+import type { FacetGroup } from "./client";
 import { API_SCAN_TIMEOUT_MS } from "../constants";
 import type { DeviceStatusValue } from "@shared/device-statuses";
 import type { DeviceVendorValue } from "@shared/device-vendors";
 import type { DeviceCommandValue } from "@shared/device-commands";
+import type { EntitySchema } from "@/types/metadata";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -302,4 +304,36 @@ export function discoverDevice(body: DiscoverDeviceRequest): Promise<DiscoveredD
 /** Provision (register) a device after discovery. Requires Admin. */
 export function provisionDevice(body: DeviceConfig): Promise<DeviceConfig> {
   return apiPost<DeviceConfig>("devices/provision", body).json();
+}
+
+// ── Schema (Metadata System) ────────────────────────────────────────────────
+
+/** Fetch entity schema for devices (column metadata, sortability, filterability). */
+export function fetchDeviceSchema(): Promise<EntitySchema> {
+  return apiGet<EntitySchema>("devices/schema").json();
+}
+
+/**
+ * Facet filter params for device queries.
+ *
+ * Matches the Rust facet endpoint at GET /api/devices/filters.
+ */
+export type DeviceFacetParams = {
+  dimension?: string;
+  search?: string;
+  limit?: number;
+};
+
+function buildDeviceFacetParams(filter: DeviceFacetParams): string {
+  const params = new URLSearchParams();
+  if (filter.dimension) params.set("dimension", filter.dimension);
+  if (filter.search) params.set("search", filter.search);
+  if (filter.limit !== undefined) params.set("limit", String(filter.limit));
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+/** Fetch faceted filter metadata for device queries. */
+export function fetchDeviceFilters(filter: DeviceFacetParams = {}): Promise<FacetGroup[]> {
+  return apiGet<FacetGroup[]>(`devices/filters${buildDeviceFacetParams(filter)}`).json();
 }

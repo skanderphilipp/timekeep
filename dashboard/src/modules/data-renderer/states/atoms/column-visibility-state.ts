@@ -1,6 +1,15 @@
-import { atom } from "jotai";
-import { makeAtomFamily } from "./atom-family";
+import { createFamilyState } from "@/infrastructure/state/jotai";
 
-export const tableColumnVisibilityStateFamily = makeAtomFamily((_instanceId: string) =>
-  atom<Map<string, boolean>>(new Map()),
-);
+/**
+ * Per-table-instance column visibility state.
+ *
+ * Map of column ID → visible boolean. Columns not in the map are visible by default.
+ * Call `tableColumnVisibilityFamilyState.remove(instanceId)` on unmount.
+ */
+export const tableColumnVisibilityFamilyState = createFamilyState<
+  Map<string, boolean>,
+  string
+>({
+  key: "tableColumnVisibility",
+  defaultValue: new Map(),
+});

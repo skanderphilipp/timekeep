@@ -1,33 +1,30 @@
-import { useParams } from "react-router-dom";
-import { useLingui } from "@lingui/react";
-import { msg } from "@lingui/core/macro";
+import { IconUsers } from "@tabler/icons-react";
 
-import { AppRoute } from "@/lib/navigation";
-import { PageLayout, PageBar, PageBody } from "@/components/layout";
+import { PageShell, PageBar } from "@/components/layout";
 import { EmployeeDetailView } from "../components/employee-detail-view";
+import { useEmployeeDetailPage } from "../hooks/use-employee-detail-page";
 
 /**
  * Employee detail page — thin composite.
  *
- * Extracts the employee ID from the URL, wires it to
- * {@link EmployeeDetailView}, and owns the page chrome.
+ * All logic (route params, data fetching, label derivation) lives in
+ * {@link useEmployeeDetailPage}. The page only wires the result to
+ * layout components.
  */
 export function EmployeeDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const { _ } = useLingui();
+  const page = useEmployeeDetailPage();
 
   return (
-    <PageLayout>
-      <PageBar
-        title={_(msg`Employee`)}
-        breadcrumbs={[
-          { label: _(msg`Employees`), path: AppRoute.employees.list },
-          { label: _(msg`Detail`), path: AppRoute.employees.detail(id!) },
-        ]}
-      />
-      <PageBody>
-        <EmployeeDetailView employeeId={id!} />
-      </PageBody>
-    </PageLayout>
+    <PageShell
+      pageLabel={page.pageLabel}
+      header={
+        <PageBar
+          title={page.title}
+          icon={IconUsers}
+        />
+      }
+    >
+      <EmployeeDetailView employeeId={page.id} />
+    </PageShell>
   );
 }

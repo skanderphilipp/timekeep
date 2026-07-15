@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { Separator as BaseUISeparator } from "@base-ui/react/separator";
 
 import styles from "./separator.module.scss";
 
@@ -11,8 +12,11 @@ type SeparatorProps = {
 };
 
 /**
- * Horizontal separator / divider.
- * Can render as a plain line or with centered text (e.g., "or").
+ * Horizontal separator / divider built on @base-ui/react/separator.
+ *
+ * Plain mode: renders a `<div role="separator">` with proper ARIA.
+ * Labelled mode: renders text between two separator lines
+ * (base-ui does not natively support labels, so we compose manually).
  */
 export function Separator({ label, noMargin = false, className }: SeparatorProps) {
   if (label) {
@@ -23,20 +27,22 @@ export function Separator({ label, noMargin = false, className }: SeparatorProps
         data-no-margin={noMargin || undefined}
         className={clsx(styles.labelled, noMargin && styles.noMargin, className)}
       >
-        <span data-slot="separator-line" className={styles.line} />
+        <BaseUISeparator data-slot="separator-line" className={styles.line} />
         <span data-slot="separator-label" className={styles.label}>
           {label}
         </span>
-        <span data-slot="separator-line" className={styles.line} />
+        <BaseUISeparator data-slot="separator-line" className={styles.line} />
       </div>
     );
   }
 
   return (
-    <hr
+    <BaseUISeparator
       data-slot="separator"
       data-no-margin={noMargin || undefined}
       className={clsx(styles.root, noMargin && styles.noMargin, className)}
     />
   );
 }
+
+Separator.displayName = "Separator";

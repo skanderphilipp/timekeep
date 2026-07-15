@@ -1,17 +1,27 @@
 import { atom } from "jotai";
-import { makeAtomFamily } from "./atom-family";
+import { createFamilyState } from "@/infrastructure/state/jotai";
 import type { RowSelectionState } from "../../types";
 
-export const tableRowSelectionStateFamily = makeAtomFamily((_instanceId: string) =>
-  atom<RowSelectionState>({
+/**
+ * Per-table-instance row selection state.
+ *
+ * Call `tableRowSelectionFamilyState.remove(instanceId)` on unmount.
+ */
+export const tableRowSelectionFamilyState = createFamilyState<
+  RowSelectionState,
+  string
+>({
+  key: "tableRowSelection",
+  defaultValue: {
     selectedIds: new Map<string, boolean>(),
-  }),
-);
+  },
+});
 
+/** Toggle a single row's selection for a given table instance. */
 export const toggleRowSelectionAtom = atom(
   null,
   (get, set, payload: { instanceId: string; rowId: string }) => {
-    const selectionAtom = tableRowSelectionStateFamily(payload.instanceId);
+    const selectionAtom = tableRowSelectionFamilyState(payload.instanceId);
     const prev = get(selectionAtom);
     const next = new Map(prev.selectedIds);
     if (next.has(payload.rowId)) {
@@ -23,10 +33,11 @@ export const toggleRowSelectionAtom = atom(
   },
 );
 
+/** Select all rows for a given table instance. */
 export const selectAllRowsAtom = atom(
   null,
   (_get, set, payload: { instanceId: string; rowIds: string[] }) => {
-    const selectionAtom = tableRowSelectionStateFamily(payload.instanceId);
+    const selectionAtom = tableRowSelectionFamilyState(payload.instanceId);
     const next = new Map<string, boolean>();
     for (const id of payload.rowIds) {
       next.set(id, true);
@@ -35,7 +46,8 @@ export const selectAllRowsAtom = atom(
   },
 );
 
+/** Clear all row selections for a given table instance. */
 export const deselectAllRowsAtom = atom(null, (_get, set, payload: { instanceId: string }) => {
-  const selectionAtom = tableRowSelectionStateFamily(payload.instanceId);
+  const selectionAtom = tableRowSelectionFamilyState(payload.instanceId);
   set(selectionAtom, { selectedIds: new Map() });
 });

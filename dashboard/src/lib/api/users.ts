@@ -40,6 +40,11 @@ export function fetchUsers(): Promise<DashboardUser[]> {
   return apiGet<DashboardUser[]>("users").json();
 }
 
+/** Get a single dashboard user by ID. Requires Admin or Operator. */
+export function fetchUser(id: string): Promise<DashboardUser> {
+  return apiGet<DashboardUser>(`users/${encodeURIComponent(id)}`).json();
+}
+
 /** Create a new dashboard user. Requires Admin. */
 export function createUser(req: CreateDashboardUserRequest): Promise<DashboardUser> {
   return apiPost<DashboardUser>("users", req).json();

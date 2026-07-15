@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { PageError } from "../page-error";
+import { PageError } from "@/modules/shared/components";
 
 type ListErrorProps = {
   /** The name of the resource that failed to load (e.g. "devices", "API keys"). */

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { tableRowSelectionStateFamily } from "../atoms/row-selection-state";
+import { tableRowSelectionFamilyState } from "../atoms/row-selection-state";
 
 /**
  * Returns an atom that resolves to `true` when all provided row IDs
@@ -7,7 +7,7 @@ import { tableRowSelectionStateFamily } from "../atoms/row-selection-state";
  */
 export function allRowsSelectedSelector(instanceId: string, totalRowIds: string[]) {
   return atom((get) => {
-    const selection = get(tableRowSelectionStateFamily(instanceId));
+    const selection = get(tableRowSelectionFamilyState(instanceId));
     if (totalRowIds.length === 0) return false;
     return totalRowIds.every((id) => selection.selectedIds.has(id));
   });

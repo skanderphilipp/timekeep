@@ -7,10 +7,10 @@ import { i18n } from "@lingui/core";
 import { Provider as JotaiProvider } from "jotai";
 
 import { detectAndActivateLocale } from "@/infrastructure/locale/locale";
-import { SidePanelCmdkHandler } from "@/infrastructure/side-panel/side-panel-shell";
 import { ToastProvider } from "@/infrastructure/toast/toast";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ThemeProvider } from "@/infrastructure/theme";
+import { DevTools } from "@/devtools/DevTools";
 import { AuthProvider } from "@/modules/auth/components/auth-provider";
 import { App } from "./App";
 import { LS_THEME } from "@/lib/constants";
@@ -34,7 +34,7 @@ import "./styles/global.scss";
  * This prevents a flash of unstyled content (FOUC) on page load.
  *
  * Subsequent theme toggles are handled by `ThemeProvider` which reads
- * the Jotai `themeAtom` and syncs the DOM class via useLayoutEffect.
+ * the Jotai `themeState` and syncs the DOM class via useLayoutEffect.
  */
 function initTheme() {
   const stored = localStorage.getItem(LS_THEME);
@@ -76,7 +76,7 @@ async function bootstrap() {
             <BrowserRouter>
               <ToastProvider>
                 <ThemeProvider>
-                  <SidePanelCmdkHandler />
+                  <DevTools />
                   <ErrorBoundary>
                     <AuthProvider>
                       <App />

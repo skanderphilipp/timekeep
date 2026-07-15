@@ -55,6 +55,36 @@ export { TextArea } from "./text-area";
 export { Tooltip } from "./tooltip";
 export { VisuallyHidden } from "./visually-hidden";
 
+// Display (read-only cell renderers)
+export {
+  EllipsisDisplay,
+  TextDisplay,
+  BooleanDisplay,
+  DateDisplay,
+  NumberDisplay,
+  SelectDisplay,
+  MultiSelectDisplay,
+} from "./display";
+
+// Field Input (inline editing primitives)
+export {
+  FieldTextInput,
+  FieldBooleanInput,
+  FieldDateInput,
+  FieldSelectInput,
+  FieldMultiSelectInput,
+  FieldNumberInput,
+  isNonTextWritingKey,
+} from "./field-input";
+export type {
+  FieldTextInputProps,
+  FieldBooleanInputProps,
+  FieldDateInputProps,
+  FieldSelectInputProps,
+  FieldMultiSelectInputProps,
+  FieldNumberInputProps,
+} from "./field-input";
+
 // ── Tier 1: Primitives (simple molecules) — DO NOT import in modules ─────
 export { ActionGroup } from "./action-group";
 export { AvatarGroup } from "./avatar-group";
@@ -94,8 +124,8 @@ export { AnimatedPlaceholder } from "./animated-placeholder";
 export type { AnimatedPlaceholderProps, AnimatedPlaceholderType } from "./animated-placeholder";
 export { Combobox } from "./combobox";
 export type { ComboboxOption } from "./combobox";
-export { DataTable, TextCell, TimestampCell, DurationCell, StatusCell } from "./data-table";
-export type { SortDirection, SortState, DataTableColumn } from "./data-table";
+export { DataTable, TextCell, TimestampCell, DurationCell, StatusCell, EditableCell } from "./data-table";
+export type { SortDirection, SortState, DataTableColumn, EditableCellProps, EditableCellEditProps } from "./data-table";
 export { DatePicker } from "./date-picker";
 export type { DateRangePreset } from "./date-picker";
 export { Dialog } from "./dialog";
@@ -109,7 +139,7 @@ export type { FilterChip } from "./filter-chips";
 export { FilterDateRange } from "./filter-date-range";
 export { FilterDropdown } from "./filter-dropdown";
 export type { FilterField } from "./filter-dropdown";
-export { Form, FormField, FormActions, FormSection, FormFieldInput, FieldInputContainer, SchemaForm } from "./form";
+export { Form, FormFieldInput, FormActions, FormSection, SchemaForm } from "./form";
 export type { FormFieldDef } from "./form";
 export { InfiniteScrollSentinel } from "./infinite-scroll-sentinel";
 export { MultiSelect } from "./multi-select";

@@ -2,8 +2,8 @@
 
 .card {
   background: var(--ao-background-primary);
-  border-radius: var(--ao-radius-xl) 0 0 0;
-  box-shadow: var(--ao-shadow-page);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-radius-md);
   box-sizing: border-box;
   display: flex;
   flex: 1;
@@ -14,6 +14,6 @@
 
   @include respond-to("mobile") {
     border-radius: 0;
-    box-shadow: none;
+    border: none;
   }
 }

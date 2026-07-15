@@ -30,10 +30,7 @@ export const AllVariants: Story = {
       <PageBar
         title="Fatima Hassan"
         description="Employee detail view."
-        breadcrumbs={[
-          { label: "Employees", path: "/employees" },
-          { label: "Fatima Hassan", path: "/employees/146" },
-        ]}
+        actions={<Button variant="secondary" size="sm">Edit</Button>}
       />
     </div>
   ),

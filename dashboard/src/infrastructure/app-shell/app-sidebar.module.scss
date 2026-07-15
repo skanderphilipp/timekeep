@@ -1,121 +1,220 @@
 @use "@/styles/mixins" as *;
 
-// ── Sidebar ──────────────────────────────────────────────────────────────────
+// ── Sidebar Shell ─────────────────────────────────────────────────────────────
+//
+// Twenty-aligned sidebar: sticky on desktop, fixed overlay on mobile.
+// Smooth width transition between expanded (220px) and collapsed (48px).
+
+$sidebar-expanded: 220px;
+$sidebar-collapsed: 48px;
 
 .sidebar {
   background: var(--ao-background-secondary);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   height: 100vh;
   position: sticky;
   top: 0;
-  width: 240px;
-  flex-shrink: 0;
-  transition: width 0.2s ease;
-  z-index: 10;
+  transition: width duration(normal) ease;
+  width: $sidebar-expanded;
+  z-index: 20;
+  user-select: none;
 }
 
 .sidebarCollapsed {
-  width: 64px;
+  width: $sidebar-collapsed;
 }
 
-.sidebarHeader {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-3);
-  padding: var(--ao-spacing-5) var(--ao-spacing-4);
-}
+// ── Header ────────────────────────────────────────────────────────────────────
 
-.logo {
+.header {
   align-items: center;
-  background: var(--ao-accent-accent9);
-  border-radius: var(--ao-radius-md);
-  color: var(--ao-font-color-inverted);
   display: flex;
-  font-size: var(--ao-font-size-md);
-  font-weight: var(--ao-font-weight-semibold);
-  height: 34px;
-  justify-content: center;
   flex-shrink: 0;
-  width: 34px;
+  gap: var(--ao-spacing-2);
+  min-height: var(--ao-spacing-10);
+  padding: 0 var(--ao-spacing-2);
 }
 
 .brand {
-  font-size: var(--ao-font-size-lg);
-  font-weight: var(--ao-font-weight-semibold);
-  white-space: nowrap;
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--ao-spacing-2);
+  min-width: 0;
   overflow: hidden;
 }
 
-// ── Navigation ───────────────────────────────────────────────────────────────
+// ── Logo (SVG clock icon) ─────────────────────────────────────────────────────
+
+.logo {
+  flex-shrink: 0;
+  height: 28px;
+  width: 28px;
+}
+
+// ── Brand text group ──────────────────────────────────────────────────────────
+
+.brandTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: var(--ao-line-height-body);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.appName {
+  font-size: var(--ao-font-size-md);
+  font-weight: var(--ao-font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspaceName {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Header action buttons ─────────────────────────────────────────────────────
+
+.headerActions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.iconButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-md);
+  color: var(--ao-font-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: var(--ao-spacing-7);
+  justify-content: center;
+  transition:
+    background duration(fast) ease,
+    color duration(fast) ease;
+  width: var(--ao-spacing-7);
+
+  &:hover {
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Navigation (scrollable) ───────────────────────────────────────────────────
 
 .nav {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  flex: 1;
   gap: var(--ao-spacing-1);
+  min-height: 0;
   overflow-y: auto;
-  padding: var(--ao-spacing-2);
+  overflow-x: hidden;
+  padding: var(--ao-spacing-2) var(--ao-spacing-2) var(--ao-spacing-1);
+
+  @include custom-scrollbar(4px, var(--ao-border-color-medium));
 }
+
+// ── Navigation Item (leaf) ────────────────────────────────────────────────────
 
 .navItem {
   align-items: center;
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-secondary);
   display: flex;
-  font-size: var(--ao-font-size-sm);
+  font-size: var(--ao-font-size-md);
   font-weight: var(--ao-font-weight-medium);
-  gap: var(--ao-spacing-3);
-  height: 36px;
-  padding: 0 var(--ao-spacing-3);
+  gap: var(--ao-spacing-2);
+  height: var(--ao-spacing-7);
+  min-width: 0;
+  padding: var(--ao-spacing-1);
   text-decoration: none;
   transition:
     background 0.1s ease,
     color 0.1s ease;
   white-space: nowrap;
+  width: 100%;
 
   &:hover {
-    background: var(--ao-background-tertiary);
+    background: var(--ao-background-transparent-light);
     color: var(--ao-font-color-primary);
   }
 }
 
 .navItemActive {
-  background: var(--ao-accent-accent3);
-  color: var(--ao-accent-accent11);
+  background: var(--ao-background-transparent-light);
+  color: var(--ao-font-color-primary);
 }
 
 .navItemNested {
-  font-size: var(--ao-font-size-xs);
+  font-size: var(--ao-font-size-sm);
   font-weight: var(--ao-font-weight-regular);
   height: 32px;
 }
 
-// ── Nav Groups (collapsible) ──────────────────────────────────────────────────
+.navItemCollapsed {
+  justify-content: center;
+  padding: 0;
+  width: 100%;
+
+  &.navItemActive {
+    background: transparent;
+    color: var(--ao-accent-accent9);
+  }
+}
+
+.navItemCollapsedNested {
+  height: 28px;
+
+  &.navItemActive .navItemDot {
+    color: var(--ao-accent-accent9);
+  }
+}
+
+.navItemDot {
+  align-items: center;
+  color: var(--ao-font-color-tertiary);
+  display: flex;
+  font-size: 18px;
+  justify-content: center;
+  line-height: 1;
+  width: 20px;
+}
+
+// ── Navigation Group (collapsible parent) ─────────────────────────────────────
 
 .navGroup {
   display: flex;
   flex-direction: column;
-}
-
-.navGroupCollapsed {
-  display: contents;
+  width: 100%;
 }
 
 .navGroupHeader {
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
   display: flex;
   font-family: inherit;
-  font-size: var(--ao-font-size-sm);
+  font-size: var(--ao-font-size-md);
   font-weight: var(--ao-font-weight-medium);
-  gap: var(--ao-spacing-3);
-  height: 36px;
-  padding: 0 var(--ao-spacing-3);
+  gap: var(--ao-spacing-2);
+  height: var(--ao-spacing-7);
+  padding: 0 var(--ao-spacing-1);
   text-align: start;
   transition:
     background 0.1s ease,
@@ -123,7 +222,7 @@
   width: 100%;
 
   &:hover {
-    background: var(--ao-background-tertiary);
+    background: var(--ao-background-transparent-light);
     color: var(--ao-font-color-primary);
   }
 }
@@ -149,49 +248,84 @@
   transform: rotate(180deg);
 }
 
+.navGroupCollapsedIcon {
+  align-items: center;
+  border-radius: var(--ao-radius-md);
+  color: var(--ao-font-color-secondary);
+  display: flex;
+  height: var(--ao-spacing-7);
+  justify-content: center;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+  width: 100%;
+
+  &:hover {
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+.navGroupCollapsedIconActive {
+  color: var(--ao-font-color-primary);
+}
+
 .navGroupChildren {
   display: flex;
   flex-direction: column;
   gap: var(--ao-spacing-1);
+  overflow: hidden;
   padding-inline-start: var(--ao-spacing-5);
+  transition: max-height duration(fast) ease;
 }
 
-// ── Sidebar Footer ───────────────────────────────────────────────────────────
+// ── Footer ────────────────────────────────────────────────────────────────────
 
-.sidebarFooter {
+.footer {
   border-block-start: 1px solid var(--ao-border-color-light);
+  flex-shrink: 0;
   padding: var(--ao-spacing-2);
 }
 
-.collapseToggle {
+.footerControls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+}
+
+.footerIconButton {
   align-items: center;
   background: none;
   border: none;
-  border-radius: var(--ao-radius-sm);
+  border-radius: var(--ao-radius-md);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
-  display: flex;
-  font-size: var(--ao-font-size-sm);
-  gap: var(--ao-spacing-3);
-  height: 36px;
-  padding: 0 var(--ao-spacing-3);
-  width: 100%;
+  display: inline-flex;
+  height: var(--ao-spacing-7);
+  justify-content: center;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+  width: var(--ao-spacing-7);
 
   &:hover {
-    background: var(--ao-background-tertiary);
+    background: var(--ao-background-transparent-light);
+    color: var(--ao-font-color-primary);
   }
 }
 
-// ── Responsive ───────────────────────────────────────────────────────────────
+// ── Responsive (Mobile) ───────────────────────────────────────────────────────
 
 @media (max-width: $breakpoint-md) {
   .sidebar {
     inset-inline-start: 0;
     position: fixed;
     transform: translateX(-100%);
-    transition: transform 0.2s ease;
+    transition: transform duration(normal) ease;
     top: 0;
-    width: 260px;
+    width: 280px;
+    z-index: 30;
   }
 
   [dir="rtl"] .sidebar {
@@ -199,7 +333,7 @@
   }
 
   .sidebarCollapsed {
-    width: 260px;
+    width: 280px;
   }
 
   .sidebarOpen {

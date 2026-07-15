@@ -5,20 +5,18 @@ import { IconPlus, IconRadar } from "@tabler/icons-react";
 
 import { AppRoute } from "@/lib/navigation";
 import { useDeviceList } from "../hooks/use-device-list";
-import { Section, Button, FilterBar, SearchInput, Grid } from "@/components/ui";
+import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { DataBoundary } from "@/modules/shared/components";
+import { DataListView } from "@/modules/data-renderer";
 import type { DeviceSummary } from "@/lib/api";
 import { DeviceCard } from "./device-card";
 import { ScanNetworkDialog } from "./scan-network-dialog";
-import { DeviceListLoading, DeviceListError, DeviceListEmpty } from "../states";
 
 /**
- * Device list view — search filter, device cards, and network scan.
+ * Device list view — grid of device cards via {@link DataListView}.
  *
- * Uses `DataBoundary` for consistent loading → error → empty → data
- * state rendering. UI state (scanOpen) stays local via `useState`.
- * All business logic lives in `useDeviceList`.
+ * Uses `DataListView` with `layout="grid"` for consistent toolbar + state
+ * handling. Each device renders as a {@link DeviceCard} via `renderCard`.
  */
 export function DeviceListView() {
   const { _ } = useLingui();
@@ -33,6 +31,8 @@ export function DeviceListView() {
   } = useDeviceList();
 
   const [scanOpen, setScanOpen] = useState(false);
+
+  const hasDevices = (query.data?.length ?? 0) > 0;
 
   return (
     <>
@@ -57,40 +57,40 @@ export function DeviceListView() {
       />
 
       <Section>
-        <FilterBar onClear={handleClearFilters} hasActiveFilters={hasActiveFilters}>
-          <SearchInput
-            placeholder={_(msg`Search devices…`)}
-            value={search}
-            onChange={handleSearchChange}
-            debounceMs={300}
-          />
-        </FilterBar>
-      </Section>
-
-      <Section>
-        <DataBoundary<DeviceSummary>
-          data={query.data ? devices : undefined}
+        <DataListView<DeviceSummary>
+          layout="grid"
+          entity="device"
+          data={devices}
+          getRowKey={(d) => d.serial_number}
           isLoading={isLoading}
-          error={error ?? null}
+          error={error?.message ?? null}
           onRetry={() => query.refetch()}
-          loadingFallback={<DeviceListLoading />}
-          errorFallback={<DeviceListError onRetry={() => query.refetch()} />}
-          emptyFallback={
-            <DeviceListEmpty
-              hasActiveFilters={hasActiveFilters}
-              onClearFilters={handleClearFilters}
-              onScanNetwork={() => setScanOpen(true)}
-            />
+          searchPlaceholder={_(msg`Search by label, serial, or host…`)}
+          searchValue={search}
+          onSearchChange={handleSearchChange}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={handleClearFilters}
+          resultCount={devices.length}
+          renderCard={(device) => <DeviceCard device={device} />}
+          emptyState={
+            hasDevices ? (
+              <EmptyState
+                title={_(msg`No devices match`)}
+                description={_(msg`Try adjusting or clearing your search.`)}
+              />
+            ) : (
+              <EmptyState
+                title={_(msg`No devices`)}
+                description={_(msg`Add your first device or scan the network to discover ZKTeco scanners.`)}
+                action={
+                  <Button onClick={() => setScanOpen(true)} icon={<IconRadar size={16} />}>
+                    {_(msg`Scan Network`)}
+                  </Button>
+                }
+              />
+            )
           }
-        >
-          {(deviceList) => (
-            <Grid>
-              {deviceList.map((device) => (
-                <DeviceCard key={device.serial_number} device={device} />
-              ))}
-            </Grid>
-          )}
-        </DataBoundary>
+        />
       </Section>
 
       <ScanNetworkDialog open={scanOpen} onClose={() => setScanOpen(false)} />

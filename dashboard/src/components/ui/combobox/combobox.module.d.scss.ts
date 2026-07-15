@@ -1,4 +1,10 @@
 declare const classNames: {
+  readonly container: "container";
+  readonly fullWidth: "fullWidth";
+  readonly label: "label";
+  readonly required: "required";
+  readonly error: "error";
+  readonly helper: "helper";
   readonly positioner: "positioner";
   readonly popup: "popup";
   readonly list: "list";
@@ -7,6 +13,7 @@ declare const classNames: {
   readonly itemIndicator: "itemIndicator";
   readonly stateRow: "stateRow";
   readonly emptyText: "emptyText";
+  readonly triggerError: "triggerError";
   readonly trigger: "trigger";
   readonly chevron: "chevron";
   readonly placeholder: "placeholder";

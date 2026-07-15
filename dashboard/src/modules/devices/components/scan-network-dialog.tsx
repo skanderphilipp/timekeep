@@ -13,7 +13,6 @@ import {
   Button,
   Spinner,
   Banner,
-  DataTable,
   TextCell,
   Badge,
   EmptyState,
@@ -21,6 +20,8 @@ import {
   Text,
   Separator,
 } from "@/components/ui";
+// oxlint-disable-next-line bentech/require-data-list-view -- scan results table inside a dialog, not a standalone list page
+import { DataTable } from "@/components/ui";
 
 type ScanNetworkDialogProps = {
   open: boolean;
@@ -166,7 +167,7 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
       )}
 
       {state.status === "error" && (
-        <Banner variant="danger" onDismiss={reset}>
+        <Banner variant="danger" title={_(msg`Scan Failed`)} onDismiss={reset}>
           {state.error}
         </Banner>
       )}

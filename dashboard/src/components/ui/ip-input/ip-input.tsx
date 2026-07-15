@@ -12,7 +12,7 @@ import styles from "./ip-input.module.scss";
 const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
 
 type IpInputProps = {
-  /** Label text (optional — prefer FormField for labels). */
+  /** Label text rendered above the input. */
   label?: string;
   /** Validation error message. */
   error?: string;

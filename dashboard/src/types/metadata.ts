@@ -97,18 +97,41 @@ export interface ColumnPresentation {
 
 /**
  * Per-entity map of field name → presentation overrides.
- *
- * Example:
- *   PRESENTATION_OVERRIDES.punch.device_sn → { width: "150px", isLabelIdentifier: true }
  */
 export const PRESENTATION_OVERRIDES: Record<string, Record<string, ColumnPresentation>> = {
 	punch: {
 		timestamp: { width: "180px" },
-		user_pin: { width: "140px" },
+		user_pin: { width: "120px" },
 		device_sn: { width: "150px", isLabelIdentifier: true },
 		status: { width: "120px" },
 		verify_mode: { width: "110px" },
-		employee_name: { width: "160px" },
+		employee_name: { width: "160px", isLabelIdentifier: true },
 		device_label: { width: "150px" },
+	},
+	device: {
+		label: { width: "180px", isLabelIdentifier: true },
+		serial_number: { width: "160px" },
+		host: { width: "140px" },
+		port: { width: "80px", align: "center" },
+		vendor: { width: "110px" },
+		connection_status: { width: "130px" },
+		push_enabled: { width: "100px", align: "center" },
+		last_seen_at: { width: "160px" },
+	},
+	employee: {
+		pin: { width: "120px" },
+		name: { width: "200px", isLabelIdentifier: true },
+		department: { width: "150px" },
+		external_id: { width: "130px" },
+		active: { width: "100px", align: "center" },
+		created_at: { width: "160px" },
+	},
+	audit: {
+		timestamp: { width: "180px" },
+		actor: { width: "140px" },
+		action: { width: "120px", isLabelIdentifier: true },
+		resource: { width: "150px" },
+		status: { width: "100px", align: "center" },
+		ip_address: { width: "130px" },
 	},
 };

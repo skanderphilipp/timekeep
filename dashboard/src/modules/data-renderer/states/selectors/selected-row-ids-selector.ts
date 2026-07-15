@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { tableRowSelectionStateFamily } from "../atoms/row-selection-state";
+import { tableRowSelectionFamilyState } from "../atoms/row-selection-state";
 
 /**
  * Returns an atom that resolves to the array of currently selected row IDs.
@@ -12,7 +12,7 @@ import { tableRowSelectionStateFamily } from "../atoms/row-selection-state";
  */
 export function selectedRowIdsSelector(instanceId: string) {
   return atom((get) => {
-    const selection = get(tableRowSelectionStateFamily(instanceId));
+    const selection = get(tableRowSelectionFamilyState(instanceId));
     return Array.from(selection.selectedIds.keys());
   });
 }

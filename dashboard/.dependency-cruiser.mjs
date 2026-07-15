@@ -107,7 +107,19 @@ export default {
     },
 
     /* ------------------------------------------------------------------ */
-    /*  7. No circular dependencies through barrel files                  */
+    /*  7. modules/ MUST NOT contain a lib/ subdirectory                  */
+    /* ------------------------------------------------------------------ */
+    {
+      name: "no-module-lib-subdir",
+      severity: "error",
+      comment:
+        "Domain modules must not have lib/ subdirectories. Shared utility logic belongs in src/lib/, not inside feature modules. Modules should only have: components/, hooks/, pages/, states/, schemas/.",
+      from: { path: "src/modules/([^/]+)/lib/" },
+      to: { path: "src/modules/$1" },
+    },
+
+    /* ------------------------------------------------------------------ */
+    /*  8. No circular dependencies through barrel files                  */
     /* ------------------------------------------------------------------ */
     {
       name: "no-circular",

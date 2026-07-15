@@ -8,36 +8,29 @@ import type { ColumnDefinition } from "@/modules/data-renderer/types";
 /** Columns that are always visible and cannot be toggled off. */
 const REQUIRED_COLUMNS = ["timestamp"];
 
-type UsePunchColumnsOptions = {
-	/**
-	 * When true, columns are derived from the backend schema (GET /api/punches/schema)
-	 * instead of the hardcoded createPunchColumns() factory.
-	 *
-	 * Default: false (backward-compatible). Set to true to enable metadata-driven columns.
-	 */
-	useSchema?: boolean;
-};
-
 /**
  * Column definitions + user-controlled column visibility for the punch table.
+ *
+ * Uses schema-driven columns when the backend schema is available.
+ * Falls back to hardcoded columns only during loading or if the schema fetch fails.
  */
-export function usePunchColumns(options: UsePunchColumnsOptions = {}) {
+export function usePunchColumns() {
 	const { _ } = useLingui();
 
-	// ── Schema-driven columns (when enabled) ────────────────────────────
+	// ── Schema-driven columns (primary source) ────────────────────────────
 
-	const { columns: schemaColumns } = useSchemaColumns("punch");
+	const { columns: schemaColumns, isLoading: schemaLoading } = useSchemaColumns("punch");
 
-	// ── Hardcoded columns (fallback / backward-compatible) ──────────────
+	// ── Hardcoded columns (fallback only) ──────────────────────────────────
 
 	const hardcodedColumns = useMemo(() => createPunchColumns(_), [_]);
 
+	/** Use schema columns when available, hardcoded only as fallback. */
 	const allColumns = useMemo(() => {
-		if (options.useSchema && schemaColumns.length > 0) {
-			return schemaColumns;
-		}
-		return hardcodedColumns;
-	}, [options.useSchema, schemaColumns, hardcodedColumns]);
+		if (!schemaLoading && schemaColumns.length > 0) return schemaColumns;
+		if (schemaLoading) return []; // wait for schema
+		return hardcodedColumns; // schema failed — use hardcoded
+	}, [schemaLoading, schemaColumns, hardcodedColumns]);
 
 	/** Track which optional columns the user has hidden. */
 	const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
@@ -52,7 +45,7 @@ export function usePunchColumns(options: UsePunchColumnsOptions = {}) {
 		[allColumns, hiddenColumns],
 	);
 
-	/** Options for the column visibility MultiSelect. */
+	/** Options for the column visibility dropdown. */
 	const columnOptions = useMemo(
 		() =>
 			allColumns
@@ -61,7 +54,7 @@ export function usePunchColumns(options: UsePunchColumnsOptions = {}) {
 		[allColumns],
 	);
 
-	/** Currently selected (visible) column IDs for the MultiSelect. */
+	/** Currently selected (visible) column IDs. */
 	const visibleColumnIds = useMemo(
 		() => columns.filter((c) => c.isVisible).map((c) => c.id),
 		[columns],

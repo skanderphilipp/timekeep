@@ -7,6 +7,11 @@
   z-index: 40;
 }
 
+// ── Popup ────────────────────────────────────────────────────────────────────
+// base-ui's Dialog.Popup does NOT auto-center (unlike Popover.Positioner).
+// We use position:fixed + manual centering. `translate` (not `transform`)
+// avoids framer-motion transform conflicts with the enter/exit animation.
+
 .popup {
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
@@ -21,8 +26,7 @@
   width: calc(var(--ao-spacing-30) * 4);
   z-index: 41;
 
-  /* Centering: modern `translate` property (NOT `transform`) —
-     avoids framer-motion transform conflicts */
+  /* Centering */
   left: 50%;
   top: 50%;
   translate: -50% -50%;
@@ -39,6 +43,8 @@
     width: 100%;
   }
 }
+
+// ── Header ───────────────────────────────────────────────────────────────────
 
 .header {
   align-items: center;
@@ -74,6 +80,8 @@
   }
 }
 
+// ── Description ──────────────────────────────────────────────────────────────
+
 .description {
   color: var(--ao-font-color-tertiary);
   font-size: var(--ao-font-size-sm);
@@ -83,6 +91,8 @@
     padding: var(--ao-spacing-2) var(--ao-spacing-4) 0;
   }
 }
+
+// ── Content ──────────────────────────────────────────────────────────────────
 
 .content {
   padding: var(--ao-spacing-6);

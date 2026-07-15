@@ -1,16 +1,25 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
-import { tableSortStateFamily } from "../states/atoms/sort-state";
+import { tableSortFamilyState } from "../states/atoms/sort-state";
 import type { SortDirection, SortEntry } from "../types";
 
 /**
  * Hook: table sort state + handlers for a given table instance.
+ *
+ * Automatically cleans up the atom family cache entry on unmount.
  */
 export function useTableSort(instanceId: string) {
-  const sorts = useAtomValue(tableSortStateFamily(instanceId));
+  const sorts = useAtomValue(tableSortFamilyState(instanceId));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const setSorts = useSetAtom(tableSortStateFamily(instanceId) as any);
+  const setSorts = useSetAtom(tableSortFamilyState(instanceId) as any);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      tableSortFamilyState.remove(instanceId);
+    };
+  }, [instanceId]);
 
   const toggleSort = useCallback(
     (columnId: string) => {

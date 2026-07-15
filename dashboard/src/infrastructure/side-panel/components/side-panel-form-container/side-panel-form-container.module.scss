@@ -1,0 +1,61 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────
+
+.header {
+  padding: var(--ao-spacing-4) var(--ao-spacing-5) var(--ao-spacing-2);
+  flex-shrink: 0;
+}
+
+.title {
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-semibold);
+  margin: 0;
+}
+
+.description {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-sm);
+  margin: var(--ao-spacing-1) 0 0;
+}
+
+// ── Loading ────────────────────────────────────────────────────────────────
+
+.loadingContainer {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+// ── Error ──────────────────────────────────────────────────────────────────
+
+.errorBanner {
+  padding: 0 var(--ao-spacing-5);
+  flex-shrink: 0;
+}
+
+// ── Content (scrollable) ───────────────────────────────────────────────────
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--ao-spacing-2) var(--ao-spacing-5) var(--ao-spacing-4);
+}
+
+// ── Footer (sticky) ────────────────────────────────────────────────────────
+
+.footer {
+  align-items: center;
+  border-top: 1px solid var(--ao-border-color-light);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--ao-spacing-2);
+  justify-content: flex-end;
+  padding: var(--ao-spacing-3) var(--ao-spacing-5);
+}

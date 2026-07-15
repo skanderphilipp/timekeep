@@ -1,18 +1,27 @@
 @use "@/styles/mixins" as *;
 
 // ── Panel Wrapper ──────────────────────────────────────────────────────────────
+//
+// Lives inside the content-row flex container (see app-shell.module.scss).
+// When open, the panel pushes the page content left via flex layout.
+// When closed, it collapses to zero width — no overlay, no sticky positioning.
+//
+// All corners use the same radius as the PageLayout card for visual consistency.
 
 .panel {
-  border-inline-start: 1px solid var(--ao-border-color-light);
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-radius-md);
+  border-inline-start: 0;
   flex-shrink: 0;
-  height: 100vh;
+  height: 100%;
+  min-width: 0;
   overflow: hidden;
-  position: sticky;
-  top: 0;
-  transition: width 0.2s ease;
+  transition: width var(--ao-animation-duration-normal) ease;
   width: 0;
 
   &[data-open="true"] {
+    border-inline-start: 1px solid var(--ao-border-color-light);
     width: var(--tk-side-panel-width);
   }
 }
@@ -23,7 +32,6 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-width: calc(var(--ao-spacing-32) * 2.5);
   width: var(--tk-side-panel-width);
 }
 
@@ -77,7 +85,6 @@
   min-height: 0;
   overflow-y: auto;
 
-  // Subtle fade-in when content appears
   animation: sidePanelFadeIn duration(fast) ease;
 
   &:empty {
@@ -86,13 +93,8 @@
 }
 
 @keyframes sidePanelFadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 // ── Resize Gap (invisible drag zone) ────────────────────────────────────────────
@@ -108,7 +110,6 @@
   width: 0;
   z-index: 10;
 
-  // RTL: flip cursor direction
   [dir="rtl"] & {
     cursor: col-resize;
   }

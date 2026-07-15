@@ -5,7 +5,6 @@ import { msg } from "@lingui/core/macro";
 import {
   Dialog,
   Form,
-  FormField,
   FormActions,
   Button,
   Input,
@@ -74,26 +73,31 @@ export function EnrollEmployeeDialog({
       description={_(msg`Assign an employee PIN and biometric types to this device.`)}
     >
       <Form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        <FormField label={_(msg`Employee PIN`)} required>
-          <Input
-            placeholder={_(msg`e.g. 145`)}
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            fullWidth
-            autoFocus
-          />
-        </FormField>
+        <Input
+          label={_(msg`Employee PIN`)}
+          required
+          placeholder={_(msg`e.g. 145`)}
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          fullWidth
+          autoFocus
+        />
 
-        <FormField label={_(msg`Biometric Types`)}>
-          {BIOMETRIC_OPTIONS.map((opt) => (
-            <Checkbox
-              key={opt.key}
-              label={_(msg`${opt.label}`)}
-              checked={selectedTypes.includes(opt.key)}
-              onCheckedChange={(checked) => toggleType(opt.key, checked)}
-            />
-          ))}
-        </FormField>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-1)" }}>
+          <Text variant="label" as="span">
+            {_(msg`Biometric Types`)}
+          </Text>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ao-spacing-3)" }}>
+            {BIOMETRIC_OPTIONS.map((opt) => (
+              <Checkbox
+                key={opt.key}
+                label={_(msg`${opt.label}`)}
+                checked={selectedTypes.includes(opt.key)}
+                onCheckedChange={(checked) => toggleType(opt.key, checked)}
+              />
+            ))}
+          </div>
+        </div>
 
         {enroll.error && (
           <Text variant="caption" color="danger">

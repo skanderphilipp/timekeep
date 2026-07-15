@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
@@ -8,9 +8,9 @@ import { QueryKeys } from "@/lib/query-keys";
 import type { Role } from "@shared/roles";
 import {
   fetchUsers,
+  fetchUser,
   createUser,
   updateUser,
-  type DashboardUser,
   type CreateDashboardUserRequest,
   type UpdateDashboardUserRequest,
 } from "@/lib/api";
@@ -23,18 +23,29 @@ import { createUserFormSchema, type UserFormValues } from "../schemas/user-form.
  * Manages react-hook-form with zod validation, fetches the user list,
  * and handles the create/update mutation with toast feedback.
  *
- * @param existingUser — Existing user to edit, or undefined for create.
+ * When editing, fetches the existing user by ID to populate the form.
+ * When creating (no ID), uses default empty values.
+ *
+ * @param existingId — Existing user ID to edit, or undefined for create.
  * @param onSuccess — Called after a successful create/update (e.g., close dialog + refetch).
  */
-export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void) {
-  const isEditing = !!existingUser;
+export function useUserForm(existingId?: string, onSuccess?: () => void) {
+  const isEditing = !!existingId;
   const toast = useToast();
+  const queryClient = useQueryClient();
   const { _ } = useLingui();
 
   // Fetch users list (for the parent page)
   const usersQuery = useQuery({
     queryKey: QueryKeys.users.list(),
     queryFn: fetchUsers,
+  });
+
+  // Fetch existing user when editing
+  const { data: existingUser, isLoading: isLoadingUser } = useQuery({
+    queryKey: QueryKeys.users.detail(existingId!),
+    queryFn: () => fetchUser(existingId!),
+    enabled: isEditing,
   });
 
   // React Hook Form with zod validation
@@ -48,7 +59,7 @@ export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void
     },
   });
 
-  // Populate form when editing
+  // Populate form when editing and user data arrives
   useEffect(() => {
     if (existingUser && isEditing) {
       form.reset({
@@ -64,13 +75,13 @@ export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void
   // Create/update mutation
   const saveMutation = useMutation({
     mutationFn: (data: UserFormValues) => {
-      if (isEditing && existingUser) {
+      if (isEditing && existingId) {
         const req: UpdateDashboardUserRequest = {
           display_name: data.display_name || null,
           role: data.role as Role,
           active: data.active,
         };
-        return updateUser(existingUser.id, req);
+        return updateUser(existingId, req);
       }
       const req: CreateDashboardUserRequest = {
         username: data.username,
@@ -84,6 +95,7 @@ export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void
       toast.success(
         isEditing ? _(msg`User updated successfully.`) : _(msg`User created successfully.`),
       );
+      queryClient.invalidateQueries({ queryKey: QueryKeys.users.list() });
       form.reset();
       onSuccess?.();
     },
@@ -97,6 +109,7 @@ export function useUserForm(existingUser?: DashboardUser, onSuccess?: () => void
   return {
     form,
     isEditing,
+    isLoadingUser,
     isSaving: saveMutation.isPending,
     handleSubmit,
     usersQuery,

@@ -14,3 +14,10 @@ export { useDirection } from "./use-direction";
 export { useIsMobile } from "./use-is-mobile";
 export { useScreenSize } from "./use-screen-size";
 export { useCurrentUserLoader } from "./use-current-user";
+
+// Inline editing (Phase 4)
+export { useInlineEditMutation } from "./use-inline-edit-mutation";
+export type {
+  UseInlineEditMutationConfig,
+  CellUpdate,
+} from "./use-inline-edit-mutation";

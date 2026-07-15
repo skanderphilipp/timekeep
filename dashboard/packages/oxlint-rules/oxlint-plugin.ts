@@ -21,6 +21,18 @@ import {
   RULE_NAME as folderStructureName,
 } from "./rules/folder-structure";
 import {
+  rule as jotaiNamingConvention,
+  RULE_NAME as jotaiNamingConventionName,
+} from "./rules/jotai-naming-convention";
+import {
+  rule as jotaiNoRawAtom,
+  RULE_NAME as jotaiNoRawAtomName,
+} from "./rules/jotai-no-raw-atom";
+import {
+  rule as jotaiStateLocation,
+  RULE_NAME as jotaiStateLocationName,
+} from "./rules/jotai-state-location";
+import {
   rule as matchingStateVariable,
   RULE_NAME as matchingStateVariableName,
 } from "./rules/matching-state-variable";
@@ -71,6 +83,10 @@ import {
   rule as maxLinesPerFile,
   RULE_NAME as maxLinesPerFileRuleName,
 } from "./rules/max-lines-per-file";
+import {
+  rule as requireDataListView,
+  RULE_NAME as requireDataListViewName,
+} from "./rules/require-data-list-view";
 
 export default definePlugin({
   meta: { name: "bentech" },
@@ -80,6 +96,9 @@ export default definePlugin({
     [enforceModuleBoundariesName]: enforceModuleBoundaries,
     [enforceScssModulesName]: enforceScssModules,
     [folderStructureName]: folderStructure,
+    [jotaiNamingConventionName]: jotaiNamingConvention,
+    [jotaiNoRawAtomName]: jotaiNoRawAtom,
+    [jotaiStateLocationName]: jotaiStateLocation,
     [matchingStateVariableName]: matchingStateVariable,
     [maxConstsPerFileName]: maxConstsPerFile,
     [noHardcodedColorsName]: noHardcodedColors,
@@ -95,5 +114,6 @@ export default definePlugin({
     [noDeepUiImportsName]: noDeepUiImports,
     [requireStoryLevelTagName]: requireStoryLevelTag,
     [maxLinesPerFileRuleName]: maxLinesPerFile,
+    [requireDataListViewName]: requireDataListView,
   },
 });

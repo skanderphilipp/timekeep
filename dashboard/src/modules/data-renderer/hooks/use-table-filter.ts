@@ -1,16 +1,26 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
-import { tableFilterStateFamily } from "../states/atoms/filter-state";
+import { tableFilterFamilyState } from "../states/atoms/filter-state";
 import type { FilterEntry } from "../types";
 
 /**
  * Hook: table filter state + handlers for a given table instance.
+ *
+ * Automatically cleans up the atom family cache entry on unmount
+ * to prevent memory leaks from stale table instances.
  */
 export function useTableFilter(instanceId: string) {
-  const filters = useAtomValue(tableFilterStateFamily(instanceId));
+  const filters = useAtomValue(tableFilterFamilyState(instanceId));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const setFilters = useSetAtom(tableFilterStateFamily(instanceId) as any);
+  const setFilters = useSetAtom(tableFilterFamilyState(instanceId) as any);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      tableFilterFamilyState.remove(instanceId);
+    };
+  }, [instanceId]);
 
   const setFilter = useCallback(
     (entry: FilterEntry) => {

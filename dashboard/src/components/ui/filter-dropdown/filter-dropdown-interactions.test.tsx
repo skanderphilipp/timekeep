@@ -73,11 +73,12 @@ describe("FilterDropdown interactions", () => {
     expect(screen.queryByTestId("value-status")).toBeNull();
   });
 
-  it("closes popover when backdrop is clicked", async () => {
+  it("closes popover when clicking outside", async () => {
     const user = userEvent.setup();
 
     render(
       <Wrapper>
+        <div data-testid="outside">Outside content</div>
         <FilterDropdown fields={twoFields} />
       </Wrapper>,
     );
@@ -85,8 +86,8 @@ describe("FilterDropdown interactions", () => {
     await user.click(screen.getByRole("button", { name: /filter/i }));
     expect(screen.getByText("Filter by")).toBeInTheDocument();
 
-    const backdrop = document.querySelector('[aria-hidden="true"]')!;
-    await user.click(backdrop);
+    // Click outside the popover — base-ui handles dismiss via outside press
+    await user.click(screen.getByTestId("outside"));
 
     expect(screen.queryByText("Filter by")).toBeNull();
   });
@@ -101,6 +102,7 @@ describe("FilterDropdown interactions", () => {
     );
 
     const filterButton = screen.getByRole("button", { name: /filter/i });
+    // base-ui manages aria-expanded on the Popover.Trigger button
     expect(filterButton.getAttribute("aria-expanded")).toBe("false");
 
     await user.click(filterButton);

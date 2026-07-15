@@ -1,13 +1,13 @@
 declare const classNames: {
   readonly wrapper: "wrapper";
+  readonly root: "root";
   readonly track: "track";
-  readonly fill: "fill";
+  readonly indicator: "indicator";
   readonly label: "label";
   readonly sm: "sm";
   readonly md: "md";
   readonly success: "success";
   readonly warning: "warning";
   readonly danger: "danger";
-  readonly indeterminate: "indeterminate";
 };
 export = classNames;

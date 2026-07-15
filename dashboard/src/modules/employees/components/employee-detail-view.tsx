@@ -1,12 +1,13 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconArrowLeft, IconPencil, IconUsersPlus } from "@tabler/icons-react";
+import { IconPencil, IconUsersPlus } from "@tabler/icons-react";
 
 import { AppRoute } from "@/lib/navigation";
 import { useEmployeeDetail } from "../hooks/use-employee-detail";
+import { useEmployeeSync } from "../hooks/use-employee-sync";
 import { useEmployeeSummary } from "../hooks/use-employee-summary";
 import { useEmployeeWorkDays } from "../hooks/use-employee-work-days";
-import { employeeStatCards } from "../lib/employee-stats";
+import { employeeStatCards } from "@/lib/employee-stats";
 import { Section, ActionGroup, Card, ListLoading, EmptyState, Button, Badge, Grid, StatCard, Heading } from "@/components/ui";
 import { PageError } from "@/modules/shared/components";
 import { EmployeeInfoPanel } from "./employee-info-panel";
@@ -20,8 +21,8 @@ type EmployeeDetailViewProps = {
 /**
  * Employee detail view — identity, attendance KPIs, and daily punch log.
  *
- * Composes exclusively from existing UI primitives and metadata-driven
- * molecules ({@link Grid}, {@link StatCard}, {@link MetadataGrid}).
+ * The "Back to Employees" button is intentionally absent — breadcrumbs
+ * in {@link PageBar} serve this purpose.
  */
 export function EmployeeDetailView({ employeeId }: EmployeeDetailViewProps) {
   const { _ } = useLingui();
@@ -32,6 +33,7 @@ export function EmployeeDetailView({ employeeId }: EmployeeDetailViewProps) {
 
   const summaryQuery = useEmployeeSummary(pin);
   const workDaysQuery = useEmployeeWorkDays(pin);
+  const syncToDevices = useEmployeeSync(employeeId);
 
   // ── States ──────────────────────────────────────────────────────────
 
@@ -76,13 +78,16 @@ export function EmployeeDetailView({ employeeId }: EmployeeDetailViewProps) {
       {/* Actions bar */}
       <Section>
         <ActionGroup>
-        <Button to={AppRoute.employees.list} variant="secondary" size="sm" icon={<IconArrowLeft size={16} />}>
-          {_(msg`All Employees`)}
-        </Button>
         <Button to={AppRoute.employees.edit(employeeId)} variant="secondary" size="sm" icon={<IconPencil size={16} />}>
           {_(msg`Edit`)}
         </Button>
-        <Button variant="secondary" size="sm" icon={<IconUsersPlus size={16} />}>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<IconUsersPlus size={16} />}
+          onClick={() => syncToDevices.mutate()}
+          loading={syncToDevices.isPending}
+        >
           {_(msg`Sync to Devices`)}
         </Button>
         </ActionGroup>

@@ -1,0 +1,39 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-5);
+}
+
+.scheduleRow {
+  display: flex;
+  gap: var(--ao-spacing-3);
+  align-items: center;
+}
+
+.thresholdRow {
+  display: flex;
+  gap: var(--ao-spacing-3);
+  flex-wrap: wrap;
+}
+
+.thresholdInput {
+  width: 160px;
+}
+
+.dash {
+  margin-top: var(--ao-spacing-5);
+}
+
+.overnightBadge {
+  margin-top: var(--ao-spacing-5);
+}
+
+.preview {
+  display: flex;
+  gap: var(--ao-spacing-4);
+  font-size: var(--ao-font-size-sm);
+}
+
+.sectionLabel {
+  margin-bottom: var(--ao-spacing-2);
+}

@@ -1,4 +1,15 @@
+@use "@/styles/form-control-base" as *;
+@use "@/styles/mixins" as *;
 @use "@/styles/dropdown-base" as *;
+
+.triggerError {
+  border-color: var(--ao-color-red9);
+
+  &:focus-visible,
+  &[data-popup-open] {
+    border-color: var(--ao-color-red9);
+  }
+}
 
 .trigger {
   align-items: center;

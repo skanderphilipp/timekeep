@@ -1,7 +1,8 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { createState } from "@/infrastructure/state/jotai";
+import { STORAGE_KEYS } from "@/lib/constants";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────
 
 /** Side panel constraints. Ported from Twenty's SIDE_PANEL_CONSTRAINTS. */
 export const SIDE_PANEL_CONSTRAINTS = {
@@ -34,11 +35,31 @@ export const sidePanelOpenAtom = atom(false);
 export const sidePanelTitleAtom = atom<string | undefined>(undefined);
 
 /**
- * Panel content renderer.
- * Store a function that returns ReactNode to avoid storing JSX in atoms.
- * Set to `null` when the panel has no content to render.
+ * Internal: stores render functions wrapped in an object.
+ *
+ * Jotai's simple writable atoms interpret function values as updaters
+ * (same as React's setState(prev => newValue)). To store a render
+ * function without Jotai calling it, we wrap it in `{ fn }`.
  */
-export const sidePanelContentAtom = atom<(() => React.ReactNode) | null>(null);
+type ContentWrapper = { fn: () => React.ReactNode };
+const rawContentAtom = atom<ContentWrapper | null>(null);
+
+/**
+ * Panel content renderer — safely stores a render function in Jotai.
+ *
+ * Read: returns the stored function or null.
+ * Write: wraps the function in an object so Jotai doesn't call it as
+ * an updater. Set to `null` when the panel has no content to render.
+ */
+export const sidePanelContentAtom = atom(
+  (get): (() => React.ReactNode) | null => {
+    const wrapper = get(rawContentAtom);
+    return wrapper?.fn ?? null;
+  },
+  (_get, set, fn: (() => React.ReactNode) | null) => {
+    set(rawContentAtom, fn ? { fn } : null);
+  },
+);
 
 /**
  * Convenience write-only atom: opens the panel with given title and content.
@@ -70,7 +91,8 @@ export const closeSidePanelAtom = atom(null, (_get, set) => {
  * page refreshes. The CSS variable `--tk-side-panel-width` is set by the
  * SidePanel component on mount and during resize.
  */
-export const sidePanelWidthAtom = atomWithStorage<number>(
-  "ao:side-panel-width",
-  SIDE_PANEL_CONSTRAINTS.default,
-);
+export const sidePanelWidthState = createState<number>({
+  key: STORAGE_KEYS.sidePanelWidth,
+  defaultValue: SIDE_PANEL_CONSTRAINTS.default,
+  localStorage: true,
+});

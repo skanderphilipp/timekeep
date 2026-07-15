@@ -1,35 +1,14 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  IconDashboard,
-  IconDevices,
-  IconFingerprint,
-  IconReport,
-  IconSettings,
-  IconPlus,
-  IconUsers,
-  IconKey,
-  IconHistory,
-  type Icon,
-} from "@tabler/icons-react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { clsx } from "clsx";
 
-import { AppRoute } from "@/lib/navigation";
 import { SearchInput } from "@/components/ui/search-input/search-input";
+import { useCommands } from "@/infrastructure/commands";
+import type { Command } from "@/infrastructure/commands";
 import styles from "./side-panel-cmdk.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-
-type CommandItem = {
-  id: string;
-  label: string;
-  description?: string;
-  icon: Icon;
-  keywords: string[];
-  action: () => void;
-};
 
 type SidePanelCmdkProps = {
   onClose: () => void;
@@ -42,11 +21,16 @@ type SidePanelCmdkProps = {
  *
  * Renders inside the right side panel (not a modal dialog). Press Cmd+K
  * to open the panel with this view, then search + navigate via keyboard.
- * Replaces the old standalone CommandPaletteDialog entirely.
+ *
+ * Reads from the central {@link CommandRegistry}:
+ * - Contextual commands (page-specific) are shown first
+ * - Global commands (available everywhere) are shown after
+ * - Search filters across both groups
  */
 export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
   const { _ } = useLingui();
-  const navigate = useNavigate();
+  const { contextual, global } = useCommands();
+
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,123 +40,25 @@ export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
-  // Build i18n'd command items
-  const items: CommandItem[] = useMemo(
-    () => [
-      {
-        id: "dashboard",
-        label: _(msg`Dashboard`),
-        description: _(msg`Attendance overview`),
-        icon: IconDashboard,
-        keywords: ["home", "overview"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.dashboard);
-        },
-      },
-      {
-        id: "devices",
-        label: _(msg`Devices`),
-        description: _(msg`Manage biometric scanners`),
-        icon: IconDevices,
-        keywords: ["scanner", "hardware"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.devices.list);
-        },
-      },
-      {
-        id: "devices-add",
-        label: _(msg`Add Device`),
-        description: _(msg`Register a new scanner`),
-        icon: IconPlus,
-        keywords: ["new", "register", "scanner"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.devices.new);
-        },
-      },
-      {
-        id: "punches",
-        label: _(msg`Punch Records`),
-        description: _(msg`View and query attendance data`),
-        icon: IconFingerprint,
-        keywords: ["attendance", "records", "check-in"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.punches.list);
-        },
-      },
-      {
-        id: "users",
-        label: _(msg`Users`),
-        description: _(msg`Manage dashboard accounts`),
-        icon: IconUsers,
-        keywords: ["accounts", "roles", "admin"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.settings.users);
-        },
-      },
-      {
-        id: "api-keys",
-        label: _(msg`API Keys`),
-        description: _(msg`Manage integration keys`),
-        icon: IconKey,
-        keywords: ["integrations", "tokens"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.settings.apiKeys);
-        },
-      },
-      {
-        id: "audit-log",
-        label: _(msg`Audit Log`),
-        description: _(msg`View activity history`),
-        icon: IconHistory,
-        keywords: ["history", "activity", "events"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.legacy.audit);
-        },
-      },
-      {
-        id: "reports",
-        label: _(msg`Reports`),
-        description: _(msg`Attendance reports and exports`),
-        icon: IconReport,
-        keywords: ["export", "csv", "summary"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.reports);
-        },
-      },
-      {
-        id: "settings",
-        label: _(msg`Settings`),
-        description: _(msg`Application configuration`),
-        icon: IconSettings,
-        keywords: ["config", "preferences"],
-        action: () => {
-          onClose();
-          navigate(AppRoute.settings.system);
-        },
-      },
-    ],
-    [_],
-  );
-
   // Filter by query
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        item.description?.toLowerCase().includes(q) ||
-        item.keywords.some((kw) => kw.includes(q)),
-    );
-  }, [items, query]);
+    if (!q) return { contextual, global };
+    const filterFn = (cmd: Command) =>
+      cmd.label.toLowerCase().includes(q) ||
+      cmd.description?.toLowerCase().includes(q) ||
+      cmd.keywords.some((kw) => kw.toLowerCase().includes(q));
+    return {
+      contextual: contextual.filter(filterFn),
+      global: global.filter(filterFn),
+    };
+  }, [contextual, global, query]);
+
+  // Flat list for keyboard navigation
+  const flatFiltered = useMemo(
+    () => [...filtered.contextual, ...filtered.global],
+    [filtered],
+  );
 
   // Reset selection when query changes
   useEffect(() => {
@@ -183,17 +69,24 @@ export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
+      setSelectedIndex((i) => Math.min(i + 1, flatFiltered.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" && filtered[selectedIndex]) {
+    } else if (e.key === "Enter" && flatFiltered[selectedIndex]) {
       e.preventDefault();
-      filtered[selectedIndex].action();
+      flatFiltered[selectedIndex].action();
     } else if (e.key === "Escape") {
       onClose();
     }
   };
+
+  const hasResults = flatFiltered.length > 0;
+  const hasContextual = filtered.contextual.length > 0;
+  const hasGlobal = filtered.global.length > 0;
+
+  // Track flat index to determine which group an item belongs to
+  // (reserved for future keyboard navigation that considers groups)
 
   return (
     <div data-slot="side-panel-cmdk" className={styles.container} onKeyDown={handleKeyDown}>
@@ -207,38 +100,142 @@ export function SidePanelCmdk({ onClose }: SidePanelCmdkProps) {
       </div>
 
       <div data-slot="cmdk-results" className={styles.results}>
-        {filtered.length === 0 ? (
+        {!hasResults ? (
           <div data-slot="cmdk-empty" className={styles.empty}>
             {_(msg`No results found.`)}
           </div>
         ) : (
-          filtered.map((item, index) => {
-            const isSelected = index === selectedIndex;
-            return (
-              <button
-                key={item.id}
-                data-slot="cmdk-item"
-                data-selected={isSelected || undefined}
-                className={clsx(styles.item, isSelected && styles.itemSelected)}
-                onClick={item.action}
-                onMouseEnter={() => setSelectedIndex(index)}
-              >
-                <item.icon data-slot="cmdk-item-icon" size={18} className={styles.itemIcon} />
-                <div data-slot="cmdk-item-text" className={styles.itemText}>
-                  <span data-slot="cmdk-item-label" className={styles.itemLabel}>
-                    {item.label}
-                  </span>
-                  {item.description && (
-                    <span data-slot="cmdk-item-desc" className={styles.itemDesc}>
-                      {item.description}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })
+          <CommandList
+            query={query}
+            contextual={filtered.contextual}
+            global={filtered.global}
+            flatFiltered={flatFiltered}
+            selectedIndex={selectedIndex}
+            setSelectedIndex={setSelectedIndex}
+            hasContextual={hasContextual}
+            hasGlobal={hasGlobal}
+            _={_}
+          />
         )}
       </div>
     </div>
+  );
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+function CommandList({
+  query,
+  contextual,
+  global: globalCommands,
+  flatFiltered,
+  selectedIndex,
+  setSelectedIndex,
+  hasContextual,
+  hasGlobal,
+  _,
+}: {
+  query: string;
+  contextual: Command[];
+  global: Command[];
+  flatFiltered: Command[];
+  selectedIndex: number;
+  setSelectedIndex: (i: number | ((prev: number) => number)) => void;
+  hasContextual: boolean;
+  hasGlobal: boolean;
+  _: ReturnType<typeof useLingui>["_"];
+}) {
+  // When searching, flatten everything (no group headers)
+  if (query.trim()) {
+    return (
+      <>
+        {flatFiltered.map((item, index) => (
+          <CommandItemButton
+            key={item.id}
+            item={item}
+            isSelected={index === selectedIndex}
+            onSelect={() => setSelectedIndex(index)}
+          />
+        ))}
+      </>
+    );
+  }
+
+  // No query: show contextual first, then global, with group headers
+  return (
+    <>
+      {hasContextual && (
+        <div data-slot="cmdk-group">
+          <div data-slot="cmdk-group-label" className={styles.groupLabel}>
+            {_(msg`Page commands`)}
+          </div>
+          {contextual.map((item, index) => {
+            const flatIndex = index;
+            const isSelected = flatIndex === selectedIndex;
+            return (
+              <CommandItemButton
+                key={item.id}
+                item={item}
+                isSelected={isSelected}
+                onSelect={() => setSelectedIndex(flatIndex)}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {hasGlobal && (
+        <div data-slot="cmdk-group">
+          {hasContextual && <div className={styles.groupDivider} />}
+          <div data-slot="cmdk-group-label" className={styles.groupLabel}>
+            {_(msg`All commands`)}
+          </div>
+          {globalCommands.map((item, index) => {
+            const flatIndex = contextual.length + index;
+            const isSelected = flatIndex === selectedIndex;
+            return (
+              <CommandItemButton
+                key={item.id}
+                item={item}
+                isSelected={isSelected}
+                onSelect={() => setSelectedIndex(flatIndex)}
+              />
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+function CommandItemButton({
+  item,
+  isSelected,
+  onSelect,
+}: {
+  item: Command;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      data-slot="cmdk-item"
+      data-selected={isSelected || undefined}
+      className={clsx(styles.item, isSelected && styles.itemSelected)}
+      onClick={item.action}
+      onMouseEnter={onSelect}
+    >
+      <item.icon data-slot="cmdk-item-icon" size={18} className={styles.itemIcon} />
+      <div data-slot="cmdk-item-text" className={styles.itemText}>
+        <span data-slot="cmdk-item-label" className={styles.itemLabel}>
+          {item.label}
+        </span>
+        {item.description && (
+          <span data-slot="cmdk-item-desc" className={styles.itemDesc}>
+            {item.description}
+          </span>
+        )}
+      </div>
+    </button>
   );
 }

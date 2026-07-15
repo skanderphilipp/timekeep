@@ -1,42 +1,41 @@
 import { Controller, type UseFormReturn } from "react-hook-form";
 
-import { FormField } from "@/components/ui/form/form-field";
-import { FieldInputContainer } from "@/components/ui/form/field-input-container";
 import { PermissionMultiSelect } from "@/modules/shared/components/permission-multiselect";
 import type { FormPermissionsFieldDef } from "@/components/ui/form/form-field-def";
 
+/**
+ * Permissions form field — self-contained PermissionMultiSelect.
+ *
+ * PermissionMultiSelect passes label/error/helper through to MultiSelect.
+ * Twenty-aligned: no FormField wrapper needed.
+ */
 export function FormFieldPermissions({
   field,
   form,
-  inputId,
 }: {
   field: FormPermissionsFieldDef;
   form: UseFormReturn<any>;
-  inputId: string;
+  inputId?: string;
 }) {
   const error = form.formState.errors[field.name]?.message as string | undefined;
 
   return (
-    <FormField
-      label={field.label}
-      required={field.required}
-      helperText={field.description}
-      error={error}
-      htmlFor={inputId}
-    >
-      <FieldInputContainer>
-        <Controller
-          name={field.name}
-          control={form.control}
-          render={({ field: controllerField }) => (
-            <PermissionMultiSelect
-              values={(controllerField.value as string[]) ?? []}
-              onChange={controllerField.onChange}
-              placeholder={field.placeholder}
-            />
-          )}
+    <Controller
+      name={field.name}
+      control={form.control}
+      render={({ field: controllerField }) => (
+        <PermissionMultiSelect
+          label={field.label}
+          error={error}
+          helperText={field.description}
+          required={field.required}
+          values={(controllerField.value as string[]) ?? []}
+          onChange={controllerField.onChange}
+          placeholder={field.placeholder}
+          disabled={field.disabled}
+          fullWidth
         />
-      </FieldInputContainer>
-    </FormField>
+      )}
+    />
   );
 }

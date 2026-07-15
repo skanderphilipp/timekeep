@@ -5,7 +5,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--ao-spacing-1);
   width: 100%;
 }
 
@@ -92,6 +92,6 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ao-spacing-1);
-  padding: var(--ao-spacing-1) 0;
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-2) 0;
 }

@@ -1,12 +1,12 @@
 @use "@/styles/mixins" as *;
 
-// ── Root ─────────────────────────────────────────────────────────────────────
+// ── Positioner ─────────────────────────────────────────────────────────────
 
-.root {
-  position: relative;
+.positioner {
+  z-index: 50;
 }
 
-// ── Filter button ────────────────────────────────────────────────────────────
+// ── Filter button (now Popover.Trigger) ────────────────────────────────────
 
 .filterButton {
   align-items: center;
@@ -32,38 +32,25 @@
     color: var(--ao-font-color-primary);
   }
 
-  &[data-open="true"] {
+  &[data-popup-open] {
     background: var(--ao-background-tertiary);
     border-color: var(--ao-border-color-strong);
     color: var(--ao-font-color-primary);
   }
 }
 
-// ── Backdrop ─────────────────────────────────────────────────────────────────
-
-.backdrop {
-  background: transparent;
-  inset: 0;
-  position: fixed;
-  z-index: 40;
-}
-
-// ── Popover ──────────────────────────────────────────────────────────────────
+// ── Popover ────────────────────────────────────────────────────────────────
 
 .popover {
   background: var(--ao-background-primary);
   border: 1px solid var(--ao-border-color-medium);
   border-radius: var(--ao-radius-md);
   box-shadow: var(--ao-shadow-lg);
-  left: 0;
   min-width: calc(var(--ao-spacing-32) + var(--ao-spacing-23));
   overflow: hidden;
-  position: absolute;
-  top: calc(100% + var(--ao-spacing-1));
-  z-index: 50;
 }
 
-// ── Field list (Step 1) ──────────────────────────────────────────────────────
+// ── Field list (Step 1) ────────────────────────────────────────────────────
 
 .fieldList {
   display: flex;
@@ -119,7 +106,7 @@
   min-width: 0;
 }
 
-// ── Value panel (Step 2) ─────────────────────────────────────────────────────
+// ── Value panel (Step 2) ───────────────────────────────────────────────────
 
 .valuePanel {
   display: flex;

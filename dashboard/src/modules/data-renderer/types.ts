@@ -20,11 +20,12 @@ export type { EntityType } from "@/types/entities";
 
 // ── Field types ──────────────────────────────────────────────────────────
 
-/** Discriminants for Alsabah's 6 field types. */
+/** Discriminants for Alsabah's 7 field types. */
 export type FieldType =
   | "text"
   | "device_sn"
   | "user_pin"
+  | "employee_name"
   | "timestamp"
   | "status"
   | "direction"
@@ -46,6 +47,10 @@ export interface DeviceSnFieldMetadata extends BaseFieldMetadata {
 }
 
 export interface UserPinFieldMetadata extends BaseFieldMetadata {
+  settings?: null;
+}
+
+export interface EmployeeNameFieldMetadata extends BaseFieldMetadata {
   settings?: null;
 }
 
@@ -85,6 +90,7 @@ export type FieldMetadata =
   | TextFieldMetadata
   | DeviceSnFieldMetadata
   | UserPinFieldMetadata
+  | EmployeeNameFieldMetadata
   | TimestampFieldMetadata
   | StatusFieldMetadata
   | DirectionFieldMetadata

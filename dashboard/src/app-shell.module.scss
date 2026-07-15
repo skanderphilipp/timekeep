@@ -21,9 +21,14 @@
 }
 
 // ── Layout ───────────────────────────────────────────────────────────────────
+//
+// Twenty-aligned layered background:
+//   Shell background: gray3 — darker than the white PageLayout card
+//   PageLayout: white card with border + border-radius inside the content area
+//   Side panel: white panel with rounded bottom-right, sibling of content
 
 .shell {
-  background: var(--ao-background-page);
+  background: var(--ao-color-gray3);
   display: flex;
   min-height: 100vh;
 }
@@ -37,15 +42,33 @@
   min-width: 0;
 }
 
-// ── Content ──────────────────────────────────────────────────────────────────
+// ── Content Row (page content + side panel) ─────────────────────────────────
+//
+// Flex row containing the page content and the side panel as siblings.
+// Gap creates visual separation between the PageLayout card and the side panel.
+// The shell's gray3 background shows through the gap.
+
+.contentRow {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: var(--ao-spacing-2);
+  min-height: 0;
+  min-width: 0;
+  padding: 0 var(--ao-spacing-2) var(--ao-spacing-2) 0;
+}
+
+// ── Page Content ─────────────────────────────────────────────────────────────
+//
+// Simple flex container — no background, no border.
+// The PageLayout component inside provides the white card with border-radius.
 
 .content {
   display: flex;
-  flex: 1;
+  flex: 1 1 0;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  width: 100%;
 }
 
 // ── Mobile Overlay ───────────────────────────────────────────────────────────
@@ -63,5 +86,11 @@
 @media (max-width: $breakpoint-md) {
   .overlay {
     display: block;
+  }
+
+  .contentRow {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
   }
 }

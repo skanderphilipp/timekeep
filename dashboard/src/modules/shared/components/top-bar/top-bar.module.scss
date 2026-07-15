@@ -1,0 +1,100 @@
+@use "@/styles/mixins" as *;
+
+// ── Root ─────────────────────────────────────────────────────────────────────
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-2);
+  width: 100%;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ao-background-primary);
+}
+
+// ── Top row: left + center + right ───────────────────────────────────────────
+
+.topRow {
+  align-items: center;
+  display: flex;
+  gap: var(--ao-spacing-2);
+  min-height: var(--ao-spacing-10);
+  padding: 0 var(--ao-spacing-0);
+}
+
+// ── Slots ────────────────────────────────────────────────────────────────────
+
+.left {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.center {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--ao-spacing-2);
+  min-width: 0;
+}
+
+.right {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--ao-spacing-2);
+}
+
+// ── Count ────────────────────────────────────────────────────────────────────
+
+.count {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// ── Reset button ─────────────────────────────────────────────────────────────
+
+.clear {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-xs);
+  gap: var(--ao-spacing-1);
+  height: var(--ao-spacing-7);
+  padding: 0 var(--ao-spacing-2);
+  transition:
+    color duration(fast) ease,
+    background duration(fast) ease;
+
+  &:hover {
+    background: var(--ao-background-tertiary);
+    color: var(--ao-font-color-primary);
+  }
+}
+
+// ── Bottom row: filter/sort chips ────────────────────────────────────────────
+
+.bottomRow {
+  align-items: center;
+  border-top: 1px solid var(--ao-border-color-light);
+  display: flex;
+  gap: var(--ao-spacing-2);
+  min-height: 0;
+  padding: var(--ao-spacing-2) 0;
+  flex-wrap: wrap;
+}
+
+.bottomRow:empty {
+  display: none;
+}

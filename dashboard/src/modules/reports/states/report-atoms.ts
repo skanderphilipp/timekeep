@@ -1,9 +1,7 @@
-import { atom } from "jotai";
+import { createState } from "@/infrastructure/state/jotai";
 
 /**
  * Report module state atoms.
- *
- * - `reportDateRangeAtom` — the currently active date range for reports.
  */
 
 export type ReportDateRange = {
@@ -12,7 +10,22 @@ export type ReportDateRange = {
 };
 
 /** Active report date range. `null` values = no filter applied. */
-export const reportDateRangeAtom = atom<ReportDateRange>({
-  dateFrom: null,
-  dateTo: null,
+export const reportDateRangeState = createState<ReportDateRange>({
+  key: "reportDateRange",
+  defaultValue: {
+    dateFrom: null,
+    dateTo: null,
+  },
+});
+
+/** Active report view type. */
+export const reportViewState = createState<"summary" | "detailed">({
+  key: "reportView",
+  defaultValue: "summary",
+});
+
+/** Active employee filter for reports (by PIN). */
+export const reportEmployeeFilterState = createState<string | null>({
+  key: "reportEmployeeFilter",
+  defaultValue: null,
 });

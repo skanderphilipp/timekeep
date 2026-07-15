@@ -1,9 +1,9 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 
 import { AppRoute } from "@/lib/navigation";
-import { isAuthenticatedAtom } from "@/infrastructure/state";
+import { isAuthenticatedSelector } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { fetchSetupStatus } from "@/lib/api";
 
 type RequireAuthProps = {
@@ -20,7 +20,7 @@ type RequireAuthProps = {
  * login page can redirect back after successful authentication.
  */
 export function RequireAuth({ children }: RequireAuthProps) {
-  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const isAuthenticated = useStateValue(isAuthenticatedSelector);
   const location = useLocation();
 
   const [checking, setChecking] = useState(true);

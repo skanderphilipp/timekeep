@@ -1,4 +1,5 @@
 import { apiGet, apiPut } from "./client";
+import type { WorkPolicy } from "./departments";
 
 // ── System Settings ─────────────────────────────────────────────────────────
 
@@ -6,6 +7,8 @@ import { apiGet, apiPut } from "./client";
 export type SystemSettings = {
   poll_interval_secs: number;
   auto_discover: boolean;
+  /** Organization-default work policy. Nullable — falls back to hardcoded defaults. */
+  work_policy?: WorkPolicy | null;
 };
 
 /** Matches the Rust `UpdateSystemSettingsRequest` DTO. */

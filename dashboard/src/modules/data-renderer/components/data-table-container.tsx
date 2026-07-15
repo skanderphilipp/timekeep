@@ -7,7 +7,6 @@ import { useTableFilter } from "../hooks/use-table-filter";
 import { useTableInstanceId, useCellClickHandler } from "../hooks/use-cell-click-handler";
 import { useInfiniteScrollSentinel } from "../hooks/use-infinite-scroll-sentinel";
 import { DataTable, InfiniteScrollSentinel, Spinner, Text, type DataTableColumn } from "@/components/ui";
-import { PageError } from "@/modules/shared/components";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import type { ColumnDefinition, FieldMetadata, EntityType, PaginationState } from "../types";
@@ -22,8 +21,6 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
   isLoading?: boolean;
   loadingRowCount?: number;
   emptyState?: ReactNode;
-  error?: string | null;
-  onRetry?: () => void;
   externalSortState?: { column: string; direction: "asc" | "desc" } | null;
   onSortChange?: (columnId: string) => void;
   pagination?: PaginationState;
@@ -48,12 +45,9 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
  * injects the context hierarchy, handles entity routing on cell clicks,
  * and adds infinite scroll / pagination support.
  *
- * TODO(ENTERPRISE): Delegate error/loading/empty handling to DataBoundary.
- *   DataTableContainer currently reimplements PageError rendering and
- *   isLoading/emptyState prop forwarding. The punch-query-view should use
- *   DataBoundary wrapping DataTableContainer (like every other module),
- *   and DataTableContainer should focus only on column conversion + cell
- *   routing + infinite scroll / pagination composition.
+ * Error/loading/empty display is delegated to the wrapping `DataBoundary`
+ * (provided by the parent `PageShell`). DataTableContainer focuses only on
+ * column conversion, cell routing, and scroll/pagination composition.
  */
 export function DataTableContainer<T extends Record<string, unknown>>({
   columns,
@@ -63,8 +57,6 @@ export function DataTableContainer<T extends Record<string, unknown>>({
   isLoading = false,
   loadingRowCount = 5,
   emptyState,
-  error,
-  onRetry,
   externalSortState,
   onSortChange: externalOnSortChange,
   pagination,
@@ -89,10 +81,10 @@ export function DataTableContainer<T extends Record<string, unknown>>({
         case "device_sn":
           handleCellClick("device", recordId);
           break;
-        case "user_pin":
+        case "employee_name":
           handleCellClick("user", recordId);
           break;
-        // For all other column types (timestamp, status, verify_method, etc.),
+        // For all other column types (timestamp, status, verify_method, user_pin, etc.),
         // clicking opens the parent entity type's detail (e.g., punch detail).
         default:
           handleCellClick(entityType, recordId);
@@ -143,10 +135,6 @@ export function DataTableContainer<T extends Record<string, unknown>>({
     },
     enabled: !!infiniteScroll && infiniteScroll.hasNextPage,
   });
-
-  if (error) {
-    return <PageError message={error} onRetry={onRetry} />;
-  }
 
   return (
     <DataTableContext.Provider value={tableContextValue}>

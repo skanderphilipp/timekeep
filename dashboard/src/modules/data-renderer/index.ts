@@ -1,63 +1,24 @@
 /**
  * Data Renderer Module — Unified data object rendering for Alsabah.
- *
- * Barrel file. Import like:
- *   import { FieldDisplay, isFieldDeviceSn, useTableSort } from "@/modules/data-renderer";
  */
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
-  EntityType,
-  FieldType,
-  FieldMetadata,
-  FieldDefinition,
-  ColumnDefinition,
-  SortDirection,
-  SortEntry,
-  FilterEntry,
-  PaginationState,
-  RowSelectionState,
-  TextFieldMetadata,
-  DeviceSnFieldMetadata,
-  UserPinFieldMetadata,
-  TimestampFieldMetadata,
-  StatusFieldMetadata,
-  DirectionFieldMetadata,
+  EntityType, FieldType, FieldMetadata, FieldDefinition, ColumnDefinition,
+  SortDirection, SortEntry, FilterEntry, PaginationState, RowSelectionState,
+  TextFieldMetadata, DeviceSnFieldMetadata, UserPinFieldMetadata,
+  EmployeeNameFieldMetadata,
+  TimestampFieldMetadata, StatusFieldMetadata, DirectionFieldMetadata,
 } from "./types";
 
 // ── Guards ─────────────────────────────────────────────────────────────────
-export {
-  isFieldText,
-  isFieldDeviceSn,
-  isFieldUserPin,
-  isFieldTimestamp,
-  isFieldStatus,
-  isFieldDirection,
-} from "./guards";
+export { isFieldText, isFieldDeviceSn, isFieldUserPin, isFieldEmployeeName, isFieldTimestamp, isFieldStatus, isFieldDirection } from "./guards";
 
 // ── Contexts ───────────────────────────────────────────────────────────────
-export {
-  DataTableContext,
-  useDataTableContext,
-  DataTableRowContext,
-  useDataTableRowContext,
-  DataTableCellContext,
-  useDataTableCellContext,
-  FieldContext,
-  useFieldContext,
-} from "./contexts";
+export { DataTableContext, useDataTableContext, DataTableRowContext, useDataTableRowContext, DataTableCellContext, useDataTableCellContext, FieldContext, useFieldContext } from "./contexts";
 
 // ── States ─────────────────────────────────────────────────────────────────
-export {
-  tableSortStateFamily,
-  tableFilterStateFamily,
-  tableRowSelectionStateFamily,
-  toggleRowSelectionAtom,
-  selectAllRowsAtom,
-  deselectAllRowsAtom,
-  tableColumnVisibilityStateFamily,
-  tableLoadingStateFamily,
-} from "./states";
+export { tableSortFamilyState, tableFilterFamilyState, tableRowSelectionFamilyState, toggleRowSelectionAtom, selectAllRowsAtom, deselectAllRowsAtom, tableColumnVisibilityFamilyState, tableLoadingFamilyState } from "./states";
 
 // ── Field Displays ──────────────────────────────────────────────────────────
 export { FieldDisplay } from "./field-displays/index";
@@ -69,33 +30,24 @@ export { StatusFieldDisplay } from "./field-displays/status-field-display";
 export { DirectionFieldDisplay } from "./field-displays/direction-field-display";
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
-export {
-  useCellClickHandler,
-  useTableInstanceId,
-  useTableSort,
-  useTableFilter,
-  useTableRowSelection,
-  useColumnDefinitions,
-  useSchemaColumns,
-} from "./hooks";
+export { useCellClickHandler, useTableInstanceId, useTableSort, useTableFilter, useTableRowSelection, useColumnDefinitions, useSchemaColumns, useFilterFields, useFacetSearch } from "./hooks";
+export type { FilterDimensionMeta, FilterRenderContext, UseFilterFieldsResult, FacetSearchMeta, UseFacetSearchOptions, UseFacetSearchResult, FacetOptionItem } from "./hooks";
 
 // ── Components ─────────────────────────────────────────────────────────────
-export {
-  DataTableContainer,
-  DataTableFooter,
-  DataTableRow,
-  createCellRenderer,
-} from "./components";
+export { DataTableContainer, DataTableFooter, DataTableRow, createCellRenderer, DataListView, ReferenceFacetSelector } from "./components";
+export type { DataListViewProps, ReferenceFacetSelectorProps } from "./components";
+
+// ── Filter Renderer ────────────────────────────────────────────────────────
+export { renderFilterDimensions } from "./components/filter-field-renderers";
 
 // ── Schema Mapper ──────────────────────────────────────────────────────────
-export {
-  mapSchemaFieldToFieldType,
-  columnMetaToDefinition,
-  getPresentationOverride,
-} from "./schema-mapper";
+export { mapSchemaFieldToFieldType, columnMetaToDefinition, getPresentationOverride } from "./schema-mapper";
 
 // ── Column Definitions ─────────────────────────────────────────────────────
+// Active: punch (still used as schema fallback in use-punch-columns.ts)
 export { createPunchColumns } from "./column-definitions/punch-columns";
+// Deprecated — pages now use useSchemaColumns() instead.
+// Files kept for backward compat (stories, tests). Remove once migration complete.
 export { createDeviceColumns } from "./column-definitions/device-columns";
 export { createUserColumns } from "./column-definitions/user-columns";
 export { createApiKeyColumns } from "./column-definitions/api-key-columns";

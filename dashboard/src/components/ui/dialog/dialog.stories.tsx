@@ -3,7 +3,6 @@ import { useState } from "react";
 import { DialogComponent } from "./dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form/form-field";
 
 /**
  * Dialog — modal overlay for forms, confirmations, and detail views.
@@ -37,9 +36,7 @@ function PrimaryDemo() {
         description="Fill in the details below."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <FormField label="Name">
-            <Input placeholder="Enter name…" />
-          </FormField>
+          <Input label="Name" placeholder="Enter name…" />
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancel
@@ -84,13 +81,12 @@ function AllVariantsDemo() {
         description="Update employee details."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <FormField label="Name">
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Employee name…"
-            />
-          </FormField>
+          <Input
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Employee name…"
+          />
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button variant="secondary" onClick={() => setOpenForm(false)}>
               Cancel

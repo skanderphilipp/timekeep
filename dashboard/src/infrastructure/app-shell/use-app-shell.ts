@@ -1,47 +1,41 @@
 import { useCallback, useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import type { Icon } from "@tabler/icons-react";
 
-import { useDirection } from "@/hooks/use-direction";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { chevronForDirection } from "@/lib/icon-flip";
 import { useThemeColorScheme } from "@/infrastructure/theme";
 import {
   toggleThemeAtom,
   sidebarOpenAtom,
-  sidebarCollapsedAtom,
+  sidebarCollapsedState,
   logoutAtom,
-  isAuthenticatedAtom,
+  isAuthenticatedSelector,
 } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { useNavigation } from "@/infrastructure/navigation/use-navigation";
-import { useBreadcrumbs } from "@/infrastructure/navigation/use-breadcrumbs";
 
 /**
  * Centralized hook for all AppShell state and callbacks.
  *
- * Extracts sidebar, mobile, auth, theme, navigation, and breadcrumb logic
+ * Extracts sidebar, mobile, auth, theme, and navigation logic
  * from the AppShell component so it can remain a thin composite.
  */
 export function useAppShell() {
-  const dir = useDirection();
   const isMobile = useIsMobile();
   const colorScheme = useThemeColorScheme();
-  const breadcrumbSeparator: Icon = chevronForDirection(dir, true);
 
   // ── Sidebar state ─────────────────────────────────────────────────────
   const sidebarOpen = useAtomValue(sidebarOpenAtom);
   const setSidebarOpen = useSetAtom(sidebarOpenAtom);
-  const sidebarCollapsed = useAtomValue(sidebarCollapsedAtom);
-  const setSidebarCollapsed = useSetAtom(sidebarCollapsedAtom);
+  const sidebarCollapsed = useStateValue(sidebarCollapsedState);
+  const setSidebarCollapsed = useSetAtom(sidebarCollapsedState.atom);
 
   // ── Auth / theme ──────────────────────────────────────────────────────
   const toggleTheme = useSetAtom(toggleThemeAtom);
-  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const isAuthenticated = useStateValue(isAuthenticatedSelector);
   const logout = useSetAtom(logoutAtom);
 
   // ── Navigation ────────────────────────────────────────────────────────
   const navItems = useNavigation();
-  const breadcrumbs = useBreadcrumbs();
 
   // ── Callbacks ─────────────────────────────────────────────────────────
   const closeSidebar = useCallback(() => setSidebarOpen(false), [setSidebarOpen]);
@@ -51,18 +45,20 @@ export function useAppShell() {
     [setSidebarCollapsed],
   );
 
-  // On mobile, auto-close sidebar and disable collapsed state
+  // ── Mobile: disable collapsed mode (desktop-only feature) ─────────────
+  // The sidebar starts closed by default (atom default = false).
+  // We do NOT force-close — only the user's burger click opens it.
+  // This avoids race conditions where the effect fires during hydration
+  // and overrides the user's toggle action.
   useEffect(() => {
     if (isMobile) {
       setSidebarCollapsed(false);
-      setSidebarOpen(false);
     }
-  }, [isMobile, setSidebarCollapsed, setSidebarOpen]);
+  }, [isMobile, setSidebarCollapsed]);
 
   return {
     isMobile,
     colorScheme,
-    breadcrumbSeparator,
     sidebarOpen,
     sidebarCollapsed,
     toggleTheme,
@@ -72,6 +68,5 @@ export function useAppShell() {
     isAuthenticated,
     logout,
     navItems,
-    breadcrumbs,
   };
 }

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { tableColumnVisibilityStateFamily } from "../atoms/column-visibility-state";
+import { tableColumnVisibilityFamilyState } from "../atoms/column-visibility-state";
 import type { ColumnDefinition, FieldMetadata } from "../../types";
 
 /**
@@ -12,7 +12,7 @@ export function visibleColumnsSelector<T extends FieldMetadata>(
   allColumns: ColumnDefinition<T>[],
 ) {
   return atom((get) => {
-    const visibilityMap = get(tableColumnVisibilityStateFamily(instanceId));
+    const visibilityMap = get(tableColumnVisibilityFamilyState(instanceId));
     if (visibilityMap.size === 0) return allColumns;
     return allColumns.filter((col) => visibilityMap.get(col.id) !== false);
   });

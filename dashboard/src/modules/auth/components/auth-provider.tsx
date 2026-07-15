@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useSetAtom } from "jotai";
 
-import { authTokenAtom } from "@/infrastructure/state";
+import { authTokenState } from "@/infrastructure/state";
 import { AUTH_LOGOUT_EVENT } from "@/lib/api";
 import { useCurrentUserLoader } from "@/hooks/use-current-user";
 
@@ -19,7 +19,7 @@ type AuthProviderProps = {
  * Also loads the current user profile from `GET /api/auth/me` on mount.
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const setToken = useSetAtom(authTokenAtom);
+  const setToken = useSetAtom(authTokenState.atom);
 
   useEffect(() => {
     const handleLogout = () => {

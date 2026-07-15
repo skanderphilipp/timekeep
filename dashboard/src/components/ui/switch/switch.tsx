@@ -1,11 +1,20 @@
 import { clsx } from "clsx";
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import { Switch as BaseUISwitch } from "@base-ui/react/switch";
 
 import styles from "./switch.module.scss";
 
 type SwitchProps = {
+  /** Field label rendered above the toggle (form-level label). */
+  fieldLabel?: string;
+  /** Inline text next to the toggle. */
   label?: string;
+  /** Validation error message. */
+  error?: string;
+  /** Helper text shown when no error. */
+  helperText?: string;
+  /** Mark as required (shows asterisk on field label). */
+  required?: boolean;
   className?: string;
   checked?: boolean;
   defaultChecked?: boolean;
@@ -13,7 +22,6 @@ type SwitchProps = {
   disabled?: boolean;
   name?: string;
   value?: string;
-  required?: boolean;
   readOnly?: boolean;
   id?: string;
 };
@@ -21,7 +29,11 @@ type SwitchProps = {
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
   (
     {
+      fieldLabel,
       label,
+      error,
+      helperText,
+      required = false,
       className,
       disabled,
       checked,
@@ -29,12 +41,16 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       onCheckedChange,
       name,
       value,
-      required,
       readOnly,
-      id,
+      id: externalId,
     },
     ref,
   ) => {
+    const autoId = useId();
+    const controlId = externalId ?? autoId;
+    const errorId = `${controlId}-error`;
+    const helperId = `${controlId}-helper`;
+
     const switchElement = (
       <BaseUISwitch.Root
         inputRef={ref}
@@ -48,21 +64,47 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         value={value}
         required={required}
         readOnly={readOnly}
-        id={id}
+        id={controlId}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : helperText ? helperId : undefined}
       >
         <BaseUISwitch.Thumb data-slot="switch-thumb" className={styles.thumb} />
       </BaseUISwitch.Root>
     );
 
-    if (!label) return switchElement;
-
-    return (
-      <label className={clsx(styles.label, disabled && styles.disabled)}>
+    const toggleRow = label ? (
+      <label className={clsx(styles.toggleLabel, disabled && styles.disabled)}>
         {switchElement}
         <span data-slot="switch-label" className={styles.labelText}>
           {label}
         </span>
       </label>
+    ) : (
+      switchElement
+    );
+
+    return (
+      <div data-slot="switch-container" className={styles.container}>
+        {fieldLabel && (
+          <span data-slot="switch-field-label" className={styles.fieldLabel}>
+            {fieldLabel}
+            {required && <span className={styles.required}>*</span>}
+          </span>
+        )}
+
+        {toggleRow}
+
+        {error && (
+          <p data-slot="switch-error" id={errorId} className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+        {!error && helperText && (
+          <p data-slot="switch-helper" id={helperId} className={styles.helper}>
+            {helperText}
+          </p>
+        )}
+      </div>
     );
   },
 );

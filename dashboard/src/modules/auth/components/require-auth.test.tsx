@@ -14,7 +14,7 @@ import { MemoryRouter } from "react-router-dom";
 import { Provider as JotaiProvider, createStore } from "jotai";
 
 import { RequireAuth } from "@/modules/auth/components/require-auth";
-import { authTokenAtom } from "@/infrastructure/state";
+import { authTokenState } from "@/infrastructure/state";
 
 // Mock the API module
 vi.mock("@/lib/api", () => ({
@@ -32,7 +32,7 @@ import { fetchSetupStatus } from "@/lib/api";
  */
 function renderRequireAuth(isAuthenticated: boolean) {
   const store = createStore();
-  store.set(authTokenAtom, isAuthenticated ? "test-token" : null);
+  store.set(authTokenState.atom, isAuthenticated ? "test-token" : null);
 
   return render(
     <JotaiProvider store={store}>

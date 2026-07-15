@@ -1,14 +1,14 @@
 /**
  * Application shell layout components.
  *
- * These define the visual structure of every page — the card wrapper,
- * header bar, content body, and page header pattern.
+ * Import like: import { PageShell, PageBar } from "@/components/layout";
  *
- * Import like: import { PageLayout, PageBar } from "@/components/layout";
+ * PageLayout and PageBody are internal to PageShell — do NOT import directly.
+ *
+ * Breadcrumb-related types are re-exported from the navigation infrastructure.
  */
 
-export { PageLayout } from "./page-layout";
-export { PageBody } from "./page-body";
+export { PageShell } from "./page-shell";
 export { PageBar } from "./page-bar";
-export type { BreadcrumbSegment } from "./page-bar";
+export type { BreadcrumbSegment } from "@/infrastructure/navigation";
 export { PageHeader } from "./page-header";

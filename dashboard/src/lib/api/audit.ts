@@ -1,4 +1,6 @@
 import { apiGet, toUnixSeconds } from "./client";
+import type { FacetGroup } from "./client";
+import type { EntitySchema } from "@/types/metadata";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -47,4 +49,40 @@ function buildAuditParams(filter: AuditFilter): string {
 /** Query audit logs. Requires Viewer+. */
 export function fetchAuditLogs(filter: AuditFilter = {}): Promise<AuditEvent[]> {
   return apiGet<AuditEvent[]>(`audit${buildAuditParams(filter)}`).json();
+}
+
+// ── Schema (Metadata System) ────────────────────────────────────────────────
+
+/** Fetch entity schema for audit logs (column metadata, sortability, filterability). */
+export function fetchAuditSchema(): Promise<EntitySchema> {
+  return apiGet<EntitySchema>("audit/schema").json();
+}
+
+/**
+ * Facet filter params for audit queries.
+ *
+ * Matches the Rust facet endpoint at GET /api/audit/filters.
+ */
+export type AuditFacetParams = {
+  dimension?: string;
+  search?: string;
+  since?: string;
+  until?: string;
+  limit?: number;
+};
+
+function buildAuditFacetParams(filter: AuditFacetParams): string {
+  const params = new URLSearchParams();
+  if (filter.dimension) params.set("dimension", filter.dimension);
+  if (filter.search) params.set("search", filter.search);
+  if (filter.since) params.set("since", toUnixSeconds(filter.since));
+  if (filter.until) params.set("until", toUnixSeconds(filter.until));
+  if (filter.limit !== undefined) params.set("limit", String(filter.limit));
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+/** Fetch faceted filter metadata for audit queries. */
+export function fetchAuditFilters(filter: AuditFacetParams = {}): Promise<FacetGroup[]> {
+  return apiGet<FacetGroup[]>(`audit/filters${buildAuditFacetParams(filter)}`).json();
 }

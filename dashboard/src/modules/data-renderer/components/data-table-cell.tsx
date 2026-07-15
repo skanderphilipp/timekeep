@@ -43,20 +43,22 @@ export function createCellRenderer<T extends Record<string, unknown>>(
       return column.render(row);
     }
 
-    // Resolve display labels: show names instead of IDs when available
+    // Resolve display labels and navigation IDs per column type
     let entityId: string | undefined;
-    if (column.type === "user_pin") {
-      entityId = String(rawValue); // keep PIN for navigation
-      const name = (row as Record<string, unknown>)["employee_name"];
-      if (name && typeof name === "string" && name.length > 0) {
-        rawValue = name; // show name in the chip
-      }
+    if (column.type === "employee_name") {
+      // Navigate to employee detail using the PIN, but display the name
+      const pin = (row as Record<string, unknown>)["user_pin"];
+      entityId = pin ? String(pin) : undefined;
+      // rawValue stays as the employee name
+    } else if (column.type === "user_pin") {
+      entityId = String(rawValue); // PIN for potential navigation use
+      // rawValue stays as the PIN — do NOT override with employee_name
     }
 
     const value = rawValue;
 
     const isClickable =
-      column.type === "device_sn" || column.type === "user_pin" || !!column.isLabelIdentifier;
+      column.type === "device_sn" || column.type === "employee_name" || !!column.isLabelIdentifier;
 
     const handleClick = () => {
       if (isClickable && onCellClick) {

@@ -1,18 +1,21 @@
 /**
- * Reusable React Error Boundary.
+ * Reusable React Error Boundary — built on `react-error-boundary`.
  *
  * Catches unhandled rendering errors in the subtree and displays
  * a user-friendly fallback instead of a white screen of death.
  *
- * Usage:
- *   <ErrorBoundary>
- *     <App />
- *   </ErrorBoundary>
- *
- * Each route or feature can also have its own boundary for
+ * Each route or feature can have its own boundary for
  * fault isolation — a failing chart shouldn't crash the entire SPA.
+ *
+ * @example
+ * ```tsx
+ * <ErrorBoundary onError={(error, info) => logger.error(error, info)}>
+ *   <App />
+ * </ErrorBoundary>
+ * ```
  */
-import { Component, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
@@ -22,7 +25,7 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { Banner } from "@/components/ui/banner";
 
-// ── Types ───────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -32,19 +35,15 @@ type ErrorBoundaryProps = {
   onError?: (error: Error, errorInfo: string) => void;
 };
 
-type ErrorBoundaryState = {
-  hasError: boolean;
-  error: Error | null;
+// ── Default Fallback ─────────────────────────────────────────────────────────
+
+type FallbackProps = {
+  error: unknown;
+  resetErrorBoundary: () => void;
 };
 
-// ── Default Fallback ────────────────────────────────────────────────
-
-type DefaultErrorFallbackProps = {
-  error: Error | null;
-  onReset: () => void;
-};
-
-function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
+function DefaultErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
   const { _ } = useLingui();
 
   return (
@@ -80,10 +79,10 @@ function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
             </Text>
           </div>
 
-          {error && (
+          {error != null && (
             <div style={{ marginTop: "var(--ao-spacing-4)" }}>
-              <Banner variant="danger">
-                <code style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>{error.message}</code>
+              <Banner variant="danger" title={_(msg`Error Details`)}>
+                <code style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>{errorMessage}</code>
               </Banner>
             </div>
           )}
@@ -99,7 +98,7 @@ function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
             <Button variant="primary" onClick={() => window.location.reload()}>
               {_(msg`Refresh Page`)}
             </Button>
-            <Button variant="secondary" onClick={onReset}>
+            <Button variant="secondary" onClick={resetErrorBoundary}>
               {_(msg`Try Again`)}
             </Button>
           </div>
@@ -109,38 +108,24 @@ function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
   );
 }
 
-// ── Boundary Component ──────────────────────────────────────────────
+// ── Boundary Component ───────────────────────────────────────────────────────
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+export function ErrorBoundary({ children, fallback, onError }: ErrorBoundaryProps) {
+  return (
+    <ReactErrorBoundary
+      FallbackComponent={fallback ? () => <>{fallback}</> : DefaultErrorFallback}
+      onError={(error, info) => {
+        const componentStack = info.componentStack ?? "unknown stack";
+        onError?.(error instanceof Error ? error : new Error(String(error)), componentStack);
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    const componentStack = errorInfo.componentStack ?? "unknown stack";
-    this.props.onError?.(error, componentStack);
-
-    if (import.meta.env.DEV) {
-      console.error("[ErrorBoundary]", error, componentStack);
-    }
-  }
-
-  handleReset = () => {
-    this.setState({ hasError: false, error: null });
-  };
-
-  render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback;
-
-      return <DefaultErrorFallback error={this.state.error} onReset={this.handleReset} />;
-    }
-
-    return this.props.children;
-  }
+        if (import.meta.env.DEV) {
+          console.error("[ErrorBoundary]", error, componentStack);
+        }
+      }}
+    >
+      {children}
+    </ReactErrorBoundary>
+  );
 }
+
+ErrorBoundary.displayName = "ErrorBoundary";

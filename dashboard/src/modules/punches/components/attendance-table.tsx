@@ -2,7 +2,6 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import {
-  DataTable,
   TextCell,
   TimestampCell,
   StatusCell,
@@ -10,6 +9,8 @@ import {
   type DataTableColumn,
   type SortState,
 } from "@/components/ui";
+// oxlint-disable-next-line bentech/require-data-list-view -- specialized attendance table with custom status/direction rendering, not a generic list page
+import { DataTable } from "@/components/ui";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

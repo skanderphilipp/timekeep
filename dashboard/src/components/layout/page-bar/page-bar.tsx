@@ -1,36 +1,38 @@
 import { type ReactNode } from "react";
+import type { Icon } from "@tabler/icons-react";
 
-import { Breadcrumb, type BreadcrumbSegment } from "@/components/ui/breadcrumb";
-import { Heading } from "@/components/ui/heading";
+import { Heading } from "@/components/ui";
 
 import styles from "./page-bar.module.scss";
-
-export type { BreadcrumbSegment } from "@/components/ui/breadcrumb";
 
 type PageBarProps = {
   title: string;
   description?: string;
-  /** Optional breadcrumbs rendered above the title row (Reaktly pattern). */
-  breadcrumbs?: BreadcrumbSegment[];
+  /** Domain module icon — rendered before the title. */
+  icon?: Icon;
   actions?: ReactNode;
 };
 
 /**
- * Page-level header bar — 1:1 port of Reaktly's PageCardHeader.
+ * Page-level header bar — title, icon, description, and actions.
  *
- * Single-row flex layout: title on the left, actions on the right.
- * Uses `background.secondary` + `border-bottom: medium` to visually separate
- * the header from the page body content below.
+ * Breadcrumbs are NOT rendered here — they're handled centrally by
+ * {@link PageShell}, which guarantees a breadcrumb bar on every page
+ * that uses it.
  *
- * Optional breadcrumbs render above the title row (Reaktly pattern).
+ * The background matches the app shell (`page`) so the white content card
+ * below creates visual separation.
  */
-export function PageBar({ title, description, breadcrumbs, actions }: PageBarProps) {
+export function PageBar({ title, description, icon: Icon, actions }: PageBarProps) {
   return (
     <div data-slot="page-bar" className={styles.container}>
-      {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumb segments={breadcrumbs} />}
-
       <div className={styles.rowWrapper}>
         <div data-slot="page-bar-row" className={styles.row}>
+          {Icon && (
+            <span data-slot="page-bar-icon" className={styles.icon}>
+              <Icon size={20} />
+            </span>
+          )}
           <Heading level="h1" data-slot="page-bar-title" className={styles.title}>
             {title}
           </Heading>

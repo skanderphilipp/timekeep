@@ -19,7 +19,7 @@ const meta = {
       description: {
         component:
           "Full audit log page with server-side search, sort, and filtering. " +
-          "Renders via the metadata-driven DataTableContainer with createAuditColumns and the useAuditLog hook.",
+                    "Renders via the metadata-driven DataListView with schema-driven columns from useSchemaColumns('audit').",
       },
     },
   },

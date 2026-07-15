@@ -5,7 +5,6 @@ import { msg } from "@lingui/core/macro";
 import {
   Dialog,
   Form,
-  FormField,
   FormActions,
   Button,
   Select,
@@ -67,15 +66,15 @@ export function DeviceToDeviceCopyDialog({
       description={_(msg`Select a source device to copy its enrolled users to this device.`)}
     >
       <Form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        <FormField label={_(msg`Source Device`)} required>
-          <Select
-            placeholder={_(msg`Select a device…`)}
-            options={sourceOptions}
-            value={sourceSn}
-            onChange={setSourceSn}
-            fullWidth
-          />
-        </FormField>
+        <Select
+          label={_(msg`Source Device`)}
+          required
+          placeholder={_(msg`Select a device…`)}
+          options={sourceOptions}
+          value={sourceSn}
+          onChange={setSourceSn}
+          fullWidth
+        />
 
         {sourceOptions.length === 0 && (
           <Text variant="caption" color="tertiary">

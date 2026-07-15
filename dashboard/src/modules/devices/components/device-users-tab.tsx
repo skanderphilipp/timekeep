@@ -4,6 +4,7 @@ import { msg } from "@lingui/core/macro";
 
 import { Badge, SearchInput, Section, Text } from "@/components/ui";
 import { DataTableContainer } from "@/modules/data-renderer";
+import { DataBoundary } from "@/modules/shared/components";
 import type { ColumnDefinition, TextFieldMetadata } from "@/modules/data-renderer/types";
 import { useSyncedDeviceUsers } from "../hooks/use-synced-device-users";
 import type { SyncedUser } from "@/lib/api";
@@ -108,22 +109,28 @@ export function DeviceUsersTab({ deviceSn }: DeviceUsersTabProps) {
       </Section>
 
       <Section>
-        <DataTableContainer
-          columns={columns}
-          data={filtered}
-          getRowKey={(u: SyncedUser) => u.pin}
-          entityType="user"
+        <DataBoundary
+          data={isLoading ? undefined : filtered}
           isLoading={isLoading}
-          error={error?.message ?? null}
+          error={error ?? null}
           onRetry={() => refetch()}
-          emptyState={
-            <Text variant="body" color="tertiary" style={{ padding: "var(--ao-spacing-6)", textAlign: "center" }}>
-              {_(
-                msg`No users have been synced from this device yet. Users are synced automatically when the engine starts.`,
-              )}
-            </Text>
-          }
-        />
+        >
+          {() => (
+            <DataTableContainer
+              columns={columns}
+              data={filtered}
+              getRowKey={(u: SyncedUser) => u.pin}
+              entityType="user"
+              emptyState={
+                <Text variant="body" color="tertiary" style={{ padding: "var(--ao-spacing-6)", textAlign: "center" }}>
+                  {_(
+                    msg`No users have been synced from this device yet. Users are synced automatically when the engine starts.`,
+                  )}
+                </Text>
+              }
+            />
+          )}
+        </DataBoundary>
       </Section>
     </>
   );

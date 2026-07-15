@@ -62,6 +62,8 @@ export {
   scanNetwork,
   discoverDevice,
   provisionDevice,
+  fetchDeviceSchema,
+  fetchDeviceFilters,
 } from "./devices";
 export type {
   DeviceSummary,
@@ -76,6 +78,7 @@ export type {
   NetworkScanResponse,
   ScanNetworkRequest,
   DiscoverDeviceRequest,
+  DeviceFacetParams,
 } from "./devices";
 
 // ── Punches ────────────────────────────────────────────────────────────────────
@@ -130,6 +133,8 @@ export {
   fetchEmployeeSummary,
   fetchEmployeeMonthly,
   fetchEmployeeCalendar,
+  fetchEmployeeSchema,
+  fetchEmployeeFilters,
 } from "./employees";
 export type {
   Employee,
@@ -141,6 +146,7 @@ export type {
   MonthlyTrendPoint,
   CalendarDay,
   WorkDayQuery,
+  EmployeeFacetParams,
 } from "./employees";
 
 // ── Reports ────────────────────────────────────────────────────────────────────
@@ -178,6 +184,7 @@ export type {
 
 export {
   fetchUsers,
+  fetchUser,
   createUser,
   updateUser,
   deleteUser,
@@ -220,11 +227,31 @@ export type {
 } from "./integrations";
 
 // ── Audit ──────────────────────────────────────────────────────────────────────
+// ── Departments ────────────────────────────────────────────────────────────────
+
+export {
+  fetchDepartments,
+  fetchDepartment,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
+  fetchDepartmentSchema,
+  fetchDepartmentFilters,
+} from "./departments";
+export type {
+  Department,
+  WorkPolicy,
+  DepartmentRequest,
+  DepartmentFacetParams,
+} from "./departments";
 
 export {
   fetchAuditLogs,
+  fetchAuditSchema,
+  fetchAuditFilters,
 } from "./audit";
 export type {
   AuditEvent,
   AuditFilter,
+  AuditFacetParams,
 } from "./audit";

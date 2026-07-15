@@ -3,15 +3,33 @@
  *
  * Pure route-to-label mapping. No business logic beyond translating
  * URL segments into human-readable labels.
+ *
+ * Pages that need a dynamic label for the last segment (e.g., record
+ * detail pages showing the employee name) can pass `dynamicLabel`.
  */
 
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useLingui } from "@lingui/react";
+import { msg } from "@lingui/core/macro";
 
 export type BreadcrumbSegment = {
   label: string;
   path: string;
+};
+
+export type UseBreadcrumbsOptions = {
+  /**
+   * Override the label for the last breadcrumb segment.
+   * Use for record detail pages where the URL segment is an ID,
+   * but the breadcrumb should show the record name.
+   *
+   * @example
+   * // "/employees/abc123" with dynamicLabel="John Doe"
+   * // → [{ label: "Employees", path: "/employees" },
+   * //    { label: "John Doe", path: "/employees/abc123" }]
+   */
+  dynamicLabel?: string;
 };
 
 /**
@@ -27,7 +45,7 @@ export type BreadcrumbSegment = {
  * // ]
  * ```
  */
-export function useBreadcrumbs(): BreadcrumbSegment[] {
+export function useBreadcrumbs(options?: UseBreadcrumbsOptions): BreadcrumbSegment[] {
   const location = useLocation();
   const { _ } = useLingui();
 
@@ -37,24 +55,31 @@ export function useBreadcrumbs(): BreadcrumbSegment[] {
     const segments = location.pathname.split("/").filter(Boolean);
 
     const labelMap: Record<string, string> = {
-      devices: _(/*i18n*/ { id: "breadcrumb.devices", message: "Devices" }),
-      punches: _(/*i18n*/ { id: "breadcrumb.punches", message: "Punch Records" }),
-      reports: _(/*i18n*/ { id: "breadcrumb.reports", message: "Reports" }),
-      settings: _(/*i18n*/ { id: "breadcrumb.settings", message: "Settings" }),
-      users: _(/*i18n*/ { id: "breadcrumb.users", message: "Users" }),
-      endpoints: _(/*i18n*/ { id: "breadcrumb.endpoints", message: "Endpoints" }),
-      "api-keys": _(/*i18n*/ { id: "breadcrumb.apiKeys", message: "API Keys" }),
-      audit: _(/*i18n*/ { id: "breadcrumb.audit", message: "Audit Log" }),
-      new: _(/*i18n*/ { id: "breadcrumb.new", message: "New" }),
-      edit: _(/*i18n*/ { id: "breadcrumb.edit", message: "Edit" }),
+      dashboard: _(msg`Dashboard`),
+      devices: _(msg`Devices`),
+      employees: _(msg`Employees`),
+      punches: _(msg`Punch Records`),
+      reports: _(msg`Reports`),
+      settings: _(msg`Settings`),
+      users: _(msg`Users`),
+      endpoints: _(msg`Endpoints`),
+      "api-keys": _(msg`API Keys`),
+      audit: _(msg`Audit Log`),
+      new: _(msg`New`),
+      edit: _(msg`Edit`),
     };
 
     return segments.map((segment, index) => {
       const path = "/" + segments.slice(0, index + 1).join("/");
+      const isLast = index === segments.length - 1;
+
       return {
-        label: labelMap[segment] ?? segment,
+        label:
+          isLast && options?.dynamicLabel
+            ? options.dynamicLabel
+            : (labelMap[segment] ?? segment),
         path,
       };
     });
-  }, [location.pathname, _]);
+  }, [location.pathname, _, options?.dynamicLabel]);
 }

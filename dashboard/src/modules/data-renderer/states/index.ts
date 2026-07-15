@@ -1,10 +1,10 @@
-export { tableSortStateFamily } from "./atoms/sort-state";
-export { tableFilterStateFamily } from "./atoms/filter-state";
+export { tableSortFamilyState } from "./atoms/sort-state";
+export { tableFilterFamilyState } from "./atoms/filter-state";
 export {
-  tableRowSelectionStateFamily,
+  tableRowSelectionFamilyState,
   toggleRowSelectionAtom,
   selectAllRowsAtom,
   deselectAllRowsAtom,
 } from "./atoms/row-selection-state";
-export { tableColumnVisibilityStateFamily } from "./atoms/column-visibility-state";
-export { tableLoadingStateFamily } from "./atoms/table-loading-state";
+export { tableColumnVisibilityFamilyState } from "./atoms/column-visibility-state";
+export { tableLoadingFamilyState } from "./atoms/table-loading-state";

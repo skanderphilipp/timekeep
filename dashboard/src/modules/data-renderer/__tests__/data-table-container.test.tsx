@@ -90,7 +90,8 @@ describe("DataTableContainer", () => {
     render(<DataTableContainer {...baseProps} data={punches} />);
 
     expect(screen.getByText("Timestamp")).toBeDefined();
-    expect(screen.getByText("Employee")).toBeDefined();
+    expect(screen.getByText("PIN")).toBeDefined();
+    expect(screen.getByText("Name")).toBeDefined();
     expect(screen.getByText("Device")).toBeDefined();
     expect(screen.getByText("Status")).toBeDefined();
     expect(screen.getByText("Method")).toBeDefined();
@@ -122,10 +123,17 @@ describe("DataTableContainer", () => {
     expect(onRowClick).toHaveBeenCalledWith(punches[0]);
   });
 
-  it("renders error state", () => {
-    render(<DataTableContainer {...baseProps} error="Connection refused" />);
+  it("renders error state via wrapping DataBoundary", () => {
+    const { DataBoundary } = require("@/modules/shared/components");
+    // DataTableContainer delegates error display to DataBoundary.
+    // Error state is tested in data-boundary.stories.tsx.
+    render(
+      <DataBoundary data={undefined} isLoading={false} error={new Error("Connection refused")} onRetry={vi.fn()}>
+        {() => <DataTableContainer {...baseProps} />}
+      </DataBoundary>
+    );
 
-    expect(screen.getByText("Connection refused")).toBeDefined();
+    expect(screen.getByText("Server Unreachable")).toBeDefined();
   });
 
   it("shows pagination footer when pagination provided", () => {

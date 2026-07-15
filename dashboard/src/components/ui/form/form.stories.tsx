@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Form } from "./form";
-import { FormField } from "./form-field";
 import { Input } from "../input";
+import { Select } from "../select";
 import { Button } from "../button";
 
 const meta: Meta<typeof Form> = {
@@ -16,12 +16,8 @@ type Story = StoryObj<typeof Form>;
 export const Primary: Story = {
   render: () => (
     <Form>
-      <FormField label="Employee Name">
-        <Input placeholder="Employee Name" />
-      </FormField>
-      <FormField label="PIN">
-        <Input placeholder="PIN" />
-      </FormField>
+      <Input label="Employee Name" placeholder="Ahmed Al-Sabah" />
+      <Input label="PIN" placeholder="1234" />
       <div style={{ marginTop: 16 }}>
         <Button variant="primary">Save</Button>
       </div>
@@ -34,17 +30,32 @@ export const ContextSettingsForm: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Form>
-      <FormField label="Work Start">
-        <Input defaultValue="08:00" />
-      </FormField>
-      <FormField label="Work End">
-        <Input defaultValue="17:00" />
-      </FormField>
-      <FormField label="Grace Period (minutes)">
-        <Input defaultValue="15" />
-      </FormField>
+      <Input label="Work Start" type="time" defaultValue="08:00" />
+      <Input label="Work End" type="time" defaultValue="17:00" />
+      <Input label="Grace Period (minutes)" type="number" defaultValue="15" />
       <div style={{ marginTop: 16 }}>
         <Button variant="primary">Save Settings</Button>
+      </div>
+    </Form>
+  ),
+};
+
+export const WithSelect: Story = {
+  name: "Mixed: Input + Select (all self-contained)",
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Form>
+      <Input label="Device Name" placeholder="Front Door" required />
+      <Select
+        label="Device Type"
+        required
+        placeholder="Select type…"
+        options={[]}
+        value={undefined}
+        onChange={() => {}}
+      />
+      <div style={{ marginTop: 16 }}>
+        <Button variant="primary">Save</Button>
       </div>
     </Form>
   ),

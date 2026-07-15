@@ -1,0 +1,38 @@
+// ── Shared Display Styles ─────────────────────────────────────────────
+// Used by all display components for consistent cell rendering.
+// Design: Twenty-aligned. See SCSS-VISUAL-STANDARDS.md §6.
+
+.displayContainer {
+  align-items: center;
+  display: flex;
+  height: var(--ao-spacing-5);
+}
+
+.fixedHeight {
+  height: var(--ao-spacing-5);
+}
+
+.ellipsis {
+  align-items: center;
+  display: flex;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.booleanLabel {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  margin-inline-start: var(--ao-spacing-1);
+}
+
+.multiSelectRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-1);
+  max-width: 100%;
+  overflow: hidden;
+}

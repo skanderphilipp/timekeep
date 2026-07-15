@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { FilterValues, ListStateOptions, SortField } from "./types";
 import { useFilterUrl } from "./use-filter-url";
 import { useSortUrl } from "./use-sort-url";
@@ -11,7 +12,8 @@ import { usePageUrl } from "./use-page-url";
  * state slices and provides a stable `queryKey` for TanStack Query.
  *
  * Key behavior:
- * - Changing filters or sort resets the page to 1 (via wrapped setters).
+ * - Changing filters or sort resets the page to 1 (atomically, in a single
+ *   `setSearchParams` call to avoid race conditions).
  * - `queryKey` changes whenever any state slice changes → auto-refetch.
  *
  * @example
@@ -22,9 +24,6 @@ import { usePageUrl } from "./use-page-url";
  *     filterDefaults: { device_sn: "", user_pin: "", since: "", until: "" },
  *     sortDefaults: { column: "timestamp", direction: "desc" },
  *   });
- *
- * // Pass queryKey to TanStack Query:
- * const query = useQuery({ queryKey, queryFn: () => fetchData(filters, sort, page) });
  * ```
  */
 export function useListState<T extends FilterValues>({
@@ -33,9 +32,10 @@ export function useListState<T extends FilterValues>({
   sortDefaults = null,
   defaultPage = 1,
 }: ListStateOptions<T>) {
+  const [, setSearchParams] = useSearchParams();
+
   const {
     filters,
-    setFilter: _setFilter,
     resetFilters: _resetFilters,
     hasActiveFilters,
   } = useFilterUrl<T>({
@@ -43,60 +43,135 @@ export function useListState<T extends FilterValues>({
     defaults: filterDefaults,
   });
 
-  const {
-    sort,
-    setSort: _setSort,
-    toggleSort: _toggleSort,
-  } = useSortUrl({
+  const { sort, toggleSort: _toggleSort } = useSortUrl({
     namespace,
     defaultSort: sortDefaults,
   });
 
-  const {
-    page,
-    setPage: _setPage,
-    resetPage,
-  } = usePageUrl({
+  const { page, setPage: _setPage } = usePageUrl({
     namespace,
     defaultPage,
   });
 
-  // ── Wrapped setters that reset page to 1 ────────────────────────
+  // ── Parameter key helpers ──────────────────────────────────────────
 
+  const pageParam = `${namespace}_page`;
+  const sortParam = `${namespace}_sort`;
+  const orderParam = `${namespace}_order`;
+
+  /**
+   * Build a filter param key for the given field name.
+   */
+  const filterKey = (field: string) => `${namespace}_${field}`;
+
+  /**
+   * Set filter values AND reset page to 1 atomically.
+   *
+   * The page reset was previously a separate `setSearchParams` call,
+   * which raced with the filter update and caused filter changes to be
+   * silently dropped (React Router's `replace: true` batching).
+   */
   const setFilter = useCallback(
     (update: Partial<T>) => {
-      _setFilter(update);
-      resetPage();
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+
+          for (const [key, value] of Object.entries(update) as [string, string | undefined][]) {
+            const paramKey = filterKey(key);
+            const defaultVal = (filterDefaults as Record<string, string | undefined>)[key];
+            if (value === undefined || value === "" || value === defaultVal) {
+              next.delete(paramKey);
+            } else {
+              next.set(paramKey, value);
+            }
+          }
+
+          // Reset page to 1 (filters changed → start from first page)
+          next.set(pageParam, String(defaultPage));
+
+          return next;
+        },
+        { replace: true },
+      );
     },
-    [_setFilter, resetPage],
+    [setSearchParams, namespace, filterDefaults, pageParam, defaultPage],
   );
 
+  /**
+   * Set sort state AND reset page to 1 atomically.
+   */
   const setSort = useCallback(
     (next: SortField | null) => {
-      _setSort(next);
-      resetPage();
+      setSearchParams(
+        (prev) => {
+          const nextParams = new URLSearchParams(prev);
+          if (next) {
+            nextParams.set(sortParam, next.column);
+            nextParams.set(orderParam, next.direction);
+          } else {
+            nextParams.delete(sortParam);
+            nextParams.delete(orderParam);
+          }
+          nextParams.set(pageParam, String(defaultPage));
+          return nextParams;
+        },
+        { replace: true },
+      );
     },
-    [_setSort, resetPage],
+    [setSearchParams, sortParam, orderParam, pageParam, defaultPage],
   );
 
+  /**
+   * Toggle sort column AND reset page to 1 atomically.
+   */
   const toggleSort = useCallback(
     (column: string) => {
-      _toggleSort(column);
-      resetPage();
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          const currentCol = prev.get(sortParam);
+          const currentDir = prev.get(orderParam);
+
+          if (!currentCol || currentCol !== column) {
+            next.set(sortParam, column);
+            next.set(orderParam, "asc");
+          } else if (currentDir === "asc") {
+            next.set(sortParam, column);
+            next.set(orderParam, "desc");
+          } else {
+            next.delete(sortParam);
+            next.delete(orderParam);
+          }
+
+          next.set(pageParam, String(defaultPage));
+          return next;
+        },
+        { replace: true },
+      );
     },
-    [_toggleSort, resetPage],
+    [setSearchParams, sortParam, orderParam, pageParam, defaultPage],
   );
 
+  /**
+   * Reset all filters to defaults AND reset page to 1 atomically.
+   */
   const resetFilters = useCallback(() => {
-    _resetFilters();
-    resetPage();
-  }, [_resetFilters, resetPage]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        for (const key of Object.keys(filterDefaults)) {
+          next.delete(filterKey(key));
+        }
+        next.set(pageParam, String(defaultPage));
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams, namespace, filterDefaults, pageParam, defaultPage]);
 
   /**
    * Stable query key array for TanStack Query.
-   *
-   * Includes namespace + all filter values + sort + page so that any
-   * change triggers a fresh query automatically.
    */
   const queryKey = useMemo(
     () => [

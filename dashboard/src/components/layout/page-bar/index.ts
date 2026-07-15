@@ -1,2 +1,2 @@
 export { PageBar } from "./page-bar";
-export type { BreadcrumbSegment } from "@/components/ui/breadcrumb";
+export type { BreadcrumbSegment } from "@/infrastructure/navigation/use-breadcrumbs";

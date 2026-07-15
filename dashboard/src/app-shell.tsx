@@ -8,6 +8,8 @@ import {
   AppTopBar,
 } from "@/infrastructure/app-shell";
 import { SidePanelShell } from "@/infrastructure/side-panel/side-panel-shell";
+import { GlobalCommandsRegistrar } from "@/infrastructure/commands";
+import { MetadataHydrator } from "@/modules/metadata-store";
 import styles from "./app-shell.module.scss";
 
 // ── AppShell ──────────────────────────────────────────────────────────────────
@@ -17,23 +19,30 @@ type AppShellProps = {
 };
 
 /**
- * Application shell — composes the sidebar, top bar, and content area.
+ * Application shell — composes the sidebar, top bar, content area, and
+ * side panel into a Twenty-aligned flex layout.
  *
- * This component is a THIN COMPOSITE. It contains NO business logic:
- * - Navigation model → `infrastructure/navigation/`
- * - Role filtering → `infrastructure/navigation/use-navigation`
- * - Breadcrumb derivation → `infrastructure/navigation/use-breadcrumbs`
- * - Auth state → `infrastructure/state/`
- * - Shell state → `infrastructure/app-shell/use-app-shell`
+ * Structure:
+ * ```
+ * AppShell
+ *   ├── AppSidebar (sticky, left)
+ *   └── Main column (flex: 1)
+ *        ├── AppTopBar (sticky, full width)
+ *        └── Content row (flex: 1, flex row)
+ *             ├── Page content (flex: 1)  ← children (PageShell)
+ *             └── SidePanel (flex-shrink: 0)  ← panendels in flow, pushes content
+ * ```
  *
- * All behavioral logic lives in infrastructure hooks and components.
- * The shell only wires them together and renders layout markup.
+ * The side panel no longer uses sticky positioning — it sits in the same
+ * flex row as the page content and pushes it left when open.
  */
 export function AppShell({ children }: AppShellProps) {
   const shell = useAppShell();
 
   return (
     <div data-slot="app-shell" className={styles.shell}>
+      <MetadataHydrator />
+      <GlobalCommandsRegistrar />
       <SkipToContent />
       <MobileOverlay open={shell.sidebarOpen} onClick={shell.closeSidebar} />
 
@@ -44,27 +53,28 @@ export function AppShell({ children }: AppShellProps) {
         navItems={shell.navItems}
         onClose={shell.closeSidebar}
         onToggleCollapse={shell.toggleCollapse}
+        colorScheme={shell.colorScheme}
+        onToggleTheme={shell.toggleTheme}
+        isAuthenticated={shell.isAuthenticated}
+        onLogout={shell.logout}
       />
 
       <div data-slot="main" className={styles.main}>
         <AppTopBar
-          isMobile={shell.isMobile}
           sidebarOpen={shell.sidebarOpen}
           onToggleSidebar={shell.toggleSidebar}
-          breadcrumbs={shell.breadcrumbs}
-          breadcrumbSeparator={shell.breadcrumbSeparator}
-          colorScheme={shell.colorScheme}
-          onToggleTheme={shell.toggleTheme}
-          isAuthenticated={shell.isAuthenticated}
-          onLogout={shell.logout}
+          sidebarCollapsed={shell.sidebarCollapsed}
+          onExpandSidebar={shell.toggleCollapse}
         />
 
-        <main data-slot="content" id="main-content" className={styles.content}>
-          {children}
-        </main>
-      </div>
+        <div data-slot="content-row" className={styles.contentRow}>
+          <main data-slot="content" id="main-content" className={styles.content}>
+            {children}
+          </main>
 
-      <SidePanelShell />
+          <SidePanelShell />
+        </div>
+      </div>
     </div>
   );
 }

@@ -2,15 +2,17 @@ import { useMemo, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPencil, IconKey, IconTrash } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 
-import { Badge, IconButton, ActionGroup, type DataTableColumn } from "@/components/ui";
+import { useStateValue } from "@/infrastructure/state/jotai";
+
+import { Badge, IconButton, ActionGroup } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
 import {
-  userFormModeAtom,
-  editingUserAtom,
-  deletingUserAtom,
-  passwordChangeUserAtom,
+  userFormModeState,
+  editingUserState,
+  deletingUserState,
+  passwordChangeUserState,
   openCreateUserFormAtom,
   openEditUserFormAtom,
   closeUserFormAtom,
@@ -18,9 +20,10 @@ import {
   closeDeleteUserDialogAtom,
   openPasswordChangeDialogAtom,
   closePasswordChangeDialogAtom,
-} from "@/infrastructure/state";
+} from "@/modules/users/states/user-form-atoms";
 import { useUsers } from "./use-users";
 import type { DashboardUser } from "@/lib/api";
+import type { ColumnDefinition, TextFieldMetadata } from "@/modules/data-renderer";
 
 function roleVariant(role: string): "success" | "warning" | "neutral" {
   switch (role) {
@@ -48,10 +51,10 @@ export function useUsersPage() {
   const { query, deleteUser: deleteMutation, changePassword: passwordMutation } = useUsers();
 
   // ── Jotai atoms — cross-cutting UI state ──────────────────────────
-  const formMode = useAtomValue(userFormModeAtom);
-  const editingUser = useAtomValue(editingUserAtom);
-  const deletingUser = useAtomValue(deletingUserAtom);
-  const passwordUser = useAtomValue(passwordChangeUserAtom);
+  const formMode = useStateValue(userFormModeState);
+  const editingUser = useStateValue(editingUserState);
+  const deletingUser = useStateValue(deletingUserState);
+  const passwordUser = useStateValue(passwordChangeUserState);
 
   const handleCreate = useSetAtom(openCreateUserFormAtom);
   const openEdit = useSetAtom(openEditUserFormAtom);
@@ -88,57 +91,103 @@ export function useUsersPage() {
     [passwordMutation],
   );
 
-  const columns: DataTableColumn<DashboardUser, string>[] = useMemo(
+  /**
+   * TODO(ENTERPRISE): Migrate to useSchemaColumns("user") when GET /api/users/schema is available.
+   *
+   * Phase: Backend API completion
+   * Impact: Column definitions are hardcoded — schema-driven columns would provide
+   *         sortability, filterability, and column visibility from the backend.
+   * Fix: Add schema endpoint to backend, then replace this useMemo with useSchemaColumns("user").
+   */
+  const columns: ColumnDefinition[] = useMemo(
     () => [
-      { id: "username", header: _(msg`Username`), accessor: (u) => u.username, sortable: true },
+      {
+        id: "username",
+        header: _(msg`Username`),
+        fieldId: "username",
+        label: _(msg`Username`),
+        type: "text",
+        metadata: { fieldName: "username", isSortable: true } as TextFieldMetadata,
+        isVisible: true,
+        width: "160px",
+        isLabelIdentifier: true,
+      },
       {
         id: "display_name",
         header: _(msg`Display Name`),
-        accessor: (u) => u.display_name || "—",
-        sortable: true,
+        fieldId: "display_name",
+        label: _(msg`Display Name`),
+        type: "text",
+        metadata: { fieldName: "display_name", isSortable: true } as TextFieldMetadata,
+        isVisible: true,
+        width: "180px",
       },
       {
         id: "role",
         header: _(msg`Role`),
-        accessor: (u) => u.role,
-        cell: (u) => <Badge variant={roleVariant(u.role)}>{u.role}</Badge>,
+        fieldId: "role",
+        label: _(msg`Role`),
+        type: "text",
+        metadata: { fieldName: "role", isSortable: false } as TextFieldMetadata,
+        isVisible: true,
+        width: "120px",
+        render: (row: unknown) => {
+          const r = row as DashboardUser;
+          return <Badge variant={roleVariant(r.role)}>{r.role}</Badge>;
+        },
       },
       {
         id: "active",
         header: _(msg`Status`),
-        accessor: (u) => (u.active ? "active" : "inactive"),
-        cell: (u) => (
-          <Badge variant={u.active ? "success" : "neutral"}>
-            {u.active ? _(msg`Active`) : _(msg`Inactive`)}
-          </Badge>
-        ),
+        fieldId: "active",
+        label: _(msg`Status`),
+        type: "text",
+        metadata: { fieldName: "active", isSortable: false } as TextFieldMetadata,
+        isVisible: true,
+        width: "100px",
+        render: (row: unknown) => {
+          const r = row as DashboardUser;
+          return (
+            <Badge variant={r.active ? "success" : "neutral"}>
+              {r.active ? _(msg`Active`) : _(msg`Inactive`)}
+            </Badge>
+          );
+        },
       },
       {
         id: "actions",
         header: _(msg`Actions`),
-        accessor: () => "",
-        cell: (u) => (
-          <ActionGroup>
-            <IconButton size="sm" aria-label={_(msg`Edit`)} onClick={() => handleEdit(u)}>
-              <IconPencil size={14} />
-            </IconButton>
-            <IconButton
-              size="sm"
-              aria-label={_(msg`Change password`)}
-              onClick={() => openPasswordDialog(u)}
-            >
-              <IconKey size={14} />
-            </IconButton>
-            <IconButton
-              size="sm"
-              accent="tertiary"
-              aria-label={_(msg`Delete`)}
-              onClick={() => openDeleteDialog(u)}
-            >
-              <IconTrash size={14} />
-            </IconButton>
-          </ActionGroup>
-        ),
+        fieldId: "actions",
+        label: _(msg`Actions`),
+        type: "text",
+        metadata: { fieldName: "actions", isSortable: false } as TextFieldMetadata,
+        isVisible: true,
+        width: "120px",
+        render: (row: unknown) => {
+          const u = row as DashboardUser;
+          return (
+            <ActionGroup>
+              <IconButton size="sm" aria-label={_(msg`Edit`)} onClick={() => handleEdit(u)}>
+                <IconPencil size={14} />
+              </IconButton>
+              <IconButton
+                size="sm"
+                aria-label={_(msg`Change password`)}
+                onClick={() => openPasswordDialog(u)}
+              >
+                <IconKey size={14} />
+              </IconButton>
+              <IconButton
+                size="sm"
+                accent="tertiary"
+                aria-label={_(msg`Delete`)}
+                onClick={() => openDeleteDialog(u)}
+              >
+                <IconTrash size={14} />
+              </IconButton>
+            </ActionGroup>
+          );
+        },
       },
     ],
     [_, handleEdit, openPasswordDialog, openDeleteDialog],

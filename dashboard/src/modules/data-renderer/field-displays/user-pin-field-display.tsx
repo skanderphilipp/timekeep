@@ -8,25 +8,30 @@ type UserPinFieldDisplayProps = {
 };
 
 /**
- * User PIN / name field display — renders as a clickable tag.
+ * User-reference field display — renders as a clickable tag.
  *
- * Shows the employee name when available (from the `employee_name` field),
- * falling back to the raw PIN. Clicking navigates to the user detail panel
- * using the PIN as the entity identifier.
+ * Used for both `user_pin` and `employee_name` columns.
+ * - `employee_name`: displays the name, navigates via PIN from entityId.
+ * - `user_pin`: displays the PIN, navigates via the PIN itself.
+ *
+ * Falls back to "-" when the display value is empty (entityId is
+ * navigation-only and never shown as display text).
  */
 export function UserPinFieldDisplay({ value }: UserPinFieldDisplayProps) {
   const openDetail = useOpenDetailPanel();
   const { entityId } = useFieldContext();
 
+  /** Navigation identifier: entityId (set by createCellRenderer) or the raw value. */
   const pin = entityId ?? value;
 
   const handleClick = useCallback(() => {
     if (pin) {
-      openDetail("user", pin, `User ${value}`);
+      openDetail("user", pin, `User ${value || pin}`);
     }
   }, [pin, value, openDetail]);
 
-  const displayLabel = value || pin;
+  /** Display text: value only. entityId is for navigation, NOT for display. */
+  const displayLabel = value || "-";
 
   return <Tag text={displayLabel} color="gray" onClick={handleClick} />;
 }

@@ -35,6 +35,8 @@ export type PunchFilter = {
   /** Multi-select device filter (OR logic). */
   device_sns?: string[];
   user_pin?: string;
+  /** Full-text search (searches user_pin). */
+  search?: string;
   since?: string;
   until?: string;
   /** Filter by punch status: check_in, check_out, break_out, break_in, overtime_in, overtime_out. */
@@ -65,6 +67,7 @@ function buildPunchParams(filter: PunchFilter): string {
     }
   }
   if (filter.user_pin) params.set("user_pin", filter.user_pin);
+  if (filter.search) params.set("search", filter.search);
   if (filter.status) params.set("status", filter.status);
   if (filter.verify_mode) params.set("verify_mode", filter.verify_mode);
   if (filter.anomalies_only) params.set("anomalies_only", "true");

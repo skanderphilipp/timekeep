@@ -6,7 +6,7 @@ import { msg } from "@lingui/core/macro";
 
 import { AppRoute } from "@/lib/navigation";
 import { useZodForm } from "@/lib/form";
-import { authTokenAtom, currentUserAtom } from "@/infrastructure/state";
+import { authTokenState, currentUserState } from "@/infrastructure/state";
 import { performSetup, setAuthToken } from "@/lib/api";
 import {
   Card,
@@ -36,8 +36,8 @@ import styles from "./setup-form.module.scss";
 export function SetupForm() {
   const { _ } = useLingui();
   const navigate = useNavigate();
-  const setToken = useSetAtom(authTokenAtom);
-  const setCurrentUser = useSetAtom(currentUserAtom);
+  const setToken = useSetAtom(authTokenState.atom);
+  const setCurrentUser = useSetAtom(currentUserState.atom);
 
   const [setupError, setSetupError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,7 +82,11 @@ export function SetupForm() {
         <Separator noMargin />
 
         {setupError && (
-          <Banner variant="danger" onDismiss={() => setSetupError(null)}>
+          <Banner
+            variant="danger"
+            title={_(msg`Setup Failed`)}
+            onDismiss={() => setSetupError(null)}
+          >
             {setupError}
           </Banner>
         )}

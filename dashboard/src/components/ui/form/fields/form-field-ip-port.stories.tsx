@@ -2,9 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Form } from "../form";
-import { FormField } from "../form-field";
 import { FormFieldIpPort } from "../fields/form-field-ip-port";
-import { FieldInputContainer } from "../field-input-container";
 import { Button } from "../../button";
 import type { FormIpPortFieldDef } from "../form-field-def";
 
@@ -29,11 +27,8 @@ function FormWrapper({
   return (
     <FormProvider {...form}>
       <Form>
-        <FormField label={field.label} required={field.required} helperText={field.description}>
-          <FieldInputContainer>
-            <FormFieldIpPort field={field} form={form} inputId="story-ip-port" />
-          </FieldInputContainer>
-        </FormField>
+        {/* FormFieldIpPort is self-contained — no FormField wrapper needed */}
+        <FormFieldIpPort field={field} form={form} />
         <div style={{ marginTop: 16 }}>
           <Button variant="primary" type="button" onClick={() => {}}>
             Save
@@ -107,15 +102,7 @@ export const WithError: Story = {
       return (
         <FormProvider {...form}>
           <Form>
-            <FormField
-              label={errorField.label}
-              required={errorField.required}
-              error="Invalid IP address"
-            >
-              <FieldInputContainer>
-                <FormFieldIpPort field={errorField} form={form} inputId="story-error" />
-              </FieldInputContainer>
-            </FormField>
+            <FormFieldIpPort field={errorField} form={form} />
             <div style={{ marginTop: 16 }}>
               <Button variant="primary" type="button" onClick={() => {}}>
                 Save

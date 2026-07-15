@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useId } from "react";
 import { clsx } from "clsx";
 import {
   useFloating,
@@ -33,6 +33,16 @@ export type DateRangePreset = {
 };
 
 type DatePickerProps = {
+  /** Accessible label rendered above the control. */
+  label?: string;
+  /** Validation error message. */
+  error?: string;
+  /** Helper text shown when no error. */
+  helperText?: string;
+  /** Mark as required (shows asterisk). */
+  required?: boolean;
+  /** Expand to full container width. */
+  fullWidth?: boolean;
   value: Date | null;
   endValue?: Date | null;
   mode?: DatePickerMode;
@@ -43,12 +53,21 @@ type DatePickerProps = {
   maxDate?: Date;
   dateFormat?: string;
   presets?: DateRangePreset[];
+  /** Disable the control. */
+  disabled?: boolean;
   className?: string;
+  /** HTML id (auto-generated if omitted). */
+  id?: string;
 };
 
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function DatePicker({
+  label,
+  error,
+  helperText,
+  required = false,
+  fullWidth = false,
   value,
   endValue,
   mode = "single",
@@ -59,9 +78,15 @@ export function DatePicker({
   maxDate,
   dateFormat = "yyyy-MM-dd",
   presets,
+  disabled = false,
   className,
+  id: externalId,
 }: DatePickerProps) {
   const { _ } = useLingui();
+  const autoId = useId();
+  const controlId = externalId ?? autoId;
+  const errorId = `${controlId}-error`;
+  const helperId = `${controlId}-helper`;
   const [open, setOpen] = useState(false);
 
   /**
@@ -77,8 +102,6 @@ export function DatePicker({
   const isRange = mode === "range";
 
   // Calendar sees the real value, or pendingRangeStart during selection.
-  // When a range is pending (user picked start but not end), endDate must
-  // be null so react-datepicker knows the range is still in progress.
   const calendarStartDate: Date | null = isRange ? (pendingRangeStart ?? value) : value;
   const calendarEndDate: Date | null = isRange
     ? pendingRangeStart
@@ -95,7 +118,6 @@ export function DatePicker({
     open,
     onOpenChange: (next) => {
       setOpen(next);
-      // Discard pending range when closing without completing
       if (!next) setPendingRangeStart(null);
     },
     placement: "bottom-start",
@@ -120,12 +142,10 @@ export function DatePicker({
     (dates: [Date | null, Date | null]) => {
       const [start, end] = dates;
       if (start && end) {
-        // Both dates selected — commit and close
         onChange(start, end);
         setPendingRangeStart(null);
         setOpen(false);
       } else if (start) {
-        // First date only — keep in pending state, do NOT call parent
         setPendingRangeStart(start);
       }
     },
@@ -153,13 +173,26 @@ export function DatePicker({
   );
 
   return (
-    <>
+    <div
+      data-slot="date-picker"
+      className={clsx(styles.container, fullWidth && styles.fullWidth, className)}
+    >
+      {label && (
+        <label data-slot="date-picker-label" className={styles.label} htmlFor={controlId}>
+          {label}
+          {required && <span className={styles.required}>*</span>}
+        </label>
+      )}
+
       <button
         type="button"
-        data-slot="date-picker"
+        id={controlId}
         ref={refs.setReference}
         {...getReferenceProps()}
-        className={clsx(styles.trigger, className)}
+        disabled={disabled}
+        className={clsx(styles.trigger, error && styles.triggerError)}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : helperText ? helperId : undefined}
       >
         <span data-slot="date-picker-icon" className={styles.icon}>
           <IconCalendar size={16} />
@@ -186,6 +219,17 @@ export function DatePicker({
           </span>
         )}
       </button>
+
+      {error && (
+        <p data-slot="date-picker-error" id={errorId} className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+      {!error && helperText && (
+        <p data-slot="date-picker-helper" id={helperId} className={styles.helper}>
+          {helperText}
+        </p>
+      )}
 
       {open && (
         <FloatingPortal>
@@ -234,6 +278,6 @@ export function DatePicker({
           </div>
         </FloatingPortal>
       )}
-    </>
+    </div>
   );
 }

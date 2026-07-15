@@ -1,13 +1,8 @@
 declare const classNames: {
   readonly container: "container";
-  readonly breadcrumbs: "breadcrumbs";
-  readonly breadcrumbItem: "breadcrumbItem";
-  readonly breadcrumbItemCurrent: "breadcrumbItemCurrent";
-  readonly breadcrumbSeparator: "breadcrumbSeparator";
-  readonly breadcrumbLink: "breadcrumbLink";
-  readonly breadcrumbCurrent: "breadcrumbCurrent";
   readonly rowWrapper: "rowWrapper";
   readonly row: "row";
+  readonly icon: "icon";
   readonly title: "title";
   readonly description: "description";
   readonly actions: "actions";

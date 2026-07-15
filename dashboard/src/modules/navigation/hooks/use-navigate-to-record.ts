@@ -6,7 +6,7 @@ import { msg } from "@lingui/core/macro";
 
 import { AppRoute, punchesForDevice, punchesForUser } from "@/lib/navigation";
 import { openSidePanelAtom } from "@/infrastructure/state";
-import { selectedDeviceSnAtom } from "@/modules/devices/states/device-atoms";
+import { selectedDeviceSnState } from "@/modules/devices/states/device-atoms";
 
 /**
  * Navigation hook — type-safe navigation with side panel support.
@@ -27,7 +27,7 @@ export function useNavigateToRecord() {
   const { _ } = useLingui();
   const navigate = useNavigate();
   const openSidePanel = useSetAtom(openSidePanelAtom);
-  const setSelectedDevice = useSetAtom(selectedDeviceSnAtom);
+  const setSelectedDevice = useSetAtom(selectedDeviceSnState.atom);
 
   /** Open device detail in the side panel. */
   const toDeviceDetail = useCallback(

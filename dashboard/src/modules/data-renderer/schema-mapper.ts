@@ -18,22 +18,32 @@ import type { ColumnDefinition, FieldMetadata } from "./types";
 
 /**
  * Map a schema column's field name + value_type to a data-renderer FieldType.
- *
- * Known fields are mapped by name (semantic). Unknown fields fall back to
- * value_type: "int" → "text" (generic numeric display), "text" → "text".
  */
 export function mapSchemaFieldToFieldType(field: string, _valueType: ColumnMeta["value_type"]): FieldType {
 	switch (field) {
+		// Temporal
 		case "timestamp":
+		case "created_at":
+		case "last_seen_at":
 			return "timestamp";
+		// Reference / link fields
 		case "device_sn":
 			return "device_sn";
 		case "user_pin":
 			return "user_pin";
+		case "employee_name":
+			return "employee_name";
+		// Status-like enums
 		case "status":
+		case "connection_status":
+		case "active":
 			return "status";
+		// Verification
 		case "verify_mode":
 			return "verify_method";
+		// Direction (check_in / check_out)
+		case "direction":
+			return "direction";
 		default:
 			return "text";
 	}
@@ -41,9 +51,6 @@ export function mapSchemaFieldToFieldType(field: string, _valueType: ColumnMeta[
 
 /**
  * Convert a single ColumnMeta (from schema) into a data-renderer ColumnDefinition.
- *
- * Merges backend structural metadata (sortability, type) with frontend
- * presentation overrides (width, alignment, label role).
  */
 export function columnMetaToDefinition(
 	col: ColumnMeta,
@@ -71,8 +78,6 @@ export function columnMetaToDefinition(
 
 /**
  * Get presentation overrides for a given field in a given entity.
- *
- * Returns undefined if no overrides exist — callers should use defaults.
  */
 export function getPresentationOverride(
 	entity: string,

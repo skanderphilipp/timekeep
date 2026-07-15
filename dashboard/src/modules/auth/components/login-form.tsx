@@ -6,7 +6,7 @@ import { msg } from "@lingui/core/macro";
 
 import { AppRoute } from "@/lib/navigation";
 import { useZodForm } from "@/lib/form";
-import { authTokenAtom, currentUserAtom } from "@/infrastructure/state";
+import { authTokenState, currentUserState } from "@/infrastructure/state";
 import { login, setAuthToken } from "@/lib/api";
 import {
   Card,
@@ -29,8 +29,8 @@ import styles from "./login-form.module.scss";
 export function LoginForm() {
   const { _ } = useLingui();
   const navigate = useNavigate();
-  const setToken = useSetAtom(authTokenAtom);
-  const setCurrentUser = useSetAtom(currentUserAtom);
+  const setToken = useSetAtom(authTokenState.atom);
+  const setCurrentUser = useSetAtom(currentUserState.atom);
 
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +72,11 @@ export function LoginForm() {
         <Separator noMargin />
 
         {loginError && (
-          <Banner variant="danger" onDismiss={() => setLoginError(null)}>
+          <Banner
+            variant="danger"
+            title={_(msg`Sign In Failed`)}
+            onDismiss={() => setLoginError(null)}
+          >
             {loginError}
           </Banner>
         )}

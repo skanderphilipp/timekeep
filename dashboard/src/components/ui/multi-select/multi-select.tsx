@@ -1,13 +1,13 @@
 /**
  * MultiSelect — a multi-value selection dropdown built on @base-ui/react/combobox.
  *
- * Replaces the custom Dropdown-based implementation with base-ui's accessible
- * Combobox primitive in multiple mode. Handles positioning, keyboard navigation,
- * ARIA, search, chip display, and removal automatically.
+ * Self-contained form control: handles its own label, error, helper text,
+ * search/filter, chip display, and removal. Twenty-aligned — no FormField
+ * wrapper needed.
  */
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { clsx } from "clsx";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useId } from "react";
 import { IconCheck } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
@@ -23,6 +23,16 @@ export type { MultiSelectOption } from "@/types/options";
 import type { MultiSelectOption } from "@/types/options";
 
 type MultiSelectProps = {
+  /** Accessible label rendered above the control. */
+  label?: string;
+  /** Validation error message. */
+  error?: string;
+  /** Helper text shown when no error. */
+  helperText?: string;
+  /** Mark as required (shows asterisk). */
+  required?: boolean;
+  /** Expand to full container width. */
+  fullWidth?: boolean;
   /** Available options to choose from. */
   options: MultiSelectOption[];
   /** Currently selected values (controlled). */
@@ -37,12 +47,21 @@ type MultiSelectProps = {
   loading?: boolean;
   /** Message shown when no options match the search. */
   emptyMessage?: string;
+  /** Disable the control. */
+  disabled?: boolean;
   className?: string;
+  /** HTML id (auto-generated if omitted). */
+  id?: string;
 };
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function MultiSelect({
+  label,
+  error,
+  helperText,
+  required = false,
+  fullWidth = false,
   options,
   values,
   onChange,
@@ -50,9 +69,15 @@ export function MultiSelect({
   searchPlaceholder,
   loading = false,
   emptyMessage,
+  disabled = false,
   className,
+  id: externalId,
 }: MultiSelectProps) {
   const { _ } = useLingui();
+  const autoId = useId();
+  const controlId = externalId ?? autoId;
+  const errorId = `${controlId}-error`;
+  const helperId = `${controlId}-helper`;
   const [query, setQuery] = useState("");
 
   // Selected options as objects
@@ -84,83 +109,111 @@ export function MultiSelect({
   const resolvedEmpty = emptyMessage ?? _(msg`No results found`);
 
   return (
-    <ComboboxPrimitive.Root
-      multiple
-      value={values}
-      onValueChange={(val) => {
-        // onValueChange with multiple returns string[]
-        if (Array.isArray(val)) onChange(val);
-      }}
-      inputValue={query}
-      onInputValueChange={setQuery}
+    <div
+      data-slot="multi-select"
+      className={clsx(styles.container, fullWidth && styles.fullWidth, className)}
     >
-      <ComboboxPrimitive.Trigger
-        data-slot="multi-select-trigger"
-        className={clsx(styles.trigger, className)}
-        aria-label={resolvedPlaceholder}
-      >
-        {/* Selected chips */}
-        <div data-slot="multi-select-chips" className={styles.chips}>
-          {selectedOptions.map((opt) => (
-            <Tag
-              key={opt.value}
-              text={opt.label}
-              color="accent"
-              variant="solid"
-              dismissible
-              onRemove={() => removeValue(opt.value)}
-            />
-          ))}
+      {label && (
+        <label data-slot="multi-select-label" className={styles.label} htmlFor={controlId}>
+          {label}
+          {required && <span className={styles.required}>*</span>}
+        </label>
+      )}
 
-          {/* Search input within the trigger */}
-          <ComboboxPrimitive.Input
-            data-slot="multi-select-input"
-            className={styles.input}
-            placeholder={values.length === 0 ? resolvedPlaceholder : resolvedSearchPlaceholder}
-            render={<input type="text" />}
-          />
-        </div>
-      </ComboboxPrimitive.Trigger>
+      <div data-slot="multi-select-wrapper">
+        <ComboboxPrimitive.Root
+          multiple
+          value={values}
+          onValueChange={(val) => {
+            if (Array.isArray(val)) onChange(val);
+          }}
+          inputValue={query}
+          onInputValueChange={setQuery}
+          disabled={disabled}
+        >
+          <ComboboxPrimitive.Trigger
+            id={controlId}
+            data-slot="multi-select-trigger"
+            className={clsx(styles.trigger, error && styles.triggerError)}
+            aria-label={resolvedPlaceholder}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
+          >
+            {/* Selected chips */}
+            <div data-slot="multi-select-chips" className={styles.chips}>
+              {selectedOptions.map((opt) => (
+                <Tag
+                  key={opt.value}
+                  text={opt.label}
+                  color="accent"
+                  variant="solid"
+                  dismissible
+                  onRemove={() => removeValue(opt.value)}
+                />
+              ))}
 
-      <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
-          <ComboboxPrimitive.Popup data-slot="multi-select-popup" className={styles.popup}>
-            <ComboboxPrimitive.List data-slot="multi-select-list" className={styles.list}>
-              {loading && (
-                <div data-slot="multi-select-loading" className={styles.stateRow}>
-                  <Spinner size="sm" />
-                </div>
-              )}
+              {/* Search input within the trigger */}
+              <ComboboxPrimitive.Input
+                data-slot="multi-select-input"
+                className={styles.input}
+                placeholder={values.length === 0 ? resolvedPlaceholder : resolvedSearchPlaceholder}
+                render={<input type="text" />}
+              />
+            </div>
+          </ComboboxPrimitive.Trigger>
 
-              {!loading && filtered.length === 0 && (
-                <ComboboxPrimitive.Empty data-slot="multi-select-empty" className={styles.stateRow}>
-                  <span className={styles.emptyText}>{resolvedEmpty}</span>
-                </ComboboxPrimitive.Empty>
-              )}
+          <ComboboxPrimitive.Portal>
+            <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
+              <ComboboxPrimitive.Popup data-slot="multi-select-popup" className={styles.popup}>
+                <ComboboxPrimitive.List data-slot="multi-select-list" className={styles.list}>
+                  {loading && (
+                    <div data-slot="multi-select-loading" className={styles.stateRow}>
+                      <Spinner size="sm" />
+                    </div>
+                  )}
 
-              {!loading &&
-                filtered.map((opt) => (
-                  <ComboboxPrimitive.Item
-                    key={opt.value}
-                    data-slot="multi-select-item"
-                    value={opt.value}
-                    disabled={opt.disabled}
-                    className={styles.item}
-                  >
-                    <span data-slot="multi-select-item-text" className={styles.itemText}>
-                      {opt.label}
-                    </span>
-                    <ComboboxPrimitive.ItemIndicator
-                      data-slot="multi-select-item-indicator"
-                      className={styles.itemIndicator}
-                      render={<IconCheck size={14} aria-hidden="true" />}
-                    />
-                  </ComboboxPrimitive.Item>
-                ))}
-            </ComboboxPrimitive.List>
-          </ComboboxPrimitive.Popup>
-        </ComboboxPrimitive.Positioner>
-      </ComboboxPrimitive.Portal>
-    </ComboboxPrimitive.Root>
+                  {!loading && filtered.length === 0 && (
+                    <ComboboxPrimitive.Empty data-slot="multi-select-empty" className={styles.stateRow}>
+                      <span className={styles.emptyText}>{resolvedEmpty}</span>
+                    </ComboboxPrimitive.Empty>
+                  )}
+
+                  {!loading &&
+                    filtered.map((opt) => (
+                      <ComboboxPrimitive.Item
+                        key={opt.value}
+                        data-slot="multi-select-item"
+                        value={opt.value}
+                        disabled={opt.disabled}
+                        className={styles.item}
+                      >
+                        <span data-slot="multi-select-item-text" className={styles.itemText}>
+                          {opt.label}
+                        </span>
+                        <ComboboxPrimitive.ItemIndicator
+                          data-slot="multi-select-item-indicator"
+                          className={styles.itemIndicator}
+                          render={<IconCheck size={14} aria-hidden="true" />}
+                        />
+                      </ComboboxPrimitive.Item>
+                    ))}
+                </ComboboxPrimitive.List>
+              </ComboboxPrimitive.Popup>
+            </ComboboxPrimitive.Positioner>
+          </ComboboxPrimitive.Portal>
+        </ComboboxPrimitive.Root>
+      </div>
+
+      {error && (
+        <p data-slot="multi-select-error" id={errorId} className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+      {!error && helperText && (
+        <p data-slot="multi-select-helper" id={helperId} className={styles.helper}>
+          {helperText}
+        </p>
+      )}
+    </div>
   );
 }

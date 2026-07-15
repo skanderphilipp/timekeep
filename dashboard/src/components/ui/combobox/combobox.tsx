@@ -1,16 +1,17 @@
 /**
  * Combobox — a searchable selection dropdown built on @base-ui/react/combobox.
  *
+ * Self-contained form control: handles its own label, error, helper text,
+ * search/filter, loading, and empty states. Twenty-aligned — no FormField
+ * wrapper needed.
+ *
  * Supports rich option rendering: icons, avatars, status dots, badge counts.
  * Pass `renderOption` for custom markup, or use `prefix`/`suffix` on options
  * for simple icon + count patterns.
- *
- * Built on base-ui's accessible Combobox primitive. Handles positioning,
- * keyboard navigation, ARIA, filtering, loading, and empty states.
  */
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { clsx } from "clsx";
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo, useId, type ReactNode } from "react";
 import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
@@ -25,6 +26,16 @@ export type { ComboboxOption } from "@/types/options";
 import type { ComboboxOption } from "@/types/options";
 
 type ComboboxProps = {
+  /** Accessible label rendered above the control. */
+  label?: string;
+  /** Validation error message. */
+  error?: string;
+  /** Helper text shown when no error. */
+  helperText?: string;
+  /** Mark as required (shows asterisk). */
+  required?: boolean;
+  /** Expand to full container width. */
+  fullWidth?: boolean;
   /** Available options to choose from. */
   options: ComboboxOption[];
   /** Currently selected value (controlled). */
@@ -49,7 +60,11 @@ type ComboboxProps = {
    * you control the entire item layout.
    */
   renderOption?: (option: ComboboxOption, checkIndicator: ReactNode) => ReactNode;
+  /** Disable the control. */
+  disabled?: boolean;
   className?: string;
+  /** HTML id (auto-generated if omitted). */
+  id?: string;
 };
 
 // ── Default option renderer ──────────────────────────────────────────────────
@@ -78,6 +93,11 @@ function DefaultOption({ option, indicator }: { option: ComboboxOption; indicato
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function Combobox({
+  label,
+  error,
+  helperText,
+  required = false,
+  fullWidth = false,
   options,
   value,
   onChange,
@@ -87,9 +107,15 @@ export function Combobox({
   loading = false,
   emptyMessage,
   renderOption,
+  disabled = false,
   className,
+  id: externalId,
 }: ComboboxProps) {
   const { _ } = useLingui();
+  const autoId = useId();
+  const controlId = externalId ?? autoId;
+  const errorId = `${controlId}-error`;
+  const helperId = `${controlId}-helper`;
   const [query, setQuery] = useState("");
 
   const selectedOption = options.find((o) => o.value === value);
@@ -117,80 +143,113 @@ export function Combobox({
   );
 
   return (
-    <ComboboxPrimitive.Root
-      value={value}
-      onValueChange={(val) => {
-        if (val !== null) onChange(val);
-      }}
-      inputValue={query}
-      onInputValueChange={setQuery}
+    <div
+      data-slot="combobox"
+      className={clsx(styles.container, fullWidth && styles.fullWidth, className)}
     >
-      <ComboboxPrimitive.Trigger
-        data-slot="combobox-trigger"
-        className={clsx(styles.trigger, !selectedLabel && styles.placeholder, className)}
-        aria-label={resolvedPlaceholder}
-      >
-        <ComboboxPrimitive.Value data-slot="combobox-value">
-          {selectedOption?.prefix && (
-            <span className={styles.triggerPrefix}>{selectedOption.prefix}</span>
-          )}
-          {selectedLabel ?? resolvedPlaceholder}
-        </ComboboxPrimitive.Value>
-        <IconChevronDown
-          data-slot="combobox-chevron"
-          className={styles.chevron}
-          size={14}
-          aria-hidden="true"
-        />
-      </ComboboxPrimitive.Trigger>
+      {label && (
+        <label data-slot="combobox-label" className={styles.label} htmlFor={controlId}>
+          {label}
+          {required && <span className={styles.required}>*</span>}
+        </label>
+      )}
 
-      <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
-          <ComboboxPrimitive.Popup data-slot="combobox-popup" className={styles.popup}>
-            {searchable && (
-              <div data-slot="combobox-search-wrapper" className={styles.searchWrapper}>
-                <ComboboxPrimitive.Input
-                  data-slot="combobox-input"
-                  className={styles.input}
-                  placeholder={resolvedSearchPlaceholder}
-                  render={<input type="text" />}
-                />
-              </div>
+      <div data-slot="combobox-wrapper">
+        <ComboboxPrimitive.Root
+          value={value}
+          onValueChange={(val) => {
+            if (val !== null) onChange(val);
+          }}
+          inputValue={query}
+          onInputValueChange={setQuery}
+          disabled={disabled}
+        >
+          <ComboboxPrimitive.Trigger
+            id={controlId}
+            data-slot="combobox-trigger"
+            className={clsx(
+              styles.trigger,
+              !selectedLabel && styles.placeholder,
+              error && styles.triggerError,
             )}
-
-            <ComboboxPrimitive.List data-slot="combobox-list" className={styles.list}>
-              {loading && (
-                <div data-slot="combobox-loading" className={styles.stateRow}>
-                  <Spinner size="sm" />
-                </div>
+            aria-label={resolvedPlaceholder}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
+          >
+            <ComboboxPrimitive.Value data-slot="combobox-value">
+              {selectedOption?.prefix && (
+                <span className={styles.triggerPrefix}>{selectedOption.prefix}</span>
               )}
+              {selectedLabel ?? resolvedPlaceholder}
+            </ComboboxPrimitive.Value>
+            <IconChevronDown
+              data-slot="combobox-chevron"
+              className={styles.chevron}
+              size={14}
+              aria-hidden="true"
+            />
+          </ComboboxPrimitive.Trigger>
 
-              {!loading && filtered.length === 0 && (
-                <ComboboxPrimitive.Empty data-slot="combobox-empty" className={styles.stateRow}>
-                  <span className={styles.emptyText}>{resolvedEmpty}</span>
-                </ComboboxPrimitive.Empty>
-              )}
+          <ComboboxPrimitive.Portal>
+            <ComboboxPrimitive.Positioner sideOffset={4} align="start" className={styles.positioner}>
+              <ComboboxPrimitive.Popup data-slot="combobox-popup" className={styles.popup}>
+                {searchable && (
+                  <div data-slot="combobox-search-wrapper" className={styles.searchWrapper}>
+                    <ComboboxPrimitive.Input
+                      data-slot="combobox-input"
+                      className={styles.input}
+                      placeholder={resolvedSearchPlaceholder}
+                      render={<input type="text" />}
+                    />
+                  </div>
+                )}
 
-              {!loading &&
-                filtered.map((opt) => (
-                  <ComboboxPrimitive.Item
-                    key={opt.value}
-                    data-slot="combobox-item"
-                    value={opt.value}
-                    disabled={opt.disabled}
-                    className={styles.item}
-                  >
-                    {renderOption ? (
-                      renderOption(opt, checkIndicator)
-                    ) : (
-                      <DefaultOption option={opt} indicator={checkIndicator} />
-                    )}
-                  </ComboboxPrimitive.Item>
-                ))}
-            </ComboboxPrimitive.List>
-          </ComboboxPrimitive.Popup>
-        </ComboboxPrimitive.Positioner>
-      </ComboboxPrimitive.Portal>
-    </ComboboxPrimitive.Root>
+                <ComboboxPrimitive.List data-slot="combobox-list" className={styles.list}>
+                  {loading && (
+                    <div data-slot="combobox-loading" className={styles.stateRow}>
+                      <Spinner size="sm" />
+                    </div>
+                  )}
+
+                  {!loading && filtered.length === 0 && (
+                    <ComboboxPrimitive.Empty data-slot="combobox-empty" className={styles.stateRow}>
+                      <span className={styles.emptyText}>{resolvedEmpty}</span>
+                    </ComboboxPrimitive.Empty>
+                  )}
+
+                  {!loading &&
+                    filtered.map((opt) => (
+                      <ComboboxPrimitive.Item
+                        key={opt.value}
+                        data-slot="combobox-item"
+                        value={opt.value}
+                        disabled={opt.disabled}
+                        className={styles.item}
+                      >
+                        {renderOption ? (
+                          renderOption(opt, checkIndicator)
+                        ) : (
+                          <DefaultOption option={opt} indicator={checkIndicator} />
+                        )}
+                      </ComboboxPrimitive.Item>
+                    ))}
+                </ComboboxPrimitive.List>
+              </ComboboxPrimitive.Popup>
+            </ComboboxPrimitive.Positioner>
+          </ComboboxPrimitive.Portal>
+        </ComboboxPrimitive.Root>
+      </div>
+
+      {error && (
+        <p data-slot="combobox-error" id={errorId} className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+      {!error && helperText && (
+        <p data-slot="combobox-helper" id={helperId} className={styles.helper}>
+          {helperText}
+        </p>
+      )}
+    </div>
   );
 }

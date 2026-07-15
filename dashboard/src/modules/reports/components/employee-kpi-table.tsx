@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
+// oxlint-disable-next-line bentech/require-data-list-view -- KPI sub-table inside reports, not a standalone list page
 import { Chart, DataTable, TextCell, DurationCell } from "@/components/ui";
 import type { DataTableColumn } from "@/components/ui";
 import type { EmployeeReportKpi } from "@/lib/api";

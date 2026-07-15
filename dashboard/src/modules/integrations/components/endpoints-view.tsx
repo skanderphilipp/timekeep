@@ -1,28 +1,22 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconPlus, IconPencil, IconTrash, IconPower } from "@tabler/icons-react";
+import { IconPlus, IconTable } from "@tabler/icons-react";
 
-import { Section, DataTable, Badge, Button, IconButton, Dialog, FormActions, ActionGroup, type DataTableColumn } from "@/components/ui";
+import { Section, Button, Dialog, FormActions, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { DataBoundary } from "@/modules/shared/components";
 import { useToast } from "@/infrastructure/toast/toast";
 import { useEndpoints } from "../hooks/use-endpoints";
+import { useEndpointColumns } from "../hooks/use-endpoint-columns";
 import { EndpointForm } from "./endpoint-form";
 import { updateEndpoint, type IntegrationEndpoint } from "@/lib/api";
-import { EndpointListLoading, EndpointListError, EndpointListEmpty } from "../states";
-
-function kindVariant(k: string): "success" | "warning" | "neutral" {
-  if (k === "webhook") return "success";
-  if (k === "odoo") return "warning";
-  return "neutral";
-}
+import { DataListView } from "@/modules/data-renderer";
 
 /**
- * Integration endpoints view — table, create/edit dialog, delete confirm.
+ * Integration endpoints view — schema-driven table via {@link DataListView}.
  *
- * Uses `DataBoundary` for the data pipeline. Local UI state (form, editing,
- * deleting) stays via `useState` — no cross-component coordination needed.
+ * Column definitions are extracted to {@link useEndpointColumns}.
+ * Dialogs (create/edit, delete) live outside the DataListView boundary.
  */
 export function EndpointsView() {
   const { _ } = useLingui();
@@ -32,24 +26,28 @@ export function EndpointsView() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<IntegrationEndpoint | undefined>();
   const [deleting, setDeleting] = useState<IntegrationEndpoint | undefined>();
+  const [search, setSearch] = useState("");
 
-  const closeForm = () => {
+  const closeForm = useCallback(() => {
     setFormOpen(false);
     setEditing(undefined);
     query.refetch();
-  };
+  }, [query]);
 
-  const handleToggle = async (ep: IntegrationEndpoint) => {
-    try {
-      await updateEndpoint(ep.id, { enabled: !ep.enabled });
-      toast.success(_(ep.enabled ? msg`Endpoint disabled.` : msg`Endpoint enabled.`));
-      query.refetch();
-    } catch {
-      toast.error(_(msg`Failed to toggle endpoint.`));
-    }
-  };
+  const handleToggle = useCallback(
+    async (ep: IntegrationEndpoint) => {
+      try {
+        await updateEndpoint(ep.id, { enabled: !ep.enabled });
+        toast.success(_(ep.enabled ? msg`Endpoint disabled.` : msg`Endpoint enabled.`));
+        query.refetch();
+      } catch {
+        toast.error(_(msg`Failed to toggle endpoint.`));
+      }
+    },
+    [query, toast, _],
+  );
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleting) return;
     try {
       await remove.mutateAsync(deleting.id);
@@ -60,63 +58,41 @@ export function EndpointsView() {
     } finally {
       setDeleting(undefined);
     }
-  };
+  }, [deleting, remove, query, toast, _]);
 
-  const openCreateForm = () => {
+  const openCreateForm = useCallback(() => {
     setEditing(undefined);
     setFormOpen(true);
-  };
+  }, []);
 
-  const columns: DataTableColumn<IntegrationEndpoint, string>[] = useMemo(
-    () => [
-      {
-        id: "kind",
-        header: _(msg`Type`),
-        accessor: (e) => e.kind,
-        cell: (e) => <Badge variant={kindVariant(e.kind)}>{e.kind}</Badge>,
-      },
-      { id: "name", header: _(msg`Name`), accessor: (e) => e.name, sortable: true },
-      {
-        id: "enabled",
-        header: _(msg`Status`),
-        accessor: (e) => (e.enabled ? "active" : "inactive"),
-        cell: (e) => (
-          <Badge variant={e.enabled ? "success" : "neutral"}>
-            {e.enabled ? _(msg`Active`) : _(msg`Inactive`)}
-          </Badge>
-        ),
-      },
-      {
-        id: "actions",
-        header: _(msg`Actions`),
-        accessor: () => "",
-        cell: (e) => (
-          <ActionGroup>
-            <IconButton size="sm" aria-label={_(msg`Toggle`)} onClick={() => handleToggle(e)}>
-              <IconPower size={14} />
-            </IconButton>
-            <IconButton
-              size="sm"
-              aria-label={_(msg`Edit`)}
-              onClick={() => {
-                setEditing(e);
-                setFormOpen(true);
-              }}
-            >
-              <IconPencil size={14} />
-            </IconButton>
-            <IconButton
-              size="sm"
-              accent="tertiary"
-              aria-label={_(msg`Delete`)}
-              onClick={() => setDeleting(e)}
-            >
-              <IconTrash size={14} />
-            </IconButton>
-          </ActionGroup>
-        ),
-      },
-    ],
+  const handleEdit = useCallback((ep: IntegrationEndpoint) => {
+    setEditing(ep);
+    setFormOpen(true);
+  }, []);
+
+  const handleDeleteClick = useCallback((ep: IntegrationEndpoint) => {
+    setDeleting(ep);
+  }, []);
+
+  const columns = useEndpointColumns(handleToggle, handleEdit, handleDeleteClick);
+
+  // ── Client-side search ──────────────────────────────────────────
+  const endpoints = query.data ?? [];
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return endpoints;
+    return endpoints.filter(
+      (ep) =>
+        ep.name.toLowerCase().includes(q) ||
+        ep.kind.toLowerCase().includes(q),
+    );
+  }, [endpoints, search]);
+
+  const hasActiveFilters = search.length > 0;
+  const handleClearFilters = useCallback(() => setSearch(""), []);
+
+  const viewOptions = useMemo(
+    () => [{ value: "table" as const, label: _(msg`Table`), icon: <IconTable size={14} /> }],
     [_],
   );
 
@@ -137,17 +113,42 @@ export function EndpointsView() {
       />
 
       <Section>
-        <DataBoundary<IntegrationEndpoint>
-          data={query.data ? query.data : undefined}
+        <DataListView<IntegrationEndpoint>
+          entity="user"
+          columns={columns}
+          data={filtered}
+          getRowKey={(e) => e.id}
           isLoading={query.isLoading}
-          error={query.error ?? null}
+          error={query.error?.message ?? null}
           onRetry={() => query.refetch()}
-          loadingFallback={<EndpointListLoading />}
-          errorFallback={<EndpointListError onRetry={() => query.refetch()} />}
-          emptyFallback={<EndpointListEmpty onAddEndpoint={openCreateForm} />}
-        >
-          {(endpoints) => <DataTable columns={columns} data={endpoints} getRowKey={(e) => e.id} />}
-        </DataBoundary>
+          searchPlaceholder={_(msg`Search by name or type…`)}
+          searchValue={search}
+          onSearchChange={setSearch}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={handleClearFilters}
+          viewOptions={viewOptions}
+          currentView="table"
+          onViewChange={() => {}}
+          resultCount={filtered.length}
+          emptyState={
+            endpoints.length > 0 ? (
+              <EmptyState
+                title={_(msg`No endpoints match`)}
+                description={_(msg`Try adjusting or clearing your search.`)}
+              />
+            ) : (
+              <EmptyState
+                title={_(msg`No endpoints`)}
+                description={_(msg`Add your first integration endpoint to get started.`)}
+                action={
+                  <Button icon={<IconPlus size={16} />} onClick={openCreateForm}>
+                    {_(msg`Add Endpoint`)}
+                  </Button>
+                }
+              />
+            )
+          }
+        />
       </Section>
 
       <Dialog

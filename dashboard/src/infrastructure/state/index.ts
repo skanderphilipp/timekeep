@@ -2,48 +2,73 @@
  * timekeep — Jotai State Management
  *
  * Barrel file for all application-wide atoms. Import like:
- *   import { themeAtom, toggleThemeAtom } from "@/infrastructure/state";
+ *   import { themeState, toggleThemeAtom } from "@/infrastructure/state";
+ *
+ * ## Naming Convention
+ *
+ * - **State:** `{descriptor}State` → `themeState`, `authTokenState`
+ * - **Selector:** `{descriptor}Selector` → `isAuthenticatedSelector`
+ * - **Atom:** `{descriptor}Atom` → `toggleThemeAtom`, `logoutAtom` (write-only action atoms only)
  */
 
-export { themeAtom, toggleThemeAtom, type Theme } from "./atoms/theme";
-export { sidebarOpenAtom, sidebarCollapsedAtom } from "./atoms/sidebar";
+// ── Theme ──────────────────────────────────────────────────────────────
+
+export { themeState, toggleThemeAtom, type Theme } from "./atoms/theme";
+
+// ── Sidebar ────────────────────────────────────────────────────────────
+
+export { sidebarOpenAtom, sidebarCollapsedState } from "./atoms/sidebar";
+
+// ── Filter ─────────────────────────────────────────────────────────────
+
 export { createFilterAtoms, type FilterAtoms } from "./atoms/filter";
+
+// ── Auth ───────────────────────────────────────────────────────────────
+
 export {
-  authTokenAtom,
-  isAuthenticatedAtom,
+  authTokenState,
+  isAuthenticatedSelector,
+  currentUserState,
+  currentUserRoleSelector,
+  isAdminSelector,
+  isOperatorSelector,
+  isViewerSelector,
   logoutAtom,
-  currentUserAtom,
-  currentUserRoleAtom,
-  isAdminAtom,
-  isOperatorAtom,
-  isViewerAtom,
   hasPermissionAtom,
 } from "./atoms/auth";
-export { endpointsAtom, systemSettingsAtom, settingsLoadedAtom } from "./atoms/settings";
+
+// ── Settings ───────────────────────────────────────────────────────────
+
+export {
+  endpointsState,
+  systemSettingsState,
+  settingsLoadedState,
+} from "./atoms/settings";
+
+// ── Side Panel ─────────────────────────────────────────────────────────
+
 export {
   sidePanelOpenAtom,
   sidePanelTitleAtom,
   sidePanelContentAtom,
   openSidePanelAtom,
   closeSidePanelAtom,
-  sidePanelWidthAtom,
+  sidePanelWidthState,
   SIDE_PANEL_CONSTRAINTS,
   SIDE_PANEL_WIDTH_VAR,
 } from "./atoms/side-panel";
+
+// ── Breadcrumb ─────────────────────────────────────────────────────────
+
+export { pageBreadcrumbLabelAtom } from "./atoms/breadcrumb";
+
+// ── Inline Editing ─────────────────────────────────────────────────────
+
 export {
-  selectedUserIdAtom,
-  editingUserAtom,
-  userFormModeAtom,
-  deletingUserAtom,
-  passwordChangeUserAtom,
-  isUserFormOpenAtom,
-  isDeleteDialogOpenAtom,
-  isPasswordDialogOpenAtom,
-  openCreateUserFormAtom,
-  openEditUserFormAtom,
-  closeUserFormAtom,
-  openDeleteUserDialogAtom,
-  closeDeleteUserDialogAtom,
-  openPasswordChangeDialogAtom,
-  closePasswordChangeDialogAtom,
-} from "./atoms/users";
+  editingCellIdAtom,
+  buildCellId,
+  useIsEditingCell,
+  useEnterEditMode,
+  useExitEditMode,
+  useCellNavigator,
+} from "./atoms/editing-cell";

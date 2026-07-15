@@ -1,13 +1,13 @@
-import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 
-import { authTokenAtom } from "@/infrastructure/state";
+import { authTokenState } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { decodeToken, roleSatisfies, type Role, type JwtClaims } from "@/lib/jwt";
 
 /**
  * Current user hook — extracts claims from the JWT.
  *
- * Unlike `isAuthenticatedAtom` (boolean), this hook provides the full
+ * Unlike `isAuthenticatedSelector` (boolean), this hook provides the full
  * user context: username, role, and permissions. Components use this
  * to gate UI elements based on role.
  *
@@ -18,7 +18,7 @@ import { decodeToken, roleSatisfies, type Role, type JwtClaims } from "@/lib/jwt
  * ```
  */
 export function useCurrentUser(): JwtClaims | null {
-  const token = useAtomValue(authTokenAtom);
+  const token = useStateValue(authTokenState);
   return useMemo(() => decodeToken(token), [token]);
 }
 

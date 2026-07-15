@@ -1,9 +1,9 @@
 import { type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAtomValue } from "jotai";
 
 import { AppRoute } from "@/lib/navigation";
-import { currentUserAtom } from "@/infrastructure/state";
+import { currentUserState } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { roleSatisfies, type Role } from "@/infrastructure/navigation/roles";
 
 type RequireRoleProps = {
@@ -28,7 +28,7 @@ type RequireRoleProps = {
  * ```
  */
 export function RequireRole({ minimum, children }: RequireRoleProps) {
-  const user = useAtomValue(currentUserAtom);
+  const user = useStateValue(currentUserState);
 
   if (!user) {
     return <Navigate to={AppRoute.login} replace />;

@@ -36,9 +36,14 @@ export function FieldDisplay() {
     return <DeviceSnFieldDisplay value={String(value ?? "")} />;
   }
 
-  // User PIN → clickable chip → user detail
-  if (type === "user_pin") {
+  // Employee name → clickable chip → user detail (navigates via PIN from entityId)
+  if (type === "employee_name") {
     return <UserPinFieldDisplay value={String(value ?? "")} />;
+  }
+
+  // User PIN → plain text (non-clickable since US-19 routes via employee_name column)
+  if (type === "user_pin") {
+    return <TextFieldDisplay value={value} />;
   }
 
   // Timestamp → formatted date/time

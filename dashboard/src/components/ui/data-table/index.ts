@@ -9,3 +9,7 @@ export type {
   DurationCellProps,
   StatusCellProps,
 } from "./cells";
+
+// Inline editing (Phase 4)
+export { EditableCell } from "./editable-cell";
+export type { EditableCellProps, EditableCellEditProps } from "./editable-cell";

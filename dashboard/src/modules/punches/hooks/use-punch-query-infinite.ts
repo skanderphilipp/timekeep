@@ -1,8 +1,9 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 
 import type { PunchFilter } from "@/lib/api";
 import { useListState } from "@/infrastructure/query-params";
 import { useInfinitePunchData, type Punch } from "./use-punch-data-infinite";
+import { toDateString } from "@/lib/date";
 
 const punchFilterDefaults: Omit<
   PunchFilter,
@@ -10,6 +11,7 @@ const punchFilterDefaults: Omit<
 > = {
   device_sn: "",
   user_pin: "",
+  search: "",
   status: "",
   verify_mode: "",
   anomalies_only: "",
@@ -23,6 +25,10 @@ const punchFilterDefaults: Omit<
  * Sort state (column + direction) is synced to the URL via useListState.
  * Multi-device (`device_sns`) is managed separately via local state because
  * arrays don't fit the string-only URL filter infrastructure.
+ *
+ * On first load with no date range, defaults to today so the table,
+ * timeline, date picker, and filter chips all agree on the active range.
+ * After clearing filters, the date range resets to today as well.
  */
 export function useInfinitePunchQuery() {
   const { filters, sort, setFilter, toggleSort, resetFilters, hasActiveFilters } = useListState<
@@ -35,6 +41,18 @@ export function useInfinitePunchQuery() {
 
   // Multi-device filter managed outside URL sync (arrays not supported by FilterValues)
   const [deviceSns, setDeviceSns] = useState<string[]>([]);
+
+  // ── Default to today on first load ──────────────────────────────────
+
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!initializedRef.current && !filters.since && !filters.until) {
+      const today = toDateString(new Date());
+      setFilter({ since: today, until: today });
+      initializedRef.current = true;
+    }
+  }, [filters.since, filters.until, setFilter]);
 
   /** Merge URL filter state + local multi-device state + sort into API shape. */
   const apiFilter = useMemo<Omit<PunchFilter, "limit" | "offset" | "cursor">>(
@@ -68,6 +86,8 @@ export function useInfinitePunchQuery() {
   const handleClearFilters = useCallback(() => {
     resetFilters();
     setDeviceSns([]);
+    // Re-allow the useEffect to default to today after clearing.
+    initializedRef.current = false;
   }, [resetFilters]);
 
   return {

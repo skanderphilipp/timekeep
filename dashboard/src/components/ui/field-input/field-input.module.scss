@@ -1,0 +1,52 @@
+// ── Field Input Styles ──────────────────────────────────────────────
+// Inline-editing inputs for table cells and detail views.
+// No label, no error — minimal styling for cell-filling inputs.
+
+.fieldInput {
+  background: transparent;
+  border: none;
+  color: var(--ao-font-color-primary);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  height: 100%;
+  margin: 0;
+  outline: none;
+  padding: 0 var(--ao-spacing-2);
+  width: 100%;
+
+  &::placeholder {
+    color: var(--ao-font-color-light);
+    font-weight: var(--ao-font-weight-medium);
+  }
+
+  &:disabled {
+    color: var(--ao-font-color-tertiary);
+  }
+}
+
+.fieldBooleanContainer {
+  align-items: center;
+  color: var(--ao-font-color-primary);
+  cursor: pointer;
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ao-accent-accent9);
+    outline-offset: -2px;
+    border-radius: var(--ao-radius-xs);
+  }
+}
+
+.fieldBooleanReadonly {
+  color: var(--ao-font-color-tertiary);
+  cursor: default;
+}
+
+.fieldSelectDropdown {
+  // Let the dropdown expand naturally — don't constrain width
+  // since it's inside a portal-positioned overlay
+  width: 100%;
+}

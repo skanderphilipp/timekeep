@@ -9,7 +9,7 @@
  */
 
 // ── State orchestration ──────────────────────────────────────────────────
-export { PageError } from "./page-error";
+export { PageError } from "@/components/ui/page-error";
 export { ListError } from "./list-error";
 export { DataBoundary } from "./data-boundary";
 
@@ -22,9 +22,11 @@ export type { CalendarMonthProps, CalendarDayData, CalendarDayStatus } from "./c
 export { Timeline } from "./timeline";
 export type { TimelineBlockData, TimelineRowData } from "./timeline";
 
-// ── List views ───────────────────────────────────────────────────────────
-export { ViewBar } from "./view-bar";
-export type { ViewBarProps, ViewType, ViewBarFilterChip, SortChip } from "./view-bar";
+// ── List views / toolbars ────────────────────────────────────────────────
+export { TopBar } from "./top-bar";
+export type { TopBarProps } from "./top-bar";
+export { ViewPicker } from "./view-picker";
+export type { ViewPickerProps, ViewType, ViewPickerOption } from "./view-picker";
 
 // ── Activity / events ────────────────────────────────────────────────────
 export { ActivityFeed } from "./activity-feed";

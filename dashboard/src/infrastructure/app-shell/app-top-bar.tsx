@@ -1,113 +1,133 @@
-import { Link } from "react-router-dom";
-import { IconMoon, IconSun, IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
-import type { Icon } from "@tabler/icons-react";
+import { IconMenu2, IconX, IconChevronRight } from "@tabler/icons-react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
+import { useAtomValue, useSetAtom } from "jotai";
 
-import type { BreadcrumbSegment } from "@/infrastructure/navigation/use-breadcrumbs";
-import { LocaleSwitcher } from "@/infrastructure/locale/locale-switcher";
-import { RoleBadge } from "@/modules/auth/components/role-badge";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useGlobalHotkey } from "@/infrastructure/keyboard/hotkeys";
+import {
+  sidePanelOpenAtom,
+  sidePanelTitleAtom,
+  sidePanelContentAtom,
+  closeSidePanelAtom,
+  pageBreadcrumbLabelAtom,
+} from "@/infrastructure/state";
+import { SidePanelCmdk } from "@/infrastructure/side-panel/components/side-panel-cmdk";
+import { useBreadcrumbs } from "@/infrastructure/navigation";
+import { Breadcrumb } from "@/components/ui";
 import styles from "./app-top-bar.module.scss";
 
 // ── AppTopBar ─────────────────────────────────────────────────────────────────
 
 type AppTopBarProps = {
-  isMobile: boolean;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
-  breadcrumbs: BreadcrumbSegment[];
-  breadcrumbSeparator: Icon;
-  colorScheme: "light" | "dark";
-  onToggleTheme: () => void;
-  isAuthenticated: boolean;
-  onLogout: () => void;
+  /** Whether the desktop sidebar is collapsed — shows expand button when true. */
+  sidebarCollapsed?: boolean;
+  /** Callback to expand the collapsed desktop sidebar. */
+  onExpandSidebar?: () => void;
 };
 
 /**
- * Application top bar — menu toggle, breadcrumbs, locale switcher, theme,
- * role badge, and sign-out button.
+ * Application top bar — visible on both desktop and mobile.
+ *
+ * Desktop: thin bar with a minimal Cmd+K keyboard shortcut on the right.
+ * Mobile: menu toggle button on the left.
+ *
+ * Sits above the content row (page content + side panel) in the app shell.
+ * The side panel slides open BELOW this bar — it does not overlap the top bar.
+ *
+ * The Cmd+K trigger is a clean keyboard badge (⌘K) — the actual search input
+ * lives inside the side panel component ({@link SidePanelCmdk}).
  */
 export function AppTopBar({
-  isMobile,
   sidebarOpen,
   onToggleSidebar,
-  breadcrumbs,
-  breadcrumbSeparator: BreadcrumbSeparator,
-  colorScheme,
-  onToggleTheme,
-  isAuthenticated,
-  onLogout,
+  sidebarCollapsed,
+  onExpandSidebar,
 }: AppTopBarProps) {
+  const isMobile = useIsMobile();
   const { _ } = useLingui();
+
+  // Breadcrumbs — displayed left in the top bar, derived from the current route
+  const pageLabel = useAtomValue(pageBreadcrumbLabelAtom);
+  const breadcrumbs = useBreadcrumbs(pageLabel ? { dynamicLabel: pageLabel } : undefined);
+
+  // Cmd+K toggle via the legacy side panel content atoms
+  const isOpen = useAtomValue(sidePanelOpenAtom);
+  const setOpen = useSetAtom(sidePanelOpenAtom);
+  const setTitle = useSetAtom(sidePanelTitleAtom);
+  const setContent = useSetAtom(sidePanelContentAtom);
+  const close = useSetAtom(closeSidePanelAtom);
+
+  const toggleCmdk = () => {
+    if (isOpen) {
+      close();
+    } else {
+      setTitle("Commands");
+      setContent(() => <SidePanelCmdk onClose={() => close()} />);
+      setOpen(true);
+    }
+  };
+
+  // Register Cmd+K globally
+  useGlobalHotkey(
+    ["ctrl+k", "meta+k"],
+    toggleCmdk,
+    [isOpen, setOpen, setTitle, setContent, close],
+  );
 
   return (
     <header data-slot="top-bar" className={styles.topBar}>
-      <div data-slot="top-bar-left" className={styles.topBarLeft}>
+      {/* Mobile: menu toggle */}
+      {isMobile && (
         <button
           data-slot="menu-toggle"
           className={styles.menuToggle}
           onClick={onToggleSidebar}
           aria-label={_(msg`Toggle menu`)}
         >
-          {sidebarOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}
+          {sidebarOpen ? <IconX size={18} /> : <IconMenu2 size={18} />}
         </button>
+      )}
 
-        {!isMobile && breadcrumbs.length > 0 && (
-          <nav
-            data-slot="breadcrumbs"
-            className={styles.breadcrumbs}
-            aria-label={_(msg`Breadcrumb`)}
-          >
-            {breadcrumbs.map((crumb, index) => (
-              <span
-                data-slot="breadcrumb-item"
-                key={crumb.path}
-                className={styles.breadcrumbItem}
-              >
-                {index > 0 && (
-                  <BreadcrumbSeparator
-                    data-slot="breadcrumb-separator"
-                    size={14}
-                    className={styles.breadcrumbSeparator}
-                  />
-                )}
-                <Link
-                  data-slot="breadcrumb-link"
-                  to={crumb.path}
-                  className={styles.breadcrumbLink}
-                >
-                  {crumb.label}
-                </Link>
-              </span>
-            ))}
-          </nav>
-        )}
-      </div>
-
-      <div data-slot="top-bar-actions" className={styles.topBarActions}>
-        <LocaleSwitcher />
+      {/* Desktop collapsed: expand sidebar button */}
+      {!isMobile && sidebarCollapsed && onExpandSidebar && (
         <button
-          data-slot="theme-toggle"
-          className={styles.topBarButton}
-          onClick={onToggleTheme}
-          aria-label={_(msg`Toggle theme`)}
-          title={colorScheme === "dark" ? _(msg`Light Mode`) : _(msg`Dark Mode`)}
+          data-slot="expand-sidebar"
+          className={styles.menuToggle}
+          onClick={onExpandSidebar}
+          aria-label={_(msg`Expand sidebar`)}
+          title={_(msg`Expand sidebar`)}
         >
-          {colorScheme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
+          <IconChevronRight size={18} />
         </button>
-        {!isMobile && <RoleBadge />}
-        {isAuthenticated && (
-          <button
-            data-slot="logout-button"
-            className={styles.topBarButton}
-            onClick={onLogout}
-            aria-label={_(msg`Sign out`)}
-            title={_(msg`Sign out`)}
-          >
-            <IconLogout size={18} />
-          </button>
-        )}
-      </div>
+      )}
+
+      {/* Breadcrumbs — left side, derived from current route */}
+      {!isMobile && breadcrumbs.length > 0 && (
+        <nav data-slot="top-bar-breadcrumbs" className={styles.breadcrumbs} aria-label={_(msg`Breadcrumb`)}>
+          <Breadcrumb segments={breadcrumbs} />
+        </nav>
+      )}
+
+      {/* Spacer (pushes Cmd+K button to the right) */}
+      <div className={styles.spacer} />
+
+      {/* Cmd+K shortcut badge — always visible on desktop, hidden on mobile */}
+      {!isMobile && (
+        <button
+          data-slot="cmdk-trigger"
+          className={styles.cmdkButton}
+          onClick={toggleCmdk}
+          aria-label={_(msg`Search commands (Cmd+K)`)}
+        >
+          <kbd data-slot="cmdk-shortcut" className={styles.cmdkShortcut}>
+            <span className={styles.cmdkKey}>⌘</span>
+            <span className={styles.cmdkKey}>K</span>
+          </kbd>
+        </button>
+      )}
     </header>
   );
 }

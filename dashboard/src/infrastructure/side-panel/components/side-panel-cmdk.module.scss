@@ -66,6 +66,22 @@
   }
 }
 
+// ── Group ──────────────────────────────────────────────────────────────────────
+
+.groupLabel {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-semibold);
+  letter-spacing: 0.05em;
+  padding: var(--ao-spacing-2) var(--ao-spacing-3) var(--ao-spacing-1);
+  text-transform: uppercase;
+}
+
+.groupDivider {
+  border-top: 1px solid var(--ao-border-color-light);
+  margin: var(--ao-spacing-1) var(--ao-spacing-2);
+}
+
 // ── Item text ──────────────────────────────────────────────────────────────────
 
 .itemText {

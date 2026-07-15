@@ -49,9 +49,11 @@ export function DashboardDeviceStatus({ devices, onDeviceClick }: DashboardDevic
         ))}
       </Grid>
       {devices.every((d) => !d.online) && (
-        <Banner variant="danger">
-          {_(msg`All devices are currently offline. Attendance data may be stale.`)}
-        </Banner>
+        <Banner
+          variant="danger"
+          title={_(msg`All Devices Offline`)}
+          description={_(msg`All devices are currently offline. Attendance data may be stale.`)}
+        />
       )}
     </>
   );

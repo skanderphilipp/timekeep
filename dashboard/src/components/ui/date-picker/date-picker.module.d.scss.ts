@@ -1,4 +1,11 @@
 declare const classNames: {
+  readonly container: "container";
+  readonly fullWidth: "fullWidth";
+  readonly label: "label";
+  readonly required: "required";
+  readonly error: "error";
+  readonly helper: "helper";
+  readonly triggerError: "triggerError";
   readonly trigger: "trigger";
   readonly icon: "icon";
   readonly display: "display";

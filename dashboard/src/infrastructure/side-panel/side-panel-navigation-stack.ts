@@ -7,16 +7,26 @@ import type { EntityType } from "@/types/entities";
  * Each entry represents a "page" in the side panel's navigation stack.
  * The stack enables back-button support: push a new entity detail
  * without losing the previous one.
+ *
+ * Ported from Twenty's `SidePanelPagesConfig` pattern:
+ *   `twenty-front/src/modules/side-panel/constants/SidePanelPagesConfig.tsx`
  */
 export type SidePanelEntry = {
   /** UUID — scopes Jotai atoms for this panel instance. */
   instanceId: string;
   /** The type of entity being displayed. */
   entityType: EntityType;
-  /** The entity's unique identifier. */
+  /** The entity's unique identifier (empty string for create mode). */
   entityId: string;
   /** Title shown in the side panel header. */
   title: string;
+  /**
+   * Display mode.
+   * - `'view'` — read-only detail view (default)
+   * - `'edit'` — edit existing entity (requires entityId)
+   * - `'create'` — create new entity (entityId can be empty)
+   */
+  mode?: "view" | "edit" | "create";
 };
 
 // ── Navigation stack atoms ──────────────────────────────────────────────

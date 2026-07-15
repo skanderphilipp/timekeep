@@ -1,7 +1,6 @@
 declare const classNames: {
-  readonly root: "root";
+  readonly positioner: "positioner";
   readonly filterButton: "filterButton";
-  readonly backdrop: "backdrop";
   readonly popover: "popover";
   readonly fieldList: "fieldList";
   readonly fieldListHeader: "fieldListHeader";

@@ -1,71 +1,38 @@
 @use "@/styles/mixins" as *;
 
-// ── Top Bar ──────────────────────────────────────────────────────────────────
+// ── Top Bar (desktop + mobile) ───────────────────────────────────────────────
+//
+// Thin bar spanning the full width above the content row.
+// Desktop: Cmd+K search trigger on the right. Mobile: menu toggle on the left.
+// Background matches Twenty's background.noisy — slightly darker than page white.
 
 .topBar {
   align-items: center;
-  background: var(--ao-background-primary);
+  background: var(--ao-background-secondary);
   display: flex;
-  gap: var(--ao-spacing-4);
-  height: 48px;
-  justify-content: space-between;
-  padding: 0 var(--ao-spacing-4);
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.topBarLeft {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-2);
-  min-width: 0;
-  overflow: hidden;
-}
-
-.topBarActions {
-  align-items: center;
-  display: flex;
+  height: var(--ao-spacing-10);
+  padding: 0 var(--ao-spacing-3);
   flex-shrink: 0;
-  gap: var(--ao-spacing-2);
 }
 
-// ── Breadcrumbs ──────────────────────────────────────────────────────────────
+// ── Spacer ──────────────────────────────────────────────────────────────────
+
+.spacer {
+  flex: 1;
+}
+
+// ── Breadcrumbs ─────────────────────────────────────────────────────────────
 
 .breadcrumbs {
   align-items: center;
   display: flex;
-  gap: 0;
+  flex-shrink: 1;
+  margin-inline-start: var(--ao-spacing-1);
+  min-width: 0;
   overflow: hidden;
 }
 
-.breadcrumbItem {
-  align-items: center;
-  display: flex;
-  gap: var(--ao-spacing-1);
-  white-space: nowrap;
-}
-
-.breadcrumbSeparator {
-  color: var(--ao-font-color-tertiary);
-  flex-shrink: 0;
-  margin: 0 var(--ao-spacing-1);
-}
-
-.breadcrumbLink {
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-secondary);
-  font-size: var(--ao-font-size-sm);
-  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
-  text-decoration: none;
-
-  &:hover {
-    background: var(--ao-background-secondary);
-    color: var(--ao-font-color-primary);
-  }
-}
-
-// ── Menu Toggle (mobile) ─────────────────────────────────────────────────────
+// ── Mobile Menu Toggle ─────────────────────────────────────────────────────
 
 .menuToggle {
   align-items: center;
@@ -74,53 +41,56 @@
   border-radius: var(--ao-radius-sm);
   color: var(--ao-font-color-secondary);
   cursor: pointer;
-  display: none;
-  height: 32px;
-  justify-content: center;
+  display: flex;
   flex-shrink: 0;
-  width: 32px;
-
-  &:hover {
-    background: var(--ao-background-secondary);
-  }
-}
-
-// ── Top Bar Icon Buttons (theme, logout, etc.) ────────────────────────────────
-
-.topBarButton {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--ao-radius-sm);
-  color: var(--ao-font-color-secondary);
-  cursor: pointer;
-  display: inline-flex;
   height: 32px;
   justify-content: center;
   width: 32px;
 
   &:hover {
-    background: var(--ao-background-secondary);
+    background: var(--ao-background-transparent-light);
     color: var(--ao-font-color-primary);
   }
 }
 
-// ── Responsive ───────────────────────────────────────────────────────────────
+// ── Cmd+K Shortcut Badge (desktop) ─────────────────────────────────────────
+//
+// Minimal pill showing just ⌘K. The search input lives in the side panel.
 
-@media (max-width: $breakpoint-md) {
-  .menuToggle {
-    display: flex;
-  }
+.cmdkButton {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--ao-radius-sm);
+  cursor: pointer;
+  display: flex;
+  height: 28px;
+  padding: 0 var(--ao-spacing-1);
 
-  .topBar {
-    padding: 0 var(--ao-spacing-3);
+  &:hover {
+    background: var(--ao-background-transparent-light);
   }
+}
 
-  .breadcrumbs {
-    display: none;
-  }
+.cmdkShortcut {
+  align-items: center;
+  display: flex;
+  gap: 1px;
+}
 
-  .topBarActions {
-    gap: var(--ao-spacing-1);
-  }
+.cmdkKey {
+  align-items: center;
+  background: var(--ao-background-secondary);
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-radius-xs);
+  color: var(--ao-font-color-secondary);
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  height: 18px;
+  justify-content: center;
+  line-height: 1;
+  min-width: 18px;
+  padding: 0 3px;
 }

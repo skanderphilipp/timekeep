@@ -1,6 +1,12 @@
-import { atom } from "jotai";
-import { makeAtomFamily } from "./atom-family";
+import { createFamilyState } from "@/infrastructure/state/jotai";
 
-export const tableLoadingStateFamily = makeAtomFamily((_instanceId: string) =>
-  atom<boolean>(false),
-);
+/**
+ * Per-table-instance loading state.
+ *
+ * Tracks whether a table instance is currently loading data.
+ * Call `tableLoadingFamilyState.remove(instanceId)` on unmount.
+ */
+export const tableLoadingFamilyState = createFamilyState<boolean, string>({
+  key: "tableLoading",
+  defaultValue: false,
+});

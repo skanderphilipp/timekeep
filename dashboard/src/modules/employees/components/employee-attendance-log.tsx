@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
+// oxlint-disable-next-line bentech/require-data-list-view -- detail sub-table for a single employee's daily attendance log, not a list page
 import { DataTable, TextCell, Badge, Text } from "@/components/ui";
 import type { DataTableColumn } from "@/components/ui";
 import type { EmployeeWorkDays, WorkDay } from "@/lib/api";

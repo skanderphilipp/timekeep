@@ -1,5 +1,13 @@
 .trigger {
   display: inline-flex;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: inherit;
+  width: 100%;
 }
 
 .popup {

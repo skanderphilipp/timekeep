@@ -9,12 +9,21 @@ type FilterPatch = Partial<
   Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by">
 >;
 
+/** Human-readable labels for verify_mode values. */
+const VERIFY_MODE_LABELS: Record<string, string> = {
+  fingerprint: "Fingerprint",
+  face: "Face",
+  card: "RF Card",
+  password: "Password",
+  palm: "Palm",
+};
+
 /**
  * Converts raw punch filter state into ActiveFilter objects for display
  * in the FilterBar chip area.
  *
- * Uses device labels (from facet data) instead of raw serial numbers
- * so chips are human-readable. Supports multi-device filtering.
+ * Each chip carries a semantic color so different filter categories are
+ * visually distinguishable at a glance.
  */
 export function useActivePunchFilters(
   filters: FilterPatch,
@@ -27,13 +36,25 @@ export function useActivePunchFilters(
   return useMemo(() => {
     const result: ActiveFilter[] = [];
 
-    if (filters.user_pin) {
-      result.push({
-        key: "user_pin",
-        label: `${_(msg`Search`)}: ${filters.user_pin}`,
-        onRemove: () => onFilterChange({ user_pin: undefined }),
-      });
-    }
+		// Search — PIN exact match (digit-only input)
+		if (filters.user_pin) {
+			result.push({
+				key: "user_pin",
+				label: `${_(msg`PIN`)}: ${filters.user_pin}`,
+				color: "accent",
+				onRemove: () => onFilterChange({ user_pin: undefined, search: undefined }),
+			});
+		}
+
+		// Search — full-text (name or mixed input)
+		if (filters.search) {
+			result.push({
+				key: "search",
+				label: `${_(msg`Search`)}: ${filters.search}`,
+				color: "accent",
+				onRemove: () => onFilterChange({ search: undefined, user_pin: undefined }),
+			});
+		}
 
     // Multi-device chips
     const deviceSns = filters.device_sns ?? (filters.device_sn ? [filters.device_sn] : []);
@@ -42,6 +63,7 @@ export function useActivePunchFilters(
       result.push({
         key: `device_${sn}`,
         label: `${_(msg`Device`)}: ${label}`,
+        color: "green",
         onRemove: () => {
           const remaining = deviceSns.filter((s) => s !== sn);
           onFilterChange({
@@ -52,10 +74,12 @@ export function useActivePunchFilters(
       });
     }
 
+    // Date range
     if (filters.since) {
       result.push({
         key: "since",
         label: `${_(msg`From`)} ${filters.since}`,
+        color: "gray",
         onRemove: () => onFilterChange({ since: undefined }),
       });
     }
@@ -64,22 +88,38 @@ export function useActivePunchFilters(
       result.push({
         key: "until",
         label: `${_(msg`To`)} ${filters.until}`,
+        color: "gray",
         onRemove: () => onFilterChange({ until: undefined }),
       });
     }
 
+    // Status
     if (filters.status) {
       result.push({
         key: "status",
         label: `${_(msg`Status`)}: ${filters.status}`,
+        color: "green",
         onRemove: () => onFilterChange({ status: undefined }),
       });
     }
 
+    // Verification method
+    if (filters.verify_mode) {
+      const label = VERIFY_MODE_LABELS[filters.verify_mode] ?? filters.verify_mode;
+      result.push({
+        key: "verify_mode",
+        label: `${_(msg`Method`)}: ${label}`,
+        color: "blue",
+        onRemove: () => onFilterChange({ verify_mode: undefined }),
+      });
+    }
+
+    // Anomalies toggle
     if (filters.anomalies_only) {
       result.push({
         key: "anomalies_only",
         label: _(msg`Anomalies only`),
+        color: "amber",
         onRemove: () => onFilterChange({ anomalies_only: undefined }),
       });
     }

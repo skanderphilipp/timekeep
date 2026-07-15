@@ -10,10 +10,11 @@
  *   beforeEach(resetJotaiStore);
  */
 
-import { LS_AUTH, LS_THEME, LS_LOCALE } from "@/lib/constants";
+import { ALL_STORAGE_KEYS } from "@/lib/constants";
 
-/** All localStorage keys managed by Jotai atoms that should be cleared between tests. */
-const JOTAI_STORAGE_KEYS = [LS_AUTH, LS_THEME, LS_LOCALE];
+/** All localStorage keys managed by Jotai atoms.
+ * Derived from {@link STORAGE_KEYS} in `@/lib/constants` — the single source of truth. */
+const JOTAI_STORAGE_KEYS = ALL_STORAGE_KEYS;
 
 /**
  * Clears all localStorage keys used by Jotai `atomWithStorage` atoms.

@@ -7,7 +7,7 @@ import { IconFileSpreadsheet, IconFileTypeCsv, IconFileTypePdf } from "@tabler/i
 import { Button, Text } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
 import { fetchPunchExport, type Punch, type ReportSummary, type ExportFilter } from "@/lib/api";
-import { generatePunchReport, type ReportLabels } from "@/modules/exports/lib/generate-punch-report";
+import { generatePunchReport, type ReportLabels } from "@/lib/generate-punch-report";
 import styles from "./export-bar.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────────────

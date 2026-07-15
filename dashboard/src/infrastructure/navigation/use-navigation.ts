@@ -7,7 +7,6 @@
  */
 
 import { useMemo } from "react";
-import { useAtomValue } from "jotai";
 import { useLingui } from "@lingui/react";
 import {
   IconDashboard,
@@ -16,10 +15,12 @@ import {
   IconReport,
   IconSettings,
   IconUsers,
+  IconBuilding,
   type Icon,
 } from "@tabler/icons-react";
 
-import { currentUserRoleAtom } from "@/infrastructure/state";
+import { currentUserRoleSelector } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { NAVIGATION_ITEMS, type NavigationItem } from "./navigation-model";
 import { roleSatisfies } from "./roles";
 
@@ -49,6 +50,7 @@ const ICON_MAP: Record<string, Icon> = {
   IconReport,
   IconSettings,
   IconUsers,
+  IconBuilding,
 };
 
 /**
@@ -60,7 +62,7 @@ const ICON_MAP: Record<string, Icon> = {
  */
 export function useNavigation(): ResolvedNavItem[] {
   const { _ } = useLingui();
-  const role = useAtomValue(currentUserRoleAtom);
+  const role = useStateValue(currentUserRoleSelector);
 
   return useMemo(() => {
     const labelMap: Record<string, () => string> = {
@@ -70,6 +72,7 @@ export function useNavigation(): ResolvedNavItem[] {
       "nav.punches": () => _(/*i18n*/ { id: "nav.punches", message: "Punches" }),
       "nav.employees": () => _(/*i18n*/ { id: "nav.employees", message: "Employees" }),
       "nav.reports": () => _(/*i18n*/ { id: "nav.reports", message: "Reports" }),
+      "nav.departments": () => _(/*i18n*/ { id: "nav.departments", message: "Departments" }),
       "nav.settings": () => _(/*i18n*/ { id: "nav.settings", message: "Settings" }),
       "nav.settings.system": () => _(/*i18n*/ { id: "nav.settings.system", message: "System" }),
       "nav.settings.users": () => _(/*i18n*/ { id: "nav.settings.users", message: "Users" }),

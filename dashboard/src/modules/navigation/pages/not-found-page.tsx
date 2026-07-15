@@ -1,4 +1,4 @@
-import { PageLayout, PageBody } from "@/components/layout";
+import { PageShell } from "@/components/layout";
 import { NotFoundContent } from "../components/not-found-content";
 
 /**
@@ -8,10 +8,8 @@ import { NotFoundContent } from "../components/not-found-content";
  */
 export function NotFoundPage() {
   return (
-    <PageLayout>
-      <PageBody>
-        <NotFoundContent />
-      </PageBody>
-    </PageLayout>
+    <PageShell>
+      <NotFoundContent />
+    </PageShell>
   );
 }

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { IconChevronDown } from "@tabler/icons-react";
 import { clsx } from "clsx";
 
 import type { ResolvedNavItem } from "@/infrastructure/navigation/use-navigation";
+import { Tooltip } from "@/components/ui/tooltip";
 import styles from "@/infrastructure/app-shell/app-sidebar.module.scss";
 
-// ── NavItem (leaf) ────────────────────────────────────────────────────────────
+// ── NavLeaf ───────────────────────────────────────────────────────────────────
 
 export function NavLeaf({
   item,
@@ -19,24 +20,49 @@ export function NavLeaf({
 }) {
   if (!item.path) return null;
 
-  return (
+  /** Whether this is a nested child item (no icon = child of a group). */
+  const isNested = !item.icon;
+
+  const link = (
     <NavLink
       key={item.key}
-      to={item.path!}
+      to={item.path}
       end={item.end}
       onClick={onClick}
       className={({ isActive }) =>
-        clsx(styles.navItem, !item.icon && styles.navItemNested, isActive && styles.navItemActive)
+        clsx(
+          styles.navItem,
+          collapsed && styles.navItemCollapsed,
+          collapsed && isNested && styles.navItemCollapsedNested,
+          !collapsed && isNested && styles.navItemNested,
+          isActive && styles.navItemActive,
+        )
       }
-      title={collapsed ? item.label() : undefined}
+      aria-label={collapsed ? item.label() : undefined}
     >
       {item.icon && <item.icon data-slot="nav-icon" size={20} />}
+      {collapsed && isNested && (
+        <span data-slot="nav-dot" className={styles.navItemDot} aria-hidden="true">
+          &bull;
+        </span>
+      )}
       {!collapsed && <span data-slot="nav-label">{item.label()}</span>}
     </NavLink>
   );
+
+  // In collapsed mode, wrap with Tooltip
+  if (collapsed) {
+    return (
+      <Tooltip content={item.label()} side="right">
+        {link}
+      </Tooltip>
+    );
+  }
+
+  return link;
 }
 
-// ── NavGroup (collapsible parent) ─────────────────────────────────────────────
+// ── NavGroup ──────────────────────────────────────────────────────────────────
 
 export function NavGroup({
   item,
@@ -50,29 +76,58 @@ export function NavGroup({
   const location = useLocation();
   const isChildActive =
     item.children?.some((c) => location.pathname.startsWith(c.path ?? "")) ?? false;
-  const [expanded, setExpanded] = useState(isChildActive);
+  const [isOpen, setIsOpen] = useState(isChildActive);
+  const childrenRef = useRef<HTMLDivElement>(null);
 
+  // Auto-expand when a child becomes active (e.g., deep link)
+  useEffect(() => {
+    if (isChildActive && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [isChildActive, isOpen]);
+
+  // ── Collapsed mode: parent icon header + children as icon-less links ─
   if (collapsed) {
-    // When collapsed, show only the parent icon (no expand)
     return (
-      <div data-slot="nav-group-collapsed" className={styles.navGroupCollapsed}>
-        <div className={clsx(styles.navItem, isChildActive && styles.navItemActive)}>
-          {item.icon && <item.icon data-slot="nav-icon" size={20} />}
-        </div>
+      <>
+        {/* Parent icon with tooltip */}
+        <Tooltip content={item.label()} side="right">
+          <div
+            data-slot="nav-group-collapsed"
+            className={clsx(
+              styles.navGroupCollapsedIcon,
+              isChildActive && styles.navGroupCollapsedIconActive,
+            )}
+            aria-label={item.label()}
+          >
+            {item.icon && <item.icon data-slot="nav-icon" size={20} />}
+          </div>
+        </Tooltip>
+
+        {/* Children — individual icon-less links */}
         {item.children?.map((child) => (
-          <NavLeaf key={child.key} item={child} collapsed={collapsed} onClick={closeSidebar} />
+          <NavLeaf
+            key={child.key}
+            item={child}
+            collapsed
+            onClick={closeSidebar}
+          />
         ))}
-      </div>
+      </>
     );
   }
 
+  // ── Expanded mode: collapsible group ────────────────────────────────
   return (
     <div data-slot="nav-group" className={styles.navGroup}>
       <button
         data-slot="nav-group-header"
-        className={clsx(styles.navGroupHeader, isChildActive && styles.navGroupHeaderActive)}
-        onClick={() => setExpanded((e) => !e)}
-        aria-expanded={expanded}
+        className={clsx(
+          styles.navGroupHeader,
+          isChildActive && styles.navGroupHeaderActive,
+        )}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
       >
         {item.icon && <item.icon data-slot="nav-icon" size={20} />}
         <span data-slot="nav-label" className={styles.navGroupLabel}>
@@ -80,16 +135,31 @@ export function NavGroup({
         </span>
         <IconChevronDown
           size={14}
-          className={clsx(styles.navGroupChevron, expanded && styles.navGroupChevronOpen)}
+          className={clsx(
+            styles.navGroupChevron,
+            isOpen && styles.navGroupChevronOpen,
+          )}
         />
       </button>
-      {expanded && (
-        <div data-slot="nav-group-children" className={styles.navGroupChildren}>
-          {item.children?.map((child) => (
-            <NavLeaf key={child.key} item={child} collapsed={false} onClick={closeSidebar} />
-          ))}
-        </div>
-      )}
+
+      {/* Animated children container */}
+      <div
+        ref={childrenRef}
+        data-slot="nav-group-children"
+        className={styles.navGroupChildren}
+        style={{
+          maxHeight: isOpen ? `${childrenRef.current?.scrollHeight ?? 200}px` : "0px",
+        }}
+      >
+        {item.children?.map((child) => (
+          <NavLeaf
+            key={child.key}
+            item={child}
+            collapsed={false}
+            onClick={closeSidebar}
+          />
+        ))}
+      </div>
     </div>
   );
 }

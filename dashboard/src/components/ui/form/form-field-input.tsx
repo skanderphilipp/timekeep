@@ -11,39 +11,51 @@ import { FormFieldMultiSelect } from "@/components/ui/form/fields/form-field-mul
 import { FormFieldPermissions } from "@/components/ui/form/fields/form-field-permissions";
 import { FormFieldExpiry } from "@/components/ui/form/fields/form-field-expiry";
 import { FormFieldDate } from "@/components/ui/form/fields/form-field-date";
-import { FormFieldPassword } from "@/components/ui/form/fields/form-field-password";
 
 /**
  * Discriminated form field dispatcher.
  *
- * Given a field definition and a react-hook-form instance, renders the
- * correct input control wrapped in FormField + FieldInputContainer.
- * This is the **only** component pages should use to render form fields.
+ * Two patterns (Twenty-aligned):
  *
- * Generates a stable `inputId` and passes it to both `FormField` (for
- * accessible `<label htmlFor>`) and the control (for `<input id>`).
+ * ── Self-contained (no FormField wrapper) ──
+ *   text, password  → FormFieldText   → Input handles its own label/error
+ *   number          → FormFieldNumber → Input handles its own label/error
+ *   expiry          → FormFieldExpiry → ExpiryPicker handles its own label/error
+ *   ip-port         → FormFieldIpPort → IpPortInput handles its own label/error
  *
- * Ported from pulse's `FormFieldInput` pattern (Twenty's discriminated
- * union field dispatcher).
+ * ── Wrapped (FormField provides label/error) ──
+ *   boolean         → Switch has inline toggle label; FormField gives field label
+ *   select          → Combobox has no label/error built-in
+ *   multiselect     → MultiSelect has no label/error built-in
+ *   permissions     → PermissionMultiSelect has no label/error built-in
+ *   date            → DatePicker has no label/error built-in
  *
- * @example
- * ```tsx
- * <FormFieldInput
- *   field={{ type: "text", name: "label", label: "Device Label" }}
- *   form={form}
- * />
- * ```
+ * inputId is generated once and passed to all fields. Self-contained
+ * fields ignore it (their controls generate their own ids). Wrapped
+ * fields use it for accessible `<label htmlFor>` association.
  */
-export function FormFieldInput({ field, form }: { field: FormFieldDef; form: UseFormReturn<any> }) {
+export function FormFieldInput({
+  field,
+  form,
+}: {
+  field: FormFieldDef;
+  form: UseFormReturn<any>;
+}) {
   const inputId = useId();
 
   switch (field.type) {
+    // ── Self-contained ──────────────────────────────────────────
     case "text":
+    case "password":
       return <FormFieldText field={field} form={form} inputId={inputId} />;
     case "number":
       return <FormFieldNumber field={field} form={form} inputId={inputId} />;
+    case "expiry":
+      return <FormFieldExpiry field={field} form={form} inputId={inputId} />;
     case "ip-port":
       return <FormFieldIpPort field={field} form={form} inputId={inputId} />;
+
+    // ── Wrapped (FormField provides label/error) ────────────────
     case "boolean":
       return <FormFieldBoolean field={field} form={form} inputId={inputId} />;
     case "select":
@@ -52,11 +64,7 @@ export function FormFieldInput({ field, form }: { field: FormFieldDef; form: Use
       return <FormFieldMultiSelect field={field} form={form} inputId={inputId} />;
     case "permissions":
       return <FormFieldPermissions field={field} form={form} inputId={inputId} />;
-    case "expiry":
-      return <FormFieldExpiry field={field} form={form} inputId={inputId} />;
     case "date":
       return <FormFieldDate field={field} form={form} inputId={inputId} />;
-    case "password":
-      return <FormFieldPassword field={field} form={form} inputId={inputId} />;
   }
 }

@@ -49,6 +49,9 @@ export const DASHBOARD_REFRESH_INTERVAL_MS = POLL_INTERVAL_MS;
 /** Stale time for rarely-changing data (e.g. system settings). */
 export const SETTINGS_STALE_TIME_MS = 60_000;
 
+/** Stale time for the public /about endpoint (shown on login page). */
+export const ABOUT_STALE_TIME_MS = 60_000;
+
 /** Stale time for infinite punch queries. */
 export const PUNCHES_STALE_TIME_MS = 30_000;
 
@@ -107,11 +110,42 @@ export const LS_LOCALE = "ao-locale";
 export const LS_AUTH = "ao-auth";
 
 // ═══════════════════════════════════════════════════════════════════════
+// Storage key catalog — all localStorage keys used by Jotai atoms
+// ═══════════════════════════════════════════════════════════════════════
+
+/** Single source of truth for every localStorage key managed by Jotai atoms.
+ * Used by `resetJotaiStore()` for test isolation and by atom factories.
+ * Prefix convention: `ao:` for non-user-visible keys, `ao-*` for user-visible keys. */
+export const STORAGE_KEYS = {
+  theme: LS_THEME,
+  locale: LS_LOCALE,
+  auth: LS_AUTH,
+  sidebarCollapsed: "ao:sidebar-collapsed",
+  sidePanelWidth: "ao:side-panel-width",
+} as const;
+
+/** All storage key values (for iteration). */
+export const ALL_STORAGE_KEYS = Object.values(STORAGE_KEYS);
+
+// ═══════════════════════════════════════════════════════════════════════
 // System settings defaults
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Default poll interval in seconds (used before settings are loaded from API). */
 export const DEFAULT_POLL_INTERVAL_SECS = 30;
+
+// ═══════════════════════════════════════════════════════════════════════
+// Responsive design
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Mobile breakpoint in pixels.
+ *
+ * CSS custom properties don't work in media queries, so this must be a
+ * static number rather than a var(--...) reference. Must match the SCSS
+ * `$breakpoints['mobile']` value in `@/styles/mixins.scss`.
+ */
+export const MOBILE_VIEWPORT = 768;
 
 // ═══════════════════════════════════════════════════════════════════════
 // UI component sizing

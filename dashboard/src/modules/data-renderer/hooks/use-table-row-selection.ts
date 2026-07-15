@@ -1,8 +1,8 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import {
-  tableRowSelectionStateFamily,
+  tableRowSelectionFamilyState,
   toggleRowSelectionAtom,
   selectAllRowsAtom,
   deselectAllRowsAtom,
@@ -10,12 +10,21 @@ import {
 
 /**
  * Hook: table row selection state + handlers.
+ *
+ * Automatically cleans up the atom family cache entry on unmount.
  */
 export function useTableRowSelection(instanceId: string, allRowIds: string[]) {
-  const selection = useAtomValue(tableRowSelectionStateFamily(instanceId));
+  const selection = useAtomValue(tableRowSelectionFamilyState(instanceId));
   const toggleRow = useSetAtom(toggleRowSelectionAtom);
   const selectAll = useSetAtom(selectAllRowsAtom);
   const deselectAll = useSetAtom(deselectAllRowsAtom);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      tableRowSelectionFamilyState.remove(instanceId);
+    };
+  }, [instanceId]);
 
   const { selectedIds } = selection;
 

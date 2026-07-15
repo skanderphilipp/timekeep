@@ -1,56 +1,45 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
+import { IconTable } from "@tabler/icons-react";
+import { useMemo } from "react";
 
 import { useAuditLog } from "../hooks/use-audit-log";
-import { AuditLogEmpty } from "../states";
-import {
-  Section,
-  SearchInput,
-  FilterBar,
-} from "@/components/ui";
-import { DataTableContainer } from "@/modules/data-renderer";
+import { Section } from "@/components/ui";
+import { DataListView } from "@/modules/data-renderer";
 
 /**
- * Audit log view — searchable, sortable audit trail table.
- *
- * Uses {@link DataTableContainer} (data-renderer) for metadata-driven
- * column rendering via `createAuditColumns` and `FieldDisplay`.
- * Sort and search state lives in URL query params via `useListState`.
+ * Audit log view — schema-driven table via {@link DataListView}.
  */
 export function AuditLogView() {
-  const { _ } = useLingui();
-  const page = useAuditLog();
+	const { _ } = useLingui();
+	const page = useAuditLog();
 
-  return (
-    <>
-      <Section>
-        <FilterBar
-          onClear={page.onClearFilters}
-          hasActiveFilters={page.hasActiveFilters}
-        >
-          <SearchInput
-            placeholder={_(msg`Search actors, actions, resources…`)}
-            value={page.searchValue}
-            onChange={page.onSearchChange}
-            debounceMs={300}
-          />
-        </FilterBar>
-      </Section>
+	const viewOptions = useMemo(
+		() => [{ value: "table" as const, label: _(msg`Table`), icon: <IconTable size={14} /> }],
+		[_],
+	);
 
-      <Section>
-        <DataTableContainer
-          columns={page.columns}
-          data={page.data}
-          getRowKey={page.getRowKey}
-          entityType="audit"
-          isLoading={page.isLoading}
-          error={page.error}
-          onRetry={page.onRetry}
-          externalSortState={page.sortState}
-          onSortChange={page.onSortChange}
-          emptyState={<AuditLogEmpty />}
-        />
-      </Section>
-    </>
-  );
+	return (
+		<Section>
+			<DataListView
+				entity="audit"
+				columns={page.columns}
+				data={page.data}
+				getRowKey={page.getRowKey}
+				isLoading={page.isLoading}
+				error={page.error}
+				onRetry={page.onRetry}
+				searchPlaceholder={_(msg`Search actors, actions, resources…`)}
+				searchValue={page.searchValue}
+				onSearchChange={page.onSearchChange}
+				hasActiveFilters={page.hasActiveFilters}
+				onClearFilters={page.onClearFilters}
+				onSortChange={page.onSortChange}
+				viewOptions={viewOptions}
+				currentView="table"
+				onViewChange={() => {}}
+				resultCount={page.resultCount}
+			/>
+		</Section>
+	);
 }

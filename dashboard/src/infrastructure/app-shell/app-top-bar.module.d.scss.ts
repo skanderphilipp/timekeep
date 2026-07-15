@@ -1,12 +1,10 @@
 declare const classNames: {
   readonly topBar: "topBar";
-  readonly topBarLeft: "topBarLeft";
-  readonly topBarActions: "topBarActions";
+  readonly spacer: "spacer";
   readonly breadcrumbs: "breadcrumbs";
-  readonly breadcrumbItem: "breadcrumbItem";
-  readonly breadcrumbSeparator: "breadcrumbSeparator";
-  readonly breadcrumbLink: "breadcrumbLink";
   readonly menuToggle: "menuToggle";
-  readonly topBarButton: "topBarButton";
+  readonly cmdkButton: "cmdkButton";
+  readonly cmdkShortcut: "cmdkShortcut";
+  readonly cmdkKey: "cmdkKey";
 };
 export = classNames;

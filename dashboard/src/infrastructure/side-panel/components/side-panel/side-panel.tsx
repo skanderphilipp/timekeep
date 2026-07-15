@@ -1,5 +1,7 @@
 import { useCallback, useLayoutEffect, type ReactNode } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
+
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { clsx } from "clsx";
 import { IconX, IconArrowLeft } from "@tabler/icons-react";
 import { useLingui } from "@lingui/react";
@@ -10,7 +12,7 @@ import {
   sidePanelTitleAtom,
   sidePanelContentAtom,
   closeSidePanelAtom,
-  sidePanelWidthAtom,
+  sidePanelWidthState,
   SIDE_PANEL_CONSTRAINTS,
   SIDE_PANEL_WIDTH_VAR,
 } from "@/infrastructure/state";
@@ -51,7 +53,7 @@ type SidePanelProps = {
  *
  * Features:
  * - Resize handle (drag to resize between 320–600px)
- * - Width persisted to localStorage via `sidePanelWidthAtom`
+ * - Width persisted to localStorage via `sidePanelWidthState`
  * - CSS transition on open/close (width 0 ↔ var(--tk-side-panel-width))
  * - Scrollable content area with fade-in animation
  *
@@ -77,8 +79,8 @@ export function SidePanel({
   const navPop = useSetAtom(popSidePanelAtom);
   const canGoBack = navStack.length > 1;
 
-  const width = useAtomValue(sidePanelWidthAtom);
-  const setWidth = useSetAtom(sidePanelWidthAtom);
+  const width = useStateValue(sidePanelWidthState);
+  const setWidth = useSetAtom(sidePanelWidthState.atom);
 
   // Determine effective state
   const isControlled = propOpen !== undefined;

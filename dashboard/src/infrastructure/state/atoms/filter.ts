@@ -8,6 +8,10 @@ import { atom } from "jotai";
  * - `updateFilterAtom` — write-only atom to merge partial updates.
  * - `resetFilterAtom` — write-only atom to reset to initial values.
  *
+ * Note: This utility creates raw Jotai atoms (not {@link State} wrappers)
+ * because the filter atoms are typically used directly in domain module hooks
+ * with local scoping. For global UI state, prefer `createState()`.
+ *
  * @example
  * ```ts
  * const { filterAtom, updateFilterAtom, resetFilterAtom } =

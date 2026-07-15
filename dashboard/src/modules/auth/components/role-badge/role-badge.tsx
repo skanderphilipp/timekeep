@@ -5,11 +5,11 @@
  * No custom styles — all visual primitives come from `components/ui/badge/`.
  */
 
-import { useAtomValue } from "jotai";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { currentUserRoleAtom } from "@/infrastructure/state";
+import { currentUserRoleSelector } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
 import { Badge } from "@/components/ui/badge";
 
 /** Maps a role string to its human-readable i18n label. */
@@ -40,7 +40,7 @@ function roleToVariant(role: string | null): "info" | "warning" | "neutral" {
 }
 
 export function RoleBadge() {
-  const role = useAtomValue(currentUserRoleAtom);
+  const role = useStateValue(currentUserRoleSelector);
   const label = useRoleLabel(role ?? "");
 
   if (!role) return null;

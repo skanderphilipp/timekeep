@@ -1,7 +1,7 @@
 import { createContext, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
-import { useAtomValue } from "jotai";
 
-import { themeAtom } from "@/infrastructure/state";
+import { useStateValue } from "@/infrastructure/state/jotai";
+import { themeState } from "@/infrastructure/state";
 import { themeCssVariables } from "./theme-css-variables";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ type ThemeProviderProps = {
  * Theme provider that bridges Jotai state and the DOM.
  *
  * Responsibilities:
- * 1. Reads the persisted theme from Jotai's `themeAtom`.
+ * 1. Reads the persisted theme from Jotai's `themeState`.
  * 2. Syncs `light` / `dark` class to `<html>` (replaces the ad-hoc
  *    `useThemeSync` hook that previously lived in AppShell).
  * 3. Resolves all `--ao-*` CSS custom properties into a typed JavaScript
@@ -62,7 +62,7 @@ type ThemeProviderProps = {
  * single source of truth for persistence; this provider is the bridge layer.
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const colorScheme = useAtomValue(themeAtom);
+  const colorScheme = useStateValue(themeState);
 
   // ── DOM sync ────────────────────────────────────────────────────────────
 

@@ -18,6 +18,8 @@ export const QueryKeys = {
   auth: {
     /** Current authenticated user profile ("me"). */
     me: () => ["me"] as const,
+    /** Public about/workspace info (shown on login page). */
+    about: () => ["about"] as const,
   },
 
   /** Dashboard overview */
@@ -44,6 +46,10 @@ export const QueryKeys = {
     activity: (sn: string) => ["device", sn, "activity"] as const,
     /** Devices health overview. */
     health: () => ["devices", "health"] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "device"] as const,
+    /** Facet filter metadata. */
+    filters: <T extends Record<string, unknown>>(filter: T) => ["device-filters", filter] as const,
   },
 
   /** Punches / attendance records */
@@ -79,6 +85,10 @@ export const QueryKeys = {
   audit: {
     /** Audit log with filters. */
     list: <T extends Record<string, unknown>>(filter: T) => ["audit-logs", filter] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "audit"] as const,
+    /** Facet filter metadata. */
+    filters: <T extends Record<string, unknown>>(filter: T) => ["audit-filters", filter] as const,
   },
 
   /** Integration endpoints */
@@ -105,6 +115,8 @@ export const QueryKeys = {
   users: {
     /** User list. */
     list: () => ["users"] as const,
+    /** Single user by ID. */
+    detail: (id: string) => ["user", id] as const,
   },
 
   /** Employee directory */
@@ -123,6 +135,10 @@ export const QueryKeys = {
     monthly: (pin: string) => ["employee-monthly", pin] as const,
     /** Calendar days for an employee by PIN. */
     calendar: (pin: string) => ["employee-calendar", pin] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "employee"] as const,
+    /** Facet filter metadata. */
+    filters: <T extends Record<string, unknown>>(filter: T) => ["employee-filters", filter] as const,
   },
 
   /** Side panel entity detail */
@@ -130,5 +146,19 @@ export const QueryKeys = {
     /** Single entity detail. */
     detail: (entityType: string, entityId: string) =>
       ["entity-detail", entityType, entityId] as const,
+  },
+
+  /** Departments */
+  departments: {
+    /** All department queries (invalidate with `QueryKeys.departments.all`). */
+    all: ["departments"] as const,
+    /** Full department list. */
+    list: () => ["departments"] as const,
+    /** Single department by ID. */
+    detail: (id: string) => ["department", id] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "department"] as const,
+    /** Facet filter metadata. */
+    filters: <T extends Record<string, unknown>>(filter: T) => ["department-filters", filter] as const,
   },
 } as const;
