@@ -11,7 +11,7 @@ import { IconDeviceDesktop, IconUsers, IconChartBar } from "@tabler/icons-react"
 const meta: Meta<typeof Heading> = {
   title: "UI/Typography/Heading",
   component: Heading,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     level: {
       control: "select",

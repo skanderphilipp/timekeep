@@ -6,7 +6,7 @@ import { fn } from "storybook/test";
 const meta: Meta<typeof MenuSeparator> = {
   title: "UI/Navigation/MenuSeparator",
   component: MenuSeparator,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -16,11 +16,11 @@ export const Primary: Story = {
   render: () => (
     <div
       style={{
-        width: 200,
         border: "1px solid var(--ao-border-color-light)",
         borderRadius: "var(--ao-radius-md)",
         overflow: "hidden",
         padding: 4,
+        width: 200,
       }}
     >
       <MenuItem label="Profile" onClick={fn()} />

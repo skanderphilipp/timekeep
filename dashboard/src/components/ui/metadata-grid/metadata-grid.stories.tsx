@@ -13,7 +13,7 @@ import { IconServer, IconCpu, IconDeviceDesktop } from "@tabler/icons-react";
 const meta: Meta<typeof MetadataGrid> = {
   title: "UI/Data Display/MetadataGrid",
   component: MetadataGrid,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

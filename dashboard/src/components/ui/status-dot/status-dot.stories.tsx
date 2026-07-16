@@ -11,7 +11,7 @@ import { Text } from "../text";
 const meta: Meta<typeof StatusDot> = {
   title: "UI/Status/StatusDot",
   component: StatusDot,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     status: {
       control: "select",

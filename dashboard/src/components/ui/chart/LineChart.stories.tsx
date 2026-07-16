@@ -13,7 +13,7 @@ const monthlyData = [
 const meta: Meta<typeof LineChart> = {
   title: "UI/Charts/LineChart",
   component: LineChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

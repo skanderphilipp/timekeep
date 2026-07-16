@@ -12,7 +12,7 @@ import { Banner } from "./banner";
 const meta: Meta<typeof Banner> = {
   title: "UI/Feedback/Banner",
   component: Banner,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: {
       control: "select",
@@ -41,8 +41,8 @@ export const AllVariants: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-4)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 500,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <Banner variant="info" title="Information" description="This is an informational message for the user." />
@@ -63,8 +63,8 @@ export const SimpleChildren: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-3)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 500,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <Banner variant="info">Attendance data is syncing. Last update: 2 minutes ago.</Banner>
@@ -94,8 +94,8 @@ export const Closable: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-3)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 500,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <Banner
@@ -123,7 +123,7 @@ export const WithAction: Story = {
   name: "With Action Button",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 500 }}>
+    <div style={{ maxWidth: 500, padding: "var(--ao-spacing-4)" }}>
       <Banner
         variant="warning"
         title="3 Anomalies Detected"
@@ -154,8 +154,8 @@ export const ContextDashboardAlert: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-3)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 600,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <Banner variant="danger" title="Connection Lost">
@@ -177,7 +177,7 @@ export const ContextApiKeyWarning: Story = {
   name: "Context: API Key Warning",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 500 }}>
+    <div style={{ maxWidth: 500, padding: "var(--ao-spacing-4)" }}>
       <Banner
         variant="warning"
         title="Important"

@@ -4,7 +4,7 @@ import { AnimatedButton } from "./animated-button";
 const meta: Meta<typeof AnimatedButton> = {
   title: "UI/Actions/AnimatedButton",
   component: AnimatedButton,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: { control: "select", options: ["primary", "secondary", "ghost", "danger"] },
     size: { control: "select", options: ["sm", "md"] },
@@ -25,8 +25,8 @@ export const AllVariants: Story = {
     <div
       style={{
         display: "flex",
-        gap: "var(--ao-spacing-2)",
         flexWrap: "wrap",
+        gap: "var(--ao-spacing-2)",
         padding: "var(--ao-spacing-4)",
       }}
     >

@@ -4,7 +4,7 @@ import { AnimatedPlaceholder } from "./animated-placeholder";
 const meta: Meta<typeof AnimatedPlaceholder> = {
   title: "UI/Feedback/AnimatedPlaceholder",
   component: AnimatedPlaceholder,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     type: {
       control: "select",

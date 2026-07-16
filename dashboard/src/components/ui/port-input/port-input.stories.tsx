@@ -6,7 +6,7 @@ import { PortInput } from "./port-input";
 const meta: Meta<typeof PortInput> = {
   title: "UI/Inputs/PortInput",
   component: PortInput,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -17,7 +17,7 @@ function PrimaryDemo() {
   return (
     <div style={{ padding: 20 }}>
       <PortInput label="Port" value={port} onChange={setPort} />
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+      <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginTop: 12 }}>
         Current port: {port}
       </div>
     </div>

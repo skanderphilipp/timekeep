@@ -5,7 +5,7 @@ import { IconDeviceDesktop, IconUsers, IconClock } from "@tabler/icons-react";
 const meta: Meta<typeof TintedIconTile> = {
   title: "UI/Status/TintedIconTile",
   component: TintedIconTile,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     color: { control: "select", options: ["accent", "red", "green", "amber", "blue", "neutral"] },
   },

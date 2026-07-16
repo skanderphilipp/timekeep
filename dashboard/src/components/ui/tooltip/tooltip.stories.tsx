@@ -5,7 +5,7 @@ import { Button } from "../button";
 const meta: Meta<typeof TooltipComponent> = {
   title: "UI/Overlays/Tooltip",
   component: TooltipComponent,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     side: { control: "select", options: ["top", "right", "bottom", "left"] },
   },
@@ -16,7 +16,7 @@ type Story = StoryObj<typeof TooltipComponent>;
 
 export const Primary: Story = {
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-16)", display: "flex", justifyContent: "center" }}>
+    <div style={{ display: "flex", justifyContent: "center", padding: "var(--ao-spacing-16)" }}>
       <TooltipComponent content="Click to refresh attendance data">
         <Button variant="secondary">Refresh</Button>
       </TooltipComponent>
@@ -31,10 +31,10 @@ export const AllVariants: Story = {
     <div
       style={{
         display: "flex",
-        gap: "var(--ao-spacing-4)",
-        padding: "var(--ao-spacing-16)",
-        justifyContent: "center",
         flexWrap: "wrap",
+        gap: "var(--ao-spacing-4)",
+        justifyContent: "center",
+        padding: "var(--ao-spacing-16)",
       }}
     >
       <TooltipComponent content="Tooltip on top" side="top">
@@ -65,15 +65,15 @@ export const ContextTruncatedText: Story = {
   name: "Context: Truncated Text",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-16)", display: "flex", justifyContent: "center" }}>
+    <div style={{ display: "flex", justifyContent: "center", padding: "var(--ao-spacing-16)" }}>
       <TooltipComponent content="CQZ7232960836 — SpeedFace-V5L [TI] · Firmware Ver 8.45">
         <span
           style={{
+            display: "inline-block",
             maxWidth: 120,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            display: "inline-block",
           }}
         >
           CQZ7232960836 — SpeedFace-V5L...

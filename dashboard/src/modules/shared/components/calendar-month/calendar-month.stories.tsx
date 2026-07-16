@@ -52,7 +52,7 @@ const julyData = mockDayStatus(2026, 7);
 const meta: Meta<typeof CalendarMonth> = {
   title: "UI/Data Display/CalendarMonth",
   component: CalendarMonth,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
   argTypes: {
     weekStartsOn: { control: "select", options: [0, 1] },
   },

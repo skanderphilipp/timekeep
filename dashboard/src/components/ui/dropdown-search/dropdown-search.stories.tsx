@@ -5,7 +5,7 @@ import { fn } from "storybook/test";
 const meta: Meta<typeof DropdownSearch> = {
   title: "UI/Overlays/DropdownSearch",
   component: DropdownSearch,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     placeholder: { control: "text" },
   },
@@ -24,13 +24,13 @@ export const AllVariants: Story = {
   render: () => (
     <div
       style={{
+        background: "var(--ao-background-secondary)",
+        borderRadius: "var(--ao-radius-md)",
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-4)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 300,
-        background: "var(--ao-background-secondary)",
-        borderRadius: "var(--ao-radius-md)",
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <DropdownSearch value="" onChange={fn()} placeholder="Search…" />
@@ -45,19 +45,19 @@ export const ContextInDropdown: Story = {
   render: () => (
     <div
       style={{
-        padding: "var(--ao-spacing-4)",
-        maxWidth: 300,
         background: "var(--ao-background-primary)",
         border: "1px solid var(--ao-border-color-light)",
         borderRadius: "var(--ao-radius-md)",
+        maxWidth: 300,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <DropdownSearch value="" onChange={fn()} placeholder="Search by name or PIN…" />
       <div
         style={{
-          padding: "var(--ao-spacing-2)",
-          fontSize: 13,
           color: "var(--ao-font-color-secondary)",
+          fontSize: 13,
+          padding: "var(--ao-spacing-2)",
         }}
       >
         <div style={{ padding: "4px 8px" }}>Ahmed Al-Sabah</div>

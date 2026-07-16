@@ -35,7 +35,7 @@ const singleEmployeeData = [
 const meta: Meta<typeof RadarChart> = {
   title: "UI/Charts/RadarChart",
   component: RadarChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

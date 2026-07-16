@@ -21,7 +21,7 @@ const statusData = [
 const meta: Meta<typeof Chart> = {
   title: "UI/Charts/Chart (Wrapper)",
   component: Chart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     isLoading: { control: "boolean" },
     isEmpty: { control: "boolean" },
@@ -82,7 +82,7 @@ export const WithFooter: Story = {
     title: "Attendance Status",
     description: "This month's distribution.",
     footer: (
-      <span style={{ fontSize: "var(--ao-font-size-xs)", color: "var(--ao-font-color-tertiary)" }}>
+      <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: "var(--ao-font-size-xs)" }}>
         Data from all devices. Last updated: just now.
       </span>
     ),
@@ -129,7 +129,7 @@ export const ContextReportsCharts: Story = {
   name: "Context: Reports Page",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--ao-spacing-4)" }}>
+    <div style={{ display: "grid", gap: "var(--ao-spacing-4)", gridTemplateColumns: "1fr 1fr" }}>
       <Chart title="Daily Hours" description="Regular + Overtime breakdown.">
         <BarChart
           data={[
@@ -184,7 +184,7 @@ export const AllStatesOverview: Story = {
   name: "All States Overview",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--ao-spacing-4)" }}>
+    <div style={{ display: "grid", gap: "var(--ao-spacing-4)", gridTemplateColumns: "1fr 1fr" }}>
       <Chart title="✅ Normal Data" description="Chart renders correctly.">
         <BarChart data={arrivalData} bars={[{ dataKey: "count" }]} xKey="hour" height={200} />
       </Chart>

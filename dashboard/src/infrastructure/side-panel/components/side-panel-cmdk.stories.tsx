@@ -88,17 +88,17 @@ const DEMO_PAGE_COMMANDS: Command[] = [
 const meta: Meta<typeof SidePanelCmdk> = {
   title: "Infrastructure/SidePanelCmdk",
   component: SidePanelCmdk,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:layout"],
   decorators: [
     (Story) => (
       <div
         style={{
-          width: "400px",
-          height: "500px",
+          background: "var(--ao-background-primary)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
+          height: "500px",
           overflow: "hidden",
-          background: "var(--ao-background-primary)",
+          width: "400px",
         }}
       >
         <Story />

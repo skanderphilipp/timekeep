@@ -27,7 +27,7 @@ import {
  */
 const meta: Meta = {
   title: "UI/FieldInput/All",
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -49,8 +49,8 @@ function EditSimulator({
         style={{
           border: "1px solid var(--ao-accent-accent9)",
           borderRadius: "var(--ao-radius-sm)",
-          padding: "4px 0",
           maxWidth: 280,
+          padding: "4px 0",
         }}
       >
         {children}
@@ -62,14 +62,14 @@ function EditSimulator({
     <div
       onClick={() => setEditing(true)}
       style={{
-        cursor: "pointer",
-        padding: "4px 8px",
-        borderRadius: "var(--ao-radius-sm)",
+        alignItems: "center",
         border: "1px solid transparent",
+        borderRadius: "var(--ao-radius-sm)",
+        cursor: "pointer",
+        display: "flex",
         maxWidth: 280,
         minHeight: 28,
-        display: "flex",
-        alignItems: "center",
+        padding: "4px 8px",
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor =
@@ -95,7 +95,7 @@ export const Text = {
         setLog((prev) => [...prev.slice(-4), msg]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
           <EditSimulator
             display={
               <span style={{ color: "var(--ao-font-color-primary)" }}>
@@ -133,8 +133,8 @@ export const Boolean = {
       const [log, setLog] = useState<string[]>([]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
-          <p style={{ fontSize: 13, marginBottom: 8, color: "var(--ao-font-color-secondary)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 8 }}>
             Click to toggle — fires onToggle immediately
           </p>
           <FieldBooleanInput
@@ -150,9 +150,9 @@ export const Boolean = {
           />
           <div
             style={{
-              marginTop: 12,
-              fontSize: 12,
               color: "var(--ao-font-color-tertiary)",
+              fontSize: 12,
+              marginTop: 12,
             }}
           >
             <strong>Current:</strong> {value ? "Yes" : "No"}
@@ -176,7 +176,7 @@ export const DateField = {
         setLog((prev) => [...prev.slice(-4), msg]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
           <EditSimulator
             display={<span>📅 Click to pick date</span>}
           >
@@ -214,7 +214,7 @@ export const Number = {
         setLog((prev) => [...prev.slice(-4), msg]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
           <EditSimulator display={<span>42</span>}>
             <FieldNumberInput
               instanceId="story-num"
@@ -245,8 +245,8 @@ export const Select = {
       const [log, setLog] = useState<string[]>([]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
-          <p style={{ fontSize: 13, marginBottom: 8, color: "var(--ao-font-color-secondary)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 8 }}>
             Selection triggers onOptionSelected immediately — no Enter needed
           </p>
           <div style={{ maxWidth: 280 }}>
@@ -273,9 +273,9 @@ export const Select = {
           </div>
           <div
             style={{
-              marginTop: 12,
-              fontSize: 12,
               color: "var(--ao-font-color-tertiary)",
+              fontSize: 12,
+              marginTop: 12,
             }}
           >
             <strong>Current:</strong> {value ?? "none"}
@@ -298,8 +298,8 @@ export const MultiSelect = {
       const [log, setLog] = useState<string[]>([]);
 
       return (
-        <div style={{ padding: 16, fontFamily: "var(--ao-font-family)" }}>
-          <p style={{ fontSize: 13, marginBottom: 8, color: "var(--ao-font-color-secondary)" }}>
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 8 }}>
             Each toggle persists immediately — no confirmation step
           </p>
           <div style={{ maxWidth: 360 }}>
@@ -327,9 +327,9 @@ export const MultiSelect = {
           </div>
           <div
             style={{
-              marginTop: 12,
-              fontSize: 12,
               color: "var(--ao-font-color-tertiary)",
+              fontSize: 12,
+              marginTop: 12,
             }}
           >
             <strong>Current:</strong>{" "}
@@ -351,11 +351,11 @@ export const DisplayVsEdit = {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 16,
-        padding: 16,
         fontFamily: "var(--ao-font-family)",
         fontSize: "var(--ao-font-size-sm)",
+        gap: 16,
+        gridTemplateColumns: "1fr 1fr",
+        padding: 16,
       }}
     >
       <div
@@ -367,11 +367,11 @@ export const DisplayVsEdit = {
       >
         <p
           style={{
+            color: "var(--ao-font-color-tertiary)",
+            fontSize: 11,
             fontWeight: 600,
             marginBottom: 12,
-            fontSize: 11,
             textTransform: "uppercase",
-            color: "var(--ao-font-color-tertiary)",
           }}
         >
           Display (read-only)
@@ -387,19 +387,19 @@ export const DisplayVsEdit = {
 
       <div
         style={{
+          background: "var(--ao-background-transparent-lighter)",
           border: "1px solid var(--ao-accent-accent9)",
           borderRadius: 8,
           padding: 12,
-          background: "var(--ao-background-transparent-lighter)",
         }}
       >
         <p
           style={{
+            color: "var(--ao-font-color-tertiary)",
+            fontSize: 11,
             fontWeight: 600,
             marginBottom: 12,
-            fontSize: 11,
             textTransform: "uppercase",
-            color: "var(--ao-font-color-tertiary)",
           }}
         >
           Edit (inline editing)
@@ -433,10 +433,10 @@ function EventLog({ log }: { log: string[] }) {
   return (
     <div
       style={{
-        marginTop: 16,
-        fontSize: 11,
-        fontFamily: "monospace",
         color: "var(--ao-font-color-tertiary)",
+        fontFamily: "monospace",
+        fontSize: 11,
+        marginTop: 16,
       }}
     >
       <strong>Event log:</strong>

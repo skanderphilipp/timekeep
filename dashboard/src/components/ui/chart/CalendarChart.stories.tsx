@@ -59,7 +59,7 @@ const julyData = generateMonthData(2026, 6); // July 2026
 const meta: Meta<typeof CalendarChart> = {
   title: "UI/Charts/CalendarChart",
   component: CalendarChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

@@ -28,7 +28,7 @@ import { ToggleGroup, Toggle } from "./toggle-group";
 const meta: Meta<typeof ToggleGroup> = {
   title: "UI/Navigation/ToggleGroup",
   component: ToggleGroup,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     multiple: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -105,12 +105,12 @@ export const ViewSwitcher: Story = {
         </ToggleGroup>
         <div
           style={{
-            padding: "var(--ao-spacing-6)",
             background: "var(--ao-background-secondary)",
             borderRadius: "var(--ao-radius-md)",
-            textAlign: "center",
             color: "var(--ao-font-color-tertiary)",
             fontSize: "var(--ao-font-size-sm)",
+            padding: "var(--ao-spacing-6)",
+            textAlign: "center",
           }}
         >
           Content area for the <strong>{viewType[0]}</strong> view

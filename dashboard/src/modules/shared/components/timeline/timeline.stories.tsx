@@ -33,7 +33,7 @@ const legendItems = [
 const meta: Meta<typeof Timeline> = {
   title: "UI/Data Display/Timeline",
   component: Timeline,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
 };
 
 export default meta;
@@ -64,7 +64,7 @@ export const AllVariants: Story = {
         hourMarkers={hourMarkers}
         rows={[]}
         emptyState={
-          <p style={{ padding: 16, color: "var(--ao-font-color-tertiary)" }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", padding: 16 }}>
             No attendance data for today.
           </p>
         }

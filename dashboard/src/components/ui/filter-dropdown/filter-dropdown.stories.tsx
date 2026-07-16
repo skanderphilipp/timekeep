@@ -90,7 +90,7 @@ const fields: FilterField[] = [
 const meta: Meta<typeof FilterDropdown> = {
   title: "UI/Inputs/FilterDropdown",
   component: FilterDropdown,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -117,7 +117,7 @@ export const InsideFilterBarWithSearch: Story = {
   name: "Inside FilterBar — with search",
   parameters: { controls: { disable: true } },
   render: () => (
-    <FilterBar search={<input placeholder="Search punches…" style={{ width: 200, height: 32, borderRadius: "var(--ao-radius-md)", border: "1px solid var(--ao-border-color-medium)", padding: "0 12px", fontSize: "var(--ao-font-size-sm)", background: "var(--ao-background-primary)" }} readOnly />}>
+    <FilterBar search={<input placeholder="Search punches…" style={{ background: "var(--ao-background-primary)", border: "1px solid var(--ao-border-color-medium)", borderRadius: "var(--ao-radius-md)", fontSize: "var(--ao-font-size-sm)", height: 32, padding: "0 12px", width: 200 }} readOnly />}>
       <FilterDropdown fields={fields} />
     </FilterBar>
   ),

@@ -12,7 +12,7 @@ import { Text } from "../text";
 const meta: Meta<typeof Spinner> = {
   title: "UI/Feedback/Spinner",
   component: Spinner,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -33,7 +33,7 @@ export const AllVariants: Story = {
       }}
     >
       <div>
-        <Text variant="caption" color="tertiary" style={{ marginBottom: 8, display: "block" }}>
+        <Text variant="caption" color="tertiary" style={{ display: "block", marginBottom: 8 }}>
           Default
         </Text>
         <div style={{ display: "flex", justifyContent: "center", padding: "var(--ao-spacing-8)" }}>
@@ -41,7 +41,7 @@ export const AllVariants: Story = {
         </div>
       </div>
       <div>
-        <Text variant="caption" color="tertiary" style={{ marginBottom: 8, display: "block" }}>
+        <Text variant="caption" color="tertiary" style={{ display: "block", marginBottom: 8 }}>
           In Card
         </Text>
         <Card>

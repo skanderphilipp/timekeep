@@ -63,7 +63,7 @@ const rankingData = [
 const meta: Meta<typeof BumpChart> = {
   title: "UI/Charts/BumpChart",
   component: BumpChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

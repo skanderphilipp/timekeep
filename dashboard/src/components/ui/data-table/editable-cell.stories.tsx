@@ -27,7 +27,7 @@ function Providers({ children }: { children: React.ReactNode }) {
 const meta: Meta<typeof EditableCell> = {
   title: "UI/DataTable/EditableCell",
   component: EditableCell,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   decorators: [
     (Story) => (
       <Providers>
@@ -71,7 +71,7 @@ const log = (rowId: string, columnId: string, value: unknown) =>
 /** Single editable cell — click or focus+type to edit, press Enter/Escape to exit. */
 export const SingleCell: Story = {
   render: () => (
-    <div style={{ padding: 24, maxWidth: 300 }}>
+    <div style={{ maxWidth: 300, padding: 24 }}>
       <EditableCell<string>
         rowId="row-1"
         columnId="name"
@@ -90,14 +90,14 @@ export const TabNavigation: Story = {
     <div
       style={{
         display: "flex",
-        gap: 16,
-        padding: 24,
-        maxWidth: 500,
         fontFamily: "var(--ao-font-family)",
+        gap: 16,
+        maxWidth: 500,
+        padding: 24,
       }}
     >
       <div style={{ width: 150 }}>
-        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Name</div>
+        <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 11, marginBottom: 4 }}>Name</div>
         <EditableCell<string>
           rowId="row-1"
           columnId="name"
@@ -109,7 +109,7 @@ export const TabNavigation: Story = {
         />
       </div>
       <div style={{ width: 200 }}>
-        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Email</div>
+        <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 11, marginBottom: 4 }}>Email</div>
         <EditableCell<string>
           rowId="row-1"
           columnId="email"
@@ -141,7 +141,7 @@ export const TableRow: Story = {
           fontSize: "var(--ao-font-size-sm)",
         }}
       >
-        <table style={{ borderCollapse: "collapse", width: "100%", maxWidth: 600 }}>
+        <table style={{ borderCollapse: "collapse", maxWidth: 600, width: "100%" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--ao-border-color-medium)" }}>
               <th style={{ padding: "8px 12px", textAlign: "left", width: 180 }}>Name</th>
@@ -177,8 +177,8 @@ export const TableRow: Story = {
 /** Demonstrates "just start typing" — focus a cell with Tab, then press any letter key. */
 export const JustStartTyping: Story = {
   render: () => (
-    <div style={{ padding: 24, maxWidth: 350, fontFamily: "var(--ao-font-family)" }}>
-      <p style={{ fontSize: 13, color: "var(--ao-font-color-secondary)", marginBottom: 12 }}>
+    <div style={{ fontFamily: "var(--ao-font-family)", maxWidth: 350, padding: 24 }}>
+      <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 12 }}>
         Focus this cell with <strong>Tab</strong>, then press any letter key. The cell enters edit mode
         and the typed character appears in the input (replacing the original value).
       </p>
@@ -199,7 +199,7 @@ export const JustStartTyping: Story = {
 /** Clicks the cell, types a new value, presses Enter. */
 export const ClickToEdit: Story = {
   render: () => (
-    <div style={{ padding: 24, maxWidth: 300, fontFamily: "var(--ao-font-family)" }}>
+    <div style={{ fontFamily: "var(--ao-font-family)", maxWidth: 300, padding: 24 }}>
       <EditableCell<string>
         rowId="row-1"
         columnId="name"
@@ -236,14 +236,14 @@ export const TabNavigationInteractive: Story = {
     <div
       style={{
         display: "flex",
-        gap: 16,
-        padding: 24,
-        maxWidth: 500,
         fontFamily: "var(--ao-font-family)",
+        gap: 16,
+        maxWidth: 500,
+        padding: 24,
       }}
     >
       <div style={{ width: 150 }}>
-        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Name</div>
+        <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 11, marginBottom: 4 }}>Name</div>
         <EditableCell<string>
           rowId="row-1"
           columnId="name"
@@ -255,7 +255,7 @@ export const TabNavigationInteractive: Story = {
         />
       </div>
       <div style={{ width: 200 }}>
-        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Email</div>
+        <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 11, marginBottom: 4 }}>Email</div>
         <EditableCell<string>
           rowId="row-1"
           columnId="email"

@@ -30,7 +30,7 @@ const multiGroupData = [
 const meta: Meta<typeof ScatterPlotChart> = {
   title: "UI/Charts/ScatterPlotChart",
   component: ScatterPlotChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

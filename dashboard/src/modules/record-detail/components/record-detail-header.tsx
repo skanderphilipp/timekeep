@@ -2,8 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { useCallback } from "react";
 
-import { Heading, Badge, Section } from "@/components/ui";
-import { InlineFieldEdit } from "@/components/ui";
+import { Heading, Badge, Section,InlineFieldEdit } from "@/components/ui";
 import { FieldContext, type FieldContextValue } from "@/modules/data-renderer/contexts/field-context";
 import { FieldEdit } from "@/modules/data-renderer/field-inputs";
 import type { TextFieldMetadata } from "@/modules/data-renderer";
@@ -75,7 +74,9 @@ export function RecordDetailHeader({ record, config }: RecordDetailHeaderProps) 
           <span
             ref={displayRef}
             onClick={onClick}
-            style={{ cursor: "pointer" }}
+            style={{
+        cursor: "pointer"
+      }}
             tabIndex={0}
             role="button"
             aria-label={_(msg`Edit name`)}

@@ -5,7 +5,7 @@ import { Pagination } from "./pagination";
 const meta: Meta<typeof Pagination> = {
   title: "UI/Navigation/Pagination",
   component: Pagination,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     currentPage: { control: { type: "range", min: 1, max: 20, step: 1 } },
     totalPages: { control: { type: "range", min: 1, max: 20, step: 1 } },
@@ -34,9 +34,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -47,9 +47,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -60,9 +60,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >

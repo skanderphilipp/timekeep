@@ -145,7 +145,7 @@ function deviceDetailHandlers() {
 const meta: Meta<typeof DeviceDetailPage> = {
   title: "Pages/Devices/Detail",
   component: DeviceDetailPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: {
     layout: "fullscreen",
   },

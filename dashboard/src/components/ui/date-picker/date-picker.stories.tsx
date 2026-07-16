@@ -6,7 +6,7 @@ import { DatePicker } from "./date-picker";
 const meta: Meta<typeof DatePicker> = {
   title: "UI/Inputs/DatePicker",
   component: DatePicker,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -19,7 +19,7 @@ function SingleDateDemo() {
   return (
     <div style={{ padding: 20 }}>
       <DatePicker value={date} onChange={setDate} placeholder="Select date…" />
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+      <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginTop: 12 }}>
         Selected: {date?.toISOString().split("T")[0] ?? "none"}
       </div>
     </div>
@@ -68,7 +68,7 @@ function RangeDemo() {
           if (e !== undefined) setTo(e);
         }}
       />
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+      <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginTop: 12 }}>
         {from?.toISOString().split("T")[0] ?? "?"} – {to?.toISOString().split("T")[0] ?? "?"}
       </div>
     </div>
@@ -97,19 +97,19 @@ function AllVariantsDemo() {
       }}
     >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Single date — selected
         </p>
         <DatePicker value={single} onChange={setSingle} />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Single date — empty
         </p>
         <DatePicker value={noDate} onChange={setNoDate} placeholder="Pick a date…" />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Range mode
         </p>
         <DatePicker

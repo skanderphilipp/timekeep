@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 const meta: Meta<typeof PageBody> = {
   title: "UI/Layout/PageBody",
   component: PageBody,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:layout"],
 };
 
 export default meta;

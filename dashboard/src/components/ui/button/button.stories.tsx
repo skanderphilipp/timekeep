@@ -12,7 +12,7 @@ import { IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
 const meta: Meta<typeof Button> = {
   title: "UI/Actions/Button",
   component: Button,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: {
       control: "select",
@@ -56,10 +56,10 @@ export const AllVariants: Story = {
     >
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
           alignItems: "center",
+          display: "flex",
           flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Button variant="primary">Primary</Button>
@@ -69,10 +69,10 @@ export const AllVariants: Story = {
       </div>
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
           alignItems: "center",
+          display: "flex",
           flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Button variant="primary" size="sm">
@@ -90,10 +90,10 @@ export const AllVariants: Story = {
       </div>
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
           alignItems: "center",
+          display: "flex",
           flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Button variant="primary" disabled>
@@ -108,10 +108,10 @@ export const AllVariants: Story = {
       </div>
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
           alignItems: "center",
+          display: "flex",
           flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Button variant="primary" loading>
@@ -136,11 +136,11 @@ export const ContextToolbar: Story = {
   render: () => (
     <div
       style={{
+        background: "var(--ao-background-secondary)",
+        borderRadius: "var(--ao-radius-md)",
         display: "flex",
         gap: "var(--ao-spacing-2)",
         padding: "var(--ao-spacing-4)",
-        background: "var(--ao-background-secondary)",
-        borderRadius: "var(--ao-radius-md)",
       }}
     >
       <Button variant="primary" icon={<IconPlus size={16} />}>

@@ -6,7 +6,7 @@ import { Text } from "../text";
 const meta: Meta<typeof Grid> = {
   title: "UI/Layout/Grid",
   component: Grid,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     cols: { control: "select", options: [2, "auto"] },
   },
@@ -40,9 +40,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -64,9 +64,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >

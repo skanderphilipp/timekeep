@@ -24,7 +24,7 @@ const utilizationData = [
 const meta: Meta<typeof HeatmapChart> = {
   title: "UI/Charts/HeatmapChart",
   component: HeatmapChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

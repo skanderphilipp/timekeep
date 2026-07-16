@@ -6,7 +6,7 @@ import { IconPencil, IconTrash, IconEye } from "@tabler/icons-react";
 const meta: Meta<typeof ActionGroup> = {
   title: "UI/Actions/ActionGroup",
   component: ActionGroup,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

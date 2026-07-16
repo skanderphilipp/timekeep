@@ -8,7 +8,7 @@ import { MemoryRouter } from "react-router-dom";
 const meta: Meta<typeof PageShell> = {
   title: "UI/Layout/PageShell",
   component: PageShell,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:layout"],
   decorators: [
     (Story) => (
       <MemoryRouter initialEntries={["/devices"]}>

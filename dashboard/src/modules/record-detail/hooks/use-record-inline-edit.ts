@@ -40,7 +40,7 @@ type InlineEditEntityConfig = {
   /** Wraps the API update function with field‑to‑object conversion. */
   updateFn: InlineEditUpdater;
   /** Query key for the list — used for optimistic cache updates and invalidation. */
-  listQueryKey: () => readonly string[];
+  listQueryKey: () => readonly unknown[];
   /**
    * Primary key field on row objects for optimistic cache matching.
    * Most entities use `"id"`; devices use `"serial_number"`.

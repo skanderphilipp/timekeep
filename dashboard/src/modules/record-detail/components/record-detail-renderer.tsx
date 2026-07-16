@@ -70,7 +70,7 @@ export function RecordDetailRenderer({
         value={{ entityType: entity, entityId, isInSidePanel }}
       >
         <RecordDetailShell>
-          <div style={{ padding: "24px" }}>
+          <div style={{ padding: "24px"}}>
             <p>
               Detail view for {entity} is not yet configured. Add an entry to{" "}
               <code>modules/record-detail/types.ts</code>.
@@ -80,7 +80,6 @@ export function RecordDetailRenderer({
       </RecordDetailProvider>
     );
   }
-
   return (
     <RecordDetailProvider
       value={{ entityType: entity, entityId, isInSidePanel }}
@@ -97,7 +96,6 @@ export function RecordDetailRenderer({
     </RecordDetailProvider>
   );
 }
-
 // ── Internal — fetches entity-specific extras automatically ───────────────
 
 type RecordDetailRendererInnerProps = {
@@ -152,26 +150,36 @@ function RecordDetailRendererInner({
   const { data: departments, isLoading: isDepartmentsLoading } = useQuery({
     queryKey: ["departments", "options"] as const,
     queryFn: fetchDepartments,
-    enabled: entity === "employee",
+    enabled: entity === "employee" || entity === "device_group",
     staleTime: 5 * 60 * 1000,
   });
 
   /** Augment the config with dynamically-loaded reference options. */
   const augmentedConfig = useMemo((): DetailViewConfig => {
-    if (entity !== "employee") return config;
+    if (entity !== "employee" && entity !== "device_group") return config;
+    if (!departments) return config;
 
-    const deptOptions: ComboboxOption[] = (departments ?? []).map((d) => ({
+    const deptOptions: ComboboxOption[] = departments.map((d) => ({
       value: d.id,
       label: d.name,
     }));
 
-    // Deep-clone the config and inject options into the department reference field
+    // Deep-clone the config and inject options into the department reference/array fields
     const cloned: DetailViewConfig = JSON.parse(JSON.stringify(config));
     const sections = cloned.sections ?? cloned.tabs?.flatMap((t) => t.sections) ?? [];
     for (const section of sections) {
       for (const field of section.fields) {
+        // Single-select reference (e.g., employee.department_id)
         if (
           field.type === "reference" &&
+          (field.metadata as { referenceEntity?: string }).referenceEntity === "department"
+        ) {
+          (field.metadata as { options?: ComboboxOption[] }).options = deptOptions;
+          field._isLoadingOptions = isDepartmentsLoading;
+        }
+        // Multi-select array reference (e.g., device_group.department_ids)
+        if (
+          field.type === "array" &&
           (field.metadata as { referenceEntity?: string }).referenceEntity === "department"
         ) {
           (field.metadata as { options?: ComboboxOption[] }).options = deptOptions;
@@ -189,7 +197,6 @@ function RecordDetailRendererInner({
   if (!isNewRecord && entity === "employee" && employeeWorkDays.data) {
     extras = <EmployeeAttendanceLog workDays={employeeWorkDays.data} />;
   }
-
   // ── Entity-specific tab children (auto-injected) ──────────────────────────
 
   const mergedTabChildren: Record<string, ReactNode> = { ...tabChildren };
@@ -203,7 +210,6 @@ function RecordDetailRendererInner({
       </>
     );
   }
-
   // ── New record: render empty form with all editable fields ───────────────
 
   if (isNewRecord) {
@@ -217,7 +223,6 @@ function RecordDetailRendererInner({
       </RecordDetailShell>
     );
   }
-
   // ── View mode: standard detail rendering ─────────────────────────────────
 
   return (

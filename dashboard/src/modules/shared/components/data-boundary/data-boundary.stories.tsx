@@ -13,7 +13,7 @@ const sampleData: Item[] = [
 const meta: Meta<typeof DataBoundary<Item>> = {
   title: "UI/Data Display/DataBoundary",
   component: DataBoundary<Item>,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
 };
 
 export default meta;
@@ -47,7 +47,7 @@ export const AllVariants: Story = {
       }}
     >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Loading
         </p>
         <DataBoundary<Item> data={undefined} isLoading error={null} onRetry={fn()}>
@@ -61,7 +61,7 @@ export const AllVariants: Story = {
         </DataBoundary>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Error
         </p>
         <DataBoundary<Item>
@@ -80,7 +80,7 @@ export const AllVariants: Story = {
         </DataBoundary>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Empty
         </p>
         <DataBoundary<Item> data={[]} isLoading={false} error={null}>
@@ -94,7 +94,7 @@ export const AllVariants: Story = {
         </DataBoundary>
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Data
         </p>
         <DataBoundary<Item> data={sampleData} isLoading={false} error={null}>

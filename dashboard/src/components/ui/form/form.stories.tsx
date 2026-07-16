@@ -7,7 +7,7 @@ import { Button } from "../button";
 const meta: Meta<typeof Form> = {
   title: "UI/Forms/Form",
   component: Form,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

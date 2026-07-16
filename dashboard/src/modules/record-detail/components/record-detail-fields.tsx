@@ -2,9 +2,8 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { useCallback, type ReactNode } from "react";
 
-import { DetailGrid, DetailItem, MetadataGrid, Separator, Text, Section, Tabs, Tab, TabPanel } from "@/components/ui";
+import { DetailGrid, DetailItem, MetadataGrid, Separator, Text, Section, Tabs, Tab, TabPanel,InlineFieldEdit } from "@/components/ui";
 import type { MetadataField } from "@/components/ui";
-import { InlineFieldEdit } from "@/components/ui";
 import type { EditableCellEditProps } from "@/components/ui";
 import { FieldContext, type FieldContextValue } from "@/modules/data-renderer/contexts/field-context";
 import { FieldDisplay } from "@/modules/data-renderer/field-displays";
@@ -55,7 +54,6 @@ function resolveFieldValue(record: Record<string, unknown>, key: string): unknow
   }
   return current;
 }
-
 export function RecordDetailFields({
   record,
   config,
@@ -96,7 +94,6 @@ export function RecordDetailFields({
         referenceIdField = meta.referenceIdField;
         isLoadingOptions = field._isLoadingOptions ?? false;
       }
-
       const displayCtx: FieldContextValue = {
         fieldDefinition: { fieldId: field.fieldId, label: field.label, type: field.type, metadata: field.metadata },
         value: rawValue,
@@ -115,7 +112,6 @@ export function RecordDetailFields({
       if (!field.editable) {
         return displayNode;
       }
-
       /**
        * For reference fields, edit mode initialises with the ID (not the display name)
        * so the Combobox/Select can match against its option values.
@@ -146,7 +142,9 @@ export function RecordDetailFields({
             <span
               ref={displayRef}
               onClick={onClick}
-              style={{ cursor: "pointer" }}
+              style={{
+        cursor: "pointer" ,
+      }}
               tabIndex={0}
               role="button"
               aria-label={_(msg`Edit ${field.label}`)}
@@ -191,7 +189,6 @@ export function RecordDetailFields({
             </Section>
           );
         }
-
         return (
           <Section key={section.title} data-slot="record-detail-section">
             <Text
@@ -272,7 +269,6 @@ export function RecordDetailFields({
       </Section>
     );
   }
-
   // ── Flat mode (fallback) ──────────────────────────────────────────────
 
   return (

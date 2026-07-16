@@ -6,7 +6,7 @@ import { IconPlus } from "@tabler/icons-react";
 const meta: Meta<typeof PageBar> = {
   title: "UI/Layout/PageBar",
   component: PageBar,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:layout"],
 };
 
 export default meta;

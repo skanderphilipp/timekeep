@@ -25,7 +25,7 @@ const statusOptions = [
 const meta: Meta<typeof Select> = {
   title: "UI/Inputs/Select",
   component: Select,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -60,7 +60,7 @@ export const ContextPeriodSelector: Story = {
   name: "Context: Period Selector",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 250 }}>
+    <div style={{ maxWidth: 250, padding: "var(--ao-spacing-4)" }}>
       <Select options={periodOptions} value="month" placeholder="Select period…" />
     </div>
   ),

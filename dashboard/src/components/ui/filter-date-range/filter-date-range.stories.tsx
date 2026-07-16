@@ -6,7 +6,7 @@ import { FilterDateRange } from "./filter-date-range";
 const meta: Meta<typeof FilterDateRange> = {
   title: "UI/Inputs/FilterDateRange",
   component: FilterDateRange,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -17,7 +17,7 @@ function PrimaryDemo() {
   return (
     <div style={{ padding: 20 }}>
       <FilterDateRange label="Date range" value={value} onChange={setValue} />
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+      <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginTop: 12 }}>
         Value: {value || "(none)"}
       </div>
     </div>

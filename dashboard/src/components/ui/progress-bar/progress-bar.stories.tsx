@@ -9,7 +9,7 @@ import { ProgressBar } from "./progress-bar";
 const meta: Meta<typeof ProgressBar> = {
   title: "UI/Feedback/ProgressBar",
   component: ProgressBar,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     value: { control: { type: "range", min: 0, max: 100, step: 1 } },
   },

@@ -53,7 +53,7 @@ function envelopeOk(data: unknown) {
 const meta: Meta<typeof SettingsPage> = {
   title: "Pages/Settings",
   component: SettingsPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

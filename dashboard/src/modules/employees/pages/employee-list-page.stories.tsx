@@ -24,7 +24,7 @@ function envelopeOk(data: unknown) {
 const meta: Meta<typeof EmployeeListPage> = {
   title: "Pages/Employees/List",
   component: EmployeeListPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

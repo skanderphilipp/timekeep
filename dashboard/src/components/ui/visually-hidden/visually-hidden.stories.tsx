@@ -5,7 +5,7 @@ import { Text } from "../text";
 const meta: Meta<typeof VisuallyHidden> = {
   title: "UI/Separators/VisuallyHidden",
   component: VisuallyHidden,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -35,7 +35,7 @@ export const AllVariants: Story = {
       }}
     >
       <div>
-        <Text variant="caption" color="tertiary" style={{ marginBottom: 4, display: "block" }}>
+        <Text variant="caption" color="tertiary" style={{ display: "block", marginBottom: 4 }}>
           Button label (visible icon, hidden text)
         </Text>
         <button type="button" style={{ padding: 8 }}>
@@ -43,7 +43,7 @@ export const AllVariants: Story = {
         </button>
       </div>
       <div>
-        <Text variant="caption" color="tertiary" style={{ marginBottom: 4, display: "block" }}>
+        <Text variant="caption" color="tertiary" style={{ display: "block", marginBottom: 4 }}>
           Status message for screen readers
         </Text>
         <div>
@@ -62,7 +62,7 @@ export const ContextSkipLink: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <div style={{ padding: "var(--ao-spacing-4)" }}>
-      <a href="#main-content" style={{ position: "absolute", left: "-9999px" }}>
+      <a href="#main-content" style={{ left: "-9999px", position: "absolute" }}>
         <VisuallyHidden>Skip to main content</VisuallyHidden>
       </a>
       <Text variant="body">

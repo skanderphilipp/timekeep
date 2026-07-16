@@ -15,7 +15,7 @@ import { Tag } from "./tag";
 const meta: Meta<typeof Tag> = {
   title: "UI/Data Display/Tag",
   component: Tag,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     color: { control: "select", options: ["green", "amber", "red", "blue", "gray", "accent"] },
     variant: { control: "select", options: ["solid", "outline"] },
@@ -45,10 +45,10 @@ export const AllVariants: Story = {
       {/* Solid variants */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Active" color="green" />
@@ -62,10 +62,10 @@ export const AllVariants: Story = {
       {/* Outline variants */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Outline" variant="outline" color="accent" />
@@ -77,10 +77,10 @@ export const AllVariants: Story = {
       {/* Dismissible */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Removable" color="gray" dismissible onRemove={fn()} />
@@ -91,10 +91,10 @@ export const AllVariants: Story = {
       {/* With value (filter chip pattern) */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Status" value="Active" color="green" dismissible onRemove={fn()} />
@@ -112,10 +112,10 @@ export const AllVariants: Story = {
       {/* Interactive */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Clickable" color="accent" onClick={fn()} />
@@ -125,10 +125,10 @@ export const AllVariants: Story = {
       {/* Disabled */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Disabled" color="gray" disabled />
@@ -138,10 +138,10 @@ export const AllVariants: Story = {
       {/* Weights */}
       <div
         style={{
-          display: "flex",
-          gap: "var(--ao-spacing-2)",
-          flexWrap: "wrap",
           alignItems: "center",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--ao-spacing-2)",
         }}
       >
         <Tag text="Regular" color="gray" />
@@ -158,9 +158,9 @@ export const ContextFilterChips: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-2)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -185,9 +185,9 @@ export const ContextEmployeeStatus: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-2)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >

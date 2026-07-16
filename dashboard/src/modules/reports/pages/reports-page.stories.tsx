@@ -87,7 +87,7 @@ function envelopeOk(data: unknown) {
 const meta: Meta<typeof ReportsPage> = {
   title: "Pages/Reports",
   component: ReportsPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

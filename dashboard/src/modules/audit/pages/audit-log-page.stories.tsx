@@ -23,7 +23,7 @@ const meta = {
       },
     },
   },
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
 } satisfies Meta<typeof AuditLogPage>;
 
 export default meta;

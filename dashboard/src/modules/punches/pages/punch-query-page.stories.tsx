@@ -109,7 +109,7 @@ function envelopeOk<T>(data: T, meta?: Record<string, unknown>) {
 const meta: Meta<typeof PunchQueryPage> = {
   title: "Pages/PunchQuery",
   component: PunchQueryPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: {
     layout: "fullscreen",
     controls: { disable: true },

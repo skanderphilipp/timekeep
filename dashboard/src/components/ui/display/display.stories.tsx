@@ -12,7 +12,7 @@ import {
 
 const meta: Meta = {
   title: "UI/Display/All",
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -26,7 +26,7 @@ const row = { display: "flex", gap: 12 };
 
 export function TextDisplayStory() {
   return (
-    <div style={{ ...stack, padding: 16, maxWidth: 300 }}>
+    <div style={{ ...stack, maxWidth: 300, padding: 16 }}>
       <TextDisplay text="Ahmed Al-Sabah" />
       <TextDisplay text="Very long employee name that should truncate with ellipsis at the cell boundary" />
       <TextDisplay text="" />
@@ -47,7 +47,7 @@ export function BooleanDisplayStory() {
 
 export function DateDisplayStory() {
   return (
-    <div style={{ ...stack, padding: 16, maxWidth: 300 }}>
+    <div style={{ ...stack, maxWidth: 300, padding: 16 }}>
       <DateDisplay value={new Date("2026-07-15")} />
       <DateDisplay value="2026-01-01" />
       <DateDisplay value={null} />
@@ -57,7 +57,7 @@ export function DateDisplayStory() {
 
 export function NumberDisplayStory() {
   return (
-    <div style={{ ...stack, padding: 16, maxWidth: 200 }}>
+    <div style={{ ...stack, maxWidth: 200, padding: 16 }}>
       <NumberDisplay value={42} />
       <NumberDisplay value={3.14159} decimals={2} />
       <NumberDisplay value={120} suffix="min" />
@@ -85,7 +85,7 @@ export function MultiSelectDisplayStory() {
     { value: "read", label: "Read", color: "green" as const },
   ];
   return (
-    <div style={{ padding: 16, maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: 16 }}>
       <MultiSelectDisplay values={["admin", "write", "read"]} options={opts as any} />
     </div>
   );
@@ -93,7 +93,7 @@ export function MultiSelectDisplayStory() {
 
 export function EllipsisDisplayStory() {
   return (
-    <div style={{ ...stack, padding: 16, maxWidth: 200 }}>
+    <div style={{ ...stack, maxWidth: 200, padding: 16 }}>
       <EllipsisDisplay>Short text</EllipsisDisplay>
       <EllipsisDisplay>
         This is a very long piece of text that should be truncated with an ellipsis
@@ -114,7 +114,7 @@ export function TableCellSimulation() {
 
   return (
     <div style={{ fontFamily: "var(--ao-font-family)", fontSize: "var(--ao-font-size-sm)" }}>
-      <table style={{ borderCollapse: "collapse", width: "100%", maxWidth: 700 }}>
+      <table style={{ borderCollapse: "collapse", maxWidth: 700, width: "100%" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--ao-border-color-medium)" }}>
             <th style={{ padding: "8px 12px", textAlign: "left", width: 180 }}>Name</th>

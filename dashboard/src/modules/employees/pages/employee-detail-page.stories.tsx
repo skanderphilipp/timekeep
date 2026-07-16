@@ -63,7 +63,7 @@ function PageAt({ routePath, redirectTo, element }: { routePath: string; redirec
 const meta: Meta<typeof EmployeeDetailPage> = {
   title: "Pages/Employees/Detail",
   component: EmployeeDetailPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

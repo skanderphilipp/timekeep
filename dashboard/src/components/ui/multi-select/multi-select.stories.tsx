@@ -25,7 +25,7 @@ const sampleOptions: MultiSelectOption[] = [
 const meta: Meta<typeof MultiSelect> = {
   title: "UI/Inputs/MultiSelect",
   component: MultiSelect,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     placeholder: { control: "text" },
     searchPlaceholder: { control: "text" },
@@ -40,7 +40,7 @@ type Story = StoryObj<typeof MultiSelect>;
 function PrimaryDemo() {
   const [values, setValues] = useState<string[]>(["read:punches"]);
   return (
-    <div style={{ padding: 20, maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: 20 }}>
       <MultiSelect
         options={sampleOptions}
         values={values}
@@ -74,7 +74,7 @@ export const AllVariants: Story = {
         }}
       >
         <div>
-          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
             Empty — nothing selected
           </p>
           <MultiSelect
@@ -85,7 +85,7 @@ export const AllVariants: Story = {
           />
         </div>
         <div>
-          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
             With selections (3 items)
           </p>
           <MultiSelect
@@ -96,7 +96,7 @@ export const AllVariants: Story = {
           />
         </div>
         <div>
-          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
             Many selected (5+ items)
           </p>
           <MultiSelect
@@ -107,7 +107,7 @@ export const AllVariants: Story = {
           />
         </div>
         <div>
-          <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
             Loading state
           </p>
           <MultiSelect
@@ -126,7 +126,7 @@ export const AllVariants: Story = {
 function ContextColumnVisibilityDemo() {
   const [cols, setCols] = useState(["time", "employee", "device", "status"]);
   return (
-    <div style={{ padding: 20, maxWidth: 300 }}>
+    <div style={{ maxWidth: 300, padding: 20 }}>
       <MultiSelect
         options={[
           { value: "time", label: "Time" },

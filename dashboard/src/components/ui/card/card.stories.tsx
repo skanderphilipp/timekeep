@@ -12,7 +12,7 @@ import { Text } from "../text";
 const meta: Meta<typeof Card> = {
   title: "UI/Layout/Card",
   component: Card,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

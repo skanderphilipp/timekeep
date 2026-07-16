@@ -13,7 +13,7 @@ const deviceOptions: ComboboxOption[] = [
 const meta: Meta<typeof Combobox> = {
   title: "UI/Inputs/Combobox",
   component: Combobox,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -23,7 +23,7 @@ export const Primary: Story = {
   render: function InteractiveCombobox() {
     const [selected, setSelected] = useState<string | undefined>(undefined);
     return (
-      <div style={{ padding: 20, maxWidth: 300 }}>
+      <div style={{ maxWidth: 300, padding: 20 }}>
         <Combobox
           options={deviceOptions}
           value={selected}
@@ -43,7 +43,7 @@ export const AllVariants: Story = {
       style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: 20 }}
     >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           With selection
         </p>
         <Combobox
@@ -54,7 +54,7 @@ export const AllVariants: Story = {
         />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           No selection
         </p>
         <Combobox
@@ -65,7 +65,7 @@ export const AllVariants: Story = {
         />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Loading
         </p>
         <Combobox options={[]} value={undefined} onChange={fn()} placeholder="Loading…" loading />

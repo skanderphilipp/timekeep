@@ -14,7 +14,7 @@ import { Badge } from "./badge";
 const meta: Meta<typeof Badge> = {
   title: "UI/Data Display/Badge",
   component: Badge,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: {
       control: "select",
@@ -45,10 +45,10 @@ export const AllVariants: Story = {
   render: () => (
     <div
       style={{
-        display: "flex",
-        gap: "var(--ao-spacing-3)",
-        flexWrap: "wrap",
         alignItems: "center",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "var(--ao-spacing-3)",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -68,10 +68,10 @@ export const PillVariants: Story = {
   render: () => (
     <div
       style={{
-        display: "flex",
-        gap: "var(--ao-spacing-3)",
-        flexWrap: "wrap",
         alignItems: "center",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "var(--ao-spacing-3)",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -133,24 +133,24 @@ export const ContextDeviceStatus: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-2)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 300,
+        padding: "var(--ao-spacing-4)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>Main Gate</span>
+      <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+      <span>Main Gate</span>
         <Badge variant="success" dot="online">
           Online
         </Badge>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>Warehouse B</span>
+      <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+      <span>Warehouse B</span>
         <Badge variant="success" dot="online">
           Online
         </Badge>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>Office Floor</span>
+      <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+      <span>Office Floor</span>
         <Badge variant="danger" dot="offline">
           Offline
         </Badge>
@@ -166,9 +166,9 @@ export const Sizes: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-4)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -195,9 +195,9 @@ export const WithIcon: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-3)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >

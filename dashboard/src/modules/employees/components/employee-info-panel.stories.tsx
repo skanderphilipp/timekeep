@@ -29,7 +29,7 @@ const minimalEmployee: Employee = {
 const meta: Meta<typeof EmployeeInfoPanel> = {
   title: "Modules/Employees/EmployeeInfoPanel",
   component: EmployeeInfoPanel,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
 };
 
 export default meta;

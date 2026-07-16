@@ -117,6 +117,7 @@ const navItems: ResolvedNavItem[] = [
 const meta: Meta<typeof AppSidebar> = {
   title: "Infrastructure/AppShell/AppSidebar",
   component: AppSidebar,
+  tags: ["autodocs", "level:layout"],
   parameters: {
     layout: "fullscreen",
   },

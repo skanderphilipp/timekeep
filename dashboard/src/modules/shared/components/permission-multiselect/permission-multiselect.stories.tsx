@@ -12,7 +12,7 @@ import { PermissionMultiSelect } from "./permission-multiselect";
 const meta: Meta<typeof PermissionMultiSelect> = {
   title: "UI/Inputs/PermissionMultiSelect",
   component: PermissionMultiSelect,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
   argTypes: {
     placeholder: { control: "text" },
     fullWidth: { control: "boolean" },
@@ -25,7 +25,7 @@ type Story = StoryObj<typeof PermissionMultiSelect>;
 function PrimaryDemo() {
   const [permissions, setPermissions] = useState<string[]>(["read:punches"]);
   return (
-    <div style={{ padding: 20, maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: 20 }}>
       <PermissionMultiSelect
         values={permissions}
         onChange={(v) => {
@@ -50,13 +50,13 @@ export const AllVariants: Story = {
       style={{ display: "flex", flexDirection: "column", gap: "var(--ao-spacing-6)", padding: 20 }}
     >
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Empty — no permissions selected
         </p>
         <PermissionMultiSelect values={[]} onChange={fn()} placeholder="Select permissions…" />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Few permissions
         </p>
         <PermissionMultiSelect
@@ -83,7 +83,7 @@ export const AllVariants: Story = {
         />
       </div>
       <div>
-        <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 8 }}>
+        <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
           Full width
         </p>
         <PermissionMultiSelect
@@ -100,9 +100,9 @@ export const AllVariants: Story = {
 function ContextApiKeyCreationDemo() {
   const [permissions, setPermissions] = useState(["read:punches"]);
   return (
-    <div style={{ padding: 20, maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: 20 }}>
       <p style={{ fontWeight: 600, marginBottom: 8 }}>Scoped Permissions</p>
-      <p style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)", marginBottom: 12 }}>
+      <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 12 }}>
         Select which resources this API key can access.
       </p>
       <PermissionMultiSelect

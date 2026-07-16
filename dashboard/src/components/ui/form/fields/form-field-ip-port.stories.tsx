@@ -54,7 +54,7 @@ const deviceAddressField: FormIpPortFieldDef = {
 const meta: Meta<typeof FormFieldIpPort> = {
   title: "UI/Forms/FormFieldIpPort",
   component: FormFieldIpPort,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

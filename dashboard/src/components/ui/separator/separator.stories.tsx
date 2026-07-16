@@ -10,7 +10,7 @@ import { Text } from "../text";
 const meta: Meta<typeof Separator> = {
   title: "UI/Separators/Separator",
   component: Separator,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     noMargin: { control: "boolean" },
   },
@@ -25,7 +25,7 @@ export const AllVariants: Story = {
   name: "All Variants",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: "var(--ao-spacing-4)" }}>
       <Text variant="body">Section above separator (with margin)</Text>
       <Separator />
       <Text variant="body">Section below separator (with margin)</Text>
@@ -41,10 +41,10 @@ export const ContextSidePanel: Story = {
   render: () => (
     <div
       style={{
-        padding: "var(--ao-spacing-4)",
-        maxWidth: 300,
         border: "1px solid var(--ao-border-color-light)",
         borderRadius: "var(--ao-radius-md)",
+        maxWidth: 300,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <Text variant="body" weight="medium">

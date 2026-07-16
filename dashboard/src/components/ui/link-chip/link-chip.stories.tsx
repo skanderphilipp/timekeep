@@ -4,7 +4,7 @@ import { LinkChip } from "./link-chip";
 const meta: Meta<typeof LinkChip> = {
   title: "UI/Navigation/LinkChip",
   component: LinkChip,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

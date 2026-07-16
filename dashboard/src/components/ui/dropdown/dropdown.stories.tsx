@@ -8,7 +8,7 @@ import { Button } from "../button";
 const meta: Meta<typeof Dropdown> = {
   title: "UI/Overlays/Dropdown",
   component: Dropdown,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -69,11 +69,11 @@ export const ContextEmployeeActions: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-2)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 320,
+        padding: "var(--ao-spacing-4)",
       }}
     >
-      <p style={{ fontSize: "var(--ao-font-size-sm)", color: "var(--ao-font-color-secondary)" }}>
+      <p style={{ color: "var(--ao-font-color-secondary)", fontSize: "var(--ao-font-size-sm)" }}>
         Employee: Ahmed Al-Rashid — Punch ID: 10042
       </p>
       <Dropdown

@@ -14,7 +14,7 @@ import { Input } from "./input";
 const meta: Meta<typeof Input> = {
   title: "UI/Inputs/Input",
   component: Input,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     disabled: { control: "boolean" },
     placeholder: { control: "text" },
@@ -102,8 +102,8 @@ export const AutoGrow: Story = {
   name: "autoGrow",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 500 }}>
-      <p style={{ marginBottom: 8, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+    <div style={{ maxWidth: 500, padding: "var(--ao-spacing-4)" }}>
+      <p style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginBottom: 8 }}>
         Type to see the input grow with content (inline-edit pattern)
       </p>
       <Input

@@ -18,7 +18,7 @@ const hourlyStatusData = [
 const meta: Meta<typeof StreamChart> = {
   title: "UI/Charts/StreamChart",
   component: StreamChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

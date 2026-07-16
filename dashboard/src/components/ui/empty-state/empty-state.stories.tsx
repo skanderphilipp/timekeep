@@ -12,7 +12,7 @@ import { IconPlus } from "@tabler/icons-react";
 const meta: Meta<typeof EmptyState> = {
   title: "UI/Feedback/EmptyState",
   component: EmptyState,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

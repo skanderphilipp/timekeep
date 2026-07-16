@@ -15,7 +15,7 @@ function envelopeOk<T>(data: T) {
 const meta: Meta<typeof DashboardPage> = {
   title: "Pages/Dashboard",
   component: DashboardPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: {
     layout: "fullscreen",
     controls: { disable: true },

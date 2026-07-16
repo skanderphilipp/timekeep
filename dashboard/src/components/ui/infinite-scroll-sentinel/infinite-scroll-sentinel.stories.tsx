@@ -11,7 +11,7 @@ import { InfiniteScrollSentinel } from "./infinite-scroll-sentinel";
 const meta: Meta<typeof InfiniteScrollSentinel> = {
   title: "UI/Data Display/InfiniteScrollSentinel",
   component: InfiniteScrollSentinel,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -40,18 +40,18 @@ export const AllVariants: Story = {
     >
       <div
         style={{
-          padding: "var(--ao-spacing-4)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
+          padding: "var(--ao-spacing-4)",
         }}
       >
         <InfiniteScrollSentinel ref={sentinelRef}>Loading more records…</InfiniteScrollSentinel>
       </div>
       <div
         style={{
-          padding: "var(--ao-spacing-4)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
+          padding: "var(--ao-spacing-4)",
         }}
       >
         <InfiniteScrollSentinel ref={sentinelRef}>
@@ -64,9 +64,9 @@ export const AllVariants: Story = {
       </div>
       <div
         style={{
-          padding: "var(--ao-spacing-4)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
+          padding: "var(--ao-spacing-4)",
         }}
       >
         <InfiniteScrollSentinel ref={sentinelRef} />
@@ -84,14 +84,14 @@ export const ContextEmployeeList: Story = {
       style={{
         display: "flex",
         flexDirection: "column",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 400,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <p
         style={{
-          fontSize: "var(--ao-font-size-sm)",
           color: "var(--ao-font-color-secondary)",
+          fontSize: "var(--ao-font-size-sm)",
           marginBottom: "var(--ao-spacing-2)",
         }}
       >
@@ -101,8 +101,8 @@ export const ContextEmployeeList: Story = {
         style={{
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
-          padding: "var(--ao-spacing-3)",
           marginBottom: "var(--ao-spacing-2)",
+          padding: "var(--ao-spacing-3)",
         }}
       >
         <span style={{ fontSize: "var(--ao-font-size-sm)" }}>
@@ -113,8 +113,8 @@ export const ContextEmployeeList: Story = {
         style={{
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
-          padding: "var(--ao-spacing-3)",
           marginBottom: "var(--ao-spacing-2)",
+          padding: "var(--ao-spacing-3)",
         }}
       >
         <span style={{ fontSize: "var(--ao-font-size-sm)" }}>Fatima Hassan — Punch ID: 10043</span>

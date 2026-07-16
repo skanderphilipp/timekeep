@@ -23,19 +23,19 @@ import {
 } from "./token-surfaces";
 
 const PAGE_STYLE: CSSProperties = {
-  padding: "var(--ao-spacing-6)",
-  maxWidth: 960,
-  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
   gap: "var(--ao-spacing-8)",
+  margin: "0 auto",
+  maxWidth: 960,
+  padding: "var(--ao-spacing-6)",
 };
 
 const SECTION_STYLE: CSSProperties = {
-  padding: "var(--ao-spacing-5)",
-  borderRadius: "var(--ao-radius-lg)",
-  border: "1px solid var(--ao-border-color-light)",
   backgroundColor: "var(--ao-background-primary)",
+  border: "1px solid var(--ao-border-color-light)",
+  borderRadius: "var(--ao-radius-lg)",
+  padding: "var(--ao-spacing-5)",
 };
 
 /** All token names used anywhere on the page, deduplicated for a single read. */
@@ -71,19 +71,19 @@ function TokenMatrixPage() {
       <div>
         <h1
           style={{
-            margin: "0 0 var(--ao-spacing-1) 0",
+            color: "var(--ao-font-color-primary)",
             fontSize: "var(--ao-font-size-2xl)",
             fontWeight: "var(--ao-font-weight-semibold)",
-            color: "var(--ao-font-color-primary)",
+            margin: "0 0 var(--ao-spacing-1) 0",
           }}
         >
           Design Tokens
         </h1>
         <p
           style={{
-            margin: 0,
-            fontSize: "var(--ao-font-size-sm)",
             color: "var(--ao-font-color-secondary)",
+            fontSize: "var(--ao-font-size-sm)",
+            margin: 0,
           }}
         >
           Every{" "}
@@ -153,10 +153,10 @@ function TokenMatrixPage() {
 
         <h3
           style={{
-            margin: "0 0 var(--ao-spacing-3) 0",
+            color: "var(--ao-font-color-primary)",
             fontSize: "var(--ao-font-size-md)",
             fontWeight: "var(--ao-font-weight-semibold)",
-            color: "var(--ao-font-color-primary)",
+            margin: "0 0 var(--ao-spacing-3) 0",
           }}
         >
           Font Sizes
@@ -170,10 +170,10 @@ function TokenMatrixPage() {
 
         <h3
           style={{
-            margin: "0 0 var(--ao-spacing-3) 0",
+            color: "var(--ao-font-color-primary)",
             fontSize: "var(--ao-font-size-md)",
             fontWeight: "var(--ao-font-weight-semibold)",
-            color: "var(--ao-font-color-primary)",
+            margin: "0 0 var(--ao-spacing-3) 0",
           }}
         >
           Font Weights
@@ -185,10 +185,10 @@ function TokenMatrixPage() {
 
         <h3
           style={{
-            margin: "0 0 var(--ao-spacing-3) 0",
+            color: "var(--ao-font-color-primary)",
             fontSize: "var(--ao-font-size-md)",
             fontWeight: "var(--ao-font-weight-semibold)",
-            color: "var(--ao-font-color-primary)",
+            margin: "0 0 var(--ao-spacing-3) 0",
           }}
         >
           Font Families
@@ -210,7 +210,7 @@ function TokenMatrixPage() {
 const meta: Meta<typeof TokenMatrixPage> = {
   title: "Tokens / Design Tokens",
   component: TokenMatrixPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:widget"],
   parameters: {
     controls: { disable: true },
     layout: "fullscreen",

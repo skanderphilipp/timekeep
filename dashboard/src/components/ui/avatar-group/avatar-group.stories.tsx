@@ -5,7 +5,7 @@ import { Avatar } from "../avatar";
 const meta: Meta<typeof AvatarGroup> = {
   title: "UI/Data Display/AvatarGroup",
   component: AvatarGroup,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -38,9 +38,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -51,9 +51,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -69,9 +69,9 @@ export const AllVariants: Story = {
       <div>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 8,
           }}
         >
@@ -96,10 +96,10 @@ export const ContextCheckedInEmployees: Story = {
   render: () => (
     <div
       style={{
-        padding: "var(--ao-spacing-4)",
-        display: "flex",
         alignItems: "center",
+        display: "flex",
         gap: "var(--ao-spacing-3)",
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <AvatarGroup
@@ -110,7 +110,7 @@ export const ContextCheckedInEmployees: Story = {
           <Avatar key="4" name="Layla Noor" />,
         ]}
       />
-      <span style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>
+      <span style={{ color: "var(--ao-font-color-secondary)", fontSize: 14 }}>
         +38 more on-site
       </span>
     </div>

@@ -24,7 +24,7 @@ const emptyWorkDays: EmployeeWorkDays = {
 const meta: Meta<typeof EmployeeAttendanceLog> = {
   title: "Modules/Employees/EmployeeAttendanceLog",
   component: EmployeeAttendanceLog,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
 };
 
 export default meta;

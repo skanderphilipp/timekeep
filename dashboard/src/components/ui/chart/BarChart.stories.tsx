@@ -28,7 +28,7 @@ const dailyHoursData = [
 const meta: Meta<typeof BarChart> = {
   title: "UI/Charts/BarChart",
   component: BarChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

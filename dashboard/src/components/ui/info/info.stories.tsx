@@ -4,7 +4,7 @@ import { Info } from "./info";
 const meta: Meta<typeof Info> = {
   title: "UI/Feedback/Info",
   component: Info,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     accent: { control: "select", options: ["default", "danger"] },
   },
@@ -29,11 +29,11 @@ export const AllVariants: Story = {
         padding: "var(--ao-spacing-4)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-2)" }}>
         <span>Default accent</span>
         <Info text="This is helpful contextual information for the user." />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-2)" }}>
         <span>Danger accent</span>
         <Info text="Warning: changing this may affect attendance calculations." accent="danger" />
       </div>
@@ -45,11 +45,11 @@ export const ContextPollInterval: Story = {
   name: "Context: Settings Help",
   parameters: { controls: { disable: true } },
   render: () => (
-    <div style={{ padding: "var(--ao-spacing-4)", maxWidth: 400 }}>
+    <div style={{ maxWidth: 400, padding: "var(--ao-spacing-4)" }}>
       <div
         style={{
-          display: "flex",
           alignItems: "center",
+          display: "flex",
           gap: "var(--ao-spacing-2)",
           marginBottom: 4,
         }}
@@ -57,7 +57,7 @@ export const ContextPollInterval: Story = {
         <span style={{ fontWeight: 600 }}>Poll Interval</span>
         <Info text="How often the system pulls new attendance records from connected devices. Lower values mean more real-time data but higher load on the devices." />
       </div>
-      <input type="number" defaultValue={60} style={{ width: 80, padding: 4 }} />
+      <input type="number" defaultValue={60} style={{ padding: 4, width: 80 }} />
       <span style={{ marginLeft: 4 }}>seconds</span>
     </div>
   ),

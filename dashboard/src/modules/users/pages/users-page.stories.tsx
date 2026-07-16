@@ -59,7 +59,7 @@ function envelopeOk<T>(data: T) {
 const meta: Meta<typeof UsersPage> = {
   title: "Pages/Users",
   component: UsersPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: {
     layout: "fullscreen",
     controls: { disable: true },

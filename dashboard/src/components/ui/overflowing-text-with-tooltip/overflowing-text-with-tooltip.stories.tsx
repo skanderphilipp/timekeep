@@ -5,7 +5,7 @@ import { Text } from "../text";
 const meta: Meta<typeof OverflowingTextWithTooltip> = {
   title: "UI/Data Display/OverflowingTextWithTooltip",
   component: OverflowingTextWithTooltip,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -34,9 +34,9 @@ export const AllVariants: Story = {
       <div style={{ width: 150 }}>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 4,
           }}
         >
@@ -47,9 +47,9 @@ export const AllVariants: Story = {
       <div style={{ width: 150 }}>
         <span
           style={{
-            fontSize: 12,
             color: "var(--ao-font-color-tertiary)",
             display: "block",
+            fontSize: 12,
             marginBottom: 4,
           }}
         >

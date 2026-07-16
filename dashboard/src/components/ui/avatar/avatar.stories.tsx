@@ -4,7 +4,7 @@ import { Avatar } from "./avatar";
 const meta: Meta<typeof Avatar> = {
   title: "UI/Data Display/Avatar",
   component: Avatar,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     size: { control: "select", options: ["sm", "md", "lg"] },
   },
@@ -29,21 +29,21 @@ export const AllVariants: Story = {
         padding: "var(--ao-spacing-4)",
       }}
     >
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-2)" }}>
         <Avatar name="Ahmed Al-Sabah" size="sm" />
         <Avatar name="Ahmed Al-Sabah" size="md" />
         <Avatar name="Ahmed Al-Sabah" size="lg" />
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>sm / md / lg</span>
+        <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12 }}>sm / md / lg</span>
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-2)" }}>
         <Avatar name="Ahmed Al-Sabah" />
         <Avatar name="Fatima Hassan" />
         <Avatar name="Omar Khalid" />
         <Avatar name="Layla Noor" />
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-2)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-2)" }}>
         <Avatar name="A" />
-        <span style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+        <span style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12 }}>
           Single character name
         </span>
       </div>
@@ -57,16 +57,16 @@ export const ContextEmployeeList: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-4)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >
       <Avatar name="Ahmed Al-Sabah" size="md" />
       <div>
         <div style={{ fontWeight: 600 }}>Ahmed Al-Sabah</div>
-        <div style={{ fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+        <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12 }}>
           PIN 145 · Operations
         </div>
       </div>

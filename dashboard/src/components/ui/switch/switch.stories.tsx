@@ -10,7 +10,7 @@ import { Switch } from "./switch";
 const meta: Meta<typeof Switch> = {
   title: "UI/Inputs/Switch",
   component: Switch,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

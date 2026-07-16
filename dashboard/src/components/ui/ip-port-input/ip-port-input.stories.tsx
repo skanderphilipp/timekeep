@@ -5,7 +5,7 @@ import { IpPortInput } from "./ip-port-input";
 const meta: Meta<typeof IpPortInput> = {
   title: "UI/Inputs/IpPortInput",
   component: IpPortInput,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

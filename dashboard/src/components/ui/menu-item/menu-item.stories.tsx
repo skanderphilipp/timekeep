@@ -6,7 +6,7 @@ import { IconPencil, IconTrash, IconEye, IconSettings } from "@tabler/icons-reac
 const meta: Meta<typeof MenuItem> = {
   title: "UI/Navigation/MenuItem",
   component: MenuItem,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: { control: "select", options: ["default", "danger"] },
   },
@@ -26,16 +26,16 @@ export const Primary: Story = {
  * that context so the component renders as it would in the real app.
  */
 const dropdownSurface: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 0,
-  width: 220,
   background: "var(--ao-background-primary)",
   border: "1px solid var(--ao-border-color-medium)",
   borderRadius: "var(--ao-radius-md)",
   boxShadow: "var(--ao-shadow-md)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 0,
   overflow: "hidden",
   padding: 4,
+  width: 220,
 };
 
 export const AllVariants: Story = {
@@ -48,9 +48,9 @@ export const AllVariants: Story = {
       <MenuItem label="Settings" leftIcon={<IconSettings size={16} />} onClick={fn()} />
       <hr
         style={{
-          margin: "2px 0",
           border: "none",
           borderTop: "1px solid var(--ao-border-color-light)",
+          margin: "2px 0",
         }}
       />
       <MenuItem label="Delete" leftIcon={<IconTrash size={16} />} variant="danger" onClick={fn()} />
@@ -67,9 +67,9 @@ export const ContextUserMenu: Story = {
       <MenuItem label="Change Password" onClick={fn()} />
       <hr
         style={{
-          margin: "2px 0",
           border: "none",
           borderTop: "1px solid var(--ao-border-color-light)",
+          margin: "2px 0",
         }}
       />
       <MenuItem label="Sign Out" variant="danger" onClick={fn()} />

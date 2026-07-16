@@ -6,7 +6,7 @@ import { IconDeviceDesktop, IconUsers } from "@tabler/icons-react";
 const meta: Meta<typeof InlineHeader> = {
   title: "UI/Separators/InlineHeader",
   component: InlineHeader,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -51,9 +51,9 @@ export const ContextDeviceCard: Story = {
   render: () => (
     <div
       style={{
-        padding: "var(--ao-spacing-4)",
         border: "1px solid var(--ao-border-color-light)",
         borderRadius: "var(--ao-radius-md)",
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <InlineHeader icon={<IconDeviceDesktop size={20} />} title="Main Gate">

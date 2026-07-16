@@ -28,6 +28,7 @@ import type { FilterField } from "@/components/ui/filter-dropdown/filter-dropdow
 const meta: Meta<typeof FilterBar> = {
   title: "UI/FilterBar",
   component: FilterBar,
+  tags: ["level:primitive"],
 };
 
 export default meta;
@@ -42,11 +43,11 @@ const sampleFields: FilterField[] = [
     icon: <IconFilter size={14} />,
     renderValueSelector: ({ onApply, onBack }) => (
       <div style={{ padding: "8px" }}>
-        <p style={{ margin: 0, fontSize: "13px" }}>Device filter panel</p>
+        <p style={{ fontSize: "13px", margin: 0 }}>Device filter panel</p>
         <button onClick={onApply} style={{ marginTop: "8px" }}>
           Apply
         </button>
-        <button onClick={onBack} style={{ marginTop: "8px", marginLeft: "8px" }}>
+        <button onClick={onBack} style={{ marginLeft: "8px", marginTop: "8px" }}>
           Back
         </button>
       </div>
@@ -57,11 +58,11 @@ const sampleFields: FilterField[] = [
     label: "Status",
     renderValueSelector: ({ onApply, onBack }) => (
       <div style={{ padding: "8px" }}>
-        <p style={{ margin: 0, fontSize: "13px" }}>Status filter panel</p>
+        <p style={{ fontSize: "13px", margin: 0 }}>Status filter panel</p>
         <button onClick={onApply} style={{ marginTop: "8px" }}>
           Apply
         </button>
-        <button onClick={onBack} style={{ marginTop: "8px", marginLeft: "8px" }}>
+        <button onClick={onBack} style={{ marginLeft: "8px", marginTop: "8px" }}>
           Back
         </button>
       </div>
@@ -144,7 +145,7 @@ export const Sticky: Story = {
         >
           <FilterDropdown fields={sampleFields} />
         </FilterBar>
-        <div style={{ padding: "16px", height: "400px" }}>
+        <div style={{ height: "400px", padding: "16px" }}>
           <p>Scroll down to test sticky behaviour</p>
         </div>
       </div>

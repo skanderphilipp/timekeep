@@ -95,7 +95,7 @@ const sampleData: EmployeeRow[] = [
 const meta: Meta<typeof DataTable<EmployeeRow>> = {
   title: "UI/Data Display/DataTable",
   component: DataTable<EmployeeRow>,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -128,7 +128,7 @@ export const AllVariants: Story = {
         data={[]}
         getRowKey={(r) => r.id}
         emptyState={
-          <p style={{ padding: 16, color: "var(--ao-font-color-tertiary)", textAlign: "center" }}>
+          <p style={{ color: "var(--ao-font-color-tertiary)", padding: 16, textAlign: "center" }}>
             No employees found.
           </p>
         }

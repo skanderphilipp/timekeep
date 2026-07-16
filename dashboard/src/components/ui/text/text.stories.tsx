@@ -10,7 +10,7 @@ import { Text } from "./text";
 const meta: Meta<typeof Text> = {
   title: "UI/Typography/Text",
   component: Text,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: { control: "select", options: ["body", "caption", "label"] },
     color: {

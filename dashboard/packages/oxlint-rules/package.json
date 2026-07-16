@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@oxlint/plugins": "^1.51.0",
+    "@types/node": "^26.1.1",
     "esbuild": "^0.28.1"
   }
 }

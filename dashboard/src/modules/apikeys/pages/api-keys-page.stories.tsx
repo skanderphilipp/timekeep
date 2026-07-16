@@ -55,7 +55,7 @@ function envelopeOk(data: unknown) {
 const meta: Meta<typeof ApiKeysPage> = {
   title: "Pages/API Keys",
   component: ApiKeysPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

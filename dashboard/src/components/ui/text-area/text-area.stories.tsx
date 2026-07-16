@@ -4,7 +4,7 @@ import { TextArea } from "./text-area";
 const meta: Meta<typeof TextArea> = {
   title: "UI/Inputs/TextArea",
   component: TextArea,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     label: { control: "text" },
     error: { control: "text" },
@@ -62,8 +62,8 @@ export const AllVariants: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-4)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 400,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <TextArea label="Basic" placeholder="Enter notes…" rows={3} />

@@ -840,6 +840,15 @@ export const DETAIL_VIEW_CONFIGS: Partial<Record<EntityType, DetailViewConfig>> 
                 editable: false,
               },
               {
+                fieldId: "department_ids",
+                label: "Departments",
+                type: "array",
+                metadata: {
+                  fieldName: "department_ids",
+                } satisfies ArrayFieldMetadata,
+                editable: true,
+              },
+              {
                 fieldId: "description",
                 label: "Description",
                 type: "text",

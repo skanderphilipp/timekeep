@@ -36,7 +36,7 @@ import { Breadcrumb, type BreadcrumbSegment } from "./breadcrumb";
 const meta: Meta<typeof Breadcrumb> = {
   title: "UI/Navigation/Breadcrumb",
   component: Breadcrumb,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   decorators: [
     (Story) => (
       <BrowserRouter>
@@ -94,38 +94,38 @@ export const ContextInPageBar: Story = {
   render: () => (
     <div
       style={{
+        background: "var(--ao-background-secondary)",
+        borderBottom: "1px solid var(--ao-border-color-medium)",
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-4)",
         padding: "var(--ao-spacing-4)",
-        background: "var(--ao-background-secondary)",
-        borderBottom: "1px solid var(--ao-border-color-medium)",
       }}
     >
       <Breadcrumb segments={DEFAULT_SEGMENTS} />
       <div
         style={{
+          alignItems: "center",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
         }}
       >
         <div>
           <h1
             style={{
-              margin: 0,
+              color: "var(--ao-font-color-primary)",
               fontSize: "var(--ao-font-size-md)",
               fontWeight: "var(--ao-font-weight-semibold)",
-              color: "var(--ao-font-color-primary)",
+              margin: 0,
             }}
           >
             Main Gate
           </h1>
           <p
             style={{
-              margin: 0,
-              fontSize: "var(--ao-font-size-sm)",
               color: "var(--ao-font-color-tertiary)",
+              fontSize: "var(--ao-font-size-sm)",
+              margin: 0,
             }}
           >
             ZKTeco biometric scanner #3B

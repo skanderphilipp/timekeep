@@ -13,7 +13,7 @@ import { StatusDot } from "../status-dot";
 const meta: Meta<typeof ListItem> = {
   title: "UI/Data Display/ListItem",
   component: ListItem,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

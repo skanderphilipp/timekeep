@@ -18,7 +18,7 @@ const punchData = [
 const meta: Meta<typeof PieChart> = {
   title: "UI/Charts/PieChart",
   component: PieChart,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

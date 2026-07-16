@@ -13,7 +13,7 @@ import { Text } from "../text";
 const meta: Meta<typeof Checkbox> = {
   title: "UI/Inputs/Checkbox",
   component: Checkbox,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     checked: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -60,27 +60,27 @@ export const AllVariants: Story = {
         padding: "var(--ao-spacing-4)",
       }}
     >
-      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-4)" }}>
         <Checkbox checked={false} />
         <Text variant="body">Unchecked</Text>
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-4)" }}>
         <Checkbox checked />
         <Text variant="body">Checked</Text>
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-4)" }}>
         <Checkbox checked={false} disabled />
         <Text variant="body" color="tertiary">
           Disabled (unchecked)
         </Text>
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-4)" }}>
         <Checkbox checked disabled />
         <Text variant="body" color="tertiary">
           Disabled (checked)
         </Text>
       </div>
-      <div style={{ display: "flex", gap: "var(--ao-spacing-4)", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", gap: "var(--ao-spacing-4)" }}>
         <Checkbox indeterminate />
         <Text variant="body">Indeterminate</Text>
       </div>
@@ -97,10 +97,10 @@ export const Interactive: Story = {
     return (
       <div
         style={{
+          alignItems: "center",
           display: "flex",
           gap: "var(--ao-spacing-3)",
           padding: "var(--ao-spacing-4)",
-          alignItems: "center",
         }}
       >
         <Checkbox checked={checked} onCheckedChange={setChecked} label="Toggle me" />
@@ -131,9 +131,9 @@ export const ContextWorkingDays: Story = {
       <div
         style={{
           display: "flex",
+          flexWrap: "wrap",
           gap: "var(--ao-spacing-3)",
           padding: "var(--ao-spacing-4)",
-          flexWrap: "wrap",
         }}
       >
         {(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const).map((day) => (

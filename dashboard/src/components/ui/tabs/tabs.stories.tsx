@@ -33,7 +33,7 @@ import { Tabs, Tab, TabPanel } from "./tabs";
 const meta: Meta<typeof Tabs> = {
   title: "UI/Navigation/Tabs",
   component: Tabs,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     defaultValue: { control: "text" },
     orientation: {

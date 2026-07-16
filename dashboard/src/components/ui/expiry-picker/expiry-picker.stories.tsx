@@ -6,7 +6,7 @@ import { ExpiryPicker, type ExpiryValue } from "./expiry-picker";
 const meta: Meta<typeof ExpiryPicker> = {
   title: "UI/Inputs/ExpiryPicker",
   component: ExpiryPicker,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -17,7 +17,7 @@ function PrimaryDemo() {
   return (
     <div style={{ padding: 20 }}>
       <ExpiryPicker label="API Key Expiry" value={value} onChange={setValue} />
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ao-font-color-tertiary)" }}>
+      <div style={{ color: "var(--ao-font-color-tertiary)", fontSize: 12, marginTop: 12 }}>
         Preset: {value.preset}
         {value.customDate ? ` — ${value.customDate.toISOString().split("T")[0]}` : ""}
       </div>

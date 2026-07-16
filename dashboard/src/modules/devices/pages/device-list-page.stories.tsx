@@ -53,7 +53,7 @@ function envelopeOk<T>(data: T) {
 const meta: Meta<typeof DeviceListPage> = {
   title: "Pages/Devices/List",
   component: DeviceListPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: {
     layout: "fullscreen",
     controls: { disable: true },

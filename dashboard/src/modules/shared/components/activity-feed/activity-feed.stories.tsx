@@ -40,7 +40,7 @@ const sampleEvents = [
 const meta: Meta<typeof ActivityFeed> = {
   title: "UI/Data Display/ActivityFeed",
   component: ActivityFeed,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
 };
 
 export default meta;

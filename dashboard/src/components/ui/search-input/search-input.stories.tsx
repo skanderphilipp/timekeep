@@ -5,7 +5,7 @@ import { SearchInput } from "./search-input";
 const meta: Meta<typeof SearchInput> = {
   title: "UI/Inputs/SearchInput",
   component: SearchInput,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     placeholder: { control: "text" },
     debounceMs: { control: "number" },

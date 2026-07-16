@@ -7,7 +7,7 @@ import { NotFoundPage } from "./not-found-page";
 const meta: Meta<typeof NotFoundPage> = {
   title: "Pages/Not Found",
   component: NotFoundPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

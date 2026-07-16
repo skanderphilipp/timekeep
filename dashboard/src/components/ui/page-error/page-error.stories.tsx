@@ -10,7 +10,7 @@ import { PageError } from "./page-error";
 const meta: Meta<typeof PageError> = {
   title: "UI/Feedback/PageError",
   component: PageError,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;

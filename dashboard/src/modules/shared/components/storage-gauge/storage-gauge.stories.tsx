@@ -4,7 +4,7 @@ import { StorageGauge } from "./storage-gauge";
 const meta: Meta<typeof StorageGauge> = {
   title: "UI/Charts/StorageGauge",
   component: StorageGauge,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:composite"],
   argTypes: {
     percentage: { control: { type: "range", min: 0, max: 100, step: 1 } },
   },
@@ -24,8 +24,8 @@ export const AllVariants: Story = {
     <div
       style={{
         display: "flex",
-        gap: "var(--ao-spacing-6)",
         flexWrap: "wrap",
+        gap: "var(--ao-spacing-6)",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -43,8 +43,8 @@ export const EdgeCases: Story = {
     <div
       style={{
         display: "flex",
-        gap: "var(--ao-spacing-6)",
         flexWrap: "wrap",
+        gap: "var(--ao-spacing-6)",
         padding: "var(--ao-spacing-4)",
       }}
     >

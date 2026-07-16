@@ -17,7 +17,7 @@ import { DetailGrid, DetailItem } from "./detail-grid";
 const meta: Meta<typeof DetailGrid> = {
   title: "UI/Data Display/DetailGrid",
   component: DetailGrid,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
 };
 
 export default meta;
@@ -26,11 +26,11 @@ type Story = StoryObj<typeof DetailGrid>;
 const Container = ({ children }: { children: React.ReactNode }) => (
   <div
     style={{
-      maxWidth: 380,
+      background: "var(--ao-background-primary)",
       border: "1px solid var(--ao-border-color-light)",
       borderRadius: "var(--ao-radius-md)",
+      maxWidth: 380,
       padding: "var(--ao-spacing-4)",
-      background: "var(--ao-background-primary)",
     }}
   >
     {children}
@@ -135,15 +135,15 @@ export const AllContexts: Story = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--ao-spacing-6)",
-        padding: "var(--ao-spacing-4)",
         maxWidth: 420,
+        padding: "var(--ao-spacing-4)",
       }}
     >
       <div
         style={{
+          background: "var(--ao-background-primary)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
-          background: "var(--ao-background-primary)",
         }}
       >
         <DetailGrid title="Account">
@@ -157,9 +157,9 @@ export const AllContexts: Story = {
 
       <div
         style={{
+          background: "var(--ao-background-primary)",
           border: "1px solid var(--ao-border-color-light)",
           borderRadius: "var(--ao-radius-md)",
-          background: "var(--ao-background-primary)",
         }}
       >
         <DetailGrid title="Device">

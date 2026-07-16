@@ -10,7 +10,7 @@ import { Skeleton, SkeletonLines } from "./skeleton";
 const meta: Meta<typeof Skeleton> = {
   title: "UI/Feedback/Skeleton",
   component: Skeleton,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     variant: {
       control: "select",

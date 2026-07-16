@@ -6,7 +6,7 @@ import { Card } from "../card";
 const meta: Meta<typeof Section> = {
   title: "UI/Layout/Section",
   component: Section,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     alignment: { control: "select", options: ["left", "center"] },
   },

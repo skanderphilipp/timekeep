@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 const meta: Meta<typeof DialogComponent> = {
   title: "UI/Overlays/Dialog",
   component: DialogComponent,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     title: { control: "text" },
     description: { control: "text" },
@@ -117,7 +117,7 @@ function ContextPunchCorrectionDemo() {
         description="Manually override a punch record for HR purposes."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <p style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 14 }}>
             Employee: Omar Khalid (PIN 147)
             <br />
             Original: Check In at 09:02 (duplicate)

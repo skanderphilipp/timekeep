@@ -79,7 +79,7 @@ const meta = {
 		error: null,
 		onRetry: fn(),
 	},
-	tags: ["autodocs"],
+	tags: ["autodocs", "level:composite"],
 } satisfies Meta<typeof DataListView<SampleRow>>;
 
 export default meta;
@@ -134,15 +134,15 @@ export const Grid: Story = {
 		renderCard: (row) => (
 			<div
 				style={{
-					padding: "16px",
+					background: "var(--ao-surface)",
 					border: "1px solid var(--ao-border)",
 					borderRadius: "8px",
-					background: "var(--ao-surface)",
+					padding: "16px",
 				}}
 			>
 				<div style={{ fontWeight: 600 }}>{row.name}</div>
-				<div style={{ fontSize: "12px", color: "var(--ao-text-tertiary)" }}>{row.role}</div>
-				<div style={{ fontSize: "12px", color: "var(--ao-text-tertiary)" }}>{row.status}</div>
+				<div style={{ color: "var(--ao-text-tertiary)", fontSize: "12px" }}>{row.role}</div>
+				<div style={{ color: "var(--ao-text-tertiary)", fontSize: "12px" }}>{row.status}</div>
 			</div>
 		),
 		searchValue: "",
@@ -158,14 +158,14 @@ export const GridWithSearch: Story = {
 		renderCard: (row) => (
 			<div
 				style={{
-					padding: "16px",
+					background: "var(--ao-surface)",
 					border: "1px solid var(--ao-border)",
 					borderRadius: "8px",
-					background: "var(--ao-surface)",
+					padding: "16px",
 				}}
 			>
 				<div style={{ fontWeight: 600 }}>{row.name}</div>
-				<div style={{ fontSize: "12px", color: "var(--ao-text-tertiary)" }}>{row.role}</div>
+				<div style={{ color: "var(--ao-text-tertiary)", fontSize: "12px" }}>{row.role}</div>
 			</div>
 		),
 		searchValue: "Alice",
@@ -232,7 +232,7 @@ export const CustomView: Story = {
 		renderCustomView: (view) => {
 			if (view === "timeline") {
 				return (
-					<div style={{ padding: 32, textAlign: "center", border: "1px dashed var(--ao-border)", borderRadius: 8 }}>
+					<div style={{ border: "1px dashed var(--ao-border)", borderRadius: 8, padding: 32, textAlign: "center" }}>
 						<h3>Timeline View</h3>
 						<p style={{ color: "var(--ao-text-tertiary)" }}>Custom timeline content would render here.</p>
 					</div>

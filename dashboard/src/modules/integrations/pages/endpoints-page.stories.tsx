@@ -49,7 +49,7 @@ function envelopeOk(data: unknown) {
 const meta: Meta<typeof EndpointsPage> = {
   title: "Pages/Endpoints",
   component: EndpointsPage,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:page"],
   parameters: { layout: "fullscreen" },
 };
 

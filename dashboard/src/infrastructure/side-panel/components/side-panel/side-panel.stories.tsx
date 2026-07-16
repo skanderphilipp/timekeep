@@ -6,7 +6,7 @@ import { DetailGrid, DetailItem } from "@/components/ui/detail-grid";
 const meta: Meta<typeof SidePanel> = {
   title: "UI/Overlays/SidePanel",
   component: SidePanel,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:layout"],
 };
 
 export default meta;
@@ -24,7 +24,7 @@ export const Primary: Story = {
           <DetailItem label="Status">Active</DetailItem>
           <DetailItem label="Attendance">72% this month</DetailItem>
         </DetailGrid>
-        <Text variant="caption" color="tertiary" style={{ marginTop: 16, display: "block" }}>
+        <Text variant="caption" color="tertiary" style={{ display: "block", marginTop: 16 }}>
           Today's Punches: 3 anomalies detected.
         </Text>
       </div>

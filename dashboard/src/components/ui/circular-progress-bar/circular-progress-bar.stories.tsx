@@ -4,7 +4,7 @@ import { CircularProgressBar } from "./circular-progress-bar";
 const meta: Meta<typeof CircularProgressBar> = {
   title: "UI/Feedback/CircularProgressBar",
   component: CircularProgressBar,
-  tags: ["autodocs"],
+  tags: ["autodocs", "level:primitive"],
   argTypes: {
     size: { control: { type: "range", min: 20, max: 120, step: 5 } },
     barWidth: { control: { type: "range", min: 2, max: 12, step: 1 } },
@@ -24,9 +24,9 @@ export const AllVariants: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         gap: "var(--ao-spacing-4)",
-        alignItems: "center",
         padding: "var(--ao-spacing-4)",
       }}
     >
@@ -44,16 +44,16 @@ export const ContextPageLoader: Story = {
   render: () => (
     <div
       style={{
+        alignItems: "center",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        gap: "var(--ao-spacing-4)",
         justifyContent: "center",
         padding: "var(--ao-spacing-16)",
-        gap: "var(--ao-spacing-4)",
       }}
     >
       <CircularProgressBar size={60} barWidth={6} barColor="var(--ao-accent-accent9)" />
-      <span style={{ fontSize: 14, color: "var(--ao-font-color-secondary)" }}>
+      <span style={{ color: "var(--ao-font-color-secondary)", fontSize: 14 }}>
         Loading dashboard data…
       </span>
     </div>
