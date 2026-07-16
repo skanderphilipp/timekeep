@@ -1,0 +1,93 @@
+@use "@/styles/mixins" as *;
+
+// ── Wrapper ──────────────────────────────────────────────────────────────────
+// Relative positioning so the edit button can float alongside the content
+// without affecting the content's layout width.
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+// ── Content area ─────────────────────────────────────────────────────────────
+// The consumer's display content renders inside this container.
+// Hover highlight: subtle background + rounded corners.
+// Twenty reference:
+//   StyledRecordInlineCellNormalModeOuterContainer
+//   twenty-front/src/modules/object-record/record-inline-cell/components/RecordInlineCellDisplayMode.tsx
+
+.content {
+  border-radius: var(--ao-radius-sm);
+  cursor: inherit;
+  min-width: 0;
+  padding: 0 var(--ao-spacing-0_5);
+  transition: background duration(fast) ease;
+
+  .wrapper[data-editable]:hover & {
+    background: var(--ao-background-transparent-light);
+    cursor: pointer;
+  }
+}
+
+// ── Empty field placeholder ──────────────────────────────────────────────────
+// Shows "Empty" in tertiary color when the field has no value.
+// Twenty reference: StyledEmptyField (same file)
+
+.empty {
+  color: var(--ao-font-color-light);
+}
+
+// ── Edit button ──────────────────────────────────────────────────────────────
+// Appears to the right of the content on hover.
+// Animated: fades in with a slight slide from the right.
+// Twenty reference:
+//   RecordInlineCellButton + AnimatedContainer
+//   twenty-front/src/modules/object-record/record-inline-cell/components/RecordInlineCellEditButton.tsx
+
+.editButton {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  margin-left: var(--ao-spacing-0_5);
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--ao-spacing-1)));
+  transition:
+    opacity duration(fast) ease,
+    transform duration(fast) ease;
+  pointer-events: none;
+
+  .wrapper[data-editable]:hover & {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+}
+
+// ── Edit button inner (the actual clickable button) ──────────────────────────
+// Uses the existing IconButton styles but with a size that fits inline.
+
+.editButtonInner {
+  align-items: center;
+  border-radius: var(--ao-radius-sm);
+  color: var(--ao-font-color-tertiary);
+  cursor: pointer;
+  display: inline-flex;
+  height: calc(var(--ao-spacing-4) + var(--ao-spacing-1));
+  justify-content: center;
+  width: calc(var(--ao-spacing-4) + var(--ao-spacing-1));
+
+  @include focus-ring;
+
+  &:hover {
+    background: var(--ao-background-transparent-medium);
+    color: var(--ao-font-color-primary);
+  }
+
+  svg {
+    height: var(--ao-spacing-3_5);
+    width: var(--ao-spacing-3_5);
+  }
+}

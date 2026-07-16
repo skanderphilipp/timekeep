@@ -1,0 +1,62 @@
+// ── Layout helpers ──────────────────────────────────────────────────────────────
+
+.inputWrapper {
+  margin-bottom: var(--ao-spacing-4);
+}
+
+.errorWrapper {
+  margin-top: var(--ao-spacing-3);
+}
+
+.spinnerWrapper {
+  display: flex;
+  justify-content: center;
+  padding: var(--ao-spacing-6) 0;
+}
+
+.resultsContainer {
+  margin-top: var(--ao-spacing-4);
+}
+
+.resultsList {
+  border: 1px solid var(--ao-border-color-light);
+  border-radius: var(--ao-radius-md);
+  overflow: hidden;
+  margin-top: var(--ao-spacing-2);
+}
+
+// ── Device Row ──────────────────────────────────────────────────────────────────
+
+.deviceRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-3);
+  cursor: pointer;
+  transition: background 150ms ease;
+  border-bottom: 1px solid var(--ao-border-color-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.deviceInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.deviceLabel {
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.deviceMeta {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+}
+
+.arrowIcon {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+}

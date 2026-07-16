@@ -1,0 +1,79 @@
+// ── Layout ──────────────────────────────────────────────────────────────────────
+
+.container {
+  padding: var(--ao-spacing-4);
+}
+
+.summaryHeader {
+  margin-bottom: var(--ao-spacing-4);
+}
+
+.centeredSpinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-6) 0;
+}
+
+.buttonRow {
+  display: flex;
+  gap: var(--ao-spacing-2);
+  margin-top: var(--ao-spacing-4);
+}
+
+// ── Config Summary ──────────────────────────────────────────────────────────────
+
+.configSummary {
+  background: var(--ao-background-secondary);
+  border-radius: var(--ao-radius-md);
+  font-size: var(--ao-font-size-sm);
+  padding: var(--ao-spacing-3);
+  margin-top: var(--ao-spacing-2);
+}
+
+.configRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  padding: var(--ao-spacing-1) 0;
+  border-bottom: 1px solid var(--ao-border-color-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.configRowLabel {
+  color: var(--ao-font-color-tertiary);
+  flex-shrink: 0;
+  min-width: 60px;
+}
+
+.configRowValue {
+  font-weight: var(--ao-font-weight-medium);
+}
+
+// ── Status lines ────────────────────────────────────────────────────────────────
+
+.statusLineSuccess {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  margin-top: var(--ao-spacing-3);
+  color: var(--ao-status-color-success, #22c55e);
+}
+
+.statusLineDanger {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  margin-top: var(--ao-spacing-3);
+  color: var(--ao-status-color-danger, #ef4444);
+}
+
+.statusText {
+  color: inherit;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+}

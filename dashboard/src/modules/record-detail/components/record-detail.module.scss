@@ -1,0 +1,67 @@
+/**
+ * Shared SCSS module for the record-detail module.
+ */
+
+// ── Shell ────────────────────────────────────────────────────────────────
+
+.shell {
+  padding: 0;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-2);
+  flex-wrap: wrap;
+}
+
+.headerRowMain {
+  margin-bottom: var(--ao-spacing-3);
+}
+
+.headerRowSidePanel {
+  margin-bottom: var(--ao-spacing-2);
+}
+
+// ── Fields ───────────────────────────────────────────────────────────────
+
+.sectionTitle {
+  padding: var(--ao-spacing-2) var(--ao-spacing-6) 0;
+}
+
+.sectionTitleMain {
+  margin-bottom: var(--ao-spacing-2);
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────
+
+.actionsRow {
+  margin-top: var(--ao-spacing-4);
+  display: flex;
+  gap: var(--ao-spacing-2);
+  flex-wrap: wrap;
+}
+
+// ── States ────────────────────────────────────────────────────────────────
+
+.statesShell {
+  padding: var(--ao-spacing-6);
+}
+
+.emptyState {
+  padding: var(--ao-spacing-6);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-semibold);
+}
+
+.emptyDescription {
+  font-size: var(--ao-font-size-sm);
+  color: var(--ao-font-color-tertiary);
+  margin-top: var(--ao-spacing-1);
+}

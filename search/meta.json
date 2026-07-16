@@ -1,0 +1,99 @@
+{
+  "index_settings": {
+    "docstore_compression": "lz4",
+    "docstore_blocksize": 16384
+  },
+  "segments": [
+    {
+      "segment_id": "2ab2337e-2383-43bb-8029-c7def88e3d8b",
+      "max_doc": 3,
+      "deletes": {
+        "num_deleted_docs": 1,
+        "opstamp": 531
+      }
+    },
+    {
+      "segment_id": "ea125d3e-5614-40fd-bf20-5cb7113460c5",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "fe7b0d52-64a0-4a05-ad3f-c84dcef21af9",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "11825c84-0f65-49c7-9097-1a183ebc778f",
+      "max_doc": 1,
+      "deletes": null
+    }
+  ],
+  "schema": [
+    {
+      "name": "entity_type",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "basic",
+          "fieldnorms": true,
+          "tokenizer": "raw"
+        },
+        "stored": true,
+        "fast": false
+      }
+    },
+    {
+      "name": "entity_id",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "basic",
+          "fieldnorms": true,
+          "tokenizer": "raw"
+        },
+        "stored": true,
+        "fast": false
+      }
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "position",
+          "fieldnorms": true,
+          "tokenizer": "default"
+        },
+        "stored": true,
+        "fast": false
+      }
+    },
+    {
+      "name": "subtitle",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "position",
+          "fieldnorms": true,
+          "tokenizer": "default"
+        },
+        "stored": true,
+        "fast": false
+      }
+    },
+    {
+      "name": "searchable_text",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "position",
+          "fieldnorms": true,
+          "tokenizer": "default"
+        },
+        "stored": false,
+        "fast": false
+      }
+    }
+  ],
+  "opstamp": 556
+}

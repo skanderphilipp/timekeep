@@ -142,6 +142,14 @@ impl PostgresStorage {
         .await
         .map_err(|e| Error::storage(format!("devices group_id column: {e}")))?;
 
+        // v19 — add department_ids column to device_groups for persisted department scoping
+        sqlx::query(
+            "ALTER TABLE device_groups ADD COLUMN IF NOT EXISTS department_ids TEXT NOT NULL DEFAULT ''",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("device_groups department_ids column: {e}")))?;
+
         // API keys table — for integration partners (Odoo, Zapier, SAP, etc.)
         sqlx::query(
             r#"

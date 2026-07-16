@@ -1,0 +1,89 @@
+/**
+ * EditableCell — SCSS module using design tokens only.
+ *
+ * Twenty-aligned inline editing cell styling:
+ * - Hover background: var(--ao-background-transparent-light)
+ * - Border-radius on hover: var(--ao-border-radius-md)
+ * - Proper padding: var(--ao-spacing-1) horizontal
+ * - Fixed cell height: 28px with centered content
+ * - Animated edit button on hover
+ * - Empty state placeholder
+ */
+
+// ── Display container ────────────────────────────────────────────────
+
+.cell {
+  cursor: pointer;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  outline: none;
+  width: 100%;
+  position: relative;
+  padding-left: var(--ao-spacing-1, 4px);
+  padding-right: var(--ao-spacing-1, 4px);
+  border-radius: var(--ao-border-radius-md, 6px);
+  transition: background-color 0.15s ease;
+}
+
+.cellHovered {
+  background-color: var(--ao-background-transparent-light, rgba(0, 0, 0, 0.04));
+}
+
+// ── Content wrapper ───────────────────────────────────────────────────
+
+.content {
+  align-items: center;
+  display: flex;
+  height: fit-content;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  min-height: 16px;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────
+
+.empty {
+  color: var(--ao-font-color-tertiary, #999);
+  font-size: var(--ao-font-size-sm, 13px);
+  user-select: none;
+}
+
+// ── Edit button (pencil icon) ─────────────────────────────────────────
+
+.editButton {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--ao-border-radius-sm, 4px);
+  color: var(--ao-font-color-tertiary, #999);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: var(--ao-background-transparent-light, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.editButtonVisible {
+  opacity: 1;
+  pointer-events: auto;
+}

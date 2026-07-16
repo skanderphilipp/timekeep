@@ -1,0 +1,14 @@
+declare const classNames: {
+  readonly shell: "shell";
+  readonly headerRow: "headerRow";
+  readonly headerRowMain: "headerRowMain";
+  readonly headerRowSidePanel: "headerRowSidePanel";
+  readonly sectionTitle: "sectionTitle";
+  readonly sectionTitleMain: "sectionTitleMain";
+  readonly actionsRow: "actionsRow";
+  readonly statesShell: "statesShell";
+  readonly emptyState: "emptyState";
+  readonly emptyTitle: "emptyTitle";
+  readonly emptyDescription: "emptyDescription";
+};
+export = classNames;
