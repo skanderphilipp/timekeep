@@ -8,7 +8,9 @@ export const RULE_NAME = "enforce-scss-modules";
  * 1. No raw CSS imports in .tsx files (non-module .css/.scss)
  * 2. No Tailwind/utility className strings
  * 3. No inline style={{ }} objects for structural styling
- * 4. data-slot attribute on every styled component root
+ *
+ * For data-slot enforcement (DevTools convention, not a styling concern),
+ * see the separate `require-data-slot` rule.
  *
  * Exemptions:
  * - .module.scss and .module.css imports are allowed
@@ -33,54 +35,13 @@ const UTILITY_PATTERNS = [
   /^(?:animate|transition|duration|ease|delay|transform|scale|rotate|translate)/,
 ];
 
-/** HTML elements that should carry data-slot when styled. */
-const STYLED_ELEMENTS = new Set([
-  "div",
-  "span",
-  "p",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "section",
-  "article",
-  "header",
-  "footer",
-  "nav",
-  "main",
-  "aside",
-  "button",
-  "a",
-  "li",
-  "ul",
-  "ol",
-  "dl",
-  "dt",
-  "dd",
-  "table",
-  "thead",
-  "tbody",
-  "tr",
-  "td",
-  "th",
-  "label",
-  "form",
-  "fieldset",
-  "input",
-  "textarea",
-  "select",
-]);
+const ALLOWED_MODULE_IMPORTS = /\.module\.(css|scss)$/;
 
 /**
  * Forbidden CSS imports — raw CSS/SCSS files that are NOT CSS Modules.
  * .module.scss and .module.css are ALLOWED.
  */
 const FORBIDDEN_CSS_IMPORTS = /(?<!\.module)\.(css|scss)$/;
-
-/** Allowed CSS Module import patterns. */
-const ALLOWED_MODULE_IMPORTS = /\.module\.(css|scss)$/;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -123,33 +84,6 @@ const isCssModuleFile = (filename: string): boolean => ALLOWED_MODULE_IMPORTS.te
 
 const isTestOrStory = (filename: string): boolean => /\.(test|spec|stories)\.tsx?$/.test(filename);
 
-const hasDataSlot = (attributes: any[]): boolean => {
-  return attributes.some(
-    (attr) =>
-      attr.type === "JSXAttribute" &&
-      attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "data-slot",
-  );
-};
-
-const hasClassName = (attributes: any[]): boolean => {
-  return attributes.some(
-    (attr) =>
-      attr.type === "JSXAttribute" &&
-      attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "className",
-  );
-};
-
-const hasStyle = (attributes: any[]): boolean => {
-  return attributes.some(
-    (attr) =>
-      attr.type === "JSXAttribute" &&
-      attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "style",
-  );
-};
-
 // ---------------------------------------------------------------------------
 // Rule
 // ---------------------------------------------------------------------------
@@ -168,8 +102,6 @@ export const rule = defineRule({
         "Tailwind-style className string detected. Use SCSS Modules classes from a co-located .module.scss file.",
       noInlineStyle:
         "Avoid inline style={{ }} objects for structural styling. Use SCSS Modules classes, or CSS custom properties for truly dynamic values.",
-      missingDataSlot:
-        'Styled element is missing data-slot attribute. Add data-slot="element-name" to the root element.',
     },
     schema: [
       {
@@ -303,32 +235,6 @@ export const rule = defineRule({
         }
       },
 
-      // --- Check 4: data-slot on styled elements ---
-      JSXElement: (node: any) => {
-        const openingEl = node.openingElement;
-        if (!openingEl) return;
-
-        const tagName = openingEl.name?.type === "JSXIdentifier" ? openingEl.name.name : null;
-        if (!tagName || !STYLED_ELEMENTS.has(tagName)) return;
-
-        const attrs = openingEl.attributes || [];
-
-        // Only flag if element has className but no data-slot
-        if (hasClassName(attrs) && !hasDataSlot(attrs)) {
-          context.report({
-            node: openingEl,
-            messageId: "missingDataSlot",
-          });
-        }
-
-        // Also flag if element has style but no data-slot
-        if (hasStyle(attrs) && !hasDataSlot(attrs)) {
-          context.report({
-            node: openingEl,
-            messageId: "missingDataSlot",
-          });
-        }
-      },
     };
   },
 });

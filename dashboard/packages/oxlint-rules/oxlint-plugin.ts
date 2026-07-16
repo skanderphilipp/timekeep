@@ -91,6 +91,14 @@ import {
   rule as noDomainTypesInDataRenderer,
   RULE_NAME as noDomainTypesInDataRendererName,
 } from "./rules/no-domain-types-in-data-renderer";
+import {
+  rule as noSchemaTypeRedeclaration,
+  RULE_NAME as noSchemaTypeRedeclarationName,
+} from "./rules/no-schema-type-redeclaration";
+import {
+  rule as requireDataSlot,
+  RULE_NAME as requireDataSlotName,
+} from "./rules/require-data-slot";
 
 export default definePlugin({
   meta: { name: "bentech" },
@@ -120,5 +128,7 @@ export default definePlugin({
     [maxLinesPerFileRuleName]: maxLinesPerFile,
     [requireDataListViewName]: requireDataListView,
     [noDomainTypesInDataRendererName]: noDomainTypesInDataRenderer,
+    [noSchemaTypeRedeclarationName]: noSchemaTypeRedeclaration,
+    [requireDataSlotName]: requireDataSlot,
   },
 });
