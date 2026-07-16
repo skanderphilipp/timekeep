@@ -74,6 +74,10 @@ pub struct AddDeviceRequest {
     /// Per-device poll interval override in seconds.
     #[serde(default)]
     pub poll_interval_secs: Option<u32>,
+
+    /// Device group ID for organizational grouping.
+    #[serde(default)]
+    pub group_id: Option<String>,
 }
 
 fn default_port() -> u16 {
@@ -106,6 +110,9 @@ pub struct UpdateDeviceRequest {
 
     /// Per-device poll interval override
     pub poll_interval_secs: Option<u32>,
+
+    /// Device group ID for organizational grouping.
+    pub group_id: Option<String>,
 }
 
 /// Request to scan a subnet for biometric devices.
@@ -542,9 +549,12 @@ pub struct CreateEmployeeRequest {
     pub pin: String,
     /// Display name (e.g. "Ahmed Al-Sabah").
     pub name: String,
-    /// Optional department for grouping.
+    /// Department UUID for cross-entity navigation.
+    ///
+    /// When provided, the department name is resolved and returned as the
+    /// denormalized `department` display field on the response.
     #[serde(default)]
-    pub department: Option<String>,
+    pub department_id: Option<String>,
     /// External ERP reference (Odoo/SAP employee ID).
     #[serde(default)]
     pub external_id: Option<String>,
@@ -555,8 +565,41 @@ pub struct CreateEmployeeRequest {
 pub struct CreateDepartmentRequest {
     /// Unique department name (e.g. "Engineering", "Warehouse").
     pub name: String,
-    /// Optional department-specific work policy. Null = inherit org default.
+    /// FK to a work policy template. Takes precedence over inline `work_policy`.
+    pub work_policy_id: Option<String>,
+    /// Optional department-specific work policy (legacy inline JSON).
+    /// Null = inherit org default.
     pub work_policy: Option<WorkPolicyInput>,
+}
+
+/// Create a new device group.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateDeviceGroupRequest {
+    /// Unique group name (e.g. "onboarding", "staff").
+    pub name: String,
+    /// Optional human-readable description.
+    pub description: Option<String>,
+    /// Department IDs to assign. Empty = all departments.
+    #[serde(default)]
+    pub department_ids: Vec<String>,
+}
+
+/// Update an existing device group.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct UpdateDeviceGroupRequest {
+    /// New group name.
+    pub name: Option<String>,
+    /// New description.
+    pub description: Option<String>,
+    /// New department IDs. Omitted = keep existing.
+    pub department_ids: Option<Vec<String>>,
+}
+
+/// Set a device's group membership.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct SetDeviceGroupRequest {
+    /// Group ID to assign, or null/absent to remove.
+    pub group_id: Option<String>,
 }
 
 /// Update an existing department.
@@ -564,6 +607,10 @@ pub struct CreateDepartmentRequest {
 pub struct UpdateDepartmentRequest {
     /// New department name.
     pub name: Option<String>,
+    /// FK to a work policy template. Takes precedence over inline `work_policy`.
+    /// Set to `null` to clear template assignment.
+    #[serde(default, deserialize_with = "deserialize_optional_string")]
+    pub work_policy_id: Option<Option<String>>,
     /// New work policy. Null = clear custom policy and inherit org default.
     #[serde(default, deserialize_with = "deserialize_optional_work_policy")]
     pub work_policy: Option<Option<WorkPolicyInput>>,
@@ -611,7 +658,65 @@ fn deserialize_optional_work_policy<'de, D>(
 where
     D: serde::Deserializer<'de>,
 {
-    Ok(Option::<Option<WorkPolicyInput>>::deserialize(deserializer)?)
+    Option::<Option<WorkPolicyInput>>::deserialize(deserializer)
+}
+
+/// Custom deserializer for `Option<Option<String>>` —
+/// distinguishes "field absent" from "field set to null".
+fn deserialize_optional_string<'de, D>(deserializer: D) -> Result<Option<Option<String>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Option::<Option<String>>::deserialize(deserializer)
+}
+
+// ─── Work Policy Template Requests ────────────────────────────────────
+
+/// Create a new work policy template.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateWorkPolicyTemplateRequest {
+    /// Human-readable title (e.g. "Night Shift").
+    pub title: String,
+    /// Optional description shown in the UI.
+    pub description: Option<String>,
+    /// Work start time in HH:MM format.
+    pub work_start: String,
+    /// Work end time in HH:MM format.
+    pub work_end: String,
+    /// Late threshold in minutes (default: 15).
+    #[serde(default = "default_late_threshold")]
+    pub late_threshold_minutes: u32,
+    /// Minimum hours for a full work day (default: 4.0).
+    #[serde(default = "default_min_hours")]
+    pub min_hours_for_full_day: f64,
+    /// Hours after which overtime starts (default: 8.0).
+    #[serde(default = "default_overtime_after")]
+    pub daily_overtime_after_hours: f64,
+    /// Working days: [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
+    #[serde(default = "default_working_days")]
+    pub working_days: [bool; 7],
+}
+
+/// Update an existing work policy template.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct UpdateWorkPolicyTemplateRequest {
+    /// New title.
+    pub title: Option<String>,
+    /// New description.
+    #[serde(default, deserialize_with = "deserialize_optional_string")]
+    pub description: Option<Option<String>>,
+    /// New work start time.
+    pub work_start: Option<String>,
+    /// New work end time.
+    pub work_end: Option<String>,
+    /// New late threshold in minutes.
+    pub late_threshold_minutes: Option<u32>,
+    /// New minimum hours for a full day.
+    pub min_hours_for_full_day: Option<f64>,
+    /// New hours after which overtime starts.
+    pub daily_overtime_after_hours: Option<f64>,
+    /// New working days.
+    pub working_days: Option<[bool; 7]>,
 }
 
 /// Update an existing employee.
@@ -619,8 +724,11 @@ where
 pub struct UpdateEmployeeRequest {
     /// New display name.
     pub name: Option<String>,
-    /// New department.
-    pub department: Option<String>,
+    /// New department UUID for cross-entity navigation.
+    ///
+    /// When provided, the department name is resolved and stored as the
+    /// denormalized `department` display field on the response.
+    pub department_id: Option<String>,
     /// New external ERP reference.
     pub external_id: Option<String>,
 }
@@ -631,11 +739,11 @@ pub struct EmployeeListQuery {
     #[serde(flatten)]
     pub params: timekeep_core::ListParams,
     /// Full-text search query (uses Tantivy for smart search:
-    /// typo-tolerant, ranked, across name/pin/department/external_id).
+    /// typo-tolerant, ranked, across name/pin/external_id).
     /// Takes priority over `params.search` when both are present.
     pub q: Option<String>,
-    /// Filter by department name (exact match).
-    pub department: Option<String>,
+    /// Filter by department UUID (exact match).
+    pub department_id: Option<String>,
     /// Filter by active status ("true" or "false").
     pub active: Option<String>,
 }

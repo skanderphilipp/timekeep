@@ -13,6 +13,7 @@ pub(super) struct UserListRow {
 }
 
 impl SqliteStorage {
+    #[allow(clippy::too_many_arguments)]
     pub(super) async fn upsert_user(
         &self,
         device_sn: &str,

@@ -309,6 +309,25 @@ impl SqliteStorage {
 
     // ── Storage trait methods ───────────────────────────────
 
+    pub(super) async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
+        let row = sqlx::query_as::<_, PunchRow>(
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    COALESCE(e.name, u.name) as employee_name,
+                    d.label as device_label
+             FROM attendance_punches p
+             LEFT JOIN users u ON u.pin = p.user_pin
+             LEFT JOIN employees e ON e.pin = p.user_pin
+             LEFT JOIN devices d ON d.serial_number = p.device_sn
+             WHERE p.id = ?",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("get punch: {e}")))?;
+
+        row.map(|r| r.into_punch()).transpose()
+    }
+
     pub(super) async fn store_punch(&self, punch: &AttendancePunch) -> Result<(), Error> {
         let dedup_id = punch.generate_deduplication_id();
 
@@ -1270,5 +1289,29 @@ pub(crate) mod tests {
         let results = storage.query_punches(&filter).await.unwrap();
 
         assert!(results.is_empty());
+    }
+
+    // ─── Single Punch Lookup ───────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_get_punch_returns_existing() {
+        let storage = crate::test_storage().await;
+        let punch = test_punch("145", "SN001", 1_752_129_600, PunchStatus::CheckIn);
+        storage.store_punch(&punch).await.unwrap();
+
+        let found = storage.get_punch(&punch.id).await.expect("should get");
+        assert!(found.is_some());
+        let found = found.unwrap();
+        assert_eq!(found.id, punch.id);
+        assert_eq!(found.user_pin, "145");
+        assert_eq!(found.device_sn, "SN001");
+        assert_eq!(found.status, PunchStatus::CheckIn);
+    }
+
+    #[tokio::test]
+    async fn test_get_punch_returns_none_for_missing() {
+        let storage = crate::test_storage().await;
+        let found = storage.get_punch("nonexistent-id").await.expect("should query");
+        assert!(found.is_none());
     }
 }

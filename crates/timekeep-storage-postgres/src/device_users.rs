@@ -13,6 +13,7 @@ pub(super) struct UserListRowPg {
 }
 
 impl PostgresStorage {
+    #[allow(clippy::too_many_arguments)]
     pub(super) async fn upsert_user(
         &self,
         device_sn: &str,

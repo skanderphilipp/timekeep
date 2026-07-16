@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 
 import { createServer } from "@/testing/msw/server";
 import { createRenderWrapper } from "@/testing/render-with-providers";
@@ -36,7 +36,6 @@ const sampleColumns: ColumnDefinition[] = [
 		type: "text",
 		metadata: { fieldName: "name", isSortable: true } as TextFieldMetadata,
 		isVisible: true,
-		isLabelIdentifier: true,
 	},
 	{
 		id: "role",
@@ -65,8 +64,6 @@ function baseProps(overrides = {}) {
 // ── Tests ───────────────────────────────────────────────────────────────
 
 describe("DataListView", () => {
-	// ── Table mode ─────────────────────────────────────────────────────
-
 	describe("table layout", () => {
 		it("renders the data table with rows", () => {
 			render(<DataListView {...baseProps()} />);
@@ -119,8 +116,6 @@ describe("DataListView", () => {
 		});
 	});
 
-	// ── Grid mode ──────────────────────────────────────────────────────
-
 	describe("grid layout", () => {
 		it("renders cards via renderCard", () => {
 			render(
@@ -155,13 +150,10 @@ describe("DataListView", () => {
 		});
 	});
 
-	// ── States ─────────────────────────────────────────────────────────
-
 	describe("states", () => {
 		it("shows loading state when isLoading and no data", () => {
 			render(<DataListView {...baseProps({ isLoading: true, data: [] })} />);
 
-			// ListLoading renders a spinner
 			const spinner = document.querySelector('[data-slot="spinner"]');
 			expect(spinner).toBeDefined();
 		});
@@ -174,7 +166,6 @@ describe("DataListView", () => {
 				/>,
 			);
 
-			// PageError renders "Server Unreachable" title
 			expect(screen.getByText("Server Unreachable")).toBeDefined();
 		});
 
@@ -195,8 +186,6 @@ describe("DataListView", () => {
 			expect(screen.getByTestId("custom-empty")).toBeDefined();
 		});
 	});
-
-	// ── Filter chips ───────────────────────────────────────────────────
 
 	it("renders active filter chips in the TopBar bottom row", () => {
 		render(
@@ -233,8 +222,6 @@ describe("DataListView", () => {
 		expect(screen.getByText("Reset")).toBeDefined();
 	});
 
-	// ── Custom views ────────────────────────────────────────────────
-
 	it("renders custom view when currentView is not table", () => {
 		render(
 			<DataListView
@@ -253,5 +240,73 @@ describe("DataListView", () => {
 		);
 
 		expect(screen.getByTestId("timeline-view")).toBeDefined();
+	});
+
+	// ═══════════════════════════════════════════════════════════════════
+	// Inline editing
+	// ═══════════════════════════════════════════════════════════════════
+
+	describe("inline editing", () => {
+		it("wraps editable columns in EditableCell when editingConfig is provided", () => {
+			const onPersist = vi.fn();
+			const editableColumns: ColumnDefinition[] = sampleColumns.map((col) => ({
+				...col,
+				editable: col.fieldId === "name",
+			}));
+
+			render(
+				<DataListView
+					{...baseProps({ columns: editableColumns })}
+					editingConfig={{
+						onPersist,
+						editableColumns: ["name"],
+					}}
+				/>,
+			);
+
+			const cell = document.querySelector('div[aria-label="Edit name"]') as HTMLElement;
+			expect(cell).toBeDefined();
+			expect(screen.getByText("Alice")).toBeDefined();
+		});
+
+		it("enters edit mode on click", () => {
+			const onPersist = vi.fn();
+			const editableColumns: ColumnDefinition[] = sampleColumns.map((col) => ({
+				...col,
+				editable: col.fieldId === "name",
+			}));
+
+			render(
+				<DataListView
+					{...baseProps({ columns: editableColumns })}
+					editingConfig={{
+						onPersist,
+						editableColumns: ["name"],
+					}}
+				/>,
+			);
+
+			const cell = document.querySelector('div[aria-label="Edit name"]') as HTMLElement;
+			fireEvent.click(cell);
+
+			const input = screen.queryByRole("textbox") as HTMLInputElement;
+			expect(input).not.toBeNull();
+			expect(input.value).toBe("Alice");
+		});
+
+		it("does not wrap non-editable columns", () => {
+			render(
+				<DataListView
+					{...baseProps()}
+					editingConfig={{
+						onPersist: vi.fn(),
+						editableColumns: ["name"],
+					}}
+				/>,
+			);
+
+			expect(screen.queryByRole("button")).toBeNull();
+			expect(screen.getByText("Alice")).toBeDefined();
+		});
 	});
 });

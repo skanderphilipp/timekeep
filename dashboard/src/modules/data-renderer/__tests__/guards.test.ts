@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   isFieldText,
-  isFieldDeviceSn,
-  isFieldUserPin,
+  isFieldNumber,
   isFieldTimestamp,
   isFieldStatus,
-  isFieldDirection,
+  isFieldEnum,
+  isFieldReference,
 } from "../guards";
 import type { FieldDefinition, FieldMetadata } from "../types";
 
@@ -23,31 +23,21 @@ describe("Field type guards", () => {
     });
 
     it("returns false for non-text fields", () => {
-      expect(isFieldText(makeField("device_sn"))).toBe(false);
+      expect(isFieldText(makeField("number"))).toBe(false);
       expect(isFieldText(makeField("timestamp"))).toBe(false);
       expect(isFieldText(makeField("status"))).toBe(false);
+      expect(isFieldText(makeField("reference"))).toBe(false);
     });
   });
 
-  describe("isFieldDeviceSn", () => {
-    it("returns true for device_sn fields", () => {
-      expect(isFieldDeviceSn(makeField("device_sn"))).toBe(true);
+  describe("isFieldNumber", () => {
+    it("returns true for number fields", () => {
+      expect(isFieldNumber(makeField("number"))).toBe(true);
     });
 
-    it("returns false for non-device_sn fields", () => {
-      expect(isFieldDeviceSn(makeField("text"))).toBe(false);
-      expect(isFieldDeviceSn(makeField("user_pin"))).toBe(false);
-    });
-  });
-
-  describe("isFieldUserPin", () => {
-    it("returns true for user_pin fields", () => {
-      expect(isFieldUserPin(makeField("user_pin"))).toBe(true);
-    });
-
-    it("returns false for non-user_pin fields", () => {
-      expect(isFieldUserPin(makeField("text"))).toBe(false);
-      expect(isFieldUserPin(makeField("device_sn"))).toBe(false);
+    it("returns false for non-number fields", () => {
+      expect(isFieldNumber(makeField("text"))).toBe(false);
+      expect(isFieldNumber(makeField("timestamp"))).toBe(false);
     });
   });
 
@@ -69,18 +59,31 @@ describe("Field type guards", () => {
 
     it("returns false for non-status fields", () => {
       expect(isFieldStatus(makeField("text"))).toBe(false);
-      expect(isFieldStatus(makeField("direction"))).toBe(false);
+      expect(isFieldStatus(makeField("enum"))).toBe(false);
+      expect(isFieldStatus(makeField("reference"))).toBe(false);
     });
   });
 
-  describe("isFieldDirection", () => {
-    it("returns true for direction fields", () => {
-      expect(isFieldDirection(makeField("direction"))).toBe(true);
+  describe("isFieldEnum", () => {
+    it("returns true for enum fields", () => {
+      expect(isFieldEnum(makeField("enum"))).toBe(true);
     });
 
-    it("returns false for non-direction fields", () => {
-      expect(isFieldDirection(makeField("text"))).toBe(false);
-      expect(isFieldDirection(makeField("status"))).toBe(false);
+    it("returns false for non-enum fields", () => {
+      expect(isFieldEnum(makeField("text"))).toBe(false);
+      expect(isFieldEnum(makeField("status"))).toBe(false);
+    });
+  });
+
+  describe("isFieldReference", () => {
+    it("returns true for reference fields", () => {
+      expect(isFieldReference(makeField("reference"))).toBe(true);
+    });
+
+    it("returns false for non-reference fields", () => {
+      expect(isFieldReference(makeField("text"))).toBe(false);
+      expect(isFieldReference(makeField("status"))).toBe(false);
+      expect(isFieldReference(makeField("enum"))).toBe(false);
     });
   });
 });

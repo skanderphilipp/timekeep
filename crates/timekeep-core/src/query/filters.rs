@@ -93,8 +93,8 @@ impl Default for DeviceFilter {
 pub struct EmployeeFilter {
     /// Shared search/sort/page params.
     pub params: ListParams,
-    /// Filter by department name (exact match).
-    pub department: Option<String>,
+    /// Filter by department UUID (exact match).
+    pub department_id: Option<String>,
     /// Filter by active status.
     pub active: Option<bool>,
 }
@@ -107,7 +107,7 @@ impl Default for EmployeeFilter {
                 sort_order: SortOrder::Asc,
                 ..Default::default()
             },
-            department: None,
+            department_id: None,
             active: None,
         }
     }

@@ -5,17 +5,19 @@ import { msg } from "@lingui/core/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { IconCircleCheck, IconCircleX } from "@tabler/icons-react";
 
-import { Button, Spinner, Banner } from "@/components/ui";
+import { Button, Spinner, Banner, Section, Text } from "@/components/ui";
 import { provisionDevice, type DeviceConfig } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
-import { useSidePanelNavigation } } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
+import { useSidePanelNavigation } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import { useToast } from "@/infrastructure/toast/toast";
 import {
   wizardDeviceConfigAtom,
   resetWizardAtomsAtom,
 } from "@/infrastructure/state/atoms/wizard";
 
-type TestStepProps = {
+import styles from "./device-register-test-step.module.scss";
+
+type DeviceRegisterTestStepProps = {
   /** Push the next step. */
   pushStep: (step: string, title: string, params?: Record<string, unknown>) => void;
   /** Go back to configure step. */
@@ -31,7 +33,7 @@ type ProvisionState = "idle" | "provisioning" | "success" | "error";
  * Shows a connection test result, then saves the device. On success,
  * invalidates the devices list query and closes the side panel.
  */
-export function DeviceRegisterTestStep({ goBack }: TestStepProps) {
+export function DeviceRegisterTestStep({ goBack }: DeviceRegisterTestStepProps) {
   const { _ } = useLingui();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -72,75 +74,50 @@ export function DeviceRegisterTestStep({ goBack }: TestStepProps) {
   }, [resetWizard, close]);
 
   return (
-    <div style={{ padding: "var(--ao-spacing-4)" }}>
+    <Section className={styles.container}>
       {/* ── Summary of what will be provisioned ─────────────────────────── */}
-      <div style={{ marginBottom: "var(--ao-spacing-4)" }}>
-        <p style={{
-          color: "var(--ao-font-color-secondary)",
-          fontSize: "var(--ao-font-size-sm)",
-          margin: "0 0 var(--ao-spacing-2)",
-        }}>
-          {_(msg`Ready to register the following device:`)}
-        </p>
-        <div style={{
-          background: "var(--ao-background-secondary)",
-          borderRadius: "var(--ao-radius-md)",
-          fontSize: "var(--ao-font-size-sm)",
-          padding: "var(--ao-spacing-3)",
-        }}>
-          <ConfigRow label={_(msg`Serial`)} value={config.serial_number ?? "—"} />
-          <ConfigRow label={_(msg`Label`)} value={config.label ?? config.serial_number ?? "—"} />
-          <ConfigRow label={_(msg`Host`)} value={config.host ?? "—"} />
-          <ConfigRow label={_(msg`Port`)} value={String(config.port ?? 4370)} />
-          <ConfigRow label={_(msg`Comm Key`)} value={String(config.comm_key ?? 0)} />
-          <ConfigRow label={_(msg`Push`)} value={config.push_enabled ? _(msg`Enabled`) : _(msg`Disabled`)} isLast />
-        </div>
-      </div>
+      <Text as="span" variant="caption" color="secondary" className={styles.summaryHeader}>
+        {_(msg`Ready to register the following device:`)}
+      </Text>
+      <Section className={styles.configSummary}>
+        <ConfigRow label={_(msg`Serial`)} value={config.serial_number ?? "—"} />
+        <ConfigRow label={_(msg`Label`)} value={config.label ?? config.serial_number ?? "—"} />
+        <ConfigRow label={_(msg`Host`)} value={config.host ?? "—"} />
+        <ConfigRow label={_(msg`Port`)} value={String(config.port ?? 4370)} />
+        <ConfigRow label={_(msg`Comm Key`)} value={String(config.comm_key ?? 0)} />
+        <ConfigRow label={_(msg`Push`)} value={config.push_enabled ? _(msg`Enabled`) : _(msg`Disabled`)} />
+      </Section>
 
-      {/* ── State: Idle / Provisioning ──────────────────────────────────── */}
+      {/* ── State: Idle ─────────────────────────────────────────────────── */}
       {state === "idle" && (
         <Button variant="primary" fullWidth onClick={handleProvision}>
           {_(msg`Provision & Test Connection`)}
         </Button>
       )}
 
+      {/* ── State: Provisioning ──────────────────────────────────────────── */}
       {state === "provisioning" && (
-        <div style={{
-          alignItems: "center",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--ao-spacing-3)",
-          padding: "var(--ao-spacing-6) 0",
-        }}>
+        <Section alignment="center" className={styles.centeredSpinner}>
           <Spinner />
-          <p style={{
-            color: "var(--ao-font-color-secondary)",
-            fontSize: "var(--ao-font-size-sm)",
-          }}>
+          <Text as="span" variant="caption" color="secondary">
             {_(msg`Provisioning device…`)}
-          </p>
-        </div>
+          </Text>
+        </Section>
       )}
 
       {/* ── State: Success ──────────────────────────────────────────────── */}
       {state === "success" && result && (
-        <div>
+        <Section>
           <Banner variant="success" title={_(msg`Device Registered`)}>
             {_(msg`${result.label ?? result.serial_number} is now connected and active.`)}
           </Banner>
-          <div style={{
-            alignItems: "center",
-            color: "var(--ao-status-color-success, #22c55e)",
-            display: "flex",
-            gap: "var(--ao-spacing-2)",
-            marginTop: "var(--ao-spacing-3)",
-          }}>
+          <div data-slot="test-status-success" className={styles.statusLineSuccess}>
             <IconCircleCheck size={16} />
-            <span style={{ fontSize: "var(--ao-font-size-sm)", fontWeight: "var(--ao-font-weight-medium)" }}>
+            <Text as="span" variant="caption" weight="medium" className={styles.statusText}>
               {_(msg`Connection test passed`)}
-            </span>
+            </Text>
           </div>
-          <div style={{ marginTop: "var(--ao-spacing-4)", display: "flex", gap: "var(--ao-spacing-2)" }}>
+          <div data-slot="test-actions" className={styles.buttonRow}>
             <Button variant="secondary" onClick={goBack}>
               {_(msg`Back`)}
             </Button>
@@ -148,28 +125,22 @@ export function DeviceRegisterTestStep({ goBack }: TestStepProps) {
               {_(msg`Done`)}
             </Button>
           </div>
-        </div>
+        </Section>
       )}
 
       {/* ── State: Error ────────────────────────────────────────────────── */}
       {state === "error" && (
-        <div>
+        <Section>
           <Banner variant="danger" title={_(msg`Provisioning Failed`)}>
             {errorMsg}
           </Banner>
-          <div style={{
-            alignItems: "center",
-            color: "var(--ao-status-color-danger, #ef4444)",
-            display: "flex",
-            gap: "var(--ao-spacing-2)",
-            marginTop: "var(--ao-spacing-3)",
-          }}>
+          <div data-slot="test-status-error" className={styles.statusLineDanger}>
             <IconCircleX size={16} />
-            <span style={{ fontSize: "var(--ao-font-size-sm)", fontWeight: "var(--ao-font-weight-medium)" }}>
+            <Text as="span" variant="caption" weight="medium" className={styles.statusText}>
               {_(msg`Connection test failed`)}
-            </span>
+            </Text>
           </div>
-          <div style={{ marginTop: "var(--ao-spacing-4)", display: "flex", gap: "var(--ao-spacing-2)" }}>
+          <div data-slot="test-actions" className={styles.buttonRow}>
             <Button variant="secondary" onClick={goBack}>
               {_(msg`Back to Configure`)}
             </Button>
@@ -177,9 +148,9 @@ export function DeviceRegisterTestStep({ goBack }: TestStepProps) {
               {_(msg`Retry`)}
             </Button>
           </div>
-        </div>
+        </Section>
       )}
-    </div>
+    </Section>
   );
 }
 
@@ -188,30 +159,18 @@ export function DeviceRegisterTestStep({ goBack }: TestStepProps) {
 function ConfigRow({
   label,
   value,
-  isLast = false,
 }: {
   label: string;
   value: string;
-  isLast?: boolean;
 }) {
   return (
-    <div style={{
-      alignItems: "center",
-      borderBottom: isLast ? "none" : "1px solid var(--ao-border-color-light)",
-      display: "flex",
-      gap: "var(--ao-spacing-2)",
-      padding: "var(--ao-spacing-1) 0",
-    }}>
-      <span style={{
-        color: "var(--ao-font-color-tertiary)",
-        flexShrink: 0,
-        minWidth: 60,
-      }}>
+    <div data-slot="config-row" className={styles.configRow}>
+      <Text as="span" variant="caption" color="tertiary" className={styles.configRowLabel}>
         {label}
-      </span>
-      <span style={{ fontWeight: "var(--ao-font-weight-medium)" }}>
+      </Text>
+      <Text as="span" variant="caption" weight="medium" className={styles.configRowValue}>
         {value}
-      </span>
+      </Text>
     </div>
   );
 }

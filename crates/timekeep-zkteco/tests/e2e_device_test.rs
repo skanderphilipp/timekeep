@@ -110,6 +110,7 @@ async fn test_create_and_connect_device() {
         vendor: "zkteco".into(),
         location: Some("HQ Floor 1".into()),
         poll_interval_secs: None,
+        group_id: None,
     };
 
     let mut device = provider.create_device(config, event_bus).await.expect("create device");
@@ -140,6 +141,7 @@ async fn test_device_info_rich() {
         vendor: "zkteco".into(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     let mut device = provider.create_device(config, event_bus).await.expect("create");
@@ -211,6 +213,7 @@ async fn test_users_list() {
         vendor: "zkteco".into(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     let mut device = provider.create_device(config, event_bus).await.expect("create");
@@ -260,6 +263,7 @@ async fn test_attendance_records() {
         vendor: "zkteco".into(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     let mut device = provider.create_device(config, event_bus).await.expect("create");

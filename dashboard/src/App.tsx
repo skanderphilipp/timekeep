@@ -8,17 +8,19 @@ import { SetupPage } from "@/modules/auth/pages/setup-page";
 import { DashboardPage } from "@/modules/dashboard/pages/dashboard-page";
 import { DeviceListPage } from "@/modules/devices/pages/device-list-page";
 import { DeviceDetailPage } from "@/modules/devices/pages/device-detail-page";
-import { DeviceFormPage } from "@/modules/devices/pages/device-form-page";
 import { PunchQueryPage } from "@/modules/punches/pages/punch-query-page";
 import { ReportsPage } from "@/modules/reports/pages/reports-page";
 import { DepartmentsPage } from "@/modules/departments/pages/departments-page";
+import { DepartmentDetailPage } from "@/modules/departments/pages/department-detail-page";
+import { WorkPoliciesPage } from "@/modules/work-policies/pages/work-policies-page";
+import { DeviceGroupsPage } from "@/modules/device-groups/pages/device-groups-page";
+import { DeviceGroupDetailPage } from "@/modules/device-groups/pages/device-group-detail-page";
 import { SettingsPage } from "@/modules/settings/pages/settings-page";
 import { ApiKeysPage } from "@/modules/apikeys/pages/api-keys-page";
 import { EndpointsPage } from "@/modules/integrations/pages/endpoints-page";
 import { AuditLogPage } from "@/modules/audit/pages/audit-log-page";
 import { UsersPage } from "@/modules/users/pages/users-page";
 import { EmployeeListPage } from "@/modules/employees/pages/employee-list-page";
-import { EmployeeFormPage } from "@/modules/employees/pages/employee-form-page";
 import { EmployeeDetailPage } from "@/modules/employees/pages/employee-detail-page";
 import { NotFoundPage } from "@/modules/navigation/pages/not-found-page";
 import { AppShell } from "./app-shell";
@@ -36,49 +38,49 @@ export function App() {
               <Routes>
                 <Route path={AppRoute.dashboard} element={<DashboardPage />} />
                 <Route path={AppRoute.devices.list} element={<DeviceListPage />} />
-                <Route
-                  path={AppRoute.devices.new}
-                  element={
-                    <RequireRole minimum="admin">
-                      <DeviceFormPage />
-                    </RequireRole>
-                  }
-                />
                 {/* Device detail (viewer+) */}
                 <Route path="/devices/:sn" element={<DeviceDetailPage />} />
-                <Route
-                  path="/devices/:sn/edit"
-                  element={
-                    <RequireRole minimum="admin">
-                      <DeviceFormPage />
-                    </RequireRole>
-                  }
-                />
                 <Route path={AppRoute.punches.list} element={<PunchQueryPage />} />
                 <Route path={AppRoute.employees.list} element={<EmployeeListPage />} />
                 <Route path="/employees/:id" element={<EmployeeDetailPage />} />
-                <Route
-                  path={AppRoute.employees.new}
-                  element={
-                    <RequireRole minimum="admin">
-                      <EmployeeFormPage />
-                    </RequireRole>
-                  }
-                />
-                <Route
-                  path="/employees/:id/edit"
-                  element={
-                    <RequireRole minimum="admin">
-                      <EmployeeFormPage />
-                    </RequireRole>
-                  }
-                />
                 <Route path={AppRoute.reports} element={<ReportsPage />} />
+                <Route
+                  path={AppRoute.devices.groups}
+                  element={
+                    <RequireRole minimum="admin">
+                      <DeviceGroupsPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path="/devices/groups/:id"
+                  element={
+                    <RequireRole minimum="admin">
+                      <DeviceGroupDetailPage />
+                    </RequireRole>
+                  }
+                />
                 <Route
                   path={AppRoute.departments.list}
                   element={
                     <RequireRole minimum="admin">
                       <DepartmentsPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path="/departments/:id"
+                  element={
+                    <RequireRole minimum="admin">
+                      <DepartmentDetailPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path={AppRoute.workPolicies.list}
+                  element={
+                    <RequireRole minimum="admin">
+                      <WorkPoliciesPage />
                     </RequireRole>
                   }
                 />

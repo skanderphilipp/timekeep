@@ -1,30 +1,46 @@
-import { IconUsers } from "@tabler/icons-react";
+import { IconUsers, IconUsersPlus } from "@tabler/icons-react";
+import { useLingui } from "@lingui/react";
+import { msg } from "@lingui/core/macro";
 
 import { PageShell, PageBar } from "@/components/layout";
-import { EmployeeDetailView } from "../components/employee-detail-view";
+import { RecordDetailRenderer } from "@/modules/record-detail";
 import { useEmployeeDetailPage } from "../hooks/use-employee-detail-page";
+import { useEmployeeSync } from "../hooks/use-employee-sync";
+import { Button } from "@/components/ui";
 
 /**
  * Employee detail page — thin composite.
  *
- * All logic (route params, data fetching, label derivation) lives in
- * {@link useEmployeeDetailPage}. The page only wires the result to
- * layout components.
+ * Delegates all detail rendering to {@link RecordDetailRenderer} (ADR-008).
+ * Only the page shell and the domain-specific Sync to Devices button stay here.
+ * The renderer auto-fetches attendance KPIs and log.
  */
 export function EmployeeDetailPage() {
   const page = useEmployeeDetailPage();
+  const { _ } = useLingui();
+  const syncToDevices = useEmployeeSync(page.id);
 
   return (
     <PageShell
       pageLabel={page.pageLabel}
-      header={
-        <PageBar
-          title={page.title}
-          icon={IconUsers}
-        />
-      }
+      header={<PageBar title={page.title} icon={IconUsers} />}
     >
-      <EmployeeDetailView employeeId={page.id} />
+      <RecordDetailRenderer
+        entity="employee"
+        entityId={page.id}
+        isInSidePanel={false}
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<IconUsersPlus size={16} />}
+            onClick={() => syncToDevices.mutate()}
+            loading={syncToDevices.isPending}
+          >
+            {_(msg`Sync to Devices`)}
+          </Button>
+        }
+      />
     </PageShell>
   );
 }

@@ -322,6 +322,7 @@ impl Engine {
                         vendor: probe.vendor.clone(),
                         location: None,
                         poll_interval_secs: None,
+                        group_id: None,
                     };
                     for storage in &self.storages {
                         if let Err(e) = storage.upsert_device_config(&config).await {
@@ -483,6 +484,12 @@ impl Storage for NoopStorage {
     }
     async fn punch_exists(&self, _dedup_id: &str) -> Result<bool, Error> {
         Ok(false)
+    }
+    async fn get_punch(
+        &self,
+        _id: &str,
+    ) -> Result<Option<timekeep_core::model::AttendancePunch>, Error> {
+        Ok(None)
     }
 }
 

@@ -43,6 +43,8 @@ pub use model::{
     Department,
     DepartmentId,
     DeviceConfig,
+    DeviceGroup,
+    DeviceGroupId,
     IntegrationEndpoint,
     IntegrationKind,
     PermissionSet,
@@ -82,16 +84,16 @@ pub use query::filters::{
 };
 pub use query::schema::{
     AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEPARTMENT_SCHEMA, DEVICE_SCHEMA, EMPLOYEE_SCHEMA,
-    EntitySchema, PUNCH_SCHEMA, entity_schema,
+    EntitySchema, PUNCH_SCHEMA, WORK_POLICY_TEMPLATE_SCHEMA, entity_schema,
 };
 pub use query::search::{SearchHit, SearchQuery, SearchResults};
 pub use query::{ListParams, ListResult, SortOrder, sanitize_search};
 
 pub use traits::{
     ApiKeyStore, AuditLogStore, BiometricDevice, ConfigProvider, DashboardUserStore,
-    DepartmentStore, DeviceConfigStore, DeviceInfoStore, DeviceProvider, DeviceUserStore,
-    Distributor, EmployeeStore, EndpointStore, OutboxStore, PunchStore, SearchStore, SettingsStore,
-    Storage,
+    DepartmentStore, DeviceConfigStore, DeviceGroupStore, DeviceInfoStore, DeviceProvider,
+    DeviceUserStore, Distributor, EmployeeStore, EndpointStore, OutboxStore, PunchStore,
+    SearchStore, SettingsStore, Storage,
 };
 
 pub use events::{DomainEvent, EventBus};

@@ -9,6 +9,20 @@ export type Employee = {
   id: string;
   pin: string;
   name: string;
+  /**
+   * Department UUID for cross-entity navigation.
+   *
+   * When set, the frontend can construct a link to the department
+   * detail page. Resolved from the department name at query time.
+   */
+  department_id?: string | null;
+  /**
+   * Human-readable department name for list display (e.g. "Engineering").
+   *
+   * Resolved by the backend from `department_id` at query time.
+   * This is a display-only denormalization — use `department_id`
+   * for navigation and mutations.
+   */
   department?: string | null;
   external_id?: string | null;
   active: boolean;
@@ -20,20 +34,45 @@ export type Employee = {
 export type CreateEmployeeRequest = {
   pin: string;
   name: string;
-  department?: string | null;
+  /**
+   * Department UUID for cross-entity navigation.
+   * When provided, the department name is resolved and stored as `department`.
+   */
+  department_id?: string | null;
   external_id?: string | null;
 };
 
 /** Matches the Rust `UpdateEmployeeRequest` DTO. */
 export type UpdateEmployeeRequest = {
   name?: string | null;
-  department?: string | null;
+  /**
+   * Department UUID for cross-entity navigation.
+   * When provided, the department name is resolved and stored as `department`.
+   */
+  department_id?: string | null;
   external_id?: string | null;
 };
 
-/** List all employees. Requires Viewer+. */
-export function fetchEmployees(): Promise<Employee[]> {
-  return apiGet<Employee[]>("employees").json();
+/** Query params for filtering employees. */
+export type EmployeeListQuery = {
+  department_id?: string;
+  /** Full-text search query (searches PIN and name). */
+  q?: string;
+  active?: string;
+};
+
+function buildEmployeeListParams(filter: EmployeeListQuery = {}): string {
+  const params = new URLSearchParams();
+  if (filter.department_id) params.set("department_id", filter.department_id);
+  if (filter.q) params.set("q", filter.q);
+  if (filter.active) params.set("active", filter.active);
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+/** List all employees with optional filtering. Requires Viewer+. */
+export function fetchEmployees(filter: EmployeeListQuery = {}): Promise<Employee[]> {
+  return apiGet<Employee[]>(`employees${buildEmployeeListParams(filter)}`).json();
 }
 
 /** Get a single employee by ID. Requires Viewer+. */

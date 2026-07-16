@@ -141,6 +141,19 @@ pub enum DomainEvent {
     DepartmentUpdated { id: String, name: String },
     /// A department was deleted.
     DepartmentDeleted { id: String },
+
+    // ── Device group sync events ─────────────────────────────
+    /// Admin requested a group-level sync (all devices in a group).
+    GroupSyncRequested { group_id: String, department_id: Option<String>, triggered_by: String },
+    /// A group sync completed with aggregate results.
+    GroupSyncCompleted {
+        group_id: String,
+        devices_synced: u32,
+        total_pushed: u32,
+        total_deleted: u32,
+        total_failed: u32,
+        duration_ms: u64,
+    },
 }
 
 impl DomainEvent {
@@ -187,6 +200,8 @@ impl DomainEvent {
             Self::DepartmentCreated { .. } => "department_created",
             Self::DepartmentUpdated { .. } => "department_updated",
             Self::DepartmentDeleted { .. } => "department_deleted",
+            Self::GroupSyncRequested { .. } => "group_sync_requested",
+            Self::GroupSyncCompleted { .. } => "group_sync_completed",
         }
     }
 
@@ -232,7 +247,9 @@ impl DomainEvent {
             | Self::FingerprintTransferCompleted { .. } => None,
             Self::DepartmentCreated { .. }
             | Self::DepartmentUpdated { .. }
-            | Self::DepartmentDeleted { .. } => None,
+            | Self::DepartmentDeleted { .. }
+            | Self::GroupSyncRequested { .. }
+            | Self::GroupSyncCompleted { .. } => None,
         }
     }
 }
@@ -342,6 +359,19 @@ mod tests {
             DomainEvent::DashboardUserDeleted { username: "viewer1".into() },
             DomainEvent::SetupCompleted { admin_username: "admin".into() },
             DomainEvent::SettingsChanged { changed_fields: vec!["work_policy".into()] },
+            DomainEvent::GroupSyncRequested {
+                group_id: "grp-1".into(),
+                department_id: Some("HR".into()),
+                triggered_by: "admin".into(),
+            },
+            DomainEvent::GroupSyncCompleted {
+                group_id: "grp-1".into(),
+                devices_synced: 2,
+                total_pushed: 15,
+                total_deleted: 0,
+                total_failed: 0,
+                duration_ms: 3200,
+            },
         ];
 
         for event in &events {

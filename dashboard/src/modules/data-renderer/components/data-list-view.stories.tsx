@@ -31,7 +31,6 @@ const sampleColumns: ColumnDefinition[] = [
 		type: "text",
 		metadata: { fieldName: "name", isSortable: true } as TextFieldMetadata,
 		isVisible: true,
-		isLabelIdentifier: true,
 		width: "200px",
 	},
 	{

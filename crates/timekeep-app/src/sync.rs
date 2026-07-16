@@ -97,6 +97,7 @@ mod tests {
                     vendor: "zkteco".into(),
                     location: None,
                     poll_interval_secs: None,
+                    group_id: None,
                 },
                 users,
             }
@@ -211,6 +212,12 @@ mod tests {
         }
         async fn punch_exists(&self, _dedup_id: &str) -> Result<bool, Error> {
             Ok(false)
+        }
+        async fn get_punch(
+            &self,
+            _id: &str,
+        ) -> Result<Option<timekeep_core::model::AttendancePunch>, Error> {
+            Ok(None)
         }
         async fn upsert_user(
             &self,

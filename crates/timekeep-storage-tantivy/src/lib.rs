@@ -515,7 +515,8 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let store = TantivySearchStore::open(dir.path()).unwrap();
 
-        let punch = test_punch("145", "DEV-001", Some("Ahmed"), timekeep_core::PunchStatus::CheckIn);
+        let punch =
+            test_punch("145", "DEV-001", Some("Ahmed"), timekeep_core::PunchStatus::CheckIn);
         store.index_punch(&punch).await.unwrap();
 
         // Search by user PIN
@@ -538,7 +539,12 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let store = TantivySearchStore::open(dir.path()).unwrap();
 
-        let punch = test_punch("145", "DEV-001", Some("Ahmed Al-Sabah"), timekeep_core::PunchStatus::CheckIn);
+        let punch = test_punch(
+            "145",
+            "DEV-001",
+            Some("Ahmed Al-Sabah"),
+            timekeep_core::PunchStatus::CheckIn,
+        );
         store.index_punch(&punch).await.unwrap();
 
         let results = store
@@ -630,7 +636,8 @@ mod tests {
         let emp = test_employee("145", "Ahmed Al-Sabah", Some("Engineering"));
         store.index_employee(&emp).await.unwrap();
 
-        let punch = test_punch("145", "DEV-001", Some("Ahmed"), timekeep_core::PunchStatus::CheckIn);
+        let punch =
+            test_punch("145", "DEV-001", Some("Ahmed"), timekeep_core::PunchStatus::CheckIn);
         store.index_punch(&punch).await.unwrap();
 
         // Global search without entity_type filter should find both

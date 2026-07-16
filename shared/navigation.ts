@@ -63,6 +63,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         labelKey: "nav.devices.list",
         path: "/devices",
       },
+      {
+        key: "devices.groups",
+        labelKey: "nav.devices.groups",
+        path: "/devices/groups",
+        minRole: "admin",
+      },
     ],
   },
   {
@@ -82,6 +88,13 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     labelKey: "nav.departments",
     path: "/departments",
     iconName: "IconBuilding",
+    minRole: "admin",
+  },
+  {
+    key: "work-policies",
+    labelKey: "nav.workPolicies",
+    path: "/work-policies",
+    iconName: "IconClock",
     minRole: "admin",
   },
   {

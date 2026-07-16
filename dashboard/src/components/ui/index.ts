@@ -74,8 +74,14 @@ export {
   FieldSelectInput,
   FieldMultiSelectInput,
   FieldNumberInput,
+  FieldTimeInput,
+  FieldWeekdayToggle,
   isNonTextWritingKey,
 } from "./field-input";
+
+// Inline Field Edit (detail view click-to-edit)
+export { InlineFieldEdit } from "./inline-field-edit";
+export type { InlineFieldEditProps } from "./inline-field-edit";
 export type {
   FieldTextInputProps,
   FieldBooleanInputProps,
@@ -83,6 +89,8 @@ export type {
   FieldSelectInputProps,
   FieldMultiSelectInputProps,
   FieldNumberInputProps,
+  FieldTimeInputProps,
+  FieldWeekdayToggleProps,
 } from "./field-input";
 
 // ── Tier 1: Primitives (simple molecules) — DO NOT import in modules ─────

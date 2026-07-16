@@ -38,7 +38,7 @@ export function useSchemaColumns(entity: string) {
       .filter((col) => col.field !== schema.tiebreaker)
       .map((col) => {
         const overrides = getPresentationOverride(entity, col.field);
-        return columnMetaToDefinition(col, overrides);
+        return columnMetaToDefinition(col, entity, overrides);
       });
   }, [schema, entity]);
 

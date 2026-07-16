@@ -30,6 +30,12 @@ pub trait PunchStore: Send + Sync {
         Ok(count)
     }
 
+    /// Get a single punch by its deduplication ID.
+    ///
+    /// Used by punch detail views (side panel record detail).
+    /// Returns `None` if no punch with that ID exists.
+    async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error>;
+
     /// Query punches matching the given filter.
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error>;
 

@@ -12,6 +12,7 @@ pub(super) struct DeviceConfigRow {
     comm_key: i64,
     push_enabled: i32,
     timezone: Option<String>,
+    group_id: Option<String>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -139,15 +140,16 @@ impl PostgresStorage {
     ) -> Result<(), Error> {
         sqlx::query(
             "INSERT INTO devices
-             (serial_number, label, host, port, comm_key, push_enabled, timezone)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             (serial_number, label, host, port, comm_key, push_enabled, timezone, group_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              ON CONFLICT (serial_number) DO UPDATE SET
                 label = EXCLUDED.label,
                 host = EXCLUDED.host,
                 port = EXCLUDED.port,
                 comm_key = EXCLUDED.comm_key,
                 push_enabled = EXCLUDED.push_enabled,
-                timezone = EXCLUDED.timezone",
+                timezone = EXCLUDED.timezone,
+                group_id = EXCLUDED.group_id",
         )
         .bind(&config.serial_number)
         .bind(&config.label)
@@ -156,6 +158,7 @@ impl PostgresStorage {
         .bind(config.comm_key as i64)
         .bind(config.push_enabled as i32)
         .bind(&config.timezone)
+        .bind(&config.group_id)
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("upsert device config: {e}")))?;
@@ -167,7 +170,7 @@ impl PostgresStorage {
         &self,
     ) -> Result<Vec<timekeep_core::DeviceConfig>, Error> {
         let rows = sqlx::query_as::<_, DeviceConfigRow>(
-            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone
+            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone, group_id
              FROM devices ORDER BY label",
         )
         .fetch_all(&self.pool)
@@ -187,6 +190,7 @@ impl PostgresStorage {
                 vendor: "zkteco".into(),
                 location: None,
                 poll_interval_secs: None,
+                group_id: r.group_id,
             })
             .collect())
     }
@@ -251,7 +255,7 @@ impl PostgresStorage {
             .map_err(|e| Error::storage(format!("count devices: {e}")))?;
 
         let query_sql = format!(
-            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone
+            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone, group_id
              FROM devices {where_sql} ORDER BY {sort_col} {sort_dir} LIMIT {limit}"
         );
         let mut query = sqlx::query_as::<_, DeviceConfigRow>(&query_sql);
@@ -277,6 +281,7 @@ impl PostgresStorage {
                 vendor: "zkteco".into(),
                 location: None,
                 poll_interval_secs: None,
+                group_id: r.group_id,
             })
             .collect();
 
@@ -549,6 +554,7 @@ mod tests {
             vendor: "zkteco".into(),
             location: None,
             poll_interval_secs: None,
+            group_id: None,
         };
 
         storage.upsert_device_config(&config).await.expect("should insert");
@@ -604,6 +610,7 @@ mod tests {
                     vendor: "zkteco".into(),
                     location: None,
                     poll_interval_secs: None,
+                    group_id: None,
                 })
                 .await
                 .unwrap();

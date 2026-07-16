@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from "@lingui/core";
 
-import type { ColumnDefinition, DeviceSnFieldMetadata, TextFieldMetadata } from "../types";
+import type { ColumnDefinition, ReferenceFieldMetadata, TextFieldMetadata } from "../types";
 import { msg } from "@lingui/core/macro";
 
 type T = (descriptor: MessageDescriptor) => string;
@@ -9,10 +9,13 @@ type T = (descriptor: MessageDescriptor) => string;
  * Device column definitions — for the device list table.
  *
  * Columns:
- * - device_sn (label identifier → clickable Chip)
- * - alias (device name/label)
+ * - device_sn (reference → clickable chip → device detail)
+ * - alias (device name/label, plain text)
  * - ip_address (plain text)
  * - port (plain text)
+ *
+ * Deprecated: pages now use useSchemaColumns("device").
+ * Kept for storybook and test backward compat.
  */
 export function createDeviceColumns(_: T): ColumnDefinition[] {
   return [
@@ -21,13 +24,14 @@ export function createDeviceColumns(_: T): ColumnDefinition[] {
       header: _(msg`Serial Number`),
       fieldId: "device_sn",
       label: _(msg`Serial Number`),
-      type: "device_sn",
+      type: "reference",
       metadata: {
         fieldName: "device_sn",
         isSortable: true,
-      } as DeviceSnFieldMetadata,
+        referenceEntity: "device",
+        referenceIdField: "device_sn",
+      } as ReferenceFieldMetadata,
       isVisible: true,
-      isLabelIdentifier: true,
       width: "180px",
     },
     {

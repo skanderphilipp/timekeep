@@ -258,6 +258,7 @@ async fn test_device_config_crud() {
         vendor: "zkteco".into(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     // Create
@@ -305,6 +306,7 @@ async fn test_multiple_device_configs() {
             vendor: "zkteco".into(),
             location: None,
             poll_interval_secs: None,
+            group_id: None,
         };
         storage.upsert_device_config(&config).await.expect("upsert");
     }

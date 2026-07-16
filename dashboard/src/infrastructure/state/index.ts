@@ -45,6 +45,10 @@ export {
   settingsLoadedState,
 } from "./atoms/settings";
 
+// ── Client Config ──────────────────────────────────────────────────────
+
+export { clientConfigState } from "./atoms/client-config";
+
 // ── Side Panel ─────────────────────────────────────────────────────────
 
 export {

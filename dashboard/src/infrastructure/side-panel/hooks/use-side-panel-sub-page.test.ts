@@ -4,7 +4,6 @@ import { Provider as JotaiProvider, createStore } from "jotai";
 import { createElement, type ReactNode } from "react";
 
 import { useSidePanelSubPage } from "./use-side-panel-sub-page";
-import { sidePanelSubPageStackAtom } from "../side-panel-sub-page-stack";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

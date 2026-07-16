@@ -5,6 +5,7 @@ pub mod dashboard_user;
 pub mod department;
 pub mod device;
 pub mod device_event;
+pub mod device_group;
 pub mod employee;
 pub mod enrollment;
 pub mod iam;
@@ -30,6 +31,7 @@ pub use dashboard_user::DashboardUser;
 pub use department::{Department, DepartmentId};
 pub use device::{Device, DeviceStatus, DeviceVendor};
 pub use device_event::{DeviceEvent, DeviceEventType};
+pub use device_group::{DeviceGroup, DeviceGroupId};
 pub use employee::{Employee, EmployeeId};
 pub use enrollment::{BiometricType, DeviceEnrollment, FingerprintTemplate};
 pub use iam::{ApiKey, PermissionSet, Role};
@@ -44,7 +46,7 @@ pub use user::User;
 pub use user_sync::{DeviceUsers, SyncResult, UserDiff};
 pub use work_day::{DayStatus, WorkDay};
 pub use work_period::{PeriodKind, WorkPeriod};
-pub use work_policy::WorkPolicy;
+pub use work_policy::{WorkPolicy, WorkPolicyTemplate};
 
 /// Common configuration for a device managed by timekeep.
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -72,6 +74,11 @@ pub struct DeviceConfig {
     /// Per-device poll interval override in seconds.
     /// If None, the system-wide `poll_interval_secs` setting is used.
     pub poll_interval_secs: Option<u32>,
+    /// Device group for organizational grouping and department-scoped sync.
+    /// A device in the "onboarding" group will only sync employees from
+    /// its assigned departments. None means the device is ungrouped.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_id: Option<String>,
 }
 
 fn default_vendor() -> String {
@@ -92,6 +99,7 @@ impl DeviceConfig {
             vendor: "zkteco".into(),
             location: None,
             poll_interval_secs: None,
+            group_id: None,
         }
     }
 }

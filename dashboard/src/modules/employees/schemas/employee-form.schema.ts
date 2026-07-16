@@ -9,7 +9,7 @@ import type { FormSchemaDefinition } from "@/lib/form-field-meta";
  *
  * PIN: numeric string, 1-9 digits, unique (server-validated).
  * Name: required, non-empty.
- * Department: optional free-text (until FK migration to departments table).
+ * Department ID: optional UUID reference to departments table.
  * External ID: optional, for ERP/HRIS integration.
  */
 export function createEmployeeFormSchema(_: I18n["_"]) {
@@ -23,7 +23,7 @@ export function createEmployeeFormSchema(_: I18n["_"]) {
       .string({ message: _(msg`Name is required`) })
       .min(1, _(msg`Name is required`))
       .max(200, _(msg`Name must be 200 characters or fewer`)),
-    department: z.string().optional().default(""),
+    department_id: z.string().optional().default(""),
     external_id: z.string().optional().default(""),
   });
 }
@@ -39,6 +39,9 @@ export type EmployeeFormValues = z.infer<ReturnType<typeof createEmployeeFormSch
  * widget types), and section layout. This is the single source of truth
  * for the employee form — consumed by both `useEmployeeForm` (validation)
  * and `<SchemaForm>` (rendering).
+ *
+ * `department_id` is hidden from SchemaForm because it renders as a custom
+ * Combobox populated from the departments API (not a static select).
  */
 export function createEmployeeFormDef(_: I18n["_"]) {
   const def: FormSchemaDefinition = {
@@ -56,29 +59,24 @@ export function createEmployeeFormDef(_: I18n["_"]) {
         placeholder: _(msg`John Doe`),
         section: "identity",
       },
-      department: {
+      department_id: {
         label: _(msg`Department`),
-        description: _(msg`Organizational unit (e.g., Warehouse, Office)`),
-        placeholder: _(msg`Warehouse`),
-        section: "organization",
+        description: _(msg`Organizational unit (optional — leave empty if unassigned)`),
+        section: "identity",
+        hidden: true,
       },
       external_id: {
         label: _(msg`External ID`),
         description: _(msg`Identifier from external HR/ERP system (optional)`),
         placeholder: _(msg`EMP-001`),
-        section: "organization",
+        section: "identity",
       },
     },
     sections: [
       {
         key: "identity",
         title: _(msg`Employee Identity`),
-        description: _(msg`Unique PIN and full name for this employee.`),
-      },
-      {
-        key: "organization",
-        title: _(msg`Organization`),
-        description: _(msg`Department assignment and external system reference.`),
+        description: _(msg`Unique PIN, full name, and external reference for this employee.`),
       },
     ],
   } as const;

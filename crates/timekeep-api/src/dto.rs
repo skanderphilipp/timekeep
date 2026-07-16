@@ -76,6 +76,8 @@ pub struct DeviceResponse {
     pub location: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub poll_interval_secs: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_id: Option<String>,
 }
 
 impl From<&DeviceConfig> for DeviceResponse {
@@ -91,6 +93,7 @@ impl From<&DeviceConfig> for DeviceResponse {
             vendor: c.vendor.clone(),
             location: c.location.clone(),
             poll_interval_secs: c.poll_interval_secs,
+            group_id: c.group_id.clone(),
         }
     }
 }
@@ -314,6 +317,7 @@ impl DeviceDetailResponse {
                 vendor: "zkteco".into(),
                 location: None,
                 poll_interval_secs: None,
+                group_id: None,
             },
             vendor: String::new(),
             model: None,
@@ -1102,6 +1106,16 @@ pub struct EmployeeResponse {
     pub id: String,
     pub pin: String,
     pub name: String,
+    /// Department UUID for cross-entity navigation.
+    ///
+    /// When set, the frontend can construct a department detail link.
+    /// Resolved from the department_id at create/update time.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub department_id: Option<String>,
+    /// Human-readable department name for list display.
+    ///
+    /// Resolved from `department_id` at create/update time.
+    /// This is a display-only cache — use `department_id` for navigation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub department: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1117,6 +1131,7 @@ impl From<&timekeep_core::Employee> for EmployeeResponse {
             id: e.id.to_string(),
             pin: e.pin.clone(),
             name: e.name.clone(),
+            department_id: e.department_id.clone(),
             department: e.department.clone(),
             external_id: e.external_id.clone(),
             active: e.active,
@@ -1133,6 +1148,13 @@ impl From<&timekeep_core::Employee> for EmployeeResponse {
 pub struct DepartmentResponse {
     pub id: String,
     pub name: String,
+    /// FK to work policy template. When set, `work_policy_title` is resolved.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub work_policy_id: Option<String>,
+    /// Resolved title of the work policy template (when `work_policy_id` is set).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub work_policy_title: Option<String>,
+    /// Legacy: inline work policy (only populated when no template FK is set).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub work_policy: Option<WorkPolicyResponse>,
     /// Number of employees assigned to this department.
@@ -1143,14 +1165,82 @@ pub struct DepartmentResponse {
 }
 
 impl DepartmentResponse {
-    pub fn from_department(dept: &timekeep_core::Department, employee_count: Option<u64>) -> Self {
+    pub fn from_department(
+        dept: &timekeep_core::Department,
+        employee_count: Option<u64>,
+        policy_title: Option<String>,
+    ) -> Self {
         Self {
             id: dept.id.to_string(),
             name: dept.name.clone(),
-            work_policy: dept.work_policy.as_ref().map(|p| WorkPolicyResponse::from(p)),
+            work_policy_id: dept.work_policy_id.clone(),
+            work_policy_title: policy_title,
+            work_policy: dept.work_policy.as_ref().map(WorkPolicyResponse::from),
             employee_count,
             created_at: dept.created_at.as_second(),
             updated_at: dept.updated_at.as_second(),
+        }
+    }
+}
+
+/// A named, reusable work policy template.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct WorkPolicyTemplateResponse {
+    pub id: String,
+    pub title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub work_start: String,
+    pub work_end: String,
+    pub late_threshold_minutes: i64,
+    pub min_hours_for_full_day: f64,
+    pub daily_overtime_after_hours: f64,
+    pub working_days: [bool; 7],
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl From<&timekeep_core::model::WorkPolicyTemplate> for WorkPolicyTemplateResponse {
+    fn from(t: &timekeep_core::model::WorkPolicyTemplate) -> Self {
+        Self {
+            id: t.id.clone(),
+            title: t.title.clone(),
+            description: t.description.clone(),
+            work_start: format!("{:02}:{:02}", t.work_start.hour(), t.work_start.minute()),
+            work_end: format!("{:02}:{:02}", t.work_end.hour(), t.work_end.minute()),
+            late_threshold_minutes: t.late_threshold_secs / 60,
+            min_hours_for_full_day: t.min_seconds_for_present as f64 / 3600.0,
+            daily_overtime_after_hours: t.daily_overtime_after_secs as f64 / 3600.0,
+            working_days: t.working_days,
+            created_at: t.created_at.as_second(),
+            updated_at: t.updated_at.as_second(),
+        }
+    }
+}
+
+/// A device group for organizational device grouping.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DeviceGroupResponse {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub device_count: Option<u64>,
+    /// Department IDs assigned to this group. Empty = all departments.
+    pub department_ids: Vec<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl DeviceGroupResponse {
+    pub fn from_group(group: &timekeep_core::DeviceGroup, device_count: Option<u64>) -> Self {
+        Self {
+            id: group.id.0.clone(),
+            name: group.name.clone(),
+            description: group.description.clone(),
+            device_count,
+            department_ids: group.department_ids.clone(),
+            created_at: group.created_at.as_second(),
+            updated_at: group.updated_at.as_second(),
         }
     }
 }
@@ -1222,7 +1312,27 @@ pub struct AboutResponse {
     pub workspace_name: String,
 }
 
-// ─── Device Activity Feed ──────────────────────────────────────────────
+/// Client bootstrap config — returned by `GET /api/client-config`.
+///
+/// Single public endpoint that aggregates everything the frontend needs
+/// before authentication: workspace branding, version, setup status.
+///
+/// This replaces the need for separate `/api/about` and `/api/status`
+/// calls on the login/setup pages. Extensible with `features` for
+/// future feature-flag driven UI toggles.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ClientConfigResponse {
+    /// Application name.
+    pub name: String,
+    /// Current version.
+    pub version: String,
+    /// Workspace/company name (empty string if not configured).
+    pub workspace_name: String,
+    /// Support email (empty string if not configured).
+    pub support_email: String,
+    /// Whether initial setup (first admin creation) is needed.
+    pub setup_needed: bool,
+}
 
 /// A single entry in the per-device activity feed, merging
 /// device-originated events (online, sync, op_log) with server-side

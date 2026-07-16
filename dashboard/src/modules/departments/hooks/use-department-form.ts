@@ -9,7 +9,8 @@ import {
   createDepartment,
   fetchDepartment,
   updateDepartment,
-  type DepartmentRequest,
+  type CreateDepartmentRequest,
+  type UpdateDepartmentRequest,
 } from "@/lib/api";
 import { useToast } from "@/infrastructure/toast/toast";
 import {
@@ -21,10 +22,14 @@ import {
  * Department form state + mutation hook.
  *
  * Manages react-hook-form with zod validation. When editing, fetches
- * existing department data. The work_policy is tracked separately
+ * existing department data. The work_policy_id is tracked separately
  * because it's optional and has complex shape.
  */
-export function useDepartmentForm(existingId?: string, onSaved?: () => void) {
+export function useDepartmentForm(
+  existingId?: string,
+  onSaved?: () => void,
+  selectedPolicyId?: string | null,
+) {
   const isEditing = !!existingId;
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -54,12 +59,18 @@ export function useDepartmentForm(existingId?: string, onSaved?: () => void) {
   // Create/update mutation
   const saveMutation = useMutation({
     mutationFn: (data: DepartmentFormValues) => {
-      const req: DepartmentRequest = {
+      if (isEditing) {
+        const req: UpdateDepartmentRequest = {
+          name: data.name,
+          work_policy_id: selectedPolicyId, // undefined = no change, null = clear, string = set
+        };
+        return updateDepartment(existingId!, req);
+      }
+      const req: CreateDepartmentRequest = {
         name: data.name,
+        work_policy_id: selectedPolicyId ?? undefined,
       };
-      return isEditing
-        ? updateDepartment(existingId!, req)
-        : createDepartment(req);
+      return createDepartment(req);
     },
     onSuccess: () => {
       toast.success(

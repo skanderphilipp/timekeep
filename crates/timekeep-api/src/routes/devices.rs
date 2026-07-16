@@ -144,6 +144,19 @@ pub(crate) async fn get_device(
 /// Returns the list of (pin, name, privilege) tuples stored in the local
 /// `users` table, populated by `sync_users_to_storage()` at startup.
 /// This is read-only data available even when the device is offline.
+#[utoipa::path(
+    get,
+    path = "/api/devices/{sn}/synced-users",
+    tag = "Devices",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    responses(
+        (status = 200, description = "Synced users for this device", body = Vec<SyncedUserResponse>),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn list_synced_device_users(
     State(state): State<AppState>,
     Path(sn): Path<String>,
@@ -199,6 +212,7 @@ pub(crate) async fn add_device(
         vendor: body.vendor.clone().unwrap_or_else(|| "zkteco".into()),
         location: body.location.clone(),
         poll_interval_secs: body.poll_interval_secs,
+        group_id: body.group_id.clone(),
     };
 
     state.storage.upsert_device_config(&config).await?;
@@ -248,6 +262,7 @@ pub(crate) async fn update_device(
         vendor: body.vendor.unwrap_or(existing.vendor),
         location: body.location.or(existing.location),
         poll_interval_secs: body.poll_interval_secs.or(existing.poll_interval_secs),
+        group_id: body.group_id.or(existing.group_id),
     };
 
     state.storage.upsert_device_config(&config).await?;
@@ -712,6 +727,7 @@ pub(crate) async fn provision_device(
         vendor: body.vendor,
         location: body.location,
         poll_interval_secs: body.poll_interval_secs,
+        group_id: None,
     };
 
     state.storage.upsert_device_config(&config).await?;

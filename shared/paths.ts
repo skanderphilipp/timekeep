@@ -25,6 +25,9 @@ export const AppRoute = {
   devices: {
     list: "/devices",
     new: "/devices/new",
+    groups: "/devices/groups",
+    /** @param id — device group UUID */
+    groupDetail: (id: string) => `/devices/groups/${encodeURIComponent(id)}`,
     /** @param sn — device serial number */
     detail: (sn: string) => `/devices/${encodeURIComponent(sn)}`,
     /** @param sn — device serial number */
@@ -54,6 +57,10 @@ export const AppRoute = {
     list: "/departments",
     /** @param id — department UUID */
     detail: (id: string) => `/departments/${encodeURIComponent(id)}`,
+  },
+
+  workPolicies: {
+    list: "/work-policies",
   },
 
   settings: {
@@ -87,6 +94,9 @@ export const ALL_ROUTE_PATHS = [
   AppRoute.setup,
   AppRoute.devices.list,
   AppRoute.devices.new,
+  AppRoute.devices.groups,
+  AppRoute.departments.list,
+  AppRoute.workPolicies.list,
   AppRoute.punches.list,
   AppRoute.employees.list,
   AppRoute.employees.new,
@@ -121,6 +131,8 @@ export const ApiPath = {
   status: "status",
   /** Create initial admin user */
   setup: "setup",
+  /** Bootstrap config — workspace branding, version, setup status, feature flags */
+  clientConfig: "client-config",
   me: "me",
   permissions: "permissions",
 
@@ -158,6 +170,20 @@ export const ApiPath = {
   departments: "departments",
   /** Department-specific operations. */
   department: (id: string) => `departments/${encodeURIComponent(id)}`,
+
+  workPolicies: "work-policies",
+  /** Work-policy-template-specific operations. */
+  workPolicy: (id: string) => `work-policies/${encodeURIComponent(id)}`,
+
+  deviceGroups: "device-groups",
+  /** Device-group-specific operations. */
+  deviceGroup: (id: string) => `device-groups/${encodeURIComponent(id)}`,
+  /** List devices in a group. */
+  deviceGroupDevices: (id: string) => `device-groups/${encodeURIComponent(id)}/devices`,
+  /** Sync a device group. */
+  deviceGroupSync: (id: string) => `device-groups/${encodeURIComponent(id)}/sync`,
+  /** Sync all devices. */
+  devicesSyncAll: "devices/sync-all",
   /** Employee-specific operations. */
   employee: (id: string) => `employees/${encodeURIComponent(id)}`,
 

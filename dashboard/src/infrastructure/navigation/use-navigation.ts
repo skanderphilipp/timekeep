@@ -16,6 +16,7 @@ import {
   IconSettings,
   IconUsers,
   IconBuilding,
+  IconClock,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -51,6 +52,7 @@ const ICON_MAP: Record<string, Icon> = {
   IconSettings,
   IconUsers,
   IconBuilding,
+  IconClock,
 };
 
 /**
@@ -73,6 +75,8 @@ export function useNavigation(): ResolvedNavItem[] {
       "nav.employees": () => _(/*i18n*/ { id: "nav.employees", message: "Employees" }),
       "nav.reports": () => _(/*i18n*/ { id: "nav.reports", message: "Reports" }),
       "nav.departments": () => _(/*i18n*/ { id: "nav.departments", message: "Departments" }),
+      "nav.workPolicies": () => _(/*i18n*/ { id: "nav.workPolicies", message: "Work Policies" }),
+      "nav.devices.groups": () => _(/*i18n*/ { id: "nav.devices.groups", message: "Device Groups" }),
       "nav.settings": () => _(/*i18n*/ { id: "nav.settings", message: "Settings" }),
       "nav.settings.system": () => _(/*i18n*/ { id: "nav.settings.system", message: "System" }),
       "nav.settings.users": () => _(/*i18n*/ { id: "nav.settings.users", message: "Users" }),

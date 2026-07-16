@@ -30,24 +30,12 @@ use crate::response::{
 pub(crate) async fn today_summary(
     State(state): State<AppState>,
 ) -> Result<Json<ApiEnvelope<TodaySummaryResponse>>, AppError> {
+    use timekeep_core::AttendanceCalculator;
     use timekeep_core::PunchStatus;
-    use timekeep_core::model::AttendancePunch;
 
     let now = jiff::Timestamp::now();
-    let settings = state.storage.get_system_settings().await?;
-    let org_default = &settings.work_policy;
-
-    // Today's date range (midnight to now)
-    let today_start = {
-        let z = now.to_zoned(jiff::tz::TimeZone::UTC);
-        jiff::civil::DateTime::from_parts(
-            z.datetime().date(),
-            jiff::civil::Time::new(0, 0, 0, 0).unwrap(),
-        )
-        .to_zoned(jiff::tz::TimeZone::UTC)
-        .unwrap()
-        .timestamp()
-    };
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
+    let today_start = crate::helpers::today_midnight_utc(now);
 
     let punches = state
         .storage
@@ -59,85 +47,65 @@ pub(crate) async fn today_summary(
         .await?;
 
     // ── Resolve per-employee policies for late detection ──
-    let unique_pins: HashSet<&str> = punches.iter().map(|p| p.user_pin.as_str()).collect();
+    let unique_pins = crate::helpers::unique_pins(&punches);
     let policy_map = resolve_policies_for_pins(
         &*state.storage,
         state.employees.as_deref(),
         &unique_pins,
-        org_default,
+        &org_default,
     )
     .await;
 
-    // ── Present / absent / late / on_time ──
-    let mut all_users: HashSet<&str> = HashSet::new();
-    let mut first_check_in: HashMap<&str, (&AttendancePunch, jiff::civil::Time)> = HashMap::new();
-    let mut last_punch_per_user: HashMap<&str, &AttendancePunch> = HashMap::new();
-
-    for p in &punches {
-        all_users.insert(&p.user_pin);
-        last_punch_per_user.insert(&p.user_pin, p);
-        if p.status == PunchStatus::CheckIn {
-            let z = p.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
-            let arrival = z.datetime().time();
-            first_check_in.entry(&p.user_pin).or_insert((p, arrival));
-        }
-    }
-
-    let present = all_users.len();
     // ── Total employees (from employee repository, fallback to unique users) ──
     let total_employees = if let Some(ref repo) = state.employees {
         repo.list_employees(&timekeep_core::query::ListParams::default())
             .await
             .map(|r| r.items.len())
-            .unwrap_or(present)
+            .unwrap_or(unique_pins.len())
     } else {
-        present
+        unique_pins.len()
     };
-    let absent = total_employees.saturating_sub(present);
 
-    // Late detection uses per-employee policy (department-specific thresholds)
-    let late = first_check_in
-        .iter()
-        .filter(|(pin, (_, arrival))| {
-            let effective = policy_map.get(&pin.to_string()).unwrap_or(org_default);
-            effective.is_late(*arrival)
-        })
-        .count();
-    let on_time = first_check_in.len().saturating_sub(late);
+    // ── Domain logic: present/absent/late/on_time/checked-in/hourly ──
+    let snapshot = AttendanceCalculator::project_today_snapshot(
+        &punches,
+        &policy_map,
+        &org_default,
+        total_employees,
+    );
 
     let check_ins = punches.iter().filter(|p| p.status == PunchStatus::CheckIn).count();
 
-    // ── Currently checked in ──
+    // ── Infrastructure: device labels for checked-in employees ──
     let device_configs = state.storage.list_device_configs().await?;
     let device_label_map: HashMap<&str, &str> =
         device_configs.iter().map(|c| (c.serial_number.as_str(), c.label.as_str())).collect();
 
-    let mut currently_checked_in: Vec<CurrentlyCheckedIn> = Vec::new();
-    for pin in &all_users {
-        let user_punches: Vec<&AttendancePunch> =
-            punches.iter().filter(|p| p.user_pin == *pin).collect();
-        let has_check_in = user_punches.iter().any(|p| p.status == PunchStatus::CheckIn);
-        let has_check_out = user_punches.iter().any(|p| p.status == PunchStatus::CheckOut);
-        if has_check_in
-            && !has_check_out
-            && let Some(check_in) = user_punches.iter().find(|p| p.status == PunchStatus::CheckIn)
-        {
-            let elapsed = now.duration_since(check_in.timestamp).as_secs().max(0);
-            currently_checked_in.push(CurrentlyCheckedIn {
-                user_pin: check_in.user_pin.clone(),
-                employee_name: check_in.employee_name.clone(),
-                check_in_time: check_in.timestamp.as_second(),
-                device_sn: check_in.device_sn.clone(),
+    let currently_checked_in: Vec<CurrentlyCheckedIn> = snapshot
+        .currently_checked_in
+        .iter()
+        .filter_map(|c| {
+            // Find the matching punch to get device_sn, employee_name, and compute elapsed
+            let check_in_punch = punches.iter().find(|p| {
+                p.user_pin == c.user_pin
+                    && p.status == PunchStatus::CheckIn
+                    && p.timestamp.as_second() == c.check_in_epoch
+            })?;
+            let elapsed = now.duration_since(check_in_punch.timestamp).as_secs().max(0);
+            Some(CurrentlyCheckedIn {
+                user_pin: c.user_pin.clone(),
+                employee_name: check_in_punch.employee_name.clone(),
+                check_in_time: c.check_in_epoch,
+                device_sn: check_in_punch.device_sn.clone(),
                 device_label: device_label_map
-                    .get(check_in.device_sn.as_str())
+                    .get(check_in_punch.device_sn.as_str())
                     .map(|l| l.to_string()),
                 elapsed_seconds: elapsed,
-            });
-        }
-    }
-    currently_checked_in.sort_by_key(|c| c.check_in_time);
+            })
+        })
+        .collect();
 
-    // ── Recent events: last 20 punches, newest first ──
+    // ── Infrastructure: recent events, device health, hourly breakdown ──
     let recent_events: Vec<DashboardRecentEvent> = punches
         .iter()
         .rev()
@@ -151,21 +119,14 @@ pub(crate) async fn today_summary(
         })
         .collect();
 
-    // ── Hourly breakdown ──
-    let mut hourly: [u32; 24] = [0; 24];
-    for p in &punches {
-        let z = p.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
-        let hour = z.datetime().time().hour() as usize;
-        if hour < 24 {
-            hourly[hour] += 1;
-        }
-    }
     let hourly_breakdown: Vec<DashboardHourlyBreakdown> = (0..24u8)
-        .map(|hour| DashboardHourlyBreakdown { hour, count: hourly[hour as usize] })
+        .map(|hour| DashboardHourlyBreakdown {
+            hour,
+            count: snapshot.hourly_breakdown[hour as usize],
+        })
         .filter(|h| h.count > 0)
         .collect();
 
-    // ── Device health ──
     let conn_states = state.device_state.get_all().await;
     let device_health: Vec<DashboardDeviceHealth> = device_configs
         .iter()
@@ -186,10 +147,10 @@ pub(crate) async fn today_summary(
 
     let summary = TodaySummaryResponse {
         date: now.as_second(),
-        present,
-        absent,
-        late,
-        on_time,
+        present: snapshot.present,
+        absent: snapshot.absent,
+        late: snapshot.late,
+        on_time: snapshot.on_time,
         total_employees,
         total_punches: punches.len(),
         check_ins,
@@ -228,20 +189,10 @@ pub(crate) async fn report_summary(
     use timekeep_core::{AttendanceCalculator, PunchStatus};
 
     let now = jiff::Timestamp::now();
-    let settings = state.storage.get_system_settings().await?;
-    let org_default = &settings.work_policy;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
 
     // 1. Resolve date range
-    let day_start = {
-        let z = now.to_zoned(jiff::tz::TimeZone::UTC);
-        jiff::civil::DateTime::from_parts(
-            z.datetime().date(),
-            jiff::civil::Time::new(0, 0, 0, 0).unwrap(),
-        )
-        .to_zoned(jiff::tz::TimeZone::UTC)
-        .unwrap()
-        .timestamp()
-    };
+    let day_start = crate::helpers::today_midnight_utc(now);
 
     let date_from =
         params.date_from.and_then(|ts| jiff::Timestamp::from_second(ts).ok()).unwrap_or(day_start);
@@ -267,7 +218,6 @@ pub(crate) async fn report_summary(
     let mut break_ins: u64 = 0;
     let mut overtime_ins: u64 = 0;
     let mut overtime_outs: u64 = 0;
-    let mut users = std::collections::HashSet::new();
     let mut day_counts = BTreeMap::new();
 
     for punch in &punches {
@@ -279,35 +229,20 @@ pub(crate) async fn report_summary(
             PunchStatus::OvertimeIn => overtime_ins += 1,
             PunchStatus::OvertimeOut => overtime_outs += 1,
         }
-        users.insert(&punch.user_pin);
-        let day_ts = {
-            let z = punch.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
-            jiff::civil::DateTime::from_parts(
-                z.datetime().date(),
-                jiff::civil::Time::new(0, 0, 0, 0).unwrap(),
-            )
-            .to_zoned(jiff::tz::TimeZone::UTC)
-            .unwrap()
-            .timestamp()
-            .as_second()
-        };
+        let day_ts = crate::helpers::today_midnight_utc(punch.timestamp).as_second();
         *day_counts.entry(day_ts).or_insert(0u64) += 1;
     }
 
-    let mut emp_names: HashMap<String, String> = HashMap::new();
-    for p in &punches {
-        if let Some(ref name) = p.employee_name {
-            emp_names.entry(p.user_pin.clone()).or_insert(name.clone());
-        }
-    }
+    let users_count = crate::helpers::unique_pins(&punches).len();
+    let emp_names = crate::helpers::collect_employee_names(&punches);
 
     // 4. Resolve per-employee policies and group computation
-    let unique_pins: HashSet<&str> = punches.iter().map(|p| p.user_pin.as_str()).collect();
+    let unique_pins = crate::helpers::unique_pins(&punches);
     let policy_map = resolve_policies_for_pins(
         &*state.storage,
         state.employees.as_deref(),
         &unique_pins,
-        org_default,
+        &org_default,
     )
     .await;
 
@@ -315,7 +250,7 @@ pub(crate) async fn report_summary(
     let mut policy_groups: HashMap<String, Vec<&timekeep_core::model::AttendancePunch>> =
         HashMap::new();
     for p in &punches {
-        let policy = policy_map.get(p.user_pin.as_str()).unwrap_or(org_default);
+        let policy = policy_map.get(p.user_pin.as_str()).unwrap_or(&org_default);
         // Use a deterministic string key for grouping (serialized policy)
         let key = format!(
             "{:02}:{:02}-{:02}:{:02}-{}-{}-{}-{:?}",
@@ -339,7 +274,7 @@ pub(crate) async fn report_summary(
     let mut total_half_days = 0u64;
     let mut total_absent_days = 0u64;
 
-    for (_policy_key, group_punches) in &policy_groups {
+    for group_punches in policy_groups.values() {
         let punches_slice: Vec<timekeep_core::model::AttendancePunch> =
             group_punches.iter().map(|&p| p.clone()).collect();
         let group_policy = {
@@ -414,7 +349,7 @@ pub(crate) async fn report_summary(
         break_ins,
         overtime_ins,
         overtime_outs,
-        unique_users: users.len() as u64,
+        unique_users: users_count as u64,
         work_days: work_days_count,
         avg_seconds_per_day,
         overtime_seconds,
@@ -437,19 +372,17 @@ pub(crate) async fn report_summary(
 /// 1. Look up the employee by PIN → get their department
 /// 2. Look up the department → check for custom work_policy
 /// 3. Fall back to `org_default` if no employee or no department policy
-async fn resolve_policies_for_pins(
+pub(crate) async fn resolve_policies_for_pins(
     storage: &dyn timekeep_core::traits::Storage,
     employees: Option<&dyn timekeep_core::traits::employee_store::EmployeeStore>,
     pins: &HashSet<&str>,
-    org_default: &timekeep_core::model::work_policy::WorkPolicy,
-) -> HashMap<String, timekeep_core::model::work_policy::WorkPolicy> {
+    org_default: &timekeep_core::WorkPolicy,
+) -> HashMap<String, timekeep_core::WorkPolicy> {
     let mut map = HashMap::new();
 
-    // Batch-load all departments once
     let departments = match storage.list_departments().await {
         Ok(depts) => depts,
         Err(_) => {
-            // Fallback: all pins use org default
             for pin in pins {
                 map.insert(pin.to_string(), org_default.clone());
             }
@@ -457,18 +390,17 @@ async fn resolve_policies_for_pins(
         },
     };
 
-    // Build a name→policy lookup from departments
-    let dept_policies: HashMap<&str, &timekeep_core::model::work_policy::WorkPolicy> = departments
+    let dept_policies: HashMap<&str, &timekeep_core::WorkPolicy> = departments
         .iter()
-        .filter_map(|d| d.work_policy.as_ref().map(|p| (d.name.as_str(), p)))
+        .filter_map(|d| d.work_policy.as_ref().map(|p| (d.id.0.as_str(), p)))
         .collect();
 
     for pin in pins {
         let policy = if let Some(repo) = employees {
             match repo.find_employee_by_pin(pin).await {
-                Ok(Some(emp)) => match &emp.department {
-                    Some(dept_name) => dept_policies
-                        .get(dept_name.as_str())
+                Ok(Some(emp)) => match &emp.department_id {
+                    Some(dept_id) => dept_policies
+                        .get(dept_id.as_str())
                         .map(|&p| p.clone())
                         .unwrap_or_else(|| org_default.clone()),
                     None => org_default.clone(),

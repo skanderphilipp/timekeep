@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconPlus, IconRadar } from "@tabler/icons-react";
+import { IconPlus, IconRadar, IconRefresh } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { AppRoute } from "@/lib/navigation";
 import { useDeviceList } from "../hooks/use-device-list";
 import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { DataListView } from "@/modules/data-renderer";
+import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
+import { useToast } from "@/infrastructure/toast/toast";
+import { syncAllDevices } from "@/lib/api";
 import type { DeviceSummary } from "@/lib/api";
 import { DeviceCard } from "./device-card";
 import { ScanNetworkDialog } from "./scan-network-dialog";
@@ -30,7 +33,30 @@ export function DeviceListView() {
     handleClearFilters,
   } = useDeviceList();
 
+  const openRecord = useOpenRecordInSidePanel();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
   const [scanOpen, setScanOpen] = useState(false);
+
+  const syncAll = useMutation({
+    mutationFn: syncAllDevices,
+    onSuccess: () => {
+      toast.success(_(msg`Sync started for all devices.`));
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+    },
+    onError: () => {
+      toast.error(_(msg`Failed to start sync.`));
+    },
+  });
+
+  const handleAddDevice = useCallback(() => {
+    openRecord({
+      entityType: "device",
+      title: _(msg`Register Device`),
+      isNewRecord: true,
+    });
+  }, [openRecord, _]);
 
   const hasDevices = (query.data?.length ?? 0) > 0;
 
@@ -42,6 +68,15 @@ export function DeviceListView() {
         actions={
           <>
             <Button
+              onClick={() => syncAll.mutate()}
+              variant="secondary"
+              size="sm"
+              icon={<IconRefresh size={16} />}
+              disabled={syncAll.isPending || !hasDevices}
+            >
+              {syncAll.isPending ? _(msg`Syncing…`) : _(msg`Sync All`)}
+            </Button>
+            <Button
               onClick={() => setScanOpen(true)}
               variant="secondary"
               size="sm"
@@ -49,7 +84,7 @@ export function DeviceListView() {
             >
               {_(msg`Scan Network`)}
             </Button>
-            <Button to={AppRoute.devices.new} size="sm" icon={<IconPlus size={16} />}>
+            <Button onClick={handleAddDevice} size="sm" icon={<IconPlus size={16} />}>
               {_(msg`Add Device`)}
             </Button>
           </>

@@ -204,6 +204,9 @@ mod tests {
         async fn punch_exists(&self, _dedup_id: &str) -> Result<bool, Error> {
             Ok(false)
         }
+        async fn get_punch(&self, _id: &str) -> Result<Option<AttendancePunch>, Error> {
+            Ok(None)
+        }
     }
 
     fn test_punch(pin: &str) -> AttendancePunch {

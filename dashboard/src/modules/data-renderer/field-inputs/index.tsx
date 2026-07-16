@@ -2,11 +2,10 @@
  * FieldEdit dispatcher — routes to the correct Field*Input based on field type.
  *
  * Mirrors `FieldDisplay` (read-only dispatcher) for edit mode.
- * Components call `useFieldContext()` to read the field definition + metadata,
- * then dispatch to the appropriate `Field*Input` from `@/components/ui/field-input`.
+ * Generic — no domain-specific type branches.
  *
  * Supports the full `EditableCellEditProps` event handler suite where
- * applicable. For immediate-commit editors (select, boolean), the
+ * applicable. For immediate-commit editors (select), the
  * `onEnter` callback is used to signal "persist + close".
  */
 
@@ -16,33 +15,62 @@ import {
   FieldTextInput,
   FieldDateInput,
   FieldSelectInput,
+  FieldNumberInput,
+  FieldTimeInput,
+  FieldWeekdayToggle,
 } from "@/components/ui/field-input";
 import type {
   StatusFieldMetadata,
-  DirectionFieldMetadata,
-  VerifyMethodFieldMetadata,
+  EnumFieldMetadata,
+  ReferenceFieldMetadata,
+  ArrayFieldMetadata,
+  TextFieldMetadata,
 } from "../types";
 import type { ComboboxOption } from "@/types/options";
+import { Spinner, Text } from "@/components/ui";
 import type { EditableCellEditProps } from "@/components/ui/data-table";
 
-/** Default direction option labels. */
-const DIRECTION_LABELS: Record<string, string> = {
-  in: "IN",
-  out: "OUT",
-};
-
 export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>) {
-  const { fieldDefinition } = useFieldContext();
+  const { fieldDefinition, isLoadingOptions } = useFieldContext();
   const type = fieldDefinition.type;
 
-  // ── Text-based types (full event suite) ──────────────────────────────
+  // ── Number ──────────────────────────────────────────────────────────
 
-  if (
-    type === "text" ||
-    type === "device_sn" ||
-    type === "user_pin" ||
-    type === "employee_name"
-  ) {
+  if (type === "number") {
+    return (
+      <FieldNumberInput
+        instanceId={props.instanceId}
+        value={Number(props.value ?? 0)}
+        onChange={(v) => props.onChange(Number(v) as TValue)}
+        onEnter={(v) => props.onEnter(v as TValue)}
+        onEscape={(v) => props.onEscape(v as TValue)}
+        onTab={(v) => props.onTab(v as TValue)}
+        onShiftTab={(v) => props.onShiftTab(v as TValue)}
+        onClickOutside={(e, v) => props.onClickOutside(e, v as TValue)}
+        autoFocus={props.autoFocus}
+      />
+    );
+  }
+
+  // ── Text (plain or time) ────────────────────────────────────────────
+
+  if (type === "text") {
+    const meta = fieldDefinition.metadata as TextFieldMetadata;
+    if (meta.inputType === "time") {
+      return (
+        <FieldTimeInput
+          instanceId={props.instanceId}
+          value={String(props.value ?? "")}
+          onChange={(v) => props.onChange(v as TValue)}
+          onEnter={(v) => props.onEnter(v as TValue)}
+          onEscape={(v) => props.onEscape(v as TValue)}
+          onTab={(v) => props.onTab(v as TValue)}
+          onShiftTab={(v) => props.onShiftTab(v as TValue)}
+          onClickOutside={(e, v) => props.onClickOutside(e, v as TValue)}
+          autoFocus={props.autoFocus}
+        />
+      );
+    }
     return (
       <FieldTextInput
         instanceId={props.instanceId}
@@ -58,7 +86,7 @@ export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>
     );
   }
 
-  // ── Timestamp → DatePicker ───────────────────────────────────────────
+  // ── Timestamp (date picker) ──────────────────────────────────────────
 
   if (type === "timestamp") {
     return (
@@ -73,22 +101,57 @@ export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>
     );
   }
 
-  // ── Status → Dropdown ────────────────────────────────────────────────
+  // ── Status / Enum (select dropdown) ──────────────────────────────────
 
   if (type === "status") {
-    return <StatusFieldEdit props={props} />;
+    const meta = fieldDefinition.metadata as StatusFieldMetadata;
+    return <EnumSelectEdit<TValue> props={props} labels={meta.labels} />;
   }
 
-  // ── Direction → Dropdown ─────────────────────────────────────────────
-
-  if (type === "direction") {
-    return <DirectionFieldEdit props={props} />;
+  if (type === "enum") {
+    const meta = fieldDefinition.metadata as EnumFieldMetadata;
+    return <EnumSelectEdit<TValue> props={props} labels={meta.labels} />;
   }
 
-  // ── Verify method → Dropdown ─────────────────────────────────────────
+  // ── Reference (select dropdown — options from metadata) ──────────────
 
-  if (type === "verify_method") {
-    return <VerifyMethodFieldEdit props={props} />;
+  if (type === "reference") {
+    const meta = fieldDefinition.metadata as ReferenceFieldMetadata;
+    return <SelectFieldEdit<TValue> props={props} options={meta.options ?? []} isLoadingOptions={isLoadingOptions} />;
+  }
+
+  // ── Array (weekday toggle when positionLabels exist) ─────────────────
+
+  if (type === "array") {
+    const meta = fieldDefinition.metadata as ArrayFieldMetadata;
+    if (meta.positionLabels && meta.positionLabels.length > 0) {
+      const days = Array.isArray(props.value) ? (props.value as boolean[]) : [];
+      return (
+        <FieldWeekdayToggle
+          instanceId={props.instanceId}
+          value={days.length === 7 ? days : Array(7).fill(false)}
+          dayLabels={meta.positionLabels}
+          onChange={(v) => props.onChange(v as TValue)}
+          onEnter={(v) => props.onEnter(v as TValue)}
+          onEscape={(v) => props.onEscape(v as TValue)}
+          onClickOutside={(e, v) => props.onClickOutside(e, v as TValue)}
+        />
+      );
+    }
+    // Fallback for non-weekday arrays: plain text input
+    return (
+      <FieldTextInput
+        instanceId={props.instanceId}
+        value={String(props.value ?? "")}
+        onChange={(v) => props.onChange(v as TValue)}
+        onEnter={(v) => props.onEnter(v as TValue)}
+        onEscape={(v) => props.onEscape(v as TValue)}
+        onTab={(v) => props.onTab(v as TValue)}
+        onShiftTab={(v) => props.onShiftTab(v as TValue)}
+        onClickOutside={(e, v) => props.onClickOutside(e, v as TValue)}
+        autoFocus={props.autoFocus}
+      />
+    );
   }
 
   // ── Default fallback: plain text input ───────────────────────────────
@@ -108,64 +171,22 @@ export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>
   );
 }
 
-// ── Sub-dispatchers ──────────────────────────────────────────────────────────────
+// ── Shared sub-components ────────────────────────────────────────────────────
 
-/**
- * Status field editor — maps metadata labels to a Combobox dropdown.
- * Selection immediately commits and exits edit mode.
- */
-function StatusFieldEdit<TValue = unknown>({
+function EnumSelectEdit<TValue = unknown>({
   props,
+  labels,
 }: {
   props: EditableCellEditProps<TValue>;
+  labels?: Record<string, string>;
 }) {
-  const { fieldDefinition } = useFieldContext();
-  const meta = fieldDefinition.metadata as StatusFieldMetadata;
-
   const options = useMemo<ComboboxOption[]>(() => {
-    if (!meta.labels) return [];
-    return Object.entries(meta.labels).map(([value, label]) => ({
-      value,
-      label,
-    }));
-  }, [meta.labels]);
-
-  return (
-    <FieldSelectInput
-      instanceId={props.instanceId}
-      value={String(props.value ?? "")}
-      options={options}
-      onOptionSelected={(selectedValue) => {
-        // Immediate commit: selection = persist + close
-        props.onEnter(selectedValue as TValue);
-      }}
-      onEscape={() => {
-        // Close without persisting
-        props.onEscape(null as TValue);
-      }}
-    />
-  );
-}
-
-/**
- * Direction field editor — IN/OUT dropdown.
- * Selection immediately commits and exits edit mode.
- */
-function DirectionFieldEdit<TValue = unknown>({
-  props,
-}: {
-  props: EditableCellEditProps<TValue>;
-}) {
-  const { fieldDefinition } = useFieldContext();
-  const meta = fieldDefinition.metadata as DirectionFieldMetadata;
-
-  const options = useMemo<ComboboxOption[]>(() => {
-    const labels = meta.labels ?? DIRECTION_LABELS;
+    if (!labels) return [];
     return Object.entries(labels).map(([value, label]) => ({
-      value: value.toUpperCase(),
+      value,
       label,
     }));
-  }, [meta.labels]);
+  }, [labels]);
 
   return (
     <FieldSelectInput
@@ -182,26 +203,23 @@ function DirectionFieldEdit<TValue = unknown>({
   );
 }
 
-/**
- * Verify method field editor — dropdown of biometric/card/password modes.
- * Selection immediately commits and exits edit mode.
- */
-function VerifyMethodFieldEdit<TValue = unknown>({
+function SelectFieldEdit<TValue = unknown>({
   props,
+  options,
+  isLoadingOptions,
 }: {
   props: EditableCellEditProps<TValue>;
+  options: ComboboxOption[];
+  isLoadingOptions?: boolean;
 }) {
-  const { fieldDefinition } = useFieldContext();
-  const meta = fieldDefinition.metadata as VerifyMethodFieldMetadata;
-
-  const options = useMemo<ComboboxOption[]>(() => {
-    if (!meta.labels) return [];
-    return Object.entries(meta.labels).map(([value, label]) => ({
-      value,
-      label,
-    }));
-  }, [meta.labels]);
-
+  if (options.length === 0 && isLoadingOptions) {
+    return (
+      <div style={{ padding: "var(--ao-spacing-2)", display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
+        <Spinner size="sm" />
+        <Text variant="body" color="secondary">Loading options...</Text>
+      </div>
+    );
+  }
   return (
     <FieldSelectInput
       instanceId={props.instanceId}

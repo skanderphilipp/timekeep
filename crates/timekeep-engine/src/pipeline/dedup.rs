@@ -174,6 +174,9 @@ mod tests {
             }
             Ok(self.known.lock().unwrap().contains(dedup_id))
         }
+        async fn get_punch(&self, _id: &str) -> Result<Option<AttendancePunch>, Error> {
+            Ok(None)
+        }
     }
 
     fn make_punch(user_pin: &str, device_sn: &str, timestamp_sec: i64) -> AttendancePunch {

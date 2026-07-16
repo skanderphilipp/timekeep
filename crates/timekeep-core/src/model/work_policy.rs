@@ -1,13 +1,21 @@
 //! Work policy — the rules that define what a work day looks like.
+//!
+//! # Architecture
+//!
+//! `WorkPolicy` is a **value object** — the pure config used by the attendance
+//! calculator. It has no identity and no lifecycle of its own.
+//!
+//! `WorkPolicyTemplate` is the **entity** — a named, reusable policy template
+//! stored in its own table. Departments reference templates by FK.
 
 use jiff::civil::Time;
 use serde::{Deserialize, Serialize};
 
 /// Rules defining work schedule, late thresholds, and working days.
 ///
-/// Persisted in system settings to control how attendance is evaluated
-/// across the entire application: late detection, absence calculation,
-/// overtime tracking, and report aggregation.
+/// This is the **value object** used by the attendance calculator
+/// (`WorkDay`, `is_late`, `is_early_leave`). It carries no identity.
+/// For named, reusable policies with identity, see [`WorkPolicyTemplate`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WorkPolicy {
     /// Expected work start time (e.g., 08:00).
@@ -28,6 +36,98 @@ pub struct WorkPolicy {
     /// Days not in this set are excluded from absence calculations.
     #[serde(default = "default_working_days")]
     pub working_days: [bool; 7],
+}
+
+/// A named, reusable work policy template — the **entity** with identity.
+///
+/// Departments reference templates via `work_policy_id` FK. Changing a
+/// template affects all departments assigned to it.
+///
+/// # Example
+///
+/// ```text
+/// WorkPolicyTemplate { title: "Night Shift", work_start: 22:00, work_end: 06:00 }
+/// ```
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WorkPolicyTemplate {
+    /// Universally unique identifier (UUID v7).
+    pub id: String,
+    /// Human-readable title (e.g. "Night Shift", "Standard 9-5").
+    pub title: String,
+    /// Optional description shown in the UI.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Expected work start time (e.g., 08:00).
+    pub work_start: Time,
+    /// Expected work end time (e.g., 17:00).
+    pub work_end: Time,
+    /// Grace period in seconds after work_start before an arrival is late.
+    pub late_threshold_secs: i64,
+    /// Minimum seconds of work for a "full day" (vs half day).
+    pub min_seconds_for_present: i64,
+    /// Seconds of work after which overtime starts.
+    pub daily_overtime_after_secs: i64,
+    /// Working days (Mon=0, Sun=6).
+    pub working_days: [bool; 7],
+    /// When this template was created.
+    pub created_at: jiff::Timestamp,
+    /// When this template was last modified.
+    pub updated_at: jiff::Timestamp,
+}
+
+impl WorkPolicyTemplate {
+    /// Create a new work policy template from a title and a policy value object.
+    pub fn new(title: impl Into<String>, description: Option<String>, policy: &WorkPolicy) -> Self {
+        let now = jiff::Timestamp::now();
+        Self {
+            id: uuid::Uuid::now_v7().to_string(),
+            title: title.into(),
+            description,
+            work_start: policy.work_start,
+            work_end: policy.work_end,
+            late_threshold_secs: policy.late_threshold_secs,
+            min_seconds_for_present: policy.min_seconds_for_present,
+            daily_overtime_after_secs: policy.daily_overtime_after_secs,
+            working_days: policy.working_days,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    /// Convert this template into the calculator-friendly [`WorkPolicy`] value object.
+    pub fn to_work_policy(&self) -> WorkPolicy {
+        WorkPolicy {
+            work_start: self.work_start,
+            work_end: self.work_end,
+            late_threshold_secs: self.late_threshold_secs,
+            min_seconds_for_present: self.min_seconds_for_present,
+            daily_overtime_after_secs: self.daily_overtime_after_secs,
+            working_days: self.working_days,
+        }
+    }
+
+    /// Update the template title.
+    pub fn rename(&mut self, title: impl Into<String>) {
+        self.title = title.into();
+        self.updated_at = jiff::Timestamp::now();
+    }
+
+    /// Update the template description.
+    pub fn set_description(&mut self, description: Option<String>) {
+        self.description = description;
+        self.updated_at = jiff::Timestamp::now();
+    }
+
+    /// Update the policy configuration.
+    pub fn update_config(&mut self, config: &WorkPolicy) {
+        self.work_start = config.work_start;
+        self.work_end = config.work_end;
+        self.late_threshold_secs = config.late_threshold_secs;
+        self.min_seconds_for_present = config.min_seconds_for_present;
+        self.daily_overtime_after_secs = config.daily_overtime_after_secs;
+        self.working_days = config.working_days;
+        self.updated_at = jiff::Timestamp::now();
+    }
 }
 
 fn default_working_days() -> [bool; 7] {

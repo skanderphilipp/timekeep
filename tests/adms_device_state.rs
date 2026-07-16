@@ -299,6 +299,7 @@ fn test_device_config_from_auto_registration_has_serial_and_host() {
         vendor: probe.vendor.clone(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     assert_eq!(config.serial_number, "AUTOREG-SN-001");
@@ -322,6 +323,7 @@ fn test_device_config_from_auto_registration_empty_host_fallback() {
         vendor: probe.vendor.clone(),
         location: None,
         poll_interval_secs: None,
+        group_id: None,
     };
 
     assert!(config.host.is_empty(), "host is empty when no TCP connection info is available");

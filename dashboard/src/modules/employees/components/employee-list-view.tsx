@@ -1,12 +1,13 @@
+import { useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPlus } from "@tabler/icons-react";
 
-import { AppRoute } from "@/lib/navigation";
 import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { DataListView } from "@/modules/data-renderer";
 import { useEmployeeListPage } from "../hooks/use-employee-list-page";
+import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import { EmployeeCalendarView } from "./employee-calendar-view";
 
 /**
@@ -15,11 +16,21 @@ import { EmployeeCalendarView } from "./employee-calendar-view";
  * All state and logic delegated to {@link useEmployeeListPage}.
  * Supports table and calendar views via {@link DataListView} ViewPicker.
  *
- * Inline editing: name and department columns are click-to-edit (Phase 4).
+ * Inline editing: name column is click-to-edit. Department is FK-driven
+ * and edited through the full form (not inline).
  */
 export function EmployeeListView() {
   const { _ } = useLingui();
   const page = useEmployeeListPage();
+  const openRecord = useOpenRecordInSidePanel();
+
+  const handleAddEmployee = useCallback(() => {
+    openRecord({
+      entityType: "employee",
+      title: _(msg`Add Employee`),
+      isNewRecord: true,
+    });
+  }, [openRecord, _]);
 
   return (
     <>
@@ -27,7 +38,7 @@ export function EmployeeListView() {
         title={_(msg`Employees`)}
         description={_(msg`Manage employee records and view attendance.`)}
         actions={
-          <Button to={AppRoute.employees.new} size="sm" icon={<IconPlus size={16} />}>
+          <Button onClick={handleAddEmployee} size="sm" icon={<IconPlus size={16} />}>
             {_(msg`Add Employee`)}
           </Button>
         }
@@ -74,7 +85,7 @@ export function EmployeeListView() {
                 title={_(msg`No employees`)}
                 description={_(msg`Add your first employee to get started.`)}
                 action={
-                  <Button to={AppRoute.employees.new} icon={<IconPlus size={16} />}>
+                  <Button onClick={handleAddEmployee} icon={<IconPlus size={16} />}>
                     {_(msg`Add Employee`)}
                   </Button>
                 }

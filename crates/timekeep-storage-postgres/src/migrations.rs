@@ -117,6 +117,31 @@ impl PostgresStorage {
         .await
         .map_err(|e| Error::storage(format!("departments table: {e}")))?;
 
+        // v15 — device groups table for organizational device grouping
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS device_groups (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                description TEXT,
+                created_at BIGINT NOT NULL,
+                updated_at BIGINT NOT NULL
+            );
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("device_groups table: {e}")))?;
+
+        // v15 — add group_id column to devices
+        sqlx::query(
+            "ALTER TABLE devices ADD COLUMN IF NOT EXISTS group_id TEXT
+             REFERENCES device_groups(id) ON DELETE SET NULL",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("devices group_id column: {e}")))?;
+
         // API keys table — for integration partners (Odoo, Zapier, SAP, etc.)
         sqlx::query(
             r#"
@@ -389,6 +414,152 @@ impl PostgresStorage {
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("idx_ft_device: {e}")))?;
+
+        // v16 — add department_id FK to employees (references departments table)
+        sqlx::query(
+            "ALTER TABLE employees ADD COLUMN IF NOT EXISTS department_id TEXT REFERENCES departments(id) ON DELETE SET NULL",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("employees department_id column: {e}")))?;
+
+        // v17 — Work policy templates table + seed data
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS work_policy_templates (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL UNIQUE,
+                description TEXT,
+                work_start TEXT NOT NULL,
+                work_end TEXT NOT NULL,
+                late_threshold_secs BIGINT NOT NULL DEFAULT 900,
+                min_seconds_for_present BIGINT NOT NULL DEFAULT 14400,
+                daily_overtime_after_secs BIGINT NOT NULL DEFAULT 28800,
+                working_days TEXT NOT NULL DEFAULT '[true,true,true,true,true,false,false]',
+                created_at BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW())::BIGINT),
+                updated_at BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW())::BIGINT)
+            );
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("work_policy_templates table: {e}")))?;
+
+        // Seed predefined work policy templates (7 common shift patterns)
+        let seeds = [
+            (
+                "seed_standard_mon_fri",
+                "Standard (Mon-Fri)",
+                "Standard 9-to-5 schedule, Monday through Friday",
+                "09:00",
+                "17:00",
+                900i64,
+                14400i64,
+                28800i64,
+                "[true,true,true,true,true,false,false]",
+            ),
+            (
+                "seed_standard_sun_thu",
+                "Standard (Sun-Thu)",
+                "Standard schedule Sunday through Thursday (Middle East work week)",
+                "08:00",
+                "17:00",
+                900,
+                14400,
+                28800,
+                "[false,true,true,true,true,true,false]",
+            ),
+            (
+                "seed_night_shift",
+                "Night Shift",
+                "Overnight shift with next-day end time",
+                "22:00",
+                "06:00",
+                900,
+                14400,
+                28800,
+                "[true,true,true,true,true,false,false]",
+            ),
+            (
+                "seed_flexible",
+                "Flexible Hours",
+                "No fixed schedule. Late detection disabled.",
+                "00:00",
+                "23:59",
+                0,
+                14400,
+                86400,
+                "[true,true,true,true,true,false,false]",
+            ),
+            (
+                "seed_weekend_shift",
+                "Weekend Shift",
+                "Day shift covering Saturday and Sunday",
+                "08:00",
+                "20:00",
+                900,
+                14400,
+                43200,
+                "[false,false,false,false,false,true,true]",
+            ),
+            (
+                "seed_12h_day",
+                "12-Hour Day Shift",
+                "Long day shift, 4 days per week",
+                "06:00",
+                "18:00",
+                900,
+                21600,
+                43200,
+                "[true,true,true,true,false,false,false]",
+            ),
+            (
+                "seed_12h_night",
+                "12-Hour Night Shift",
+                "Long night shift, 4 nights per week",
+                "18:00",
+                "06:00",
+                900,
+                21600,
+                43200,
+                "[true,true,true,true,false,false,false]",
+            ),
+        ];
+
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as i64;
+
+        for (id, title, desc, start, end, late, min_h, ot, days) in seeds {
+            sqlx::query(
+                "INSERT INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                 ON CONFLICT (id) DO NOTHING",
+            )
+            .bind(id)
+            .bind(title)
+            .bind(desc)
+            .bind(start)
+            .bind(end)
+            .bind(late)
+            .bind(min_h)
+            .bind(ot)
+            .bind(days)
+            .bind(now)
+            .bind(now)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("seed work policy template '{title}': {e}")))?;
+        }
+
+        // v18 — Add work_policy_id FK to departments
+        sqlx::query(
+            "ALTER TABLE departments ADD COLUMN IF NOT EXISTS work_policy_id TEXT REFERENCES work_policy_templates(id) ON DELETE SET NULL",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("departments work_policy_id column: {e}")))?;
 
         // ── v13: Audit logs ────────────────────────────────────────
         sqlx::query(

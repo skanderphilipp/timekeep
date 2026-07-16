@@ -393,29 +393,66 @@ impl AttendanceCalculator {
     ///
     /// This is the "right now" view — different from the analytical summary
     /// which answers "over time" questions.
+    ///
+    /// When `per_pin_policies` is provided, late detection uses per-employee
+    /// department-specific thresholds instead of treating all employees against
+    /// the same org-default policy. Each employee's first check-in time is
+    /// compared against their effective policy's `is_late()` method.
     pub fn project_today_snapshot(
-        work_days: &[WorkDay],
         punches: &[AttendancePunch],
-        _policy: &WorkPolicy,
+        per_pin_policies: &std::collections::HashMap<String, WorkPolicy>,
+        org_default: &WorkPolicy,
         total_employees: usize,
     ) -> TodaySnapshot {
-        // Count distinct users with activity today
-        let present_users: std::collections::HashSet<&str> =
-            work_days.iter().map(|d| d.user_pin.as_str()).collect();
-        let present = present_users.len();
+        use std::collections::{HashMap, HashSet};
+
+        // Collect unique users with activity today
+        let mut all_users: HashSet<&str> = HashSet::new();
+        // Track each user's first check-in of the day for late detection
+        let mut first_check_in: HashMap<&str, jiff::civil::Time> = HashMap::new();
+        // Track currently-checked-in users: those with a CheckIn but no CheckOut yet
+        let mut has_check_in: HashSet<&str> = HashSet::new();
+        let mut has_check_out: HashSet<&str> = HashSet::new();
+        let mut check_in_by_user: HashMap<&str, &AttendancePunch> = HashMap::new();
+
+        for p in punches {
+            all_users.insert(&p.user_pin);
+            match p.status {
+                PunchStatus::CheckIn => {
+                    has_check_in.insert(&p.user_pin);
+                    let zoned = p.timestamp.to_zoned(jiff::tz::TimeZone::UTC);
+                    let arrival = zoned.datetime().time();
+                    first_check_in.entry(&p.user_pin).or_insert(arrival);
+                    check_in_by_user.entry(&p.user_pin).or_insert(p);
+                },
+                PunchStatus::CheckOut => {
+                    has_check_out.insert(&p.user_pin);
+                },
+                _ => {},
+            }
+        }
+
+        let present = all_users.len();
         let absent = total_employees.saturating_sub(present);
 
-        // Late arrivals: first check-in after work_start + threshold
-        let late = work_days.iter().filter(|d| d.status == DayStatus::Late).count();
-        let on_time = present.saturating_sub(late);
-
-        // Currently checked in: open regular periods
-        let currently_checked_in: Vec<CheckedInEmployee> = work_days
+        // Late detection: per-employee policy applied to first check-in
+        let late = first_check_in
             .iter()
-            .filter(|d| d.is_present_now())
-            .map(|d| CheckedInEmployee {
-                user_pin: d.user_pin.clone(),
-                check_in_epoch: d.first_punch.as_second(),
+            .filter(|(pin, arrival)| {
+                let effective = per_pin_policies.get(&pin.to_string()).unwrap_or(org_default);
+                effective.is_late(**arrival)
+            })
+            .count();
+        let on_time = first_check_in.len().saturating_sub(late);
+
+        // Currently checked in: users with check-in but no check-out
+        let currently_checked_in: Vec<CheckedInEmployee> = has_check_in
+            .difference(&has_check_out)
+            .filter_map(|pin| {
+                check_in_by_user.get(pin).map(|p| CheckedInEmployee {
+                    user_pin: p.user_pin.clone(),
+                    check_in_epoch: p.timestamp.as_second(),
+                })
             })
             .collect();
 
@@ -1073,9 +1110,9 @@ mod tests {
             punch_at("146", d, time(17, 0, 0), PunchStatus::CheckOut),
         ];
         let policy = WorkPolicy::standard_9to5();
-        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        let per_pin = std::collections::HashMap::new(); // both use org default
 
-        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 10);
+        let snap = AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &policy, 10);
         assert_eq!(snap.present, 2);
         assert_eq!(snap.absent, 8);
         assert_eq!(snap.late, 0);
@@ -1088,9 +1125,9 @@ mod tests {
         let d = date_2026_07_10();
         let punches = vec![punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn)];
         let policy = WorkPolicy::standard_9to5();
-        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        let per_pin = std::collections::HashMap::new();
 
-        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        let snap = AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &policy, 5);
         assert_eq!(snap.present, 1);
         assert_eq!(snap.currently_checked_in.len(), 1);
         assert_eq!(snap.currently_checked_in[0].user_pin, "145");
@@ -1105,9 +1142,9 @@ mod tests {
         ];
         let mut policy = WorkPolicy::standard_9to5();
         policy.late_threshold_secs = 15 * 60;
-        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        let per_pin = std::collections::HashMap::new();
 
-        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        let snap = AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &policy, 5);
         assert_eq!(snap.late, 1);
         assert_eq!(snap.on_time, 0);
     }
@@ -1121,11 +1158,89 @@ mod tests {
             punch_at("145", d, time(13, 0, 0), PunchStatus::CheckIn),
         ];
         let policy = WorkPolicy::standard_9to5();
-        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        let per_pin = std::collections::HashMap::new();
 
-        let snap = AttendanceCalculator::project_today_snapshot(&work_days, &punches, &policy, 5);
+        let snap = AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &policy, 5);
         assert_eq!(snap.hourly_breakdown[9], 2);
         assert_eq!(snap.hourly_breakdown[13], 1);
         assert_eq!(snap.hourly_breakdown[0], 0);
+    }
+
+    #[test]
+    fn today_snapshot_per_pin_policies() {
+        let d = date_2026_07_10();
+        // Warehouse employee checks in at 06:10 (not late for warehouse policy which starts at 06:00)
+        // Office employee checks in at 09:10 (not late for standard 9-to-5 with 15 min grace)
+        let punches = vec![
+            punch_at("145", d, time(6, 10, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(14, 0, 0), PunchStatus::CheckOut),
+            punch_at("146", d, time(9, 10, 0), PunchStatus::CheckIn),
+        ];
+
+        let warehouse_policy = WorkPolicy {
+            work_start: jiff::civil::Time::new(6, 0, 0, 0).unwrap(),
+            work_end: jiff::civil::Time::new(14, 0, 0, 0).unwrap(),
+            late_threshold_secs: 15 * 60,
+            ..WorkPolicy::standard_9to5()
+        };
+        let office_policy = WorkPolicy::standard_9to5();
+
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("145".to_string(), warehouse_policy), ("146".to_string(), office_policy.clone())]
+                .into();
+
+        let snap =
+            AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &office_policy, 10);
+        // 06:10 is not late for warehouse (within 15 min of 06:00)
+        // 09:10 is not late for office (within 15 min of 09:00)
+        assert_eq!(snap.late, 0);
+        assert_eq!(snap.on_time, 2);
+        assert_eq!(snap.present, 2);
+    }
+
+    #[test]
+    fn today_snapshot_per_pin_late_one_dept() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 20, 0), PunchStatus::CheckIn), // late for everyone
+            punch_at("146", d, time(6, 5, 0), PunchStatus::CheckIn),  // on time for warehouse
+        ];
+
+        let warehouse_policy = WorkPolicy {
+            work_start: jiff::civil::Time::new(6, 0, 0, 0).unwrap(),
+            work_end: jiff::civil::Time::new(14, 0, 0, 0).unwrap(),
+            late_threshold_secs: 10 * 60, // 10 min grace
+            ..WorkPolicy::standard_9to5()
+        };
+        let office_policy = WorkPolicy::standard_9to5(); // 15 min grace from 09:00
+
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("145".to_string(), office_policy.clone()), ("146".to_string(), warehouse_policy)]
+                .into();
+
+        let snap =
+            AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &office_policy, 10);
+        // 09:20 is late for office (past 09:00 + 15min grace)
+        // 06:05 is on time for warehouse (within 10min of 06:00)
+        assert_eq!(snap.late, 1);
+        assert_eq!(snap.on_time, 1);
+    }
+
+    #[test]
+    fn today_snapshot_falls_back_to_org_default() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 20, 0), PunchStatus::CheckIn),
+            punch_at("146", d, time(9, 5, 0), PunchStatus::CheckIn),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        // Empty per-pin map → both use org default
+        let per_pin = std::collections::HashMap::new();
+
+        let snap = AttendanceCalculator::project_today_snapshot(&punches, &per_pin, &policy, 10);
+        // 09:20 is late (past 09:00 + 15min)
+        // 09:05 is on time
+        assert_eq!(snap.late, 1);
+        assert_eq!(snap.on_time, 1);
     }
 }

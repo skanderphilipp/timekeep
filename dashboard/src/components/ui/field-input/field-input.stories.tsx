@@ -167,7 +167,7 @@ export const Boolean = {
 
 // ── Date ──────────────────────────────────────────────────────────
 
-export const Date = {
+export const DateField = {
   name: "FieldDateInput",
   render: () => {
     function Demo() {

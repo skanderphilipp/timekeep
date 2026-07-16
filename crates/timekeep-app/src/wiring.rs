@@ -15,7 +15,7 @@ use timekeep_circuit::CircuitBreaker;
 use timekeep_core::{
     BiometricDevice,
     events::{DomainEvent, EventBus},
-    traits::{Distributor, SearchStore, Storage},
+    traits::{Distributor, Storage},
 };
 use timekeep_engine::Engine;
 use timekeep_engine::distribution::DistributorHandle;
@@ -195,7 +195,7 @@ pub(crate) async fn wire(
     tracing::info!("outbox worker spawned");
 
     // ─── Search Indexer (keeps Tantivy in sync with domain events) ────
-    if let (Some(ref search), Some(ref employees)) = (&search, &employees) {
+    if let (Some(search), Some(employees)) = (&search, &employees) {
         let search_rx = event_bus.subscribe();
         let indexer = timekeep_storage_tantivy::indexer::SearchIndexer::new(
             search.clone(),

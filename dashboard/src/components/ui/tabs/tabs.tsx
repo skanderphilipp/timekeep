@@ -7,7 +7,11 @@ import styles from "./tabs.module.scss";
 // ── Tabs (Root) ─────────────────────────────────────────────────────────────────
 
 type TabsProps = {
-  children: ReactNode;
+  children?: ReactNode;
+  /** Explicit tab trigger items — bypasses children-based type detection. */
+  tabItems?: ReactNode[];
+  /** Explicit panel items — bypasses children-based type detection. */
+  panelItems?: ReactNode[];
   defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
@@ -18,23 +22,28 @@ type TabsProps = {
 /**
  * Tabs — accessible tabbed content built on @base-ui/react Tabs.
  *
- * Supports icons via `<Tab icon={...}>`. The active tab is indicated by
- * a background color (pill style) and primary text color — always clearly
- * distinguishable from inactive tabs.
+ * Supports two APIs:
+ * 1. **Children-based** (declarative):
+ *    `<Tabs><Tab>...</Tab><TabPanel>...</TabPanel></Tabs>`
+ *    Uses `isTabElement` type detection to separate Tab triggers from panels.
  *
- * Built-in keyboard navigation (arrow keys, Home/End), roving tabindex,
- * and animated transitions.
+ * 2. **Imperative** (explicit arrays):
+ *    `<Tabs tabItems={[...]} panelItems={[...]} />`
+ *    Bypasses type detection — reliable across all environments.
+ *    When using this API, `children` are rendered as extra content after
+ *    the panels (legacy support for arbitrary React nodes).
  *
- * @example
- * <Tabs defaultValue="overview">
- *   <Tab value="overview" icon={<IconUser size={16} />}>Overview</Tab>
- *   <Tab value="details" icon={<IconInfoCircle size={16} />}>Details</Tab>
- *   <TabPanel value="overview">Overview content</TabPanel>
- *   <TabPanel value="details">Details content</TabPanel>
- * </Tabs>
+ * @example Imperative (recommended for programmatic rendering)
+ * <Tabs
+ *   defaultValue="info"
+ *   tabItems={[<Tab key="info" value="info">Info</Tab>]}
+ *   panelItems={[<TabPanel key="info" value="info">Content</TabPanel>]}
+ * />
  */
 export function Tabs({
   children,
+  tabItems,
+  panelItems,
   defaultValue,
   value,
   onValueChange,
@@ -43,8 +52,17 @@ export function Tabs({
 }: TabsProps) {
   const tabs: ReactNode[] = [];
   const panels: ReactNode[] = [];
+  let isImperative = false;
 
-  childrenToSlots(children, tabs, panels);
+  if (tabItems && panelItems) {
+    // Imperative API — explicit arrays, no type detection needed
+    tabs.push(...tabItems);
+    panels.push(...panelItems);
+    isImperative = true;
+  } else if (children) {
+    // Declarative API — separate children by type
+    childrenToSlots(children, tabs, panels);
+  }
 
   return (
     <TabsPrimitive.Root
@@ -59,6 +77,8 @@ export function Tabs({
         {tabs}
       </TabsPrimitive.List>
       {panels}
+      {/* In imperative mode, children are extra content rendered after panels */}
+      {isImperative && children}
     </TabsPrimitive.Root>
   );
 }
@@ -70,7 +90,6 @@ Tabs.displayName = "Tabs";
 type TabProps = {
   value: string;
   children: ReactNode;
-  /** Optional icon rendered before the tab label. Inherits the tab's color. */
   icon?: ReactNode;
   disabled?: boolean;
   className?: string;
@@ -116,13 +135,6 @@ TabPanel.displayName = "TabPanel";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
 
-/**
- * Separates React children into tab triggers and panel content.
- *
- * Children whose `type` is the `Tab` function component go into `tabs`;
- * everything else (including `<TabPanel>`, text nodes, fragments) goes into
- * `panels`. Non-element children (null, booleans) are skipped.
- */
 function childrenToSlots(children: ReactNode, tabs: ReactNode[], panels: ReactNode[]): void {
   const kids = Array.isArray(children) ? children : children != null ? [children] : [];
   for (const child of kids) {
@@ -136,10 +148,14 @@ function childrenToSlots(children: ReactNode, tabs: ReactNode[], panels: ReactNo
 }
 
 function isTabElement(child: unknown): boolean {
-  return (
-    typeof child === "object" &&
-    child !== null &&
-    "type" in child &&
-    (child as { type: unknown }).type === Tab
-  );
+  if (typeof child !== "object" || child === null || !("type" in child)) {
+    return false;
+  }
+  const type = (child as { type: unknown }).type;
+  if (type === Tab) return true;
+  if (typeof type === "function") {
+    const fn = type as { displayName?: string; name?: string };
+    if (fn.displayName === "Tab" || fn.name === "Tab") return true;
+  }
+  return false;
 }

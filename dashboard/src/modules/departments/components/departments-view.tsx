@@ -1,46 +1,33 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconPlus } from "@tabler/icons-react";
 
 import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { DataListView, useSchemaColumns } from "@/modules/data-renderer";
-import { useDepartments } from "../hooks/use-departments";
-import type { Department } from "@/lib/api";
-import { DepartmentFormModal } from "./department-form-modal";
+import { DataListView } from "@/modules/data-renderer";
+import { useDepartmentsPage } from "../hooks/use-departments-page";
+import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 
 /**
- * Department list view — schema-driven table with name, policy, employee count.
+ * Department list view — schema-driven table with name, employee count, policy status.
  *
- * Admin actions: Create (modal), Edit (modal on row click).
- * Controlled at the route level for role-based access.
+ * All state and logic delegated to {@link useDepartmentsPage}.
+ *
+ * Admin actions: Create (side-panel form), Edit (side-panel on row click).
  */
 export function DepartmentsView() {
   const { _ } = useLingui();
-  const query = useDepartments();
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | undefined>(undefined);
-
-  const { columns, isLoading: schemaLoading } = useSchemaColumns("department");
+  const page = useDepartmentsPage();
+  const openRecord = useOpenRecordInSidePanel();
 
   const handleAdd = useCallback(() => {
-    setEditingId(undefined);
-    setModalOpen(true);
-  }, []);
-
-  const handleRowClick = useCallback((d: Department) => {
-    setEditingId(d.id);
-    setModalOpen(true);
-  }, []);
-
-  const handleModalClose = useCallback((open: boolean) => {
-    setModalOpen(open);
-    if (!open) setEditingId(undefined);
-  }, []);
-
-  const hasDepartments = (query.data?.length ?? 0) > 0;
+    openRecord({
+      entityType: "department",
+      title: _(msg`Add Department`),
+      isNewRecord: true,
+    });
+  }, [openRecord, _]);
 
   return (
     <>
@@ -57,16 +44,23 @@ export function DepartmentsView() {
       <Section>
         <DataListView
           entity="department"
-          columns={columns}
-          data={query.data ?? []}
-          getRowKey={(d: Department) => d.id}
-          isLoading={query.isLoading || schemaLoading}
-          error={query.error?.message ?? null}
-          onRetry={() => query.refetch()}
-          onRowClick={handleRowClick}
-          resultCount={query.data?.length}
+          columns={page.columns}
+          data={page.data}
+          getRowKey={(d) => d.id}
+          isLoading={page.isLoading}
+          error={page.error}
+          onRetry={page.refetch}
+          searchPlaceholder={_(msg`Search by name…`)}
+          searchValue={page.searchValue}
+          onSearchChange={page.onSearchChange}
+          filterFields={page.filterFields}
+          hasActiveFilters={page.hasActiveFilters}
+          onClearFilters={page.onClearFilters}
+          onRowClick={page.onRowClick}
+          editingConfig={page.editingConfig}
+          resultCount={page.resultCount}
           emptyState={
-            hasDepartments ? (
+            page.hasActiveFilters ? (
               <EmptyState
                 title={_(msg`No departments match`)}
                 description={_(msg`Try adjusting your search.`)}
@@ -83,12 +77,6 @@ export function DepartmentsView() {
               />
             )
           }
-        />
-
-        <DepartmentFormModal
-          open={modalOpen}
-          onOpenChange={handleModalClose}
-          departmentId={editingId}
         />
       </Section>
     </>

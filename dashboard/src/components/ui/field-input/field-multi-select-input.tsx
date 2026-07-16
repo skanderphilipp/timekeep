@@ -29,7 +29,6 @@ export type FieldMultiSelectInputProps = {
  * — the MultiSelect popup handles its own dismissal.
  */
 export function FieldMultiSelectInput({
-  instanceId,
   values,
   options,
   onOptionSelected,

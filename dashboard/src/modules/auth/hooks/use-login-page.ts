@@ -1,29 +1,25 @@
 import { useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
-import { isAuthenticatedSelector } from "@/infrastructure/state";
-import { useStateValue } from "@/infrastructure/state/jotai";
-import { fetchAbout } from "@/modules/auth/api/about";
-import { QueryKeys } from "@/lib/query-keys";
-import { ABOUT_STALE_TIME_MS } from "@/lib/constants";
+import { isAuthenticatedSelector, clientConfigState } from "@/infrastructure/state";
+import { WORKSPACE_NAME } from "@/lib/constants";
 
 /**
  * Login page orchestration hook.
  *
- * Exposes whether the user is already authenticated, the route to
- * redirect back to after login, and the workspace name for display.
+ * Reads the client bootstrap config from the Jotai `clientConfigState`
+ * atom (populated by `ClientConfigHydrator` on mount) instead of making
+ * a separate `GET /api/about` call. This reduces round-trips and ensures
+ * the login page shares the same workspace branding as the rest of the app.
  */
 export function useLoginPage() {
   const location = useLocation();
-  const isAuthenticated = useStateValue(isAuthenticatedSelector);
+  const isAuthenticated = useAtomValue(isAuthenticatedSelector.atom);
+  const clientConfig = useAtomValue(clientConfigState.atom);
 
   const from = (location.state as { from?: Location })?.from?.pathname || "/";
 
-  const { data: about } = useQuery({
-    queryKey: QueryKeys.auth.about(),
-    queryFn: fetchAbout,
-    staleTime: ABOUT_STALE_TIME_MS,
-  });
+  const workspace = clientConfig?.workspace_name || WORKSPACE_NAME;
 
-  return { isAuthenticated, from, about };
+  return { isAuthenticated, from, workspace };
 }

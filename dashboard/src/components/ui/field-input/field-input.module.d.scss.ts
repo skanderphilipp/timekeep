@@ -3,5 +3,16 @@ declare const classNames: {
   readonly fieldBooleanContainer: "fieldBooleanContainer";
   readonly fieldBooleanReadonly: "fieldBooleanReadonly";
   readonly fieldSelectDropdown: "fieldSelectDropdown";
+  readonly fieldWeekdayContainer: "fieldWeekdayContainer";
+  readonly fieldTimeWrapper: "fieldTimeWrapper";
+  readonly fieldTimeTrigger: "fieldTimeTrigger";
+  readonly fieldTimeChevron: "fieldTimeChevron";
+  readonly fieldTimePopover: "fieldTimePopover";
+  readonly fieldTimeColumn: "fieldTimeColumn";
+  readonly fieldTimeColumnLabel: "fieldTimeColumnLabel";
+  readonly fieldTimeColumnList: "fieldTimeColumnList";
+  readonly fieldTimeOption: "fieldTimeOption";
+  readonly fieldTimeOptionActive: "fieldTimeOptionActive";
+  readonly fieldTimeOptionDisabled: "fieldTimeOptionDisabled";
 };
 export = classNames;

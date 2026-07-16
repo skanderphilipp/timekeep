@@ -19,6 +19,7 @@ pub mod migrations;
 pub mod outbox;
 pub mod punch;
 pub mod settings;
+pub mod work_policy_templates;
 
 use async_trait::async_trait;
 use sqlx::postgres::{PgPool, PgPoolOptions};
@@ -63,6 +64,9 @@ impl Storage for PostgresStorage {
     }
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error> {
         self.query_punches(filter).await
+    }
+    async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
+        self.get_punch(id).await
     }
     async fn punch_facets(
         &self,
@@ -379,6 +383,9 @@ impl timekeep_core::EmployeeStore for PostgresStorage {
     }
     async fn deactivate_employee(&self, id: &timekeep_core::EmployeeId) -> Result<(), Error> {
         self.deactivate_employee(id).await
+    }
+    async fn count_employees_in_department(&self, department_id: &str) -> Result<u64, Error> {
+        self.count_employees_in_department(department_id).await
     }
     async fn create_enrollment(
         &self,

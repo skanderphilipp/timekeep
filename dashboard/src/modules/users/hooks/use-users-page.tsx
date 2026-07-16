@@ -23,7 +23,8 @@ import {
 } from "@/modules/users/states/user-form-atoms";
 import { useUsers } from "./use-users";
 import type { DashboardUser } from "@/lib/api";
-import type { ColumnDefinition, TextFieldMetadata } from "@/modules/data-renderer";
+import type { ColumnDefinition, TextFieldMetadata, CellEditingConfig } from "@/modules/data-renderer";
+import { useRecordInlineEdit } from "@/modules/record-detail";
 
 function roleVariant(role: string): "success" | "warning" | "neutral" {
   switch (role) {
@@ -49,6 +50,10 @@ export function useUsersPage() {
   const { _ } = useLingui();
   const toast = useToast();
   const { query, deleteUser: deleteMutation, changePassword: passwordMutation } = useUsers();
+
+  // ── Inline editing mutation ────────────────────────────────────────
+
+  const editUser = useRecordInlineEdit("user");
 
   // ── Jotai atoms — cross-cutting UI state ──────────────────────────
   const formMode = useStateValue(userFormModeState);
@@ -121,6 +126,7 @@ export function useUsersPage() {
         metadata: { fieldName: "display_name", isSortable: true } as TextFieldMetadata,
         isVisible: true,
         width: "180px",
+        editable: true,
       },
       {
         id: "role",
@@ -193,6 +199,18 @@ export function useUsersPage() {
     [_, handleEdit, openPasswordDialog, openDeleteDialog],
   );
 
+  // ── Editing config passed to DataListView ──────────────────────────
+
+  const editingConfig = useMemo<CellEditingConfig>(
+    () => ({
+      onPersist: (rowId: string, field: string, value: unknown) => {
+        editUser.mutate({ rowId, field, value });
+      },
+      editableColumns: ["display_name"],
+    }),
+    [editUser.mutate],
+  );
+
   return {
     query,
     deleteMutation,
@@ -208,6 +226,7 @@ export function useUsersPage() {
     handleDelete,
     handlePasswordChange,
     columns,
+    editingConfig,
     users: query.data ?? [],
   } as const;
 }

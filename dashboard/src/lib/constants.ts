@@ -98,7 +98,7 @@ export const SECONDS_PER_WEEK = 604_800;
 /** Application display name. */
 export const APP_NAME = "TimeKeep";
 
-/** Workspace / company name shown on the auth screen. */
+/** Fallback workspace name — used when the client config endpoint hasn't responded yet. The canonical value comes from `GET /api/client-config` → `ClientConfigResponse.workspace_name` (stored in `clientConfigState` atom). */
 export const WORKSPACE_NAME = "Alsabah";
 
 // ═══════════════════════════════════════════════════════════════════════

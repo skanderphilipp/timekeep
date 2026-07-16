@@ -1,15 +1,27 @@
 import { IconDeviceDesktop } from "@tabler/icons-react";
 
 import { PageShell, PageBar } from "@/components/layout";
-import { DeviceDetailView } from "../components/device-detail-view";
+import { RecordDetailRenderer } from "@/modules/record-detail";
 import { useDeviceDetailPage } from "../hooks/use-device-detail-page";
+import {
+  DeviceDetailExtras,
+  DeviceConfigTabContent,
+  DeviceUsersTabContent,
+} from "../components/device-detail-content";
 
 /**
  * Device detail page — thin composite.
  *
- * All logic (route params, data fetching, label derivation) lives in
- * {@link useDeviceDetailPage}. The page only wires the result to
- * layout components.
+ * Delegates loading/error/empty states, header rendering, and tab structure
+ * to {@link RecordDetailRenderer} (ADR-008).
+ *
+ * Tab structure is declarative via `DETAIL_VIEW_CONFIGS.device.tabs`:
+ *   - Info tab: Connection + Status field sections (declarative)
+ *   - Config tab: DeviceForm (via `tabChildren.config`)
+ *   - Users tab: UserSyncActions + DeviceUsersTab (via `tabChildren.users`)
+ *
+ * Extra UI outside tabs (status bar, health cards, activity feed, dialogs)
+ * is passed as `children`.
  */
 export function DeviceDetailPage() {
   const page = useDeviceDetailPage();
@@ -25,13 +37,37 @@ export function DeviceDetailPage() {
         />
       }
     >
-      <DeviceDetailView
-        device={page.device}
-        deviceHealth={page.deviceHealth ?? null}
-        isLoading={page.isLoading}
-        error={page.error}
-        onRetry={() => page.refetch()}
-      />
+      <RecordDetailRenderer
+        entity="device"
+        entityId={page.sn}
+        isInSidePanel={false}
+        tabChildren={
+          page.device
+            ? {
+                config: (
+                  <DeviceConfigTabContent
+                    device={page.device}
+                    onRefresh={() => page.refetch()}
+                  />
+                ),
+                users: (
+                  <DeviceUsersTabContent
+                    device={page.device}
+                    onRefresh={() => page.refetch()}
+                  />
+                ),
+              }
+            : undefined
+        }
+      >
+        {page.device && (
+          <DeviceDetailExtras
+            device={page.device}
+            deviceHealth={page.deviceHealth}
+            onRefresh={() => page.refetch()}
+          />
+        )}
+      </RecordDetailRenderer>
     </PageShell>
   );
 }

@@ -58,6 +58,7 @@ export function useEndpointColumns(
         isVisible: true,
         isLabelIdentifier: true,
         width: "200px",
+        editable: true,
       },
       {
         id: "enabled",

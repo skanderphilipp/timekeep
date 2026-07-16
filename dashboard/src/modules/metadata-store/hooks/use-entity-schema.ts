@@ -5,6 +5,8 @@ import {
   fetchDeviceSchema,
   fetchEmployeeSchema,
   fetchAuditSchema,
+  fetchDepartmentSchema,
+  fetchWorkPolicyTemplateSchema,
 } from "@/lib/api";
 import { entitySchemaFamilyState } from "../states/entity-schema-family-state";
 import { metadataStatusFamilyState } from "../states/metadata-status-family-state";
@@ -18,6 +20,8 @@ const SCHEMA_FETCHERS: Record<string, () => Promise<EntitySchema>> = {
   device: fetchDeviceSchema,
   employee: fetchEmployeeSchema,
   audit: fetchAuditSchema,
+  department: fetchDepartmentSchema,
+  work_policy: fetchWorkPolicyTemplateSchema,
 };
 
 /**

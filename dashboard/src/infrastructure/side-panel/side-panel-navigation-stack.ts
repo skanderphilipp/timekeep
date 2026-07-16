@@ -16,17 +16,14 @@ export type SidePanelEntry = {
   instanceId: string;
   /** The type of entity being displayed. */
   entityType: EntityType;
-  /** The entity's unique identifier (empty string for create mode). */
+  /**
+   * The entity's unique identifier. An empty string signals a new record
+   * (Twenty pattern: no separate "mode" concept — `isNewRecord` is derived
+   * from `entityId.length === 0`).
+   */
   entityId: string;
   /** Title shown in the side panel header. */
   title: string;
-  /**
-   * Display mode.
-   * - `'view'` — read-only detail view (default)
-   * - `'edit'` — edit existing entity (requires entityId)
-   * - `'create'` — create new entity (entityId can be empty)
-   */
-  mode?: "view" | "edit" | "create";
 };
 
 // ── Navigation stack atoms ──────────────────────────────────────────────

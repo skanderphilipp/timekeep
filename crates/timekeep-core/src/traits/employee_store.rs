@@ -47,8 +47,8 @@ pub trait EmployeeStore: Send + Sync {
         filter: &EmployeeFilter,
     ) -> Result<ListResult<Employee>, Error> {
         let mut result = self.list_employees(&filter.params).await?;
-        if let Some(ref dept) = filter.department {
-            result.items.retain(|e| e.department.as_deref() == Some(dept.as_str()));
+        if let Some(ref dept_id) = filter.department_id {
+            result.items.retain(|e| e.department_id.as_deref() == Some(dept_id.as_str()));
         }
         if let Some(active) = filter.active {
             result.items.retain(|e| e.active == active);
@@ -62,6 +62,15 @@ pub trait EmployeeStore: Send + Sync {
 
     /// Deactivate an employee (soft delete). Punches are preserved.
     async fn deactivate_employee(&self, id: &EmployeeId) -> Result<(), Error>;
+
+    /// Count employees in a specific department.
+    ///
+    /// Returns the number of active employees assigned to the department.
+    /// Default implementation falls back to `list_employees_filtered` and counts
+    /// in memory. Storage backends SHOULD override this for SQL-level counting.
+    async fn count_employees_in_department(&self, _department_id: &str) -> Result<u64, Error> {
+        Ok(0)
+    }
 
     // ── Device Enrollments ────────────────────────────────────────────
 

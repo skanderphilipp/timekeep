@@ -86,6 +86,11 @@ export function fetchPunches(filter: PunchFilter = {}): Promise<PaginatedRespons
   return apiGet<PaginatedResponse<Punch>>(`punches${buildPunchParams(filter)}`).json();
 }
 
+/** Fetch a single punch by its deduplication ID. Requires Viewer+. */
+export function fetchPunch(id: string): Promise<Punch> {
+  return apiGet<Punch>(`punches/${encodeURIComponent(id)}`).json();
+}
+
 /**
  * Fetch punches with cursor metadata for infinite scroll.
  *

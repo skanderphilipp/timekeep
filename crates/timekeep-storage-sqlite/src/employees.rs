@@ -10,6 +10,7 @@ pub(super) struct EmployeeRow {
     pin: String,
     name: String,
     department: Option<String>,
+    department_id: Option<String>,
     external_id: Option<String>,
     active: i32,
     created_at: String,
@@ -35,6 +36,7 @@ impl EmployeeRow {
             id: timekeep_core::EmployeeId::from(self.id),
             pin: self.pin,
             name: self.name,
+            department_id: self.department_id,
             department: self.department,
             external_id: self.external_id,
             active: self.active != 0,
@@ -97,14 +99,11 @@ fn base64_encode_i64(value: i64) -> String {
 
 /// Simple base64 decode for cursor pagination.
 fn base64_decode_i64(encoded: &str) -> Option<i64> {
-    use base64::Engine;
-    let bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(encoded).ok()?;
-    if bytes.len() < 8 {
-        return None;
+    let cursor = timekeep_core::Cursor::decode(encoded)?;
+    match cursor.values.first()? {
+        timekeep_core::CursorValue::Int(i) => Some(*i),
+        _ => None,
     }
-    let mut arr = [0u8; 8];
-    arr.copy_from_slice(&bytes[..8]);
-    Some(i64::from_le_bytes(arr))
 }
 
 // ── EmployeeStore methods ───────────────────────────────────────
@@ -115,13 +114,14 @@ impl SqliteStorage {
         employee: &timekeep_core::Employee,
     ) -> Result<(), Error> {
         sqlx::query(
-            "INSERT INTO employees (id, pin, name, department, external_id, active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO employees (id, pin, name, department, department_id, external_id, active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(employee.id.to_string())
         .bind(&employee.pin)
         .bind(&employee.name)
         .bind(&employee.department)
+        .bind(&employee.department_id)
         .bind(&employee.external_id)
         .bind(employee.active as i32)
         .bind(employee.created_at.as_second().to_string())
@@ -137,7 +137,7 @@ impl SqliteStorage {
         id: &timekeep_core::EmployeeId,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
              FROM employees WHERE id = ?",
         )
         .bind(id.to_string())
@@ -152,7 +152,7 @@ impl SqliteStorage {
         pin: &str,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
              FROM employees WHERE pin = ?",
         )
         .bind(pin)
@@ -167,7 +167,7 @@ impl SqliteStorage {
         external_id: &str,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
              FROM employees WHERE external_id = ?",
         )
         .bind(external_id)
@@ -188,7 +188,7 @@ impl SqliteStorage {
         let search_pattern = timekeep_core::sanitize_search(search);
 
         let rows = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
              FROM employees
              WHERE (pin LIKE ? OR name LIKE ?)
              ORDER BY name ASC
@@ -219,11 +219,12 @@ impl SqliteStorage {
         employee: &timekeep_core::Employee,
     ) -> Result<(), Error> {
         let rows = sqlx::query(
-            "UPDATE employees SET name = ?, department = ?, external_id = ?, updated_at = ?
+            "UPDATE employees SET name = ?, department = ?, department_id = ?, external_id = ?, updated_at = ?
              WHERE id = ?",
         )
         .bind(&employee.name)
         .bind(&employee.department)
+        .bind(&employee.department_id)
         .bind(&employee.external_id)
         .bind(employee.updated_at.as_second().to_string())
         .bind(employee.id.to_string())
@@ -252,6 +253,21 @@ impl SqliteStorage {
             return Err(Error::not_found(format!("employee {}", id)));
         }
         Ok(())
+    }
+
+    pub(super) async fn count_employees_in_department(
+        &self,
+        department_id: &str,
+    ) -> Result<u64, Error> {
+        let count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM employees WHERE department_id = ? AND active = 1",
+        )
+        .bind(department_id)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("count employees in department: {e}")))?;
+
+        Ok(count as u64)
     }
 
     // ── Enrollments ────────────────────────────────────────────────
@@ -492,5 +508,300 @@ impl SqliteStorage {
             has_more: false,
             total: None,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use timekeep_core::model::department::Department;
+    use timekeep_core::{Employee, ListParams};
+
+    #[tokio::test]
+    async fn test_create_and_list_employees() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("123", "Ahmed", Some("Engineering".into()), None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        let list = storage.list_employees(&ListParams::default()).await.expect("should list");
+        assert_eq!(list.items.len(), 1);
+        assert_eq!(list.items[0].name, "Ahmed");
+        assert_eq!(list.items[0].pin, "123");
+        assert_eq!(list.items[0].department.as_deref(), Some("Engineering"));
+    }
+
+    #[tokio::test]
+    async fn test_create_multiple_employees() {
+        let storage = crate::test_storage().await;
+
+        for (pin, name) in [("101", "Ahmed"), ("102", "Fatima"), ("103", "Omar")] {
+            let emp = Employee::new(pin, name, None, None);
+            storage.create_employee(&emp).await.expect("should create");
+        }
+
+        let list = storage.list_employees(&ListParams::default()).await.expect("should list");
+        assert_eq!(list.items.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn test_find_employee_by_id() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("145", "Ahmed", None, None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found =
+            storage.find_employee(&emp.id).await.expect("should find").expect("should exist");
+        assert_eq!(found.name, "Ahmed");
+        assert_eq!(found.pin, "145");
+    }
+
+    #[tokio::test]
+    async fn test_find_employee_not_found() {
+        let storage = crate::test_storage().await;
+
+        let found =
+            storage.find_employee(&timekeep_core::EmployeeId::new()).await.expect("should query");
+        assert!(found.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_find_employee_by_pin() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("999", "Khalid", None, None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found =
+            storage.find_employee_by_pin("999").await.expect("should find").expect("should exist");
+        assert_eq!(found.name, "Khalid");
+
+        // Non-existent PIN returns None
+        let missing = storage.find_employee_by_pin("000").await.expect("should query");
+        assert!(missing.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_find_employee_by_external_id() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("200", "Sara", None, Some("ODOO-42".into()));
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found = storage
+            .find_employee_by_external_id("ODOO-42")
+            .await
+            .expect("should find")
+            .expect("should exist");
+        assert_eq!(found.name, "Sara");
+        assert_eq!(found.external_id.as_deref(), Some("ODOO-42"));
+
+        // Non-existent external_id returns None
+        let missing =
+            storage.find_employee_by_external_id("NONEXISTENT").await.expect("should query");
+        assert!(missing.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_update_employee() {
+        let storage = crate::test_storage().await;
+
+        let mut emp = Employee::new("300", "Ali", Some("Sales".into()), None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        emp.rename("Ali Mohammed");
+        emp.department = Some("Marketing".into());
+        storage.update_employee(&emp).await.expect("should update");
+
+        let found =
+            storage.find_employee(&emp.id).await.expect("should find").expect("should exist");
+        assert_eq!(found.name, "Ali Mohammed");
+        assert_eq!(found.department.as_deref(), Some("Marketing"));
+    }
+
+    #[tokio::test]
+    async fn test_update_employee_nonexistent_fails() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("400", "Ghost", None, None);
+        let err = storage.update_employee(&emp).await.unwrap_err();
+        assert!(err.to_string().contains("not found"));
+    }
+
+    #[tokio::test]
+    async fn test_deactivate_employee() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("500", "Zaid", None, None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        storage.deactivate_employee(&emp.id).await.expect("should deactivate");
+
+        let found = storage
+            .find_employee(&emp.id)
+            .await
+            .expect("should find")
+            .expect("should still exist (soft delete)");
+        assert!(!found.active);
+    }
+
+    #[tokio::test]
+    async fn test_deactivate_nonexistent_fails() {
+        let storage = crate::test_storage().await;
+
+        let err = storage.deactivate_employee(&timekeep_core::EmployeeId::new()).await.unwrap_err();
+        assert!(err.to_string().contains("not found"));
+    }
+
+    #[tokio::test]
+    async fn test_employee_with_department_id() {
+        let storage = crate::test_storage().await;
+
+        // Create a real department first so the FK reference is valid
+        let dept = Department::new("Engineering", None);
+        storage.create_department(&dept).await.expect("should create department");
+
+        // Simulate what the API does: resolve department → set both id and name
+        let mut emp = Employee::new("600", "Noor", Some("Engineering".into()), None);
+        emp.department_id = Some(dept.id.0.clone());
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found =
+            storage.find_employee(&emp.id).await.expect("should find").expect("should exist");
+        assert_eq!(found.department_id.as_deref(), Some(dept.id.0.as_str()));
+        assert_eq!(found.department.as_deref(), Some("Engineering"));
+    }
+
+    #[tokio::test]
+    async fn test_employee_without_department() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("700", "Layla", None, None);
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found =
+            storage.find_employee(&emp.id).await.expect("should find").expect("should exist");
+        assert!(found.department_id.is_none());
+        assert!(found.department.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_list_employees_with_search() {
+        let storage = crate::test_storage().await;
+
+        for (pin, name) in [("801", "Ahmed"), ("802", "Fatima"), ("803", "Omar")] {
+            let emp = Employee::new(pin, name, None, None);
+            storage.create_employee(&emp).await.expect("should create");
+        }
+
+        // Search by name
+        let params = ListParams { search: Some("Fatima".into()), ..ListParams::default() };
+        let result = storage.list_employees(&params).await.expect("should list");
+        assert_eq!(result.items.len(), 1);
+        assert_eq!(result.items[0].name, "Fatima");
+
+        // Search by PIN
+        let params = ListParams { search: Some("801".into()), ..ListParams::default() };
+        let result = storage.list_employees(&params).await.expect("should list");
+        assert_eq!(result.items.len(), 1);
+        assert_eq!(result.items[0].pin, "801");
+
+        // Search with no match
+        let params = ListParams { search: Some("Zargon".into()), ..ListParams::default() };
+        let result = storage.list_employees(&params).await.expect("should list");
+        assert!(result.items.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_list_employees_pagination() {
+        let storage = crate::test_storage().await;
+
+        for i in 0..5u8 {
+            let emp = Employee::new(format!("90{i}"), format!("Employee {i}"), None, None);
+            storage.create_employee(&emp).await.expect("should create");
+        }
+
+        // First page: limit 3
+        let params = ListParams { limit: 3, ..ListParams::default() };
+        let page1 = storage.list_employees(&params).await.expect("should list");
+        assert_eq!(page1.items.len(), 3);
+        assert!(page1.has_more);
+        assert!(page1.next_cursor.is_some());
+
+        // Second page: use cursor
+        let params =
+            ListParams { limit: 3, cursor: page1.next_cursor.clone(), ..ListParams::default() };
+        let page2 = storage.list_employees(&params).await.expect("should list");
+        assert_eq!(page2.items.len(), 2);
+        assert!(!page2.has_more);
+
+        // Verify no overlap between pages
+        let page1_pins: Vec<&str> = page1.items.iter().map(|e| e.pin.as_str()).collect();
+        let page2_pins: Vec<&str> = page2.items.iter().map(|e| e.pin.as_str()).collect();
+        for pin in &page2_pins {
+            assert!(!page1_pins.contains(pin), "page2 pin {pin} should not be in page1");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_create_employee_duplicate_pin() {
+        let storage = crate::test_storage().await;
+
+        let emp1 = Employee::new("111", "First", None, None);
+        storage.create_employee(&emp1).await.expect("should create");
+
+        let emp2 = Employee::new("111", "Second", None, None);
+        let err = storage.create_employee(&emp2).await.unwrap_err();
+        assert!(err.to_string().contains("UNIQUE"), "expected UNIQUE constraint error, got: {err}");
+    }
+
+    #[tokio::test]
+    async fn test_employee_active_default() {
+        let storage = crate::test_storage().await;
+
+        let emp = Employee::new("222", "Active", None, None);
+        assert!(emp.active, "new employee should be active by default");
+        storage.create_employee(&emp).await.expect("should create");
+
+        let found =
+            storage.find_employee(&emp.id).await.expect("should find").expect("should exist");
+        assert!(found.active);
+    }
+
+    // ─── Count Employees in Department ─────────────────────────────
+
+    #[tokio::test]
+    async fn test_count_employees_in_department() {
+        let storage = crate::test_storage().await;
+
+        // Create department first (FK constraint)
+        let dept = timekeep_core::Department::new("Engineering", None);
+        storage.create_department(&dept).await.expect("should create dept");
+        let dept_id = dept.id.0.clone();
+
+        // Create employees in the department
+        let mut emp1 = Employee::new("301", "Alice", None, None);
+        emp1.department_id = Some(dept_id.clone());
+        let mut emp2 = Employee::new("302", "Bob", None, None);
+        emp2.department_id = Some(dept_id.clone());
+        // An inactive employee — should not be counted
+        let mut emp3 = Employee::new("303", "Charlie", None, None);
+        emp3.department_id = Some(dept_id.clone());
+        emp3.active = false;
+
+        storage.create_employee(&emp1).await.unwrap();
+        storage.create_employee(&emp2).await.unwrap();
+        storage.create_employee(&emp3).await.unwrap();
+
+        let count = storage.count_employees_in_department(&dept_id).await.expect("should count");
+        assert_eq!(count, 2, "only active employees should be counted");
+    }
+
+    #[tokio::test]
+    async fn test_count_employees_empty_department() {
+        let storage = crate::test_storage().await;
+        let count =
+            storage.count_employees_in_department("nonexistent-dept").await.expect("should count");
+        assert_eq!(count, 0);
     }
 }

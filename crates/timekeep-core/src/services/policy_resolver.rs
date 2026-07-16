@@ -37,8 +37,8 @@ impl PolicyResolver {
         employee: &Employee,
         org_default: &WorkPolicy,
     ) -> WorkPolicy {
-        match &employee.department {
-            Some(dept_name) => match dept_store.get_department_by_name(dept_name).await {
+        match &employee.department_id {
+            Some(dept_id) => match dept_store.get_department(dept_id).await {
                 Ok(Some(dept)) => dept.work_policy.unwrap_or_else(|| org_default.clone()),
                 _ => org_default.clone(),
             },
@@ -87,7 +87,7 @@ impl PolicyResolver {
 mod tests {
     use super::*;
     use crate::Error as CoreError;
-    use crate::model::department::{Department, DepartmentId};
+    use crate::model::department::Department;
     use crate::model::work_policy::WorkPolicy;
     use crate::traits::department_store::DepartmentStore;
     use async_trait::async_trait;
@@ -108,8 +108,10 @@ mod tests {
         async fn list_departments(&self) -> Result<Vec<Department>, CoreError> {
             Ok(self.depts.lock().unwrap().clone())
         }
-        async fn get_department(&self, _id: &str) -> Result<Option<Department>, CoreError> {
-            Ok(None)
+        async fn get_department(&self, id: &str) -> Result<Option<Department>, CoreError> {
+            // Lookup by ID. In tests we use the pattern "dept-{name}" as synthetic IDs.
+            let name = id.strip_prefix("dept-").unwrap_or(id);
+            Ok(self.depts.lock().unwrap().iter().find(|d| d.name == name).cloned())
         }
         async fn get_department_by_name(
             &self,
@@ -129,7 +131,12 @@ mod tests {
     }
 
     fn make_employee(pin: &str, dept: Option<&str>) -> Employee {
-        Employee::new(pin, format!("User {pin}"), dept.map(String::from), None)
+        let mut emp = Employee::new(pin, format!("User {pin}"), dept.map(String::from), None);
+        // Simulate FK resolution: set department_id for the policy resolver to use
+        if let Some(name) = dept {
+            emp.department_id = Some(format!("dept-{name}"));
+        }
+        emp
     }
 
     fn make_dept(name: &str, policy: Option<WorkPolicy>) -> Department {

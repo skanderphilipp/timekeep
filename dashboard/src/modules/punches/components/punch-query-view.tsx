@@ -48,47 +48,47 @@ export function PunchQueryView() {
 	const { dimensions: filterDimensions } = useFilterFields("punch");
 
 	const filterContext = useMemo<FilterRenderContext>(() => ({
-		values: page.filters as Record<string, string | undefined>,
-		handlers: {
-			device_sn: page.handleDeviceChange,
-			status: page.handleStatusChange,
-			verify_mode: page.handleVerifyModeChange,
-			user_pin: page.handleSearchChange,
-		},
-		enumOptions: { status: statusOptions, verify_mode: verifyOptions },
-		facetSearch: {
-			device_sn: {
-				entity: "punch",
-				dimension: "device_sn",
-				context: {
-					since: page.filters.since,
-					until: page.filters.until,
-					status: page.filters.status,
+			values: page.filters as Record<string, string | undefined>,
+			handlers: {
+				device_sn: page.handleDeviceChange,
+				status: page.handleStatusChange,
+				verify_mode: page.handleVerifyModeChange,
+				user_pin: page.handleSearchChange,
+			},
+			enumOptions: { status: statusOptions, verify_mode: verifyOptions },
+			facetSearch: {
+				device_sn: {
+					entity: "punch",
+					dimension: "device_sn",
+					context: {
+						since: page.filters.since,
+						until: page.filters.until,
+						status: page.filters.status,
+					},
+				},
+				user_pin: {
+					entity: "punch",
+					dimension: "employee",
+					context: {
+						since: page.filters.since,
+						until: page.filters.until,
+						status: page.filters.status,
+					},
 				},
 			},
-			user_pin: {
-				entity: "punch",
-				dimension: "employee",
-				context: {
-					since: page.filters.since,
-					until: page.filters.until,
-					status: page.filters.status,
+			dateRange: {
+				from: page.dateFrom, to: page.dateTo,
+				onChange: page.handleDateChange,
+				presets: page.presets,
+			},
+			toggles: {
+				anomalies_only: {
+					checked: page.anomaliesOnly,
+					onChange: page.handleAnomaliesOnlyToggle,
+					label: _(msg`Show only anomalous punches`),
 				},
 			},
-		},
-		dateRange: {
-			from: page.dateFrom, to: page.dateTo,
-			onChange: page.handleDateChange,
-			presets: page.presets,
-		},
-		toggles: {
-			anomalies_only: {
-				checked: page.anomaliesOnly,
-				onChange: page.handleAnomaliesOnlyToggle,
-				label: _(msg`Show only anomalous punches`),
-			},
-		},
-	}), [page, statusOptions, verifyOptions, _]);
+		}), [page, statusOptions, verifyOptions, _]);
 
 	const filterFields = useMemo(
 		() => renderFilterDimensions(filterDimensions, filterContext),
@@ -155,6 +155,7 @@ export function PunchQueryView() {
 				hasActiveFilters={page.hasActiveFilters}
 				onClearFilters={page.handleClearFilters}
 				onSortChange={page.handleSortChange}
+				onRowClick={page.onRowClick}
 				columnOptions={columnOptions}
 				onColumnToggle={(id) => {
 					const currentIds = page.visibleColumnIds;

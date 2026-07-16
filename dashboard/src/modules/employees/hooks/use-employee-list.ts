@@ -11,6 +11,6 @@ import { QueryKeys } from "@/lib/query-keys";
 export function useEmployeeList() {
   return useQuery<Employee[]>({
     queryKey: QueryKeys.employees.list(),
-    queryFn: fetchEmployees,
+    queryFn: () => fetchEmployees(),
   });
 }

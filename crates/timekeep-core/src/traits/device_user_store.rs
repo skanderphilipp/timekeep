@@ -13,6 +13,7 @@ use crate::Error;
 
 /// Persists and queries device-synced user records.
 #[async_trait]
+#[allow(clippy::too_many_arguments)]
 pub trait DeviceUserStore: Send + Sync {
     /// Sync a user from the device into the local user table.
     /// PIN is the device's user ID, name is the display name on the device.

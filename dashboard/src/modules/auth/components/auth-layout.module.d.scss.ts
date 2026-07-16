@@ -3,7 +3,7 @@ declare const classNames: {
   readonly background: "background";
   readonly gradient: "gradient";
   readonly noise: "noise";
-  readonly shape: "shape";
+  readonly dots: "dots";
   readonly main: "main";
   readonly brand: "brand";
   readonly logo: "logo";

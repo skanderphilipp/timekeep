@@ -3,7 +3,6 @@ import { IconRadar, IconPlus, IconCheck } from "@tabler/icons-react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { AppRoute } from "@/lib/navigation";
 import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import { useNetworkScan } from "../hooks/use-network-scan";
 import { createDevice } from "@/lib/api";
@@ -47,6 +46,25 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
   const handleClose = () => {
     reset();
     onClose();
+  };
+
+  const handleAddSingle = async (d: DiscoveredDevice) => {
+    if (!d.serial_number || !d.ip_address) return;
+    try {
+      await createDevice({
+        serial_number: d.serial_number,
+        label: d.model || d.serial_number,
+        host: d.ip_address,
+        port: DEFAULT_ZKTECO_PORT,
+        comm_key: 0,
+        push_enabled: true,
+        timezone: null,
+      });
+      reset();
+      onClose();
+    } catch {
+      // Individual failure — user will see the scan results still visible
+    }
   };
 
   const [bulkAdding, setBulkAdding] = useState(false);
@@ -109,7 +127,7 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
       cell: (d: DiscoveredDevice) =>
         d.reachable && d.serial_number ? (
           <Button
-            to={`${AppRoute.devices.new}?sn=${d.serial_number}&model=${d.model ?? ""}&host=${d.ip_address ?? ""}`}
+            onClick={() => handleAddSingle(d)}
             size="sm"
             variant="secondary"
             icon={<IconPlus size={14} />}

@@ -200,6 +200,7 @@ export type {
 
 export {
   fetchApiKeys,
+  fetchApiKey,
   createApiKey,
   revokeApiKey,
 } from "./apikeys";
@@ -227,7 +228,6 @@ export type {
   UpdateEndpointRequest,
 } from "./integrations";
 
-// ── Audit ──────────────────────────────────────────────────────────────────────
 // ── Departments ────────────────────────────────────────────────────────────────
 
 export {
@@ -242,12 +242,53 @@ export {
 export type {
   Department,
   WorkPolicy,
-  DepartmentRequest,
+  CreateDepartmentRequest,
+  UpdateDepartmentRequest,
   DepartmentFacetParams,
 } from "./departments";
 
+// ── Work Policy Templates ──────────────────────────────────────────────────────
+
+export {
+  fetchWorkPolicyTemplates,
+  fetchWorkPolicyTemplate,
+  createWorkPolicyTemplate,
+  updateWorkPolicyTemplate,
+  deleteWorkPolicyTemplate,
+  fetchWorkPolicyTemplateSchema,
+  fetchWorkPolicyTemplateFilters,
+} from "./work-policies";
+export type {
+  WorkPolicyTemplate,
+  CreateWorkPolicyTemplateRequest,
+  UpdateWorkPolicyTemplateRequest,
+} from "./work-policies";
+
+// ── Device Groups ──────────────────────────────────────────────────────────────
+
+export {
+  fetchDeviceGroups,
+  fetchDeviceGroup,
+  createDeviceGroup,
+  updateDeviceGroup,
+  deleteDeviceGroup,
+  fetchDevicesInGroup,
+  setDeviceGroup,
+  syncDeviceGroup,
+  syncAllDevices,
+} from "./device-groups";
+export type {
+  DeviceGroup,
+  CreateDeviceGroupRequest,
+  UpdateDeviceGroupRequest,
+  SetDeviceGroupRequest,
+} from "./device-groups";
+
+// ── Audit ──────────────────────────────────────────────────────────────────────
+
 export {
   fetchAuditLogs,
+  fetchAuditEvent,
   fetchAuditSchema,
   fetchAuditFilters,
 } from "./audit";

@@ -1,10 +1,10 @@
 import type { FieldDefinition, FieldMetadata, TextFieldMetadata } from "../types";
 
 /**
- * Type guard: returns `true` if the field is a plain text field.
+ * Type guard: narrows a FieldDefinition to TextFieldMetadata.
  */
 export function isFieldText(
-  field: FieldDefinition<FieldMetadata>,
-): field is FieldDefinition<TextFieldMetadata> {
-  return field.type === "text";
+  def: FieldDefinition<FieldMetadata>,
+): def is FieldDefinition<TextFieldMetadata> {
+  return def.type === "text";
 }

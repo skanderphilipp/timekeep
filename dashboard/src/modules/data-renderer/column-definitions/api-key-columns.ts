@@ -21,7 +21,6 @@ export function createApiKeyColumns(_: T): ColumnDefinition[] {
         isSortable: true,
       } as TextFieldMetadata,
       isVisible: true,
-      isLabelIdentifier: true,
       width: "200px",
     },
     {

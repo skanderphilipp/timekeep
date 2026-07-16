@@ -8,31 +8,35 @@ import { PageHeader } from "@/components/layout";
 import { useToast } from "@/infrastructure/toast/toast";
 import { useEndpoints } from "../hooks/use-endpoints";
 import { useEndpointColumns } from "../hooks/use-endpoint-columns";
-import { EndpointForm } from "./endpoint-form";
+import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import { updateEndpoint, type IntegrationEndpoint } from "@/lib/api";
 import { DataListView } from "@/modules/data-renderer";
+import { useRecordInlineEdit } from "@/modules/record-detail";
 
 /**
  * Integration endpoints view — schema-driven table via {@link DataListView}.
  *
  * Column definitions are extracted to {@link useEndpointColumns}.
- * Dialogs (create/edit, delete) live outside the DataListView boundary.
+ * Create opens the side panel (Twenty pattern). The delete dialog stays
+ * as a modal confirmation (it's a destructive action, not a form).
+ *
+ * TODO(ENTERPRISE): Wire endpoint detail/editing through RecordDetailRenderer.
+ * Phase: Side panel detail views completion
+ * Impact: Clicking endpoint rows shows no detail; editing uses dialog placeholder.
+ * Fix: Add single-entity fetch + inline editing to RecordDetailRenderer for endpoint.
  */
 export function EndpointsView() {
   const { _ } = useLingui();
   const toast = useToast();
   const { query, remove } = useEndpoints();
+  const openRecord = useOpenRecordInSidePanel();
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<IntegrationEndpoint | undefined>();
+  // ── Inline editing mutation ────────────────────────────────────────
+
+  const editEndpoint = useRecordInlineEdit("endpoint");
+
   const [deleting, setDeleting] = useState<IntegrationEndpoint | undefined>();
   const [search, setSearch] = useState("");
-
-  const closeForm = useCallback(() => {
-    setFormOpen(false);
-    setEditing(undefined);
-    query.refetch();
-  }, [query]);
 
   const handleToggle = useCallback(
     async (ep: IntegrationEndpoint) => {
@@ -60,14 +64,21 @@ export function EndpointsView() {
     }
   }, [deleting, remove, query, toast, _]);
 
-  const openCreateForm = useCallback(() => {
-    setEditing(undefined);
-    setFormOpen(true);
-  }, []);
+  const handleCreate = useCallback(() => {
+    openRecord({
+      entityType: "endpoint",
+      title: _(msg`Create Endpoint`),
+      isNewRecord: true,
+    });
+  }, [openRecord, _]);
 
-  const handleEdit = useCallback((ep: IntegrationEndpoint) => {
-    setEditing(ep);
-    setFormOpen(true);
+  /**
+   * TODO(ENTERPRISE): Open endpoint detail in side panel for editing.
+   * Currently wired to no-op — will be replaced with side-panel navigation
+   * once endpoint detail views are configured in RecordDetailRenderer.
+   */
+  const handleEdit = useCallback((_ep: IntegrationEndpoint) => {
+    // Will become: openRecord({ entityType: "endpoint", entityId: ep.id, title: ep.name });
   }, []);
 
   const handleDeleteClick = useCallback((ep: IntegrationEndpoint) => {
@@ -75,6 +86,18 @@ export function EndpointsView() {
   }, []);
 
   const columns = useEndpointColumns(handleToggle, handleEdit, handleDeleteClick);
+
+  // ── Editing config passed to DataListView ──────────────────────────
+
+  const editingConfig = useMemo(
+    () => ({
+      onPersist: (rowId: string, field: string, value: unknown) => {
+        editEndpoint.mutate({ rowId, field, value });
+      },
+      editableColumns: ["name"],
+    }),
+    [editEndpoint.mutate],
+  );
 
   // ── Client-side search ──────────────────────────────────────────
   const endpoints = query.data ?? [];
@@ -105,7 +128,7 @@ export function EndpointsView() {
         )}
         actions={
           !query.isLoading && !query.error ? (
-            <Button size="sm" icon={<IconPlus size={16} />} onClick={openCreateForm}>
+            <Button size="sm" icon={<IconPlus size={16} />} onClick={handleCreate}>
               {_(msg`Add Endpoint`)}
             </Button>
           ) : undefined
@@ -129,6 +152,7 @@ export function EndpointsView() {
           viewOptions={viewOptions}
           currentView="table"
           onViewChange={() => {}}
+          editingConfig={editingConfig}
           resultCount={filtered.length}
           emptyState={
             endpoints.length > 0 ? (
@@ -141,7 +165,7 @@ export function EndpointsView() {
                 title={_(msg`No endpoints`)}
                 description={_(msg`Add your first integration endpoint to get started.`)}
                 action={
-                  <Button icon={<IconPlus size={16} />} onClick={openCreateForm}>
+                  <Button icon={<IconPlus size={16} />} onClick={handleCreate}>
                     {_(msg`Add Endpoint`)}
                   </Button>
                 }
@@ -150,16 +174,6 @@ export function EndpointsView() {
           }
         />
       </Section>
-
-      <Dialog
-        open={formOpen}
-        onOpenChange={(o) => {
-          if (!o) closeForm();
-        }}
-        title={_(editing ? msg`Edit Endpoint` : msg`Create Endpoint`)}
-      >
-        <EndpointForm endpoint={editing} onSuccess={closeForm} />
-      </Dialog>
 
       <Dialog
         open={!!deleting}

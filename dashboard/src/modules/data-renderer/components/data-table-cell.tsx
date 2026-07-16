@@ -5,7 +5,7 @@ import {
 } from "../contexts/data-table-cell-context";
 import { FieldContext, type FieldContextValue } from "../contexts/field-context";
 import { FieldDisplay } from "../field-displays";
-import type { ColumnDefinition, FieldMetadata } from "../types";
+import type { ColumnDefinition, FieldMetadata, ReferenceFieldMetadata } from "../types";
 
 // ── Cell renderer factory ──────────────────────────────────────────────────
 
@@ -16,55 +16,44 @@ import type { ColumnDefinition, FieldMetadata } from "../types";
  * and the existing `DataTableV2` component. Instead of building a parallel table,
  * we inject our context hierarchy + field dispatcher as a cell renderer.
  *
- * Returns a function `(row: T) => ReactNode` that `DataTableV2` can use directly.
+ * For `reference` columns: the cell is clickable and resolves the navigation
+ * target from `ReferenceFieldMetadata.referenceEntity`. Clicking the cell
+ * navigates to the referenced entity's detail panel.
  *
- * @example
- * ```ts
- * const columns: DataTableColumnV2<Punch>[] = createPunchColumns(_).map((col) => ({
- *   id: col.id,
- *   header: col.header,
- *   sortable: col.metadata?.isSortable,
- *   width: col.width,
- *   render: createCellRenderer(col, onCellClick),
- * }));
- * ```
+ * Returns a function `(row: T) => ReactNode` that `DataTableV2` can use directly.
  */
 export function createCellRenderer<T extends Record<string, unknown>>(
   column: ColumnDefinition<FieldMetadata>,
-  onCellClick?: (columnId: string, recordId: string) => void,
+  _onCellClick?: (columnId: string, recordId: string) => void,
   getRecordId?: (row: T) => string,
 ): (row: T) => ReactNode {
   return (row: T) => {
     const recordId = getRecordId ? getRecordId(row) : "";
-    let rawValue = (row as Record<string, unknown>)[column.fieldId] ?? "";
+    const rawValue = (row as Record<string, unknown>)[column.fieldId] ?? "";
 
     // Custom render takes priority
     if (column.render) {
       return column.render(row);
     }
 
-    // Resolve display labels and navigation IDs per column type
-    let entityId: string | undefined;
-    if (column.type === "employee_name") {
-      // Navigate to employee detail using the PIN, but display the name
-      const pin = (row as Record<string, unknown>)["user_pin"];
-      entityId = pin ? String(pin) : undefined;
-      // rawValue stays as the employee name
-    } else if (column.type === "user_pin") {
-      entityId = String(rawValue); // PIN for potential navigation use
-      // rawValue stays as the PIN — do NOT override with employee_name
+    // Generic: all references are clickable
+    const isClickable = column.type === "reference";
+
+    // For reference fields, resolve the display value from the display field
+    // and the entity ID from the referenceIdField.
+    let displayValue = rawValue;
+    let resolvedEntityId: string | undefined;
+    if (column.type === "reference") {
+      const meta = column.metadata as ReferenceFieldMetadata;
+      if (meta.displayField) {
+        const displayRaw = (row as Record<string, unknown>)[meta.displayField];
+        displayValue = displayRaw ?? rawValue;
+      }
+      const idRaw = (row as Record<string, unknown>)[meta.referenceIdField];
+      resolvedEntityId = idRaw ? String(idRaw) : undefined;
     }
 
-    const value = rawValue;
-
-    const isClickable =
-      column.type === "device_sn" || column.type === "employee_name" || !!column.isLabelIdentifier;
-
-    const handleClick = () => {
-      if (isClickable && onCellClick) {
-        onCellClick(column.id, recordId);
-      }
-    };
+    const value = displayValue;
 
     const cellContextValue: DataTableCellContextValue = {
       column,
@@ -76,10 +65,8 @@ export function createCellRenderer<T extends Record<string, unknown>>(
     const fieldContextValue: FieldContextValue = {
       fieldDefinition: column,
       value,
-      isLabelIdentifier: !!column.isLabelIdentifier,
-      onFieldClick: handleClick,
-      isEditMode: false,
-      entityId,
+      viewMode: "display",
+      entityId: resolvedEntityId,
     };
 
     return (

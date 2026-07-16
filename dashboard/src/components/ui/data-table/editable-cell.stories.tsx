@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider as JotaiProvider } from "jotai";
+import { userEvent, within, expect } from "@storybook/test";
 
 import { EditableCell } from "./editable-cell";
 import type { EditableCellEditProps } from "./editable-cell";
@@ -191,4 +192,96 @@ export const JustStartTyping: Story = {
       />
     </div>
   ),
+};
+
+// ── Interactive (play) stories ────────────────────────────────────────────
+
+/** Clicks the cell, types a new value, presses Enter. */
+export const ClickToEdit: Story = {
+  render: () => (
+    <div style={{ padding: 24, maxWidth: 300, fontFamily: "var(--ao-font-family)" }}>
+      <EditableCell<string>
+        rowId="row-1"
+        columnId="name"
+        value="Ahmed Al-Sabah"
+        renderDisplay={textDisplay}
+        renderEdit={textEdit}
+        onPersist={log}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText("Ahmed Al-Sabah")).toBeDefined();
+
+    const cell = canvas.getByRole("button");
+    await userEvent.click(cell);
+
+    const input = canvas.getByRole("textbox") as HTMLInputElement;
+    await expect(input).toBeDefined();
+    await expect(input.value).toBe("Ahmed Al-Sabah");
+
+    await userEvent.clear(input);
+    await userEvent.type(input, "Fatima Noor");
+    await expect(input.value).toBe("Fatima Noor");
+
+    await userEvent.keyboard("{Enter}");
+  },
+};
+
+/** Tab navigates from name to email cell. */
+export const TabNavigationInteractive: Story = {
+  render: () => (
+    <div
+      style={{
+        display: "flex",
+        gap: 16,
+        padding: 24,
+        maxWidth: 500,
+        fontFamily: "var(--ao-font-family)",
+      }}
+    >
+      <div style={{ width: 150 }}>
+        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Name</div>
+        <EditableCell<string>
+          rowId="row-1"
+          columnId="name"
+          value="Ahmed Al-Sabah"
+          renderDisplay={textDisplay}
+          renderEdit={textEdit}
+          onPersist={log}
+          editableColumns={["name", "email"]}
+        />
+      </div>
+      <div style={{ width: 200 }}>
+        <div style={{ fontSize: 11, color: "var(--ao-font-color-tertiary)", marginBottom: 4 }}>Email</div>
+        <EditableCell<string>
+          rowId="row-1"
+          columnId="email"
+          value="ahmed@alsabah.com"
+          renderDisplay={textDisplay}
+          renderEdit={textEdit}
+          onPersist={log}
+          editableColumns={["name", "email"]}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const nameCell = canvas.getAllByRole("button")[0];
+    await userEvent.click(nameCell);
+
+    const nameInput = canvas.getByRole("textbox") as HTMLInputElement;
+    await expect(nameInput.value).toBe("Ahmed Al-Sabah");
+
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, "Fatima Noor");
+    await userEvent.keyboard("{Tab}");
+
+    const emailInput = canvas.getByRole("textbox") as HTMLInputElement;
+    await expect(emailInput.value).toBe("ahmed@alsabah.com");
+  },
 };

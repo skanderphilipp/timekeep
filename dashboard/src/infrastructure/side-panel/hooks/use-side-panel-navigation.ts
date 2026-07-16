@@ -51,17 +51,56 @@ export function useSidePanelNavigation() {
 }
 
 /**
- * Hook that opens a detail panel for any entity type.
+ * Unified hook for opening any record in the side panel — replaces
+ * the previous split of `useOpenDetailPanel` (view) and
+ * `useOpenEditPanel` (edit/create).
  *
- * Used by cell click handlers to route to the correct detail view.
+ * Pattern: Twenty's `useOpenRecordInSidePanel`:
+ *   twenty-front/src/modules/side-panel/hooks/useOpenRecordInSidePanel.ts
  *
  * @example
  * ```tsx
- * const openDetail = useOpenDetailPanel();
- * // Click device SN → open device detail
- * openDetail("device", punch.device_sn, `Device ${punch.device_sn}`);
- * // Click user PIN → open user detail
- * openDetail("user", punch.user_pin, `User ${punch.user_pin}`);
+ * const openRecord = useOpenRecordInSidePanel();
+ *
+ * // View existing record
+ * openRecord({ entityType: "device", entityId: sn, title: "Device K40" });
+ *
+ * // Create new record
+ * openRecord({ entityType: "department", title: "Add Department", isNewRecord: true });
+ * ```
+ */
+export function useOpenRecordInSidePanel() {
+	const { pushEntry } = useSidePanelNavigation();
+
+	return useCallback(
+		(opts: {
+			entityType: EntityType;
+			entityId?: string;
+			title: string;
+			isNewRecord?: boolean;
+		}) => {
+			/**
+			 * Twenty pattern: no separate "mode" — new records use empty entityId.
+			 * The router derives isNewRecord = entityId.length === 0.
+			 */
+			const entityId = opts.isNewRecord ? "" : (opts.entityId ?? "");
+			pushEntry({ entityType: opts.entityType, entityId, title: opts.title });
+		},
+		[pushEntry],
+	);
+}
+
+/**
+ * @deprecated Use {@link useOpenRecordInSidePanel} instead.
+ *
+ * Kept for backward compatibility during migration.
+ *
+ * @example (migration)
+ * ```tsx
+ * // Before:
+ * openDetail("device", sn, `Device ${sn}`);
+ * // After:
+ * openRecord({ entityType: "device", entityId: sn, title: `Device ${sn}` });
  * ```
  */
 export function useOpenDetailPanel() {

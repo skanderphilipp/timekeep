@@ -1,76 +1,49 @@
 import { useFieldContext } from "../contexts/field-context";
-
 import { TextFieldDisplay } from "./text-field-display";
-import { DeviceSnFieldDisplay } from "./device-sn-field-display";
-import { UserPinFieldDisplay } from "./user-pin-field-display";
 import { TimestampFieldDisplay } from "./timestamp-field-display";
-import { StatusFieldDisplay } from "./status-field-display";
-import { DirectionFieldDisplay } from "./direction-field-display";
-import { VerifyMethodFieldDisplay } from "./verify-method-field-display";
+import { EnumFieldDisplay } from "./enum-field-display";
+import { ReferenceFieldDisplay } from "./reference-field-display";
+import { ArrayFieldDisplay } from "./array-field-display";
 import type {
   TimestampFieldMetadata,
   StatusFieldMetadata,
-  DirectionFieldMetadata,
-  VerifyMethodFieldMetadata,
+  EnumFieldMetadata,
+  ReferenceFieldMetadata,
+  ArrayFieldMetadata,
 } from "../types";
 
 /**
- * FieldDisplay — central dispatcher for cell rendering.
+ * FieldDisplay — central dispatcher for read-only cell rendering.
  *
- * Uses type guards (ported pulse pattern) for rendering dispatch
- * and targeted type assertions for metadata access where TypeScript's
- * discriminated union narrowing through generic FieldDefinition<T>
- * encounters limitations.
- *
- * Rendering priority:
- * 1. type guards + dedicated display components
- * 2. default: plain text
+ * Routes to the correct display component based on the generic
+ * `fieldDefinition.type`. No domain-specific field types exist —
+ * all FK/reference navigation uses `ReferenceFieldDisplay` with
+ * entity metadata from the column definition.
  */
 export function FieldDisplay() {
-  const { fieldDefinition, value } = useFieldContext();
+  const { fieldDefinition, value, entityId } = useFieldContext();
 
   const type = fieldDefinition.type;
 
-  // Device serial number → clickable chip → device detail
-  if (type === "device_sn") {
-    return <DeviceSnFieldDisplay value={String(value ?? "")} />;
-  }
+  // ── Text ────────────────────────────────────────────────────────────
 
-  // Employee name → clickable chip → user detail (navigates via PIN from entityId)
-  if (type === "employee_name") {
-    return <UserPinFieldDisplay value={String(value ?? "")} />;
-  }
-
-  // User PIN → plain text (non-clickable since US-19 routes via employee_name column)
-  if (type === "user_pin") {
+  if (type === "text" || type === "number") {
     return <TextFieldDisplay value={value} />;
   }
 
-  // Timestamp → formatted date/time
+  // ── Timestamp ───────────────────────────────────────────────────────
+
   if (type === "timestamp") {
     const meta = fieldDefinition.metadata as TimestampFieldMetadata;
     return <TimestampFieldDisplay value={Number(value ?? 0)} metadata={meta} />;
   }
 
-  // Status → colored Tag
+  // ── Status (colored tag with labels/colors) ─────────────────────────
+
   if (type === "status") {
     const meta = fieldDefinition.metadata as StatusFieldMetadata;
     return (
-      <StatusFieldDisplay value={String(value ?? "")} labels={meta.labels} colors={meta.colors} />
-    );
-  }
-
-  // Direction → IN/OUT Tag
-  if (type === "direction") {
-    const meta = fieldDefinition.metadata as DirectionFieldMetadata;
-    return <DirectionFieldDisplay value={String(value ?? "")} labels={meta.labels} />;
-  }
-
-  // Verify method → colored Tag (fingerprint, face, card, password, palm)
-  if (type === "verify_method") {
-    const meta = fieldDefinition.metadata as VerifyMethodFieldMetadata;
-    return (
-      <VerifyMethodFieldDisplay
+      <EnumFieldDisplay
         value={String(value ?? "")}
         labels={meta.labels}
         colors={meta.colors}
@@ -78,6 +51,40 @@ export function FieldDisplay() {
     );
   }
 
-  // Default: plain text
+  // ── Enum (colored tag with labels/colors, no navigation) ────────────
+
+  if (type === "enum") {
+    const meta = fieldDefinition.metadata as EnumFieldMetadata;
+    return (
+      <EnumFieldDisplay
+        value={String(value ?? "")}
+        labels={meta.labels}
+        colors={meta.colors}
+      />
+    );
+  }
+
+  // ── Reference (clickable FK chip → navigates to entity) ─────────────
+
+  if (type === "reference") {
+    const meta = fieldDefinition.metadata as ReferenceFieldMetadata;
+    return (
+      <ReferenceFieldDisplay
+        value={String(value ?? "")}
+        entityId={entityId ?? String(value ?? "")}
+        referenceEntity={meta.referenceEntity}
+      />
+    );
+  }
+
+  // ── Array (tag chips for string[] or boolean[]) ────────────────────
+
+  if (type === "array") {
+    const meta = fieldDefinition.metadata as ArrayFieldMetadata;
+    return <ArrayFieldDisplay value={value} metadata={meta} />;
+  }
+
+  // ── Default fallback ────────────────────────────────────────────────
+
   return <TextFieldDisplay value={value} />;
 }

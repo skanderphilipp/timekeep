@@ -43,8 +43,8 @@ impl std::fmt::Display for DepartmentId {
 /// # Example
 ///
 /// ```text
-/// Department { name: "Warehouse", work_policy: Some(NightShift) }
-/// Department { name: "Engineering", work_policy: None } // inherits org default
+/// Department { name: "Warehouse", work_policy_id: Some("tpl_night") }
+/// Department { name: "Engineering", work_policy_id: None } // inherits org default
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Department {
@@ -54,8 +54,18 @@ pub struct Department {
     /// Unique department name (e.g. "Engineering", "Warehouse").
     pub name: String,
 
-    /// Optional department-specific work policy.
-    /// `None` means the organization default from `SystemSettings` applies.
+    /// FK to `work_policy_templates.id`. When set, the department uses
+    /// this template's policy. When `None`, falls back to `work_policy`
+    /// (legacy inline JSON) → org default.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub work_policy_id: Option<String>,
+
+    /// Legacy: inline work policy JSON (pre-entity migration).
+    /// Kept for backward compatibility. New departments should use
+    /// `work_policy_id` instead.
+    ///
+    /// TODO(ENTERPRISE): Remove after all inline policies are migrated to templates.
+    /// Phase: Data cleanup after work policy entity migration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub work_policy: Option<WorkPolicy>,
 
@@ -73,6 +83,7 @@ impl Department {
         Self {
             id: DepartmentId::new(),
             name: name.into(),
+            work_policy_id: None,
             work_policy,
             created_at: now,
             updated_at: now,
@@ -85,16 +96,22 @@ impl Department {
         self.updated_at = jiff::Timestamp::now();
     }
 
-    /// Set or clear the department's work policy.
+    /// Set the work policy template FK (preferred).
+    pub fn set_work_policy_id(&mut self, template_id: Option<String>) {
+        self.work_policy_id = template_id;
+        self.updated_at = jiff::Timestamp::now();
+    }
+
+    /// Set or clear the department's work policy (legacy inline JSON).
     pub fn set_work_policy(&mut self, policy: Option<WorkPolicy>) {
         self.work_policy = policy;
         self.updated_at = jiff::Timestamp::now();
     }
 
     /// Whether this department has its own work policy
-    /// (rather than inheriting the organization default).
+    /// (either via template FK or legacy inline JSON).
     pub fn has_custom_policy(&self) -> bool {
-        self.work_policy.is_some()
+        self.work_policy_id.is_some() || self.work_policy.is_some()
     }
 }
 
@@ -108,6 +125,7 @@ mod tests {
         let dept = Department::new("Engineering", None);
         assert_eq!(dept.name, "Engineering");
         assert!(dept.work_policy.is_none());
+        assert!(dept.work_policy_id.is_none());
         assert!(!dept.has_custom_policy());
     }
 
@@ -117,6 +135,19 @@ mod tests {
         let dept = Department::new("Warehouse", Some(policy));
         assert!(dept.has_custom_policy());
         assert!(dept.work_policy.is_some());
+    }
+
+    #[test]
+    fn department_with_policy_template() {
+        let mut dept = Department::new("Security", None);
+        assert!(!dept.has_custom_policy());
+
+        dept.set_work_policy_id(Some("tpl_night_shift".into()));
+        assert!(dept.has_custom_policy());
+        assert_eq!(dept.work_policy_id, Some("tpl_night_shift".into()));
+
+        dept.set_work_policy_id(None);
+        assert!(!dept.has_custom_policy());
     }
 
     #[test]

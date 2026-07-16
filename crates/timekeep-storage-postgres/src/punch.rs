@@ -279,6 +279,25 @@ impl PostgresStorage {
 
     // ── Punch storage methods ───────────────────────────────────
 
+    pub(super) async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
+        let row = sqlx::query_as::<_, PunchRow>(
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    COALESCE(e.name, u.name) as employee_name,
+                    d.label as device_label
+             FROM attendance_punches p
+             LEFT JOIN users u ON u.pin = p.user_pin
+             LEFT JOIN employees e ON e.pin = p.user_pin
+             LEFT JOIN devices d ON d.serial_number = p.device_sn
+             WHERE p.id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("get punch: {e}")))?;
+
+        row.map(|r| r.into_punch()).transpose()
+    }
+
     pub(super) async fn store_punch(&self, punch: &AttendancePunch) -> Result<(), Error> {
         let dedup_id = punch.generate_deduplication_id();
         let ts = punch.timestamp.as_second().to_string();

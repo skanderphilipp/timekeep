@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from "@lingui/core";
 
-import type { ColumnDefinition, UserPinFieldMetadata, TextFieldMetadata } from "../types";
+import type { ColumnDefinition, ReferenceFieldMetadata, TextFieldMetadata } from "../types";
 import { msg } from "@lingui/core/macro";
 
 type T = (descriptor: MessageDescriptor) => string;
@@ -9,9 +9,12 @@ type T = (descriptor: MessageDescriptor) => string;
  * User column definitions — for the user list table.
  *
  * Columns:
- * - user_pin (label identifier → clickable Chip)
+ * - user_pin (reference → clickable chip → user detail)
  * - name (plain text)
  * - role (plain text)
+ *
+ * Deprecated: pages now use useSchemaColumns("user").
+ * Kept for storybook and test backward compat.
  *
  * TODO(ENTERPRISE): Add enrollment status column when user API returns it.
  * Phase: User management
@@ -25,13 +28,14 @@ export function createUserColumns(_: T): ColumnDefinition[] {
       header: _(msg`PIN`),
       fieldId: "user_pin",
       label: _(msg`PIN`),
-      type: "user_pin",
+      type: "reference",
       metadata: {
         fieldName: "user_pin",
         isSortable: true,
-      } as UserPinFieldMetadata,
+        referenceEntity: "user",
+        referenceIdField: "user_pin",
+      } as ReferenceFieldMetadata,
       isVisible: true,
-      isLabelIdentifier: true,
       width: "120px",
     },
     {

@@ -31,12 +31,24 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         crate::users::whoami,
         crate::routes::auth::health_check,
 
+        // ── Config ──
+        crate::routes::auth::client_config,
+
+        // ── Search ──
+        crate::routes::search::global_search,
+
         // ── Devices ──
         crate::routes::devices::list_devices,
         crate::routes::devices::get_device,
         crate::routes::devices::add_device,
         crate::routes::devices::update_device,
         crate::routes::devices::remove_device,
+
+        // ── Device Synced Users ──
+        crate::routes::devices::list_synced_device_users,
+
+        // ── Device Activity ──
+        crate::routes::devices::device_activity,
 
         // ── Device Discovery & Provisioning ──
         crate::routes::devices::discover_device,
@@ -74,9 +86,21 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Device Users ──
         crate::routes::device_users::set_user_on_device,
         crate::routes::device_users::delete_user_from_device,
+        crate::routes::device_users::bulk_set_users_on_device,
 
         // ── Device Commands ──
         crate::routes::device_users::enqueue_device_command,
+
+        // ── Device Operations ──
+        crate::routes::device_users::sync_device_clock,
+        crate::routes::device_users::restart_device,
+        crate::routes::device_users::resync_device,
+        crate::routes::device_users::sync_device_to_device,
+        crate::routes::device_users::sync_all_devices,
+        crate::routes::device_users::transfer_templates,
+
+        // ── Device Group Sync ──
+        crate::routes::device_users::sync_device_group,
 
         // ── API Keys ──
         crate::management::list_api_keys,
@@ -110,8 +134,29 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
         // ── Employees ──
         crate::employees::list_employees,
+        crate::employees::create_employee,
+        crate::employees::get_employee,
+        crate::employees::update_employee,
+        crate::employees::deactivate_employee,
         crate::employees::employee_schema,
         crate::employees::employee_filters,
+
+        // ── Employee Attendance ──
+        crate::employees::employee_work_days,
+        crate::employees::employee_summary,
+        crate::employees::employee_monthly_trend,
+        crate::employees::employee_calendar,
+
+        // ── Employee Dashboard ──
+        crate::employees::dashboard_quick_stats,
+
+        // ── Employee Device Enrollment ──
+        crate::employees::enroll_employee,
+        crate::employees::list_device_enrollments,
+
+        // ── Employee Device Sync ──
+        crate::employees::sync_employee_to_devices,
+        crate::employees::remove_employee_from_devices,
 
         // ── Departments ──
         crate::routes::departments::list_departments,
@@ -121,6 +166,15 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         crate::routes::departments::delete_department,
         crate::routes::departments::department_schema,
         crate::routes::departments::department_filters,
+
+        // ── Device Groups ──
+        crate::routes::device_groups::list_groups,
+        crate::routes::device_groups::get_group,
+        crate::routes::device_groups::create_group,
+        crate::routes::device_groups::update_group,
+        crate::routes::device_groups::delete_group,
+        crate::routes::device_groups::list_devices_in_group,
+        crate::routes::device_groups::set_device_group,
     ),
     components(
         schemas(
@@ -140,6 +194,12 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             DeviceSummary,
             DeviceDetailResponse,
 
+            // Device Synced Users
+            SyncedUserResponse,
+
+            // Device Activity
+            DeviceActivityEntry,
+
             // Device Discovery & Provisioning
             DiscoverDeviceRequest,
             ScanNetworkRequest,
@@ -147,7 +207,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             DeviceDiscoverResponse,
             NetworkScanResponse,
 
-            // Device Activity
+            // Device Events
             DeviceEventListQuery,
             DeviceEventResponse,
 
@@ -177,6 +237,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
             // Dashboard
             TodaySummaryResponse,
+            QuickStatsResponse,
 
             // Reports
             ReportSummaryQuery,
@@ -216,23 +277,46 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             // Export
             ExportFormat,
 
+            // Employees
+            CreateEmployeeRequest,
+            UpdateEmployeeRequest,
+            EmployeeResponse,
+            EmployeeWorkDaysResponse,
+            EmployeeSummaryResponse,
+            WorkDayResponse,
+            WorkPeriodResponse,
+            MonthlyTrendResponse,
+            CalendarDayResponse,
+            EnrollEmployeeRequest,
+            EmployeeListQuery,
+
             // Departments
             CreateDepartmentRequest,
             UpdateDepartmentRequest,
             DepartmentResponse,
             WorkPolicyInput,
-            EmployeeListQuery,
+
+            // Device Groups
+            CreateDeviceGroupRequest,
+            UpdateDeviceGroupRequest,
+            SetDeviceGroupRequest,
+            DeviceGroupResponse,
 
             // Status
             StatusResponse,
 
             // Health
             HealthResponse,
+
+            // Client Config
+            ClientConfigResponse,
         )
     ),
     tags(
         (name = "Auth", description = "Authentication — JWT token issuance"),
+        (name = "Config", description = "Client bootstrap configuration — workspace info, setup status, feature flags"),
         (name = "Health", description = "Health check and Prometheus metrics"),
+        (name = "Search", description = "Full-text search across all indexed entities"),
         (name = "Devices", description = "Biometric device registration, discovery, provisioning, and monitoring"),
         (name = "Providers", description = "Device provider registry — supported vendors and capabilities"),
         (name = "Discovery", description = "Network scanning and device auto-detection"),
@@ -246,7 +330,9 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         (name = "Audit", description = "Audit log — complete timeline of all system activity"),
         (name = "Export", description = "Data export endpoints — CSV and Excel downloads"),
         (name = "Integration", description = "Machine-to-machine integration API (API key auth, port 3001)"),
+        (name = "Employees", description = "Employee directory — CRUD, attendance queries, device enrollment"),
         (name = "Departments", description = "Organizational departments with work policy overrides — groups employees for scheduling and reporting"),
+        (name = "Device Groups", description = "Device groups for department-scoped employee sync operations"),
     )
 )]
 pub struct ApiDoc;
@@ -288,5 +374,127 @@ mod tests {
         assert!(json.contains("bearer_auth"));
         assert!(json.contains("openapi"));
         assert!(json.contains("X-API-Key"));
+    }
+
+    /// Coverage test: verify every major API group is represented in the spec.
+    ///
+    /// If you add a new route group to `management_router()`, add its paths
+    /// here or this test will remind you.
+    #[test]
+    fn test_openapi_path_coverage() {
+        let spec = ApiDoc::openapi();
+        let paths = &spec.paths.paths;
+
+        // Collect all path keys for assertions
+        let path_keys: Vec<&str> = paths.keys().map(|s| s.as_str()).collect();
+
+        // Auth & Config
+        assert!(path_keys.contains(&"/api/auth/login"), "Missing /api/auth/login");
+        assert!(path_keys.contains(&"/api/auth/me"), "Missing /api/auth/me");
+        assert!(path_keys.contains(&"/api/health"), "Missing /api/health");
+        assert!(path_keys.contains(&"/api/client-config"), "Missing /api/client-config");
+
+        // Search
+        assert!(path_keys.contains(&"/api/search"), "Missing /api/search");
+
+        // Devices
+        assert!(path_keys.contains(&"/api/devices"), "Missing /api/devices");
+        assert!(path_keys.contains(&"/api/devices/health"), "Missing /api/devices/health");
+        assert!(path_keys.contains(&"/api/devices/search"), "Missing /api/devices/search");
+        assert!(path_keys.contains(&"/api/devices/scan"), "Missing /api/devices/scan");
+        assert!(path_keys.contains(&"/api/devices/discover"), "Missing /api/devices/discover");
+        assert!(path_keys.contains(&"/api/devices/provision"), "Missing /api/devices/provision");
+        assert!(path_keys.contains(&"/api/devices/batch"), "Missing /api/devices/batch");
+        assert!(path_keys.contains(&"/api/devices/schema"), "Missing /api/devices/schema");
+        assert!(path_keys.contains(&"/api/devices/filters"), "Missing /api/devices/filters");
+
+        // Punches
+        assert!(path_keys.contains(&"/api/punches"), "Missing /api/punches");
+        assert!(path_keys.contains(&"/api/punches/correct"), "Missing /api/punches/correct");
+        assert!(path_keys.contains(&"/api/punches/schema"), "Missing /api/punches/schema");
+        assert!(path_keys.contains(&"/api/punches/filters"), "Missing /api/punches/filters");
+
+        // Dashboard
+        assert!(path_keys.contains(&"/api/dashboard/today"), "Missing /api/dashboard/today");
+        assert!(
+            path_keys.contains(&"/api/dashboard/quick-stats"),
+            "Missing /api/dashboard/quick-stats"
+        );
+
+        // Reports
+        assert!(path_keys.contains(&"/api/reports/summary"), "Missing /api/reports/summary");
+
+        // Users
+        assert!(path_keys.contains(&"/api/users"), "Missing /api/users");
+
+        // API Keys
+        assert!(path_keys.contains(&"/api/api-keys"), "Missing /api/api-keys");
+
+        // Endpoints
+        assert!(path_keys.contains(&"/api/endpoints"), "Missing /api/endpoints");
+
+        // Settings
+        assert!(path_keys.contains(&"/api/settings"), "Missing /api/settings");
+
+        // Audit
+        assert!(path_keys.contains(&"/api/audit"), "Missing /api/audit");
+        assert!(path_keys.contains(&"/api/audit/schema"), "Missing /api/audit/schema");
+        assert!(path_keys.contains(&"/api/audit/filters"), "Missing /api/audit/filters");
+
+        // Export
+        assert!(path_keys.contains(&"/api/exports/punches"), "Missing /api/exports/punches");
+
+        // Employees
+        assert!(path_keys.contains(&"/api/employees"), "Missing /api/employees");
+        assert!(path_keys.contains(&"/api/employees/schema"), "Missing /api/employees/schema");
+        assert!(path_keys.contains(&"/api/employees/filters"), "Missing /api/employees/filters");
+
+        // Departments
+        assert!(path_keys.contains(&"/api/departments"), "Missing /api/departments");
+        assert!(path_keys.contains(&"/api/departments/schema"), "Missing /api/departments/schema");
+        assert!(
+            path_keys.contains(&"/api/departments/filters"),
+            "Missing /api/departments/filters"
+        );
+
+        // Parameterized paths (contains /api/group/{param}/action format)
+        let pairs = [
+            ("/api/devices/", "/activity"),
+            ("/api/devices/", "/synced-users"),
+            ("/api/devices/", "/events"),
+            ("/api/devices/", "/sync-clock"),
+            ("/api/devices/", "/restart"),
+            ("/api/devices/", "/resync"),
+            ("/api/devices/", "/group"),
+            ("/api/devices/", "/enrollments"),
+            ("/api/employees/", "/work-days"),
+            ("/api/employees/", "/summary"),
+            ("/api/employees/", "/monthly"),
+            ("/api/employees/", "/calendar"),
+            ("/api/employees/", "/sync-to-devices"),
+            ("/api/employees/", "/remove-from-devices"),
+            ("/api/device-groups/", "/devices"),
+            ("/api/device-groups/", "/sync"),
+        ];
+        for (prefix, suffix) in &pairs {
+            let found = path_keys.iter().any(|p| p.contains(prefix) && p.contains(suffix));
+            assert!(found, "Missing path matching '{prefix}...{suffix}'");
+        }
+
+        // Static paths for parameterized routes
+        assert!(path_keys.contains(&"/api/devices/sync-all"), "Missing /api/devices/sync-all");
+        assert!(path_keys.contains(&"/api/device-groups"), "Missing /api/device-groups");
+    }
+
+    /// Print all OpenAPI paths for manual review. Run with --nocapture.
+    #[test]
+    fn test_list_all_openapi_paths() {
+        let spec = ApiDoc::openapi();
+        let mut paths: Vec<_> = spec.paths.paths.keys().collect();
+        paths.sort();
+        println!("\nOpenAPI spec paths ({}):", paths.len());
+        for p in &paths {
+            println!("  {p}");
+        }
     }
 }

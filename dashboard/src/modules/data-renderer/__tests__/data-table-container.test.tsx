@@ -6,6 +6,7 @@ import { createRenderWrapper } from "@/testing/render-with-providers";
 import { DataTableContainer } from "../components/data-table-container";
 import { createPunchColumns } from "../column-definitions/punch-columns";
 import type { Punch } from "@/lib/api";
+import type { ColumnDefinition } from "../types";
 
 // ── Test setup ──────────────────────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ const makePunch = (overrides: Partial<Punch> = {}): Punch => ({
   device_sn: overrides.device_sn ?? "DEV001",
 });
 
-// Identity translator for tests — returns the default English message text
+// Identity translator for tests
 const _ = (descriptor: { id?: string; message?: string }) =>
   descriptor.message ?? descriptor.id ?? "";
 
@@ -67,11 +68,8 @@ describe("DataTableContainer", () => {
 
     render(<DataTableContainer {...baseProps} data={punches} />);
 
-    // Each punch should render its PIN
     expect(screen.getByText("111")).toBeDefined();
     expect(screen.getByText("222")).toBeDefined();
-
-    // Device SNs should render as chips
     expect(screen.getAllByText("DEV-A").length).toBeGreaterThan(0);
     expect(screen.getAllByText("DEV-B").length).toBeGreaterThan(0);
   });
@@ -123,19 +121,6 @@ describe("DataTableContainer", () => {
     expect(onRowClick).toHaveBeenCalledWith(punches[0]);
   });
 
-  it("renders error state via wrapping DataBoundary", () => {
-    const { DataBoundary } = require("@/modules/shared/components");
-    // DataTableContainer delegates error display to DataBoundary.
-    // Error state is tested in data-boundary.stories.tsx.
-    render(
-      <DataBoundary data={undefined} isLoading={false} error={new Error("Connection refused")} onRetry={vi.fn()}>
-        {() => <DataTableContainer {...baseProps} />}
-      </DataBoundary>
-    );
-
-    expect(screen.getByText("Server Unreachable")).toBeDefined();
-  });
-
   it("shows pagination footer when pagination provided", () => {
     const punches = [makePunch()];
 
@@ -149,5 +134,124 @@ describe("DataTableContainer", () => {
     );
 
     expect(screen.getByText("25 rows")).toBeDefined();
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Inline editing
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  describe("inline editing", () => {
+    it("renders editable cells with EditableCell wrapper when editingConfig is provided", () => {
+      const onPersist = vi.fn();
+      const columns: ColumnDefinition[] = [
+        {
+          id: "name", header: "Name", fieldId: "name", label: "Name",
+          type: "text",
+          metadata: { fieldName: "name", isSortable: true },
+          isVisible: true,
+          editable: true,
+        },
+      ];
+
+      type EditableRow = { id: string; name: string };
+
+      render(
+        <DataTableContainer<EditableRow>
+          columns={columns}
+          data={[{ id: "r1", name: "Alice" }]}
+          getRowKey={(r) => r.id}
+          entityType="user"
+          editingConfig={{ onPersist, editableColumns: ["name"] }}
+        />,
+      );
+
+      const cell = document.querySelector('div[aria-label="Edit name"]') as HTMLElement;
+      expect(cell).toBeDefined();
+      expect(screen.getByText("Alice")).toBeDefined();
+    });
+
+    it("enters edit mode on click and renders the field input", () => {
+      const onPersist = vi.fn();
+      const columns: ColumnDefinition[] = [
+        {
+          id: "name", header: "Name", fieldId: "name", label: "Name",
+          type: "text",
+          metadata: { fieldName: "name", isSortable: true },
+          isVisible: true,
+          editable: true,
+        },
+      ];
+
+      type EditableRow = { id: string; name: string };
+
+      render(
+        <DataTableContainer<EditableRow>
+          columns={columns}
+          data={[{ id: "r1", name: "Alice" }]}
+          getRowKey={(r) => r.id}
+          entityType="user"
+          editingConfig={{ onPersist, editableColumns: ["name"] }}
+        />,
+      );
+
+      const cell = document.querySelector('div[aria-label="Edit name"]') as HTMLElement;
+      fireEvent.click(cell);
+
+      const input = screen.queryByRole("textbox") as HTMLInputElement;
+      expect(input).not.toBeNull();
+      expect(input.value).toBe("Alice");
+    });
+
+    it("does not wrap non-editable columns in EditableCell", () => {
+      const columns: ColumnDefinition[] = [
+        {
+          id: "name", header: "Name", fieldId: "name", label: "Name",
+          type: "text",
+          metadata: { fieldName: "name", isSortable: true },
+          isVisible: true,
+        },
+      ];
+
+      type EditableRow = { id: string; name: string };
+
+      render(
+        <DataTableContainer<EditableRow>
+          columns={columns}
+          data={[{ id: "r1", name: "Alice" }]}
+          getRowKey={(r) => r.id}
+          entityType="user"
+          editingConfig={{ onPersist: vi.fn(), editableColumns: ["name"] }}
+        />,
+      );
+
+      expect(screen.queryByRole("button")).toBeNull();
+      expect(screen.getByText("Alice")).toBeDefined();
+    });
+
+    it("does not wrap editable columns when editingConfig is absent", () => {
+      const columns: ColumnDefinition[] = [
+        {
+          id: "name", header: "Name", fieldId: "name", label: "Name",
+          type: "text",
+          metadata: { fieldName: "name", isSortable: true },
+          isVisible: true,
+          editable: true,
+        },
+      ];
+
+      type EditableRow = { id: string; name: string };
+
+      render(
+        <DataTableContainer<EditableRow>
+          columns={columns}
+          data={[{ id: "r1", name: "Alice" }]}
+          getRowKey={(r) => r.id}
+          entityType="user"
+        />,
+      );
+
+      expect(screen.queryByRole("button")).toBeNull();
+      expect(screen.getByText("Alice")).toBeDefined();
+    });
   });
 });

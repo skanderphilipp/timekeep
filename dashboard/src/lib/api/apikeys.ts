@@ -45,6 +45,11 @@ export function fetchApiKeys(): Promise<ApiKey[]> {
   return apiGet<ApiKey[]>("api-keys").json();
 }
 
+/** Fetch a single API key by ID. Requires Operator+. */
+export function fetchApiKey(id: string): Promise<ApiKey> {
+  return apiGet<ApiKey>(`api-keys/${encodeURIComponent(id)}`).json();
+}
+
 /** Create a new API key. Returns the raw key ONCE. Requires Admin. */
 export function createApiKey(req: CreateApiKeyRequest): Promise<ApiKeyCreatedResponse> {
   return apiPost<ApiKeyCreatedResponse>("api-keys", req).json();

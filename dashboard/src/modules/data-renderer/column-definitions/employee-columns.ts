@@ -3,6 +3,7 @@ import type { MessageDescriptor } from "@lingui/core";
 import type {
   ColumnDefinition,
   TextFieldMetadata,
+  ReferenceFieldMetadata,
   StatusFieldMetadata,
 } from "../types";
 import { msg } from "@lingui/core/macro";
@@ -15,8 +16,11 @@ type T = (descriptor: MessageDescriptor) => string;
  * Columns:
  * - pin (plain text, sortable)
  * - name (plain text, sortable)
- * - department (plain text)
+ * - department (reference → clickable chip → department detail)
  * - status (status badge: active / inactive)
+ *
+ * Deprecated: pages now use useSchemaColumns("employee").
+ * Kept for storybook and test backward compat.
  */
 export function createEmployeeColumns(_: T): ColumnDefinition[] {
   return [
@@ -50,11 +54,14 @@ export function createEmployeeColumns(_: T): ColumnDefinition[] {
       header: _(msg`Department`),
       fieldId: "department",
       label: _(msg`Department`),
-      type: "text",
+      type: "reference",
       metadata: {
         fieldName: "department",
         isSortable: false,
-      } as TextFieldMetadata,
+        referenceEntity: "department",
+        referenceIdField: "department_id",
+        displayField: "department",
+      } as ReferenceFieldMetadata,
       isVisible: true,
       width: "180px",
     },

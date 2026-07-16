@@ -60,7 +60,22 @@ pub struct Employee {
     /// Display name (e.g. "Ahmed Al-Sabah").
     pub name: String,
 
-    /// Optional department for grouping and reporting.
+    /// Department UUID reference for cross-entity navigation.
+    ///
+    /// When set, the frontend can navigate from employee detail → department detail.
+    /// Resolved from the `department_id` at create/update time if a matching
+    /// department exists.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub department_id: Option<String>,
+
+    /// Cached department display name for list views (no JOIN needed).
+    ///
+    /// This is the human-readable name (e.g. "Engineering"). Always resolved
+    /// from `department_id` by the API layer — never accepted directly from
+    /// user input.
+    ///
+    /// Consumers that need guaranteed freshness should resolve via
+    /// `department_id` — this field is a best-effort cache.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub department: Option<String>,
 
@@ -91,6 +106,7 @@ impl Employee {
             id: EmployeeId::new(),
             pin: pin.into(),
             name: name.into(),
+            department_id: None,
             department,
             external_id,
             active: true,
@@ -155,6 +171,7 @@ mod tests {
             id: EmployeeId::new(),
             pin: String::new(),
             name: "Test".into(),
+            department_id: None,
             department: None,
             external_id: None,
             active: true,
@@ -170,6 +187,7 @@ mod tests {
             id: EmployeeId::new(),
             pin: "145".into(),
             name: String::new(),
+            department_id: None,
             department: None,
             external_id: None,
             active: true,
@@ -195,6 +213,15 @@ mod tests {
     fn employee_with_external_id() {
         let emp = Employee::new("145", "Ahmed", Some("Engineering".into()), Some("ODOO-42".into()));
         assert_eq!(emp.external_id.as_deref(), Some("ODOO-42"));
+        assert_eq!(emp.department.as_deref(), Some("Engineering"));
+        assert!(emp.department_id.is_none()); // Not resolved during construction
+    }
+
+    #[test]
+    fn employee_with_department_id() {
+        let mut emp = Employee::new("145", "Ahmed", Some("Engineering".into()), None);
+        emp.department_id = Some("dept-uuid-123".into());
+        assert_eq!(emp.department_id.as_deref(), Some("dept-uuid-123"));
         assert_eq!(emp.department.as_deref(), Some("Engineering"));
     }
 }

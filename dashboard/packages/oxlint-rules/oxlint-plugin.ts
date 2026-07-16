@@ -87,6 +87,10 @@ import {
   rule as requireDataListView,
   RULE_NAME as requireDataListViewName,
 } from "./rules/require-data-list-view";
+import {
+  rule as noDomainTypesInDataRenderer,
+  RULE_NAME as noDomainTypesInDataRendererName,
+} from "./rules/no-domain-types-in-data-renderer";
 
 export default definePlugin({
   meta: { name: "bentech" },
@@ -115,5 +119,6 @@ export default definePlugin({
     [requireStoryLevelTagName]: requireStoryLevelTag,
     [maxLinesPerFileRuleName]: maxLinesPerFile,
     [requireDataListViewName]: requireDataListView,
+    [noDomainTypesInDataRendererName]: noDomainTypesInDataRenderer,
   },
 });

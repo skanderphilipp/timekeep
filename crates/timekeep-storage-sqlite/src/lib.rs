@@ -8,6 +8,7 @@ pub mod audit;
 pub mod dashboard;
 pub mod departments;
 pub mod device;
+pub mod device_groups;
 pub mod device_users;
 pub mod employees;
 pub mod endpoints;
@@ -15,12 +16,13 @@ pub mod migrations;
 pub mod outbox;
 pub mod punch;
 pub mod settings;
+pub mod work_policy_templates;
 
 use async_trait::async_trait;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use timekeep_core::{
     ApiKey as CoreApiKey, AuditEvent, AuditFilter, DashboardUser, DeviceEvent, DeviceEventFilter,
-    EndpointFilter, Error, FacetQuery, IntegrationEndpoint, ListParams, ListResult,
+    DeviceGroup, EndpointFilter, Error, FacetQuery, IntegrationEndpoint, ListParams, ListResult,
     PendingDelivery, ProviderInfo, PunchFilter, SystemSettings,
     model::{AttendancePunch, Department, Device, DeviceConfig},
     traits::Storage,
@@ -92,6 +94,9 @@ impl Storage for SqliteStorage {
     }
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error> {
         self.query_punches(filter).await
+    }
+    async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
+        self.get_punch(id).await
     }
     async fn punch_facets(
         &self,
@@ -342,6 +347,36 @@ impl Storage for SqliteStorage {
     async fn delete_department(&self, id: &str) -> Result<(), Error> {
         self.delete_department(id).await
     }
+
+    // device_groups.rs
+    async fn list_device_groups(&self) -> Result<Vec<DeviceGroup>, Error> {
+        self.list_groups().await
+    }
+    async fn get_device_group(&self, id: &str) -> Result<Option<DeviceGroup>, Error> {
+        self.get_group(id).await
+    }
+    async fn get_device_group_by_name(&self, name: &str) -> Result<Option<DeviceGroup>, Error> {
+        self.get_group_by_name(name).await
+    }
+    async fn create_device_group(&self, group: &DeviceGroup) -> Result<(), Error> {
+        self.create_group(group).await
+    }
+    async fn update_device_group(&self, group: &DeviceGroup) -> Result<(), Error> {
+        self.update_group(group).await
+    }
+    async fn delete_device_group(&self, id: &str) -> Result<(), Error> {
+        self.delete_group(id).await
+    }
+    async fn list_devices_in_group(&self, group_id: &str) -> Result<Vec<DeviceConfig>, Error> {
+        self.list_devices_in_group(group_id).await
+    }
+    async fn set_device_group_membership(
+        &self,
+        device_sn: &str,
+        group_id: Option<&str>,
+    ) -> Result<(), Error> {
+        self.set_device_group(device_sn, group_id).await
+    }
 }
 
 // ── EmployeeStore trait implementation ────────────────────────────
@@ -380,6 +415,9 @@ impl timekeep_core::EmployeeStore for SqliteStorage {
     }
     async fn deactivate_employee(&self, id: &timekeep_core::EmployeeId) -> Result<(), Error> {
         self.deactivate_employee(id).await
+    }
+    async fn count_employees_in_department(&self, department_id: &str) -> Result<u64, Error> {
+        self.count_employees_in_department(department_id).await
     }
     async fn create_enrollment(
         &self,
@@ -429,6 +467,39 @@ impl timekeep_core::EmployeeStore for SqliteStorage {
         device_sn: &str,
     ) -> Result<Vec<timekeep_core::FingerprintTemplate>, Error> {
         self.load_fingerprint_templates(employee_id, device_sn).await
+    }
+}
+
+// ── DeviceGroupStore trait implementation ────────────────────────────
+
+#[async_trait]
+impl timekeep_core::DeviceGroupStore for SqliteStorage {
+    async fn list_groups(&self) -> Result<Vec<DeviceGroup>, Error> {
+        self.list_groups().await
+    }
+    async fn get_group(&self, id: &str) -> Result<Option<DeviceGroup>, Error> {
+        self.get_group(id).await
+    }
+    async fn get_group_by_name(&self, name: &str) -> Result<Option<DeviceGroup>, Error> {
+        self.get_group_by_name(name).await
+    }
+    async fn create_group(&self, group: &DeviceGroup) -> Result<(), Error> {
+        self.create_group(group).await
+    }
+    async fn update_group(&self, group: &DeviceGroup) -> Result<(), Error> {
+        self.update_group(group).await
+    }
+    async fn delete_group(&self, id: &str) -> Result<(), Error> {
+        self.delete_group(id).await
+    }
+    async fn list_devices_in_group(&self, group_id: &str) -> Result<Vec<DeviceConfig>, Error> {
+        self.list_devices_in_group(group_id).await
+    }
+    async fn set_device_group(&self, device_sn: &str, group_id: Option<&str>) -> Result<(), Error> {
+        self.set_device_group(device_sn, group_id).await
+    }
+    async fn get_device_group(&self, device_sn: &str) -> Result<Option<DeviceGroup>, Error> {
+        self.get_device_group(device_sn).await
     }
 }
 

@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { Form, SchemaForm } from "@/components/ui";
+import { Form, SchemaForm, Section } from "@/components/ui";
 import { useZodForm } from "@/lib/form";
 import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import {
@@ -16,7 +16,9 @@ import {
   wizardDeviceConfigAtom,
 } from "@/infrastructure/state/atoms/wizard";
 
-type ConfigureStepProps = {
+import styles from "./device-register-configure-step.module.scss";
+
+type DeviceRegisterConfigureStepProps = {
   /** IP address and serial number from the scan step params. */
   params?: Record<string, unknown>;
   /** Push the next step. */
@@ -35,7 +37,7 @@ type ConfigureStepProps = {
 export function DeviceRegisterConfigureStep({
   params,
   pushStep,
-}: ConfigureStepProps) {
+}: DeviceRegisterConfigureStepProps) {
   const { _ } = useLingui();
   const selectedDevice = useAtomValue(wizardSelectedDeviceAtom);
   const setDeviceConfig = useSetAtom(wizardDeviceConfigAtom);
@@ -80,11 +82,11 @@ export function DeviceRegisterConfigureStep({
   );
 
   return (
-    <div style={{ padding: "var(--ao-spacing-4)" }}>
+    <Section className={styles.container}>
       <Form id="configure-form" onSubmit={form.handleSubmit(handleSubmit)}>
         <SchemaForm formSchema={formDef} form={form} />
       </Form>
-    </div>
+    </Section>
   );
 }
 

@@ -6,8 +6,8 @@ use axum::http::StatusCode;
 
 use crate::app_state::AppState;
 use crate::dto::{
-    AboutResponse, DeviceHealthInfo, EngineHealthStats, HealthResponse, LoginResponse,
-    SetupCompletedResponse, SetupStatusResponse,
+    AboutResponse, ClientConfigResponse, DeviceHealthInfo, EngineHealthStats, HealthResponse,
+    LoginResponse, SetupCompletedResponse, SetupStatusResponse,
 };
 use crate::middleware::jwt::{JWT_EXPIRY_HOURS, create_token};
 use crate::request::{LoginRequest, SetupRequest};
@@ -59,6 +59,45 @@ pub(crate) async fn about(
         version: env!("CARGO_PKG_VERSION").into(),
         support_email: settings.support_email,
         workspace_name: settings.workspace_name,
+    })))
+}
+
+/// Bootstrap / client-config — single public endpoint that aggregates
+/// everything the frontend needs before authentication.
+///
+/// Returns workspace branding, version, support contact, and whether
+/// initial setup is needed. The frontend stores this in a Jotai atom
+/// and uses it on the login page, setup page, and app shell (sidebar
+/// workspace name) without additional round-trips.
+///
+/// Extensible: add `features: HashMap<String, bool>` for feature flags
+/// driven by server-side configuration.
+#[utoipa::path(
+    get,
+    path = "/api/client-config",
+    tag = "Config",
+    responses(
+        (status = 200, description = "Client bootstrap configuration", body = ClientConfigResponse),
+    )
+)]
+pub(crate) async fn client_config(
+    State(state): State<AppState>,
+) -> Result<Json<ApiEnvelope<ClientConfigResponse>>, AppError> {
+    let settings = state.storage.get_system_settings().await.unwrap_or_default();
+
+    let setup_needed = state
+        .storage
+        .list_dashboard_users(&timekeep_core::ListParams::default())
+        .await
+        .map(|r| r.items.is_empty())
+        .unwrap_or(true);
+
+    Ok(Json(ApiEnvelope::success(ClientConfigResponse {
+        name: "timekeep".into(),
+        version: env!("CARGO_PKG_VERSION").into(),
+        workspace_name: settings.workspace_name,
+        support_email: settings.support_email,
+        setup_needed,
     })))
 }
 

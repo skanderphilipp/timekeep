@@ -51,6 +51,11 @@ export function fetchAuditLogs(filter: AuditFilter = {}): Promise<AuditEvent[]> 
   return apiGet<AuditEvent[]>(`audit${buildAuditParams(filter)}`).json();
 }
 
+/** Fetch a single audit event by ID. Requires Viewer+. */
+export function fetchAuditEvent(id: string): Promise<AuditEvent> {
+  return apiGet<AuditEvent>(`audit/${encodeURIComponent(id)}`).json();
+}
+
 // ── Schema (Metadata System) ────────────────────────────────────────────────
 
 /** Fetch entity schema for audit logs (column metadata, sortability, filterability). */

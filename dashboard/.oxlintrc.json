@@ -96,6 +96,7 @@
     "bentech/max-lines-per-file": "error",
     "bentech/no-logic-in-pages": "error",
     "bentech/require-data-list-view": "error",
+    "bentech/no-domain-types-in-data-renderer": "error",
     "jsx-a11y/alt-text": "error",
     "jsx-a11y/anchor-has-content": "error",
     "jsx-a11y/anchor-is-valid": "error",

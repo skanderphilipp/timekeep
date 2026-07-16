@@ -1,7 +1,7 @@
 //! Punch query and correction handlers for both management and integration APIs.
 
 use axum::Json;
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 
 use crate::app_state::AppState;
@@ -15,6 +15,41 @@ use timekeep_core::PUNCH_SCHEMA;
 use timekeep_core::PunchFilter;
 use timekeep_core::events::DomainEvent;
 use timekeep_core::query::cursor::{Cursor, CursorValue};
+
+/// Get a single punch by its deduplication ID.
+///
+/// Used by the frontend punch detail view (side panel record detail).
+///
+/// **Important:** Punches are identified by their deduplication ID, which is a
+/// content-addressed hash of (device_sn, user_pin, timestamp, status).
+/// This is NOT a sequential PK — it's a SHA-256 prefix used for idempotent
+/// storage. The frontend must have the full dedup ID to look up a punch.
+#[utoipa::path(
+    get,
+    path = "/api/punches/{id}",
+    tag = "Punches",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Punch deduplication ID (hex string)"),
+    ),
+    responses(
+        (status = 200, description = "Punch details", body = PunchResponse),
+        (status = 404, description = "Punch not found"),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
+pub(crate) async fn get_punch(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<ApiEnvelope<PunchResponse>>, AppError> {
+    let punch = state
+        .storage
+        .get_punch(&id)
+        .await?
+        .ok_or_else(|| AppError::not_found(format!("punch '{id}'")))?;
+
+    Ok(Json(ApiEnvelope::success(PunchResponse::from(&punch))))
+}
 
 /// Query punches with cursor-based pagination (management API).
 #[utoipa::path(

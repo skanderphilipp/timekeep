@@ -93,17 +93,15 @@ export function DataTableContainer<T extends Record<string, unknown>>({
     (columnId: string, recordId: string) => {
       const col = columns.find((c) => c.id === columnId);
       if (!col) return;
-      switch (col.type) {
-        case "device_sn":
-          handleCellClick("device", recordId);
-          break;
-        case "employee_name":
-          handleCellClick("user", recordId);
-          break;
-        default:
-          handleCellClick(entityType, recordId);
-          break;
+      // Generic: only reference columns trigger cell-level navigation.
+      // The navigation target comes from ReferenceFieldMetadata.referenceEntity.
+      if (col.type === "reference") {
+        const meta = col.metadata as import("../types").ReferenceFieldMetadata;
+        handleCellClick(meta.referenceEntity, recordId);
+        return;
       }
+      // For non-reference columns, fall back to entity-level row click.
+      handleCellClick(entityType, recordId);
     },
     [columns, handleCellClick, entityType],
   );

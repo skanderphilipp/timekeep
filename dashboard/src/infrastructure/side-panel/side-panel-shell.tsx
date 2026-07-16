@@ -17,6 +17,7 @@ import {
 } from "./side-panel-navigation-stack";
 import { clearSubPagesAtom } from "./side-panel-sub-page-stack";
 import { SidePanelRouter } from "./side-panel-router";
+import { useSidePanelActions } from "./hooks/use-side-panel-actions";
 
 /**
  * Side panel shell — bridges atoms + navigation stack to the SidePanel UI.
@@ -25,6 +26,17 @@ import { SidePanelRouter } from "./side-panel-router";
  * 1. Navigation stack entries → SidePanelRouter (entity detail views)
  * 2. Legacy content atom → renderContent()
  * 3. Nothing (panel closed)
+ *
+ * Header actions:
+ *   - "Open in Main View" icon button — navigates to full-page route
+ *
+ * Footer actions (entity commands):
+ *   - "Edit" — opens the edit form for the current entity
+ *   - Future: Delete, Duplicate, etc.
+ *
+ * Twenty references:
+ *   twenty-front/src/modules/side-panel/components/SidePanelTopBarRightCornerIcon.tsx
+ *   twenty-front/src/modules/ui/layout/side-panel/components/SidePanelFooter.tsx
  *
  * Cmd+K is handled by {@link AppTopBar} — it registers the global hotkey
  * and pushes the command view into the panel via the legacy content atoms.
@@ -43,6 +55,9 @@ export function SidePanelShell() {
   const hasStackEntries = stack.length > 0;
   const isOpen = legacyOpen || hasStackEntries;
   const title = hasStackEntries ? (activeEntry?.title ?? "") : (legacyTitle ?? "");
+
+  // Entity-aware header + footer actions
+  const { headerActions, editButton } = useSidePanelActions();
 
   // Clear sub-pages (wizard steps) when the navigation entry changes
   const prevInstanceIdRef = useRef<string | null>(null);
@@ -71,7 +86,13 @@ export function SidePanelShell() {
   }
 
   return (
-    <SidePanel open={isOpen} onClose={handleClose} title={title}>
+    <SidePanel
+      open={isOpen}
+      onClose={handleClose}
+      title={title}
+      headerActions={headerActions}
+      footerActions={editButton}
+    >
       <Suspense fallback={<Spinner />}>{content}</Suspense>
     </SidePanel>
   );

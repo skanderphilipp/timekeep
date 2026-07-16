@@ -1,4 +1,4 @@
-import type { DeviceActivityEvent } from "../components/device-detail-view";
+import type { DeviceActivityEvent } from "../components/device-detail-content";
 
 /**
  * Pure functions for device detail logic — extracted for testability.

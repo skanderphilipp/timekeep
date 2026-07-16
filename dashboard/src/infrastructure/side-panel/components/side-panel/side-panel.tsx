@@ -35,6 +35,22 @@ type SidePanelProps = {
   onClose?: () => void;
   title?: string;
   children?: ReactNode;
+  /**
+   * Actions rendered in the header, between the title and close button.
+   * Used for "Open in Main View" and similar header-level actions.
+   *
+   * Twenty reference:
+   *   twenty-front/src/modules/side-panel/components/SidePanelTopBarRightCornerIcon.tsx
+   */
+  headerActions?: ReactNode;
+  /**
+   * Footer actions rendered at the bottom of the panel.
+   * Used for entity commands: Edit, Delete, etc.
+   *
+   * Twenty reference:
+   *   twenty-front/src/modules/ui/layout/side-panel/components/SidePanelFooter.tsx
+   */
+  footerActions?: ReactNode;
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -64,6 +80,8 @@ export function SidePanel({
   onClose: propOnClose,
   title: propTitle,
   children: propChildren,
+  headerActions: propHeaderActions,
+  footerActions: propFooterActions,
 }: SidePanelProps) {
   const { _ } = useLingui();
   const isMobile = useIsMobile();
@@ -147,6 +165,7 @@ export function SidePanel({
             <h3 data-slot="side-panel-title" className={styles.title}>
               {displayTitle}
             </h3>
+            {propHeaderActions}
             <button
               data-slot="side-panel-close"
               className={styles.closeButton}
@@ -161,6 +180,13 @@ export function SidePanel({
           <div data-slot="side-panel-content" className={styles.content}>
             {content}
           </div>
+
+          {/* Footer (optional) — entity commands */}
+          {propFooterActions && (
+            <div data-slot="side-panel-footer" className={styles.footer}>
+              {propFooterActions}
+            </div>
+          )}
         </div>
       </aside>
     </>

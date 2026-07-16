@@ -20,6 +20,8 @@ export const QueryKeys = {
     me: () => ["me"] as const,
     /** Public about/workspace info (shown on login page). */
     about: () => ["about"] as const,
+    /** Bootstrap client config — workspace branding, version, setup status. */
+    clientConfig: () => ["client-config"] as const,
   },
 
   /** Dashboard overview */
@@ -162,5 +164,31 @@ export const QueryKeys = {
     schema: () => ["schema", "department"] as const,
     /** Facet filter metadata. */
     filters: <T extends Record<string, unknown>>(filter: T) => ["department-filters", filter] as const,
+  },
+
+  /** Work Policy Templates */
+  workPolicies: {
+    /** All work policy queries (invalidate with `QueryKeys.workPolicies.all`). */
+    all: ["work-policies"] as const,
+    /** Full work policy template list. */
+    list: () => ["work-policies"] as const,
+    /** Single work policy template by ID. */
+    detail: (id: string) => ["work-policy", id] as const,
+    /** Entity schema (column metadata). Cached indefinitely. */
+    schema: () => ["schema", "work_policy"] as const,
+    /** Facet filter metadata. */
+    filters: <T extends Record<string, unknown>>(filter: T) => ["work-policy-filters", filter] as const,
+  },
+
+  /** Device Groups */
+  deviceGroups: {
+    /** All device group queries (invalidate with `QueryKeys.deviceGroups.all`). */
+    all: ["device-groups"] as const,
+    /** Full device group list. */
+    list: () => ["device-groups"] as const,
+    /** Single device group by ID. */
+    detail: (id: string) => ["device-group", id] as const,
+    /** Devices in a group. */
+    devices: (id: string) => ["device-group", id, "devices"] as const,
   },
 } as const;

@@ -89,10 +89,14 @@ export interface ColumnPresentation {
 	width?: string;
 	/** Column text alignment. */
 	align?: "left" | "center" | "right";
-	/** Whether this column is the row's label/identifier (renders as Chip). */
-	isLabelIdentifier?: boolean;
 	/** Additional CSS class for cells in this column. */
 	cellClassName?: string;
+	/**
+	 * Explicitly override the display type for this column.
+	 * When set, this takes precedence over schema-based type inference.
+	 * Use "reference" for FK fields, "status" for status badges, etc.
+	 */
+	displayType?: import("@/modules/data-renderer/types").FieldType;
 }
 
 /**
@@ -101,37 +105,93 @@ export interface ColumnPresentation {
 export const PRESENTATION_OVERRIDES: Record<string, Record<string, ColumnPresentation>> = {
 	punch: {
 		timestamp: { width: "180px" },
-		user_pin: { width: "120px" },
-		device_sn: { width: "150px", isLabelIdentifier: true },
-		status: { width: "120px" },
-		verify_mode: { width: "110px" },
-		employee_name: { width: "160px", isLabelIdentifier: true },
+		user_pin: { width: "120px", displayType: "reference" },
+		device_sn: { width: "150px", displayType: "reference" },
+		status: { width: "120px", displayType: "status" },
+		verify_mode: { width: "110px", displayType: "enum" },
+		employee_name: { width: "160px", displayType: "reference" },
 		device_label: { width: "150px" },
 	},
 	device: {
-		label: { width: "180px", isLabelIdentifier: true },
+		label: { width: "180px" },
 		serial_number: { width: "160px" },
 		host: { width: "140px" },
 		port: { width: "80px", align: "center" },
 		vendor: { width: "110px" },
-		connection_status: { width: "130px" },
+		connection_status: { width: "130px", displayType: "status" },
 		push_enabled: { width: "100px", align: "center" },
 		last_seen_at: { width: "160px" },
 	},
 	employee: {
 		pin: { width: "120px" },
-		name: { width: "200px", isLabelIdentifier: true },
-		department: { width: "150px" },
+		name: { width: "200px" },
+		department: { width: "150px", displayType: "reference" },
 		external_id: { width: "130px" },
-		active: { width: "100px", align: "center" },
+		active: { width: "100px", align: "center", displayType: "status" },
+		created_at: { width: "160px" },
+	},
+	department: {
+		name: { width: "220px" },
+		employee_count: { width: "120px", align: "center" },
 		created_at: { width: "160px" },
 	},
 	audit: {
 		timestamp: { width: "180px" },
 		actor: { width: "140px" },
-		action: { width: "120px", isLabelIdentifier: true },
+		action: { width: "120px" },
 		resource: { width: "150px" },
-		status: { width: "100px", align: "center" },
+		status: { width: "100px", align: "center", displayType: "status" },
 		ip_address: { width: "130px" },
+	},
+};
+
+// ── Reference Configuration ─────────────────────────────────────────────
+
+/**
+ * Describes a reference/FK field: which entity it navigates to.
+ *
+ * This is the SINGLE place that maps domain field names to their
+ * navigation targets. The data-renderer infrastructure never knows
+ * about "device_sn" or "user_pin" — it only knows about "reference"
+ * fields with an entity target.
+ */
+export interface ReferenceConfig {
+	/** The entity type to navigate to when the reference chip is clicked. */
+	referenceEntity: import("@/types/entities").EntityType;
+	/** Field on the row containing the target entity ID. Defaults to the field itself. */
+	referenceIdField?: string;
+	/** Optional: field on the row containing the display label (e.g., "employee_name" for "user_pin"). */
+	displayField?: string;
+}
+
+/**
+ * Per-entity, per-field reference configuration.
+ *
+ * Only fields that are FK references need an entry here.
+ * The schema mapper reads this to build `ReferenceFieldMetadata`.
+ */
+export const REFERENCE_CONFIG: Record<string, Record<string, ReferenceConfig>> = {
+	punch: {
+		device_sn: {
+			referenceEntity: "device",
+			referenceIdField: "device_sn",
+			displayField: "device_label",
+		},
+		user_pin: {
+			referenceEntity: "user",
+			referenceIdField: "user_pin",
+		},
+		employee_name: {
+			referenceEntity: "user",
+			referenceIdField: "user_pin",
+			displayField: "employee_name",
+		},
+	},
+	employee: {
+		department: {
+			referenceEntity: "department",
+			referenceIdField: "department_id",
+			displayField: "department",
+		},
 	},
 };

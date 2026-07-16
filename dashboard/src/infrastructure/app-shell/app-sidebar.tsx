@@ -8,7 +8,7 @@ import {
   IconLogout,
   IconSearch,
 } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import type { ResolvedNavItem } from "@/infrastructure/navigation/use-navigation";
 import { LocaleSwitcher } from "@/infrastructure/locale/locale-switcher";
@@ -20,6 +20,7 @@ import {
   sidePanelTitleAtom,
   sidePanelContentAtom,
   closeSidePanelAtom,
+  clientConfigState,
 } from "@/infrastructure/state";
 import { WORKSPACE_NAME } from "@/lib/constants";
 import { NavGroup, NavLeaf } from "@/app-shell-nav";
@@ -66,6 +67,10 @@ export function AppSidebar({
   const setSidePanelTitle = useSetAtom(sidePanelTitleAtom);
   const setSidePanelContent = useSetAtom(sidePanelContentAtom);
   const closeSidePanel = useSetAtom(closeSidePanelAtom);
+  const clientConfig = useAtomValue(clientConfigState.atom);
+
+  /** Workspace name from server config, falling back to compile-time constant. */
+  const workspaceName = clientConfig?.workspace_name || WORKSPACE_NAME;
 
   const handleOpenSearch = () => {
     setSidePanelTitle("Commands");
@@ -92,7 +97,7 @@ export function AppSidebar({
           {isExpanded && (
             <div data-slot="sidebar-brand-text" className={styles.brandTextGroup}>
               <span className={styles.appName}>TimeKeep</span>
-              <span className={styles.workspaceName}>{WORKSPACE_NAME}</span>
+              <span className={styles.workspaceName}>{workspaceName}</span>
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
@@ -8,7 +8,6 @@ import { messages as enMessages } from "@/locales/en";
 
 import { SidePanelSubPageRouter } from "./side-panel-sub-page-router";
 import { sidePanelSubPageStackAtom } from "../../side-panel-sub-page-stack";
-import type { SubPageEntry } from "../../side-panel-sub-page-stack";
 
 // ── Lingui setup ────────────────────────────────────────────────────────────
 

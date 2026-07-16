@@ -430,6 +430,15 @@ pub const DEPARTMENT_SCHEMA: EntitySchema = EntitySchema {
             facet_kind: None,
         },
         ColumnMeta {
+            field: "work_policy_id",
+            label: "Work Policy",
+            sql_column: "d.work_policy_id",
+            value_type: CursorValueType::Text,
+            sortable: false,
+            filterable: false,
+            facet_kind: Some(FacetKind::Reference),
+        },
+        ColumnMeta {
             field: "has_custom_policy",
             label: "Custom Policy",
             sql_column: "d.work_policy_json",
@@ -487,7 +496,7 @@ pub const EMPLOYEE_SCHEMA: EntitySchema = EntitySchema {
         ColumnMeta {
             field: "department",
             label: "Department",
-            sql_column: "e.department",
+            sql_column: "e.department_id",
             value_type: CursorValueType::Text,
             sortable: true,
             filterable: true,
@@ -536,6 +545,70 @@ pub const EMPLOYEE_SCHEMA: EntitySchema = EntitySchema {
     tiebreaker: "id",
 };
 
+pub const WORK_POLICY_TEMPLATE_SCHEMA: EntitySchema = EntitySchema {
+    entity: "work_policy",
+    columns: &[
+        ColumnMeta {
+            field: "title",
+            label: "Title",
+            sql_column: "wpt.title",
+            value_type: CursorValueType::Text,
+            sortable: true,
+            filterable: true,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "description",
+            label: "Description",
+            sql_column: "wpt.description",
+            value_type: CursorValueType::Text,
+            sortable: false,
+            filterable: false,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "work_start",
+            label: "Start Time",
+            sql_column: "wpt.work_start",
+            value_type: CursorValueType::Text,
+            sortable: true,
+            filterable: false,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "work_end",
+            label: "End Time",
+            sql_column: "wpt.work_end",
+            value_type: CursorValueType::Text,
+            sortable: true,
+            filterable: false,
+            facet_kind: None,
+        },
+        ColumnMeta {
+            field: "created_at",
+            label: "Created",
+            sql_column: "wpt.created_at",
+            value_type: CursorValueType::Int,
+            sortable: true,
+            filterable: false,
+            facet_kind: None,
+        },
+        // Tiebreaker
+        ColumnMeta {
+            field: "id",
+            label: "ID",
+            sql_column: "wpt.id",
+            value_type: CursorValueType::Text,
+            sortable: false,
+            filterable: false,
+            facet_kind: None,
+        },
+    ],
+    default_sort: "title",
+    default_sort_order: SortOrder::Asc,
+    tiebreaker: "id",
+};
+
 /// Look up an entity schema by name.
 pub fn entity_schema(entity: &str) -> Option<&'static EntitySchema> {
     match entity {
@@ -544,6 +617,7 @@ pub fn entity_schema(entity: &str) -> Option<&'static EntitySchema> {
         "audit" => Some(&AUDIT_SCHEMA),
         "employee" => Some(&EMPLOYEE_SCHEMA),
         "department" => Some(&DEPARTMENT_SCHEMA),
+        "work_policy" => Some(&WORK_POLICY_TEMPLATE_SCHEMA),
         _ => None,
     }
 }

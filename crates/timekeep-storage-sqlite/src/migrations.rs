@@ -285,6 +285,79 @@ pub(crate) const MIGRATIONS: &[(i64, &str)] = &[
                 updated_at TEXT NOT NULL DEFAULT (datetime('now'))
             )",
     ),
+    // v15 — device groups for organizational grouping and department-scoped sync
+    (
+        15,
+        "CREATE TABLE IF NOT EXISTS device_groups (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                description TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )",
+    ),
+    (15, "ALTER TABLE devices ADD COLUMN group_id TEXT REFERENCES device_groups(id) ON DELETE SET NULL"),
+    // v16 — add department_id FK to employees (references departments table)
+    (
+        16,
+        "ALTER TABLE employees ADD COLUMN department_id TEXT REFERENCES departments(id) ON DELETE SET NULL",
+    ),
+    // ── v17: Work policy templates — named, reusable shift policies ──
+    (
+        17,
+        "CREATE TABLE IF NOT EXISTS work_policy_templates (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL UNIQUE,
+                description TEXT,
+                work_start TEXT NOT NULL,
+                work_end TEXT NOT NULL,
+                late_threshold_secs INTEGER NOT NULL DEFAULT 900,
+                min_seconds_for_present INTEGER NOT NULL DEFAULT 14400,
+                daily_overtime_after_secs INTEGER NOT NULL DEFAULT 28800,
+                working_days TEXT NOT NULL DEFAULT '[true,true,true,true,true,false,false]',
+                created_at TEXT NOT NULL DEFAULT (unixepoch()),
+                updated_at TEXT NOT NULL DEFAULT (unixepoch())
+            )",
+    ),
+    // Seed predefined work policy templates (7 common shift patterns)
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_standard_mon_fri', 'Standard (Mon-Fri)', 'Standard 9-to-5 schedule, Monday through Friday', '09:00', '17:00', 900, 14400, 28800, '[true,true,true,true,true,false,false]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_standard_sun_thu', 'Standard (Sun-Thu)', 'Standard schedule Sunday through Thursday (Middle East work week)', '08:00', '17:00', 900, 14400, 28800, '[false,true,true,true,true,true,false]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_night_shift', 'Night Shift', 'Overnight shift with next-day end time', '22:00', '06:00', 900, 14400, 28800, '[true,true,true,true,true,false,false]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_flexible', 'Flexible Hours', 'No fixed schedule. Late detection disabled.', '00:00', '23:59', 0, 14400, 86400, '[true,true,true,true,true,false,false]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_weekend_shift', 'Weekend Shift', 'Day shift covering Saturday and Sunday', '08:00', '20:00', 900, 14400, 43200, '[false,false,false,false,false,true,true]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_12h_day', '12-Hour Day Shift', 'Long day shift, 4 days per week', '06:00', '18:00', 900, 21600, 43200, '[true,true,true,true,false,false,false]', unixepoch(), unixepoch())",
+    ),
+    (
+        17,
+        "INSERT OR IGNORE INTO work_policy_templates (id, title, description, work_start, work_end, late_threshold_secs, min_seconds_for_present, daily_overtime_after_secs, working_days, created_at, updated_at) VALUES ('seed_12h_night', '12-Hour Night Shift', 'Long night shift, 4 nights per week', '18:00', '06:00', 900, 21600, 43200, '[true,true,true,true,false,false,false]', unixepoch(), unixepoch())",
+    ),
+    // ── v18: Add work_policy_id FK to departments ──
+    (
+        18,
+        "ALTER TABLE departments ADD COLUMN work_policy_id TEXT REFERENCES work_policy_templates(id) ON DELETE SET NULL",
+    ),
+    // ── v19: Add department_ids to device_groups for persisted department scoping ──
+    (
+        19,
+        "ALTER TABLE device_groups ADD COLUMN department_ids TEXT NOT NULL DEFAULT ''",
+    ),
 ];
 
 impl SqliteStorage {

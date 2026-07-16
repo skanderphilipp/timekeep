@@ -5,6 +5,7 @@ declare const classNames: {
   readonly title: "title";
   readonly closeButton: "closeButton";
   readonly content: "content";
+  readonly footer: "footer";
   readonly gap: "gap";
   readonly handle: "handle";
 };

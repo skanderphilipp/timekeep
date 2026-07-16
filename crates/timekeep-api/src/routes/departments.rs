@@ -26,7 +26,15 @@ use crate::dto::DepartmentResponse;
 use crate::request::{CreateDepartmentRequest, GenericFacetParams, UpdateDepartmentRequest};
 use crate::response::{ApiEnvelope, AppError};
 
-/// Parse a `WorkPolicyInput` into a `timekeep_core::WorkPolicy`.
+/// Resolve the display title for a department's work policy template.
+async fn resolve_policy_title(state: &AppState, work_policy_id: Option<&str>) -> Option<String> {
+    match work_policy_id {
+        Some(id) => {
+            state.storage.get_work_policy_template(id).await.ok().flatten().map(|t| t.title)
+        },
+        None => None,
+    }
+}
 fn parse_work_policy(
     input: &crate::request::WorkPolicyInput,
 ) -> Result<timekeep_core::WorkPolicy, AppError> {
@@ -60,7 +68,7 @@ fn parse_time(s: &str) -> Result<jiff::civil::Time, String> {
     }
     let hour: i8 = parts[0].parse().map_err(|_| format!("invalid hour in '{s}'"))?;
     let minute: i8 = parts[1].parse().map_err(|_| format!("invalid minute in '{s}'"))?;
-    if hour < 0 || hour > 23 || minute < 0 || minute > 59 {
+    if !(0..=23).contains(&hour) || !(0..=59).contains(&minute) {
         return Err(format!("time '{s}' out of range (00:00–23:59)"));
     }
     jiff::civil::Time::new(hour, minute, 0, 0).map_err(|e| format!("invalid time '{s}': {e}"))
@@ -96,8 +104,19 @@ pub(crate) async fn list_departments(
     State(state): State<AppState>,
 ) -> Result<Json<ApiEnvelope<Vec<DepartmentResponse>>>, AppError> {
     let departments = state.storage.list_departments().await?;
-    let responses: Vec<DepartmentResponse> =
-        departments.iter().map(|d| DepartmentResponse::from_department(d, None)).collect();
+
+    let employee_store = crate::employees::employees(&state)?;
+    let mut responses: Vec<DepartmentResponse> = Vec::with_capacity(departments.len());
+    // PERF: Individual COUNT queries per department.
+    // TODO(ENTERPRISE): Add batch counting to EmployeeStore for large orgs.
+    // Phase: Production scaling
+    // Impact: N+1 queries when listing departments. Acceptable for < 50 departments.
+    // Fix: Add count_employees_by_departments(&[String]) -> HashMap<String, u64>
+    for dept in &departments {
+        let count = employee_store.count_employees_in_department(&dept.id.0).await.ok();
+        let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
+        responses.push(DepartmentResponse::from_department(dept, count, policy_title));
+    }
     Ok(Json(ApiEnvelope::success(responses)))
 }
 
@@ -125,7 +144,16 @@ pub(crate) async fn get_department(
         .get_department(&id)
         .await?
         .ok_or_else(|| AppError::not_found(format!("department '{id}'")))?;
-    Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(&dept, None))))
+
+    let employee_count =
+        crate::employees::employees(&state)?.count_employees_in_department(&dept.id.0).await.ok();
+    let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
+
+    Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(
+        &dept,
+        employee_count,
+        policy_title,
+    ))))
 }
 
 /// Create a new department.
@@ -157,8 +185,16 @@ pub(crate) async fn create_department(
         return Err(AppError::duplicate(format!("department '{name}' already exists")));
     }
 
+    // Validate work_policy_id if provided
+    if let Some(ref tpl_id) = body.work_policy_id
+        && state.storage.get_work_policy_template(tpl_id).await?.is_none()
+    {
+        return Err(AppError::not_found(format!("work policy template '{tpl_id}' not found")));
+    }
+
     let policy = resolve_policy(body.work_policy.as_ref())?;
-    let dept = timekeep_core::Department::new(name, policy);
+    let mut dept = timekeep_core::Department::new(name, policy);
+    dept.work_policy_id = body.work_policy_id.clone();
 
     state.storage.create_department(&dept).await?;
 
@@ -167,9 +203,15 @@ pub(crate) async fn create_department(
         name: dept.name.clone(),
     });
 
+    let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
+
     Ok((
         StatusCode::CREATED,
-        Json(ApiEnvelope::success(DepartmentResponse::from_department(&dept, None))),
+        Json(ApiEnvelope::success(DepartmentResponse::from_department(
+            &dept,
+            Some(0),
+            policy_title,
+        ))),
     ))
 }
 
@@ -209,17 +251,34 @@ pub(crate) async fn update_department(
             return Err(AppError::validation("department name must not be empty"));
         }
         // Check duplicate if name changed
-        if name != dept.name {
-            if let Some(existing) = state.storage.get_department_by_name(name).await? {
-                if existing.id != dept.id {
-                    return Err(AppError::duplicate(format!("department '{name}' already exists")));
-                }
-            }
+        if name != dept.name
+            && let Some(existing) = state.storage.get_department_by_name(name).await?
+            && existing.id != dept.id
+        {
+            return Err(AppError::duplicate(format!("department '{name}' already exists")));
         }
         dept.rename(name);
     }
 
-    // Update work policy
+    // Update work policy template FK
+    if let Some(ref tpl_id_opt) = body.work_policy_id {
+        match tpl_id_opt {
+            Some(tpl_id) => {
+                // Validate the template exists
+                if state.storage.get_work_policy_template(tpl_id).await?.is_none() {
+                    return Err(AppError::not_found(format!(
+                        "work policy template '{tpl_id}' not found"
+                    )));
+                }
+                dept.set_work_policy_id(Some(tpl_id.clone()));
+            },
+            None => {
+                dept.set_work_policy_id(None);
+            },
+        }
+    }
+
+    // Update work policy (legacy inline JSON)
     if let Some(ref work_policy_opt) = body.work_policy {
         let policy = resolve_policy(work_policy_opt.as_ref())?;
         dept.set_work_policy(policy);
@@ -232,7 +291,15 @@ pub(crate) async fn update_department(
         name: dept.name.clone(),
     });
 
-    Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(&dept, None))))
+    let employee_count =
+        crate::employees::employees(&state)?.count_employees_in_department(&dept.id.0).await.ok();
+    let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
+
+    Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(
+        &dept,
+        employee_count,
+        policy_title,
+    ))))
 }
 
 /// Delete a department by ID.

@@ -38,6 +38,14 @@ export type DeviceConfig = {
   timezone: string | null;
   /** Device vendor key. Defaults to "zkteco" when not specified. */
   vendor?: DeviceVendorValue | null;
+  /**
+   * Device group ID for department-scoped sync.
+   * A device belongs to at most one group. Groups control which employees
+   * get synced to which devices.
+   *
+   * TODO(ENTERPRISE): Add device group management UI (settings page).
+   */
+  group_id?: string | null;
 };
 
 /**

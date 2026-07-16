@@ -8,40 +8,31 @@ import {
 import { FieldContext, type FieldContextValue } from "../contexts/field-context";
 import { FieldDisplay } from "../field-displays";
 import { FieldEdit } from "../field-inputs/index";
-import type { ColumnDefinition, FieldMetadata } from "../types";
+import type { ColumnDefinition, FieldMetadata, ReferenceFieldMetadata } from "../types";
 
 /**
  * Editing configuration passed from the table container to the cell renderer.
  */
 export type CellEditingConfig = {
-  /** Called when the user commits a cell edit (Enter, Tab, ClickOutside). */
   onPersist: (rowId: string, field: string, value: unknown) => void;
-  /** Ordered list of column IDs that support inline editing (for Tab navigation). */
   editableColumns: string[];
 };
 
 /**
  * Creates a cell renderer that supports inline editing via {@link EditableCell}.
  *
- * Builds on `createCellRenderer`'s context hierarchy (DataTableCellContext +
- * FieldContext). When the column's `editable` flag is true and `editingConfig`
- * is provided, the cell becomes click-to-edit with Tab navigation between
- * editable columns.
+ * Display mode uses {@link FieldDisplay} (type dispatcher).
+ * Edit mode uses {@link FieldEdit} (type dispatcher).
  *
- * The display mode uses {@link FieldDisplay} (the existing type dispatcher).
- * The edit mode uses {@link FieldEdit} (the new edit dispatcher).
- *
- * @example
- * ```ts
- * const columns = schemaColumns.map(col => ({
- *   ...col,
- *   cell: createEditableCellRenderer(col, onCellClick, getRowKey, editingConfig),
- * }));
- * ```
+ * For `reference` fields:
+ * - Display: clickable Tag that navigates to the related entity (side panel).
+ * - Edit: dropdown editor from metadata options.
+ * - Clicking the Tag stops propagation so it doesn't conflict with
+ *   the cell's click-to-edit behavior.
  */
 export function createEditableCellRenderer<T extends Record<string, unknown>>(
   column: ColumnDefinition<FieldMetadata>,
-  onCellClick?: (columnId: string, recordId: string) => void,
+  _onCellClick?: (columnId: string, recordId: string) => void,
   getRecordId?: (row: T) => string,
   editingConfig?: CellEditingConfig,
 ): (row: T) => ReactNode {
@@ -56,26 +47,24 @@ export function createEditableCellRenderer<T extends Record<string, unknown>>(
       return column.render(row);
     }
 
-    // Resolve display labels and navigation IDs per column type
-    let entityId: string | undefined;
-    if (column.type === "employee_name") {
-      const pin = (row as Record<string, unknown>)["user_pin"];
-      entityId = pin ? String(pin) : undefined;
-    } else if (column.type === "user_pin") {
-      entityId = String(rawValue);
+    // Generic: all references are clickable
+    const isClickable = column.type === "reference";
+
+    // For reference fields, resolve the display value from the display field
+    // and the entity ID from the referenceIdField.
+    let displayValue = rawValue;
+    let resolvedEntityId: string | undefined;
+    if (column.type === "reference") {
+      const meta = column.metadata as ReferenceFieldMetadata;
+      if (meta.displayField) {
+        const displayRaw = (row as Record<string, unknown>)[meta.displayField];
+        displayValue = displayRaw ?? rawValue;
+      }
+      const idRaw = (row as Record<string, unknown>)[meta.referenceIdField];
+      resolvedEntityId = idRaw ? String(idRaw) : undefined;
     }
 
-    const value = rawValue;
-    const isClickable =
-      column.type === "device_sn" ||
-      column.type === "employee_name" ||
-      !!column.isLabelIdentifier;
-
-    const handleClick = () => {
-      if (isClickable && onCellClick) {
-        onCellClick(column.id, recordId);
-      }
-    };
+    const value = displayValue;
 
     const cellContextValue: DataTableCellContextValue = {
       column,
@@ -87,13 +76,11 @@ export function createEditableCellRenderer<T extends Record<string, unknown>>(
     const fieldContextValue: FieldContextValue = {
       fieldDefinition: column,
       value,
-      isLabelIdentifier: !!column.isLabelIdentifier,
-      onFieldClick: handleClick,
-      isEditMode: false,
-      entityId,
+      viewMode: "display",
+      entityId: resolvedEntityId,
     };
 
-    // Build the context-wrapped display component (shared by both render modes)
+    // Display mode rendering
     const displayNode = (
       <DataTableCellContext.Provider value={cellContextValue}>
         <FieldContext.Provider value={fieldContextValue}>
@@ -102,15 +89,19 @@ export function createEditableCellRenderer<T extends Record<string, unknown>>(
       </DataTableCellContext.Provider>
     );
 
-    // Non-editable: plain display (backward-compatible behavior)
     if (!isEditable) {
       return displayNode;
     }
 
-    // Editable: wrap in EditableCell with FieldDisplay (read) and FieldEdit (edit)
+    // Edit mode: FieldEdit dispatcher
+    const editFieldContextValue: FieldContextValue = {
+      ...fieldContextValue,
+      viewMode: "edit",
+    };
+
     const editNode = (editProps: EditableCellEditProps<unknown>) => (
       <DataTableCellContext.Provider value={cellContextValue}>
-        <FieldContext.Provider value={fieldContextValue}>
+        <FieldContext.Provider value={editFieldContextValue}>
           <FieldEdit {...editProps} />
         </FieldContext.Provider>
       </DataTableCellContext.Provider>

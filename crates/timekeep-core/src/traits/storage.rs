@@ -35,6 +35,7 @@ use crate::query::filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, Pun
 /// See [`PunchStore`](crate::traits::punch_store::PunchStore),
 /// [`DeviceConfigStore`](crate::traits::device_config_store::DeviceConfigStore), etc.
 #[async_trait]
+#[allow(clippy::too_many_arguments)]
 pub trait Storage: Send + Sync {
     /// Store a single attendance punch. Idempotent — if a punch with
     /// the same deduplication ID already exists, it must not create a duplicate.
@@ -50,6 +51,9 @@ pub trait Storage: Send + Sync {
         }
         Ok(count)
     }
+
+    /// Get a single punch by deduplication ID. Returns `None` if not found.
+    async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error>;
 
     /// Query punches matching the given filter.
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error>;
@@ -468,5 +472,114 @@ pub trait Storage: Send + Sync {
     /// Delete a department by ID.
     async fn delete_department(&self, _id: &str) -> Result<(), Error> {
         Err(Error::storage("department storage not implemented for this backend"))
+    }
+
+    // ── Device Groups ────────────────────────────────────────────
+
+    /// List all device groups.
+    async fn list_device_groups(
+        &self,
+    ) -> Result<Vec<crate::model::device_group::DeviceGroup>, Error> {
+        Ok(vec![])
+    }
+
+    /// Get a single device group by ID.
+    async fn get_device_group(
+        &self,
+        _id: &str,
+    ) -> Result<Option<crate::model::device_group::DeviceGroup>, Error> {
+        Ok(None)
+    }
+
+    /// Get a device group by name.
+    async fn get_device_group_by_name(
+        &self,
+        _name: &str,
+    ) -> Result<Option<crate::model::device_group::DeviceGroup>, Error> {
+        Ok(None)
+    }
+
+    /// Create a new device group.
+    async fn create_device_group(
+        &self,
+        _group: &crate::model::device_group::DeviceGroup,
+    ) -> Result<(), Error> {
+        Err(Error::storage("device group storage not implemented for this backend"))
+    }
+
+    /// Update an existing device group.
+    async fn update_device_group(
+        &self,
+        _group: &crate::model::device_group::DeviceGroup,
+    ) -> Result<(), Error> {
+        Err(Error::storage("device group storage not implemented for this backend"))
+    }
+
+    /// Delete a device group by ID.
+    async fn delete_device_group(&self, _id: &str) -> Result<(), Error> {
+        Err(Error::storage("device group storage not implemented for this backend"))
+    }
+
+    /// List all devices in a group.
+    async fn list_devices_in_group(
+        &self,
+        _group_id: &str,
+    ) -> Result<Vec<crate::model::DeviceConfig>, Error> {
+        Ok(vec![])
+    }
+
+    /// Set a device's group membership (None = remove from group).
+    async fn set_device_group_membership(
+        &self,
+        _device_sn: &str,
+        _group_id: Option<&str>,
+    ) -> Result<(), Error> {
+        Err(Error::storage("device group storage not implemented for this backend"))
+    }
+
+    // ── Work Policy Templates ────────────────────────────────────
+
+    /// List all work policy templates.
+    async fn list_work_policy_templates(
+        &self,
+    ) -> Result<Vec<crate::model::WorkPolicyTemplate>, Error> {
+        Ok(vec![])
+    }
+
+    /// Get a single work policy template by ID.
+    async fn get_work_policy_template(
+        &self,
+        _id: &str,
+    ) -> Result<Option<crate::model::WorkPolicyTemplate>, Error> {
+        Ok(None)
+    }
+
+    /// Get a work policy template by title.
+    async fn get_work_policy_template_by_title(
+        &self,
+        _title: &str,
+    ) -> Result<Option<crate::model::WorkPolicyTemplate>, Error> {
+        Ok(None)
+    }
+
+    /// Create a new work policy template.
+    async fn create_work_policy_template(
+        &self,
+        _template: &crate::model::WorkPolicyTemplate,
+    ) -> Result<(), Error> {
+        Err(Error::storage("work policy template storage not implemented for this backend"))
+    }
+
+    /// Update an existing work policy template.
+    async fn update_work_policy_template(
+        &self,
+        _template: &crate::model::WorkPolicyTemplate,
+    ) -> Result<(), Error> {
+        Err(Error::storage("work policy template storage not implemented for this backend"))
+    }
+
+    /// Delete a work policy template by ID.
+    async fn delete_work_policy_template(&self, _id: &str) -> Result<(), Error> {
+        Err(Error::storage("work policy template storage not implemented for this backend"))
     }
 }

@@ -4,7 +4,7 @@ import { msg } from "@lingui/core/macro";
 import { useSetAtom } from "jotai";
 import { IconSearch, IconArrowRight } from "@tabler/icons-react";
 
-import { Button, Input, Banner, Spinner, Section } from "@/components/ui";
+import { Button, Input, Banner, Spinner, Section, StatusDot, Text } from "@/components/ui";
 import { useSidePanelSubPage } from "@/infrastructure/side-panel/hooks/use-side-panel-sub-page";
 import { scanNetwork, type DiscoveredDevice } from "@/lib/api";
 import {
@@ -12,7 +12,9 @@ import {
   wizardSelectedDeviceAtom,
 } from "@/infrastructure/state/atoms/wizard";
 
-type ScanStepProps = {
+import styles from "./device-register-scan-step.module.scss";
+
+type DeviceRegisterScanStepProps = {
   /** Called when the user cancels the wizard entirely. */
   onClose: () => void;
 };
@@ -25,7 +27,7 @@ type ScanStepProps = {
  * Selected device data is stored in {@link wizardSelectedDeviceAtom}
  * for the next step.
  */
-export function DeviceRegisterScanStep({ onClose: _onClose }: ScanStepProps) {
+export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScanStepProps) {
   const { _ } = useLingui();
   const { pushStep } = useSidePanelSubPage();
 
@@ -67,13 +69,12 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: ScanStepProps) {
   return (
     <Section>
       {/* ── Subnet Input ────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: "var(--ao-spacing-4)" }}>
-        <Input
-          value={subnet}
-          onChange={(e) => setSubnet((e.target as HTMLInputElement).value)}
-          placeholder={_(msg`192.168.1.0/24`)}
-        />
-      </div>
+      <Input
+        className={styles.inputWrapper}
+        value={subnet}
+        onChange={(e) => setSubnet((e.target as HTMLInputElement).value)}
+        placeholder={_(msg`192.168.1.0/24`)}
+      />
 
       <Button
         variant="primary"
@@ -87,56 +88,39 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: ScanStepProps) {
       </Button>
 
       {/* ── Error ───────────────────────────────────────────────────────── */}
-      {error && (
-        <div style={{ marginTop: "var(--ao-spacing-3)" }}>
-          <Banner variant="danger">{error}</Banner>
-        </div>
-      )}
+      {error && <Banner className={styles.errorWrapper} variant="danger">{error}</Banner>}
 
       {/* ── Scanning spinner ────────────────────────────────────────────── */}
       {scanning && (
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          padding: "var(--ao-spacing-6) 0",
-        }}>
+        <Section alignment="center" className={styles.spinnerWrapper}>
           <Spinner />
-        </div>
+        </Section>
       )}
 
       {/* ── Results ─────────────────────────────────────────────────────── */}
       {results && !scanning && (
-        <div style={{ marginTop: "var(--ao-spacing-4)" }}>
+        <Section className={styles.resultsContainer}>
           {results.length === 0 ? (
             <Banner variant="neutral">
               {_(msg`No ZKTeco devices found on this subnet.`)}
             </Banner>
           ) : (
             <>
-              <p style={{
-                color: "var(--ao-font-color-secondary)",
-                fontSize: "var(--ao-font-size-sm)",
-                marginBottom: "var(--ao-spacing-2)",
-              }}>
+              <Text as="span" variant="caption" color="secondary">
                 {_(msg`Found ${results.length} device(s). Select one to configure.`)}
-              </p>
-              <div style={{
-                border: "1px solid var(--ao-border-color-light)",
-                borderRadius: "var(--ao-radius-md)",
-                overflow: "hidden",
-              }}>
+              </Text>
+              <Section className={styles.resultsList}>
                 {results.map((device, idx) => (
                   <DeviceRow
                     key={device.ip_address ?? idx}
                     device={device}
                     onSelect={handleSelectDevice}
-                    isLast={idx === results.length - 1}
                   />
                 ))}
-              </div>
+              </Section>
             </>
           )}
-        </div>
+        </Section>
       )}
     </Section>
   );
@@ -147,11 +131,9 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: ScanStepProps) {
 function DeviceRow({
   device,
   onSelect,
-  isLast,
 }: {
   device: DiscoveredDevice;
   onSelect: (d: DiscoveredDevice) => void;
-  isLast: boolean;
 }) {
   const { _ } = useLingui();
 
@@ -160,15 +142,8 @@ function DeviceRow({
 
   return (
     <div
-      style={{
-        alignItems: "center",
-        borderBottom: isLast ? "none" : "1px solid var(--ao-border-color-light)",
-        cursor: "pointer",
-        display: "flex",
-        gap: "var(--ao-spacing-3)",
-        padding: "var(--ao-spacing-3)",
-        transition: "background 150ms ease",
-      }}
+      data-slot="device-row"
+      className={styles.deviceRow}
       onClick={() => onSelect(device)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onSelect(device);
@@ -176,42 +151,20 @@ function DeviceRow({
       role="button"
       tabIndex={0}
     >
-      {/* Status dot */}
-      <span
-        style={{
-          backgroundColor: reachable
-            ? "var(--ao-status-color-success, #22c55e)"
-            : "var(--ao-font-color-tertiary, #94a3b8)",
-          borderRadius: "50%",
-          display: "inline-block",
-          flexShrink: 0,
-          height: 8,
-          width: 8,
-        }}
-      />
+      <StatusDot status={reachable ? "online" : "offline"} size="sm" />
 
-      {/* Device info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: "var(--ao-font-size-sm)",
-          fontWeight: "var(--ao-font-weight-medium)",
-        }}>
+      <div data-slot="device-row-info" className={styles.deviceInfo}>
+        <Text as="span" variant="caption" weight="medium" className={styles.deviceLabel}>
           {label}
-        </div>
-        <div style={{
-          color: "var(--ao-font-color-tertiary)",
-          fontSize: "var(--ao-font-size-xs)",
-        }}>
+        </Text>
+        <Text as="span" variant="caption" color="tertiary" className={styles.deviceMeta}>
           {device.ip_address && `${device.ip_address}`}
           {device.model && ` — ${device.model}`}
           {!reachable && ` — ${_(msg`unreachable`)}`}
-        </div>
+        </Text>
       </div>
 
-      <IconArrowRight
-        size={14}
-        style={{ color: "var(--ao-font-color-tertiary)", flexShrink: 0 }}
-      />
+      <IconArrowRight size={14} className={styles.arrowIcon} />
     </div>
   );
 }

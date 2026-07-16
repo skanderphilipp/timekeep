@@ -2,10 +2,8 @@ import { useState, useMemo, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconTable, IconCalendar } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
 
-import { AppRoute } from "@/lib/navigation";
-import { QueryKeys } from "@/lib/query-keys";
+import { useOpenDetailPanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import { useEmployeeList } from "./use-employee-list";
 import { useEmployeeFacetOptions } from "./use-employee-facet-options";
 import { useSchemaColumns } from "@/modules/data-renderer/hooks/use-schema-columns";
@@ -16,53 +14,76 @@ import {
 import type { FilterRenderContext } from "@/modules/data-renderer";
 import type { ViewType } from "@/modules/shared/components";
 import type { Employee } from "@/lib/api/employees";
-import { updateEmployee } from "@/lib/api/employees";
-import { useInlineEditMutation } from "@/hooks";
+import { useRecordInlineEdit } from "@/modules/record-detail";
+import { fetchDepartments } from "@/lib/api/departments";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Fields that support inline editing in the employee list table.
- * Each value is the `ColumnDefinition.id` (maps to the schema field name).
+ *
+ * Department is now editable — the `FieldEdit` dispatcher renders a
+ * `FieldSelectInput` with department options loaded via `useQuery`.
+ * Options are injected into the column metadata in the `columns` useMemo.
+ *
+ * TODO(ENTERPRISE): Make this schema-driven from the backend.
+ * The backend `ColumnMeta` should eventually carry an `editable: boolean` field.
  */
 const EDITABLE_EMPLOYEE_FIELDS = new Set(["name", "department"]);
 
 /**
  * Employee list page orchestration hook.
- *
- * Extracts ALL state, filtering, and callbacks from {@link EmployeeListView}
- * so the view component can be a pure JSX composition.
- *
- * Pattern: mirrors {@link usePunchQueryPage} from the punches module.
  */
 export function useEmployeeListPage() {
   const { _ } = useLingui();
-  const navigate = useNavigate();
+  const openDetailPanel = useOpenDetailPanel();
   const query = useEmployeeList();
 
   // ── View state ─────────────────────────────────────────────────────
 
   const [currentView, setCurrentView] = useState<ViewType>("table");
 
-  // ── Inline editing mutation (Phase 4) ──────────────────────────────
+  // ── Inline editing mutation ────────────────────────────────────────
 
-  const editEmployee = useInlineEditMutation<Employee>({
-    queryKey: QueryKeys.employees.list(),
-    getRowKey: (e) => e.id,
-    mutationFn: ({ rowId, field, value }) =>
-      updateEmployee(rowId, { [field]: value as string }),
-  });
+  const editEmployee = useRecordInlineEdit("employee");
+
+  // ── Facet options (needed for filter dropdowns) ────────────────────
+
+  const facetOptions = useEmployeeFacetOptions();
 
   // ── Schema-driven columns ───────────────────────────────────────────
 
   const { columns: schemaColumns, isLoading: schemaLoading } = useSchemaColumns("employee");
 
-  // Mark editable fields on columns
+  // ── Department options for FK reference editing ────────────────────
+
+  const { data: departments } = useQuery({
+    queryKey: ["departments", "options"] as const,
+    queryFn: fetchDepartments,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Mark editable fields and inject reference options
   const columns = useMemo(
     () =>
-      schemaColumns.map((col) => ({
-        ...col,
-        editable: EDITABLE_EMPLOYEE_FIELDS.has(col.fieldId),
-      })),
-    [schemaColumns],
+      schemaColumns.map((col) => {
+        const editable = EDITABLE_EMPLOYEE_FIELDS.has(col.fieldId);
+
+        // Inject department options into the reference column metadata
+        if (col.fieldId === "department" && col.type === "reference" && departments) {
+          const deptOptions = departments.map((d) => ({
+            value: d.id,
+            label: d.name,
+          }));
+          return {
+            ...col,
+            editable,
+            metadata: { ...col.metadata, options: deptOptions },
+          };
+        }
+
+        return { ...col, editable };
+      }),
+    [schemaColumns, departments],
   );
 
   // ── Editing config passed to DataTableContainer ─────────────────────
@@ -82,10 +103,6 @@ export function useEmployeeListPage() {
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
-
-  // ── Facet-powered filter options ────────────────────────────────────
-
-  const facetOptions = useEmployeeFacetOptions();
 
   // ── Filter dimensions from schema ───────────────────────────────────
 
@@ -132,8 +149,8 @@ export function useEmployeeListPage() {
   }, []);
 
   const handleRowClick = useCallback(
-    (e: Employee) => navigate(AppRoute.employees.detail(e.id)),
-    [navigate],
+    (e: Employee) => openDetailPanel("employee", e.id, e.name),
+    [openDetailPanel],
   );
 
   const handleViewChange = useCallback((view: ViewType) => setCurrentView(view), []);
@@ -142,13 +159,6 @@ export function useEmployeeListPage() {
   const calendarYear = today.getFullYear();
   const calendarMonth = today.getMonth() + 1;
 
-  /**
-   * TODO(ENTERPRISE): Navigate to daily attendance detail for the selected date.
-   *
-   * Phase: Employee detail / attendance drill-down (Phase G)
-   * Impact: Calendar day click has no effect — user can't drill into daily attendance.
-   * Fix: Build a daily attendance overlay or navigate to a date-filtered punch view.
-   */
   const handleCalendarDayClick = useCallback((_date: string) => {}, []);
 
   // ── View options ────────────────────────────────────────────────────
@@ -187,7 +197,6 @@ export function useEmployeeListPage() {
   );
 
   return {
-    // Data
     columns,
     data: filtered,
     isLoading: query.isLoading || schemaLoading,
@@ -195,14 +204,12 @@ export function useEmployeeListPage() {
     refetch: () => query.refetch(),
     resultCount: filtered.length,
 
-    // Search & filters
     searchValue: search,
     onSearchChange: setSearch,
     filterFields,
     hasActiveFilters,
     onClearFilters: handleClearFilters,
 
-    // Views
     viewOptions,
     currentView,
     onViewChange: handleViewChange,
@@ -210,13 +217,9 @@ export function useEmployeeListPage() {
     calendarMonth,
     onCalendarDayClick: handleCalendarDayClick,
 
-    // Row interaction
     onRowClick: handleRowClick,
-
-    // Inline editing (Phase 4)
     editingConfig,
 
-    // Derived
     hasEmployees,
   } as const;
 }

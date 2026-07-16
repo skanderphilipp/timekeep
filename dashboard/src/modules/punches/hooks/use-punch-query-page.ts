@@ -7,6 +7,7 @@ import { usePunchFacetOptions } from "./use-punch-facet-options";
 import { usePunchColumns } from "./use-punch-columns";
 import { usePunchFilterHandlers } from "./use-punch-filter-handlers";
 import { fromDateString } from "@/lib/date";
+import { useOpenDetailPanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import type { Punch, FacetFilterParams } from "@/lib/api";
 
 /**
@@ -36,6 +37,7 @@ export function usePunchQueryPage() {
 
   const { columns, columnOptions, visibleColumnIds, handleColumnToggle } = usePunchColumns();
   const presets = useAttendancePresets();
+  const openDetailPanel = useOpenDetailPanel();
 
   // ── Facet-powered options (contextual counts) ─────────────────────
 
@@ -84,6 +86,12 @@ export function usePunchQueryPage() {
 
   /** Stable row key extractor. */
   const getRowKey = useCallback((punch: Punch) => punch.id, []);
+
+  /** Row click opens punch detail in the side panel (PK navigation). */
+  const handleRowClick = useCallback(
+    (punch: Punch) => openDetailPanel("punch", punch.id, `Punch ${punch.id}`),
+    [openDetailPanel],
+  );
 
   const {
     handleDateChange,
@@ -138,5 +146,6 @@ export function usePunchQueryPage() {
     deviceSns,
     setDeviceSns,
     refetch: () => query.refetch(),
+    onRowClick: handleRowClick,
   };
 }

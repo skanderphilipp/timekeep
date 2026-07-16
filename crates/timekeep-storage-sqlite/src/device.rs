@@ -15,6 +15,7 @@ pub(super) struct DeviceConfigRow {
     comm_key: i64,
     push_enabled: i64,
     timezone: Option<String>,
+    group_id: Option<String>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -191,8 +192,8 @@ impl SqliteStorage {
     pub(super) async fn upsert_device_config(&self, config: &DeviceConfig) -> Result<(), Error> {
         sqlx::query(
             "INSERT OR REPLACE INTO devices
-             (serial_number, label, host, port, comm_key, push_enabled, timezone)
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+             (serial_number, label, host, port, comm_key, push_enabled, timezone, group_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&config.serial_number)
         .bind(&config.label)
@@ -201,6 +202,7 @@ impl SqliteStorage {
         .bind(config.comm_key as i64)
         .bind(config.push_enabled as i64)
         .bind(&config.timezone)
+        .bind(&config.group_id)
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("upsert device config: {e}")))?;
@@ -210,7 +212,7 @@ impl SqliteStorage {
 
     pub(super) async fn list_device_configs(&self) -> Result<Vec<DeviceConfig>, Error> {
         let rows = sqlx::query_as::<_, DeviceConfigRow>(
-            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone
+            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone, group_id
              FROM devices ORDER BY label",
         )
         .fetch_all(&self.pool)
@@ -230,6 +232,7 @@ impl SqliteStorage {
                 vendor: "zkteco".into(),
                 location: None,
                 poll_interval_secs: None,
+                group_id: r.group_id,
             })
             .collect())
     }
@@ -283,7 +286,7 @@ impl SqliteStorage {
 
         // Fetch page
         let query_sql = format!(
-            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone
+            "SELECT serial_number, label, host, port, comm_key, push_enabled, timezone, group_id
              FROM devices {where_sql} ORDER BY {sort_col} {sort_dir} LIMIT ?"
         );
         let mut query = sqlx::query_as::<_, DeviceConfigRow>(&query_sql);
@@ -309,6 +312,7 @@ impl SqliteStorage {
                 vendor: "zkteco".into(),
                 location: None,
                 poll_interval_secs: None,
+                group_id: r.group_id,
             })
             .collect();
 
@@ -594,6 +598,7 @@ mod tests {
             vendor: "zkteco".into(),
             location: None,
             poll_interval_secs: None,
+            group_id: None,
         };
 
         // Create
@@ -649,6 +654,7 @@ mod tests {
                     vendor: "zkteco".into(),
                     location: None,
                     poll_interval_secs: None,
+                    group_id: None,
                 })
                 .await
                 .unwrap();

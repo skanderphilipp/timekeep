@@ -4,12 +4,12 @@ import { msg } from "@lingui/core/macro";
 import { IconPlus, IconTable } from "@tabler/icons-react";
 
 import { useUsersPage } from "../hooks/use-users-page";
-import { UserForm } from "./user-form";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
-import { Section, Button, Dialog as DialogComponent, EmptyState } from "@/components/ui";
+import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { DataListView } from "@/modules/data-renderer";
+import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import type { DashboardUser } from "@/lib/api";
 
 /**
@@ -22,6 +22,16 @@ import type { DashboardUser } from "@/lib/api";
 export function UsersView() {
   const { _ } = useLingui();
   const page = useUsersPage();
+
+  const openRecord = useOpenRecordInSidePanel();
+
+  const handleCreate = useCallback(() => {
+    openRecord({
+      entityType: "user",
+      title: _(msg`Create User`),
+      isNewRecord: true,
+    });
+  }, [openRecord, _]);
 
   const [search, setSearch] = useState("");
 
@@ -61,7 +71,7 @@ export function UsersView() {
         description={_(msg`Manage dashboard users, roles, and passwords.`)}
         actions={
           !page.query.isLoading && !page.query.error ? (
-            <Button size="sm" icon={<IconPlus size={16} />} onClick={page.handleCreate}>
+            <Button size="sm" icon={<IconPlus size={16} />} onClick={handleCreate}>
               {_(msg`Add User`)}
             </Button>
           ) : undefined
@@ -85,6 +95,7 @@ export function UsersView() {
           viewOptions={viewOptions}
           currentView="table"
           onViewChange={() => {}}
+          editingConfig={page.editingConfig}
           resultCount={filtered.length}
           emptyState={
             page.users.length > 0 ? (
@@ -101,16 +112,6 @@ export function UsersView() {
           }
         />
       </Section>
-
-      <DialogComponent
-        open={page.formMode !== "closed"}
-        onOpenChange={(o) => {
-          if (!o) page.handleCloseForm();
-        }}
-        title={_(page.formMode === "create" ? msg`Create User` : msg`Edit User`)}
-      >
-        <UserForm user={page.editingUser} onSuccess={page.handleCloseForm} />
-      </DialogComponent>
 
       <DeleteUserDialog
         user={page.deletingUser}

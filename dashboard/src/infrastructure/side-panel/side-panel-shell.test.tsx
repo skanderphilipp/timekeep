@@ -120,7 +120,6 @@ function makeEntry(overrides: Partial<SidePanelEntry> = {}): SidePanelEntry {
     entityType: "audit",
     entityId: "audit-1",
     title: "Edit Audit Entry",
-    mode: "edit",
     ...overrides,
   };
 }

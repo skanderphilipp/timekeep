@@ -10,20 +10,22 @@ use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
 };
-use jiff::Timestamp;
+
 use std::sync::Arc;
 use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter};
 
 use crate::AppState;
 use crate::dto::{
-    EmployeeResponse, EmployeeSummaryResponse, EmployeeWorkDaysResponse, QuickStatsResponse,
-    WorkDayResponse,
+    CalendarDayResponse, EmployeeResponse, EmployeeSummaryResponse, EmployeeWorkDaysResponse,
+    MonthlyTrendResponse, QuickStatsResponse, StatusResponse, WorkDayResponse,
 };
 use crate::request::WorkDayQuery;
 use crate::response::{ApiEnvelope, AppError};
 
 /// Resolve the employee repository or return an error if not configured.
-fn employees(state: &AppState) -> Result<&Arc<dyn timekeep_core::EmployeeStore>, AppError> {
+pub(crate) fn employees(
+    state: &AppState,
+) -> Result<&Arc<dyn timekeep_core::EmployeeStore>, AppError> {
     state.employees.as_ref().ok_or_else(|| {
         AppError::Internal("Employee repository not configured for this storage backend".into())
     })
@@ -32,14 +34,27 @@ fn employees(state: &AppState) -> Result<&Arc<dyn timekeep_core::EmployeeStore>,
 // ─── Work Day Queries ─────────────────────────────────────────────────
 
 /// Get computed work days for a specific employee by PIN.
+#[utoipa::path(
+    get,
+    path = "/api/employees/{pin}/work-days",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("pin" = String, Path, description = "Employee PIN"),
+        WorkDayQuery,
+    ),
+    responses(
+        (status = 200, description = "Employee work days", body = EmployeeWorkDaysResponse),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn employee_work_days(
     State(state): State<AppState>,
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeWorkDaysResponse>>, AppError> {
-    let policy =
-        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
-    let (since, until) = resolve_date_range(q.from, q.to);
+    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
     let punches = state
         .storage
@@ -58,14 +73,27 @@ pub(crate) async fn employee_work_days(
 }
 
 /// Get an aggregated summary for an employee over a date range.
+#[utoipa::path(
+    get,
+    path = "/api/employees/{pin}/summary",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("pin" = String, Path, description = "Employee PIN"),
+        WorkDayQuery,
+    ),
+    responses(
+        (status = 200, description = "Employee summary", body = EmployeeSummaryResponse),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn employee_summary(
     State(state): State<AppState>,
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeSummaryResponse>>, AppError> {
-    let policy =
-        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
-    let (since, until) = resolve_date_range(q.from, q.to);
+    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
     let punches = state
         .storage
@@ -106,13 +134,25 @@ pub(crate) async fn employee_summary(
 }
 
 /// Get quick stats for the dashboard with work-day computation.
+#[utoipa::path(
+    get,
+    path = "/api/dashboard/quick-stats",
+    tag = "Dashboard",
+    security(("bearer_auth" = [])),
+    params(
+        WorkDayQuery,
+    ),
+    responses(
+        (status = 200, description = "Dashboard quick stats", body = QuickStatsResponse),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn dashboard_quick_stats(
     State(state): State<AppState>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<QuickStatsResponse>>, AppError> {
-    let policy =
-        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
-    let (since, until) = resolve_date_range(q.from, q.to);
+    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
     let punches =
         state.storage.query_punches(&PunchFilter { since, until, ..Default::default() }).await?;
@@ -144,12 +184,36 @@ pub(crate) async fn dashboard_quick_stats(
 // ─── Employee CRUD ────────────────────────────────────────────────────
 
 /// Create a new tracked employee.
+///
+/// Accepts optional `department_id` for UUID-based department references.
+/// When provided, the department name is resolved and stored as the
+/// denormalized `department` display field.
+#[utoipa::path(
+    post,
+    path = "/api/employees",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    request_body = crate::request::CreateEmployeeRequest,
+    responses(
+        (status = 201, description = "Employee created", body = EmployeeResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 409, description = "Duplicate PIN"),
+        (status = 422, description = "Validation error"),
+    )
+)]
 pub(crate) async fn create_employee(
     State(state): State<AppState>,
     Json(body): Json<crate::request::CreateEmployeeRequest>,
 ) -> Result<(StatusCode, Json<ApiEnvelope<EmployeeResponse>>), AppError> {
-    let employee =
-        timekeep_core::Employee::new(&body.pin, &body.name, body.department, body.external_id);
+    // Resolve department name from department_id for the display cache
+    let (department_id, department_name) =
+        resolve_department(&state, body.department_id.as_deref()).await?;
+
+    let mut employee =
+        timekeep_core::Employee::new(&body.pin, &body.name, department_name, body.external_id);
+    employee.department_id = department_id;
+
     employees(&state)?.create_employee(&employee).await.map_err(|e| {
         if e.to_string().contains("UNIQUE") {
             AppError::duplicate(format!("PIN '{}' already exists", body.pin))
@@ -191,7 +255,7 @@ pub(crate) async fn list_employees(
     // ── Legacy SQL LIKE path ───────────────────────────────────────
     let filter = timekeep_core::EmployeeFilter {
         params: q.params,
-        department: q.department,
+        department_id: q.department_id,
         active: q.active.and_then(|a| a.parse::<bool>().ok()),
     };
     let result = employees(&state)?.list_employees_filtered(&filter).await?;
@@ -229,7 +293,7 @@ async fn list_employees_via_search(
         // No search store — fall back to SQL LIKE path
         let filter = timekeep_core::EmployeeFilter {
             params: q.params.clone(),
-            department: q.department.clone(),
+            department_id: q.department_id.clone(),
             active: q.active.as_deref().and_then(|a| a.parse::<bool>().ok()),
         };
         let result = employees(state)?.list_employees_filtered(&filter).await?;
@@ -246,17 +310,16 @@ async fn list_employees_via_search(
         let emp_id = timekeep_core::EmployeeId::from(hit.entity_id.as_str());
         if let Some(emp) = repo.find_employee(&emp_id).await? {
             // Apply department/active filters (Tantivy may return extra results)
-            if let Some(ref dept) = q.department {
-                if emp.department.as_deref() != Some(dept.as_str()) {
-                    continue;
-                }
+            if let Some(ref dept_id) = q.department_id
+                && emp.department_id.as_deref() != Some(dept_id.as_str())
+            {
+                continue;
             }
-            if let Some(active_str) = &q.active {
-                if let Ok(active) = active_str.parse::<bool>() {
-                    if emp.active != active {
-                        continue;
-                    }
-                }
+            if let Some(active_str) = &q.active
+                && let Ok(active) = active_str.parse::<bool>()
+                && emp.active != active
+            {
+                continue;
             }
             responses.push(EmployeeResponse::from(&emp));
         }
@@ -275,6 +338,20 @@ async fn list_employees_via_search(
 }
 
 /// Get a single employee by ID or PIN.
+#[utoipa::path(
+    get,
+    path = "/api/employees/{id}",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Employee ID or PIN"),
+    ),
+    responses(
+        (status = 200, description = "Employee details", body = EmployeeResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Employee not found"),
+    )
+)]
 pub(crate) async fn get_employee(
     State(state): State<AppState>,
     Path(id_or_pin): Path<String>,
@@ -292,11 +369,33 @@ pub(crate) async fn get_employee(
 }
 
 /// Update an employee's metadata.
+///
+/// Resolves the department name from `department_id` when provided.
+#[utoipa::path(
+    put,
+    path = "/api/employees/{id}",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Employee ID"),
+    ),
+    request_body = crate::request::UpdateEmployeeRequest,
+    responses(
+        (status = 200, description = "Employee updated", body = EmployeeResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 404, description = "Employee not found"),
+    )
+)]
 pub(crate) async fn update_employee(
     State(state): State<AppState>,
     Path(id): Path<String>,
     Json(body): Json<crate::request::UpdateEmployeeRequest>,
 ) -> Result<Json<ApiEnvelope<EmployeeResponse>>, AppError> {
+    // Resolve department name from department_id for the display cache
+    let (department_id, department_name) =
+        resolve_department(&state, body.department_id.as_deref()).await?;
+
     let repo = employees(&state)?;
     let emp_id = timekeep_core::EmployeeId::from(id);
     let mut employee = repo
@@ -306,9 +405,8 @@ pub(crate) async fn update_employee(
     if let Some(name) = body.name {
         employee.rename(name);
     }
-    if let Some(dept) = body.department {
-        employee.department = Some(dept);
-    }
+    employee.department = department_name;
+    employee.department_id = department_id;
     if let Some(ext_id) = body.external_id {
         employee.external_id = Some(ext_id);
     }
@@ -324,10 +422,25 @@ pub(crate) async fn update_employee(
 }
 
 /// Deactivate an employee (soft delete).
+#[utoipa::path(
+    delete,
+    path = "/api/employees/{id}",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Employee ID"),
+    ),
+    responses(
+        (status = 200, description = "Employee deactivated", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 404, description = "Employee not found"),
+    )
+)]
 pub(crate) async fn deactivate_employee(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
     let emp_id = timekeep_core::EmployeeId::from(id);
     employees(&state)?.deactivate_employee(&emp_id).await?;
 
@@ -335,17 +448,34 @@ pub(crate) async fn deactivate_employee(
         .event_bus
         .publish(timekeep_core::DomainEvent::EmployeeDeactivated { pin: emp_id.to_string() });
 
-    Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::deleted())))
+    Ok(Json(ApiEnvelope::success(StatusResponse::deleted())))
 }
 
 // ─── Device Enrollment ────────────────────────────────────────────────
 
 /// Enroll an employee on a specific device.
+#[utoipa::path(
+    post,
+    path = "/api/devices/{sn}/enrollments",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    request_body = crate::request::EnrollEmployeeRequest,
+    responses(
+        (status = 201, description = "Employee enrolled on device", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 404, description = "Employee or device not found"),
+        (status = 422, description = "Validation error"),
+    )
+)]
 pub(crate) async fn enroll_employee(
     State(state): State<AppState>,
     Path(device_sn): Path<String>,
     Json(body): Json<crate::request::EnrollEmployeeRequest>,
-) -> Result<(StatusCode, Json<ApiEnvelope<crate::dto::StatusResponse>>), AppError> {
+) -> Result<(StatusCode, Json<ApiEnvelope<StatusResponse>>), AppError> {
     let repo = employees(&state)?;
     let employee = repo
         .find_employee_by_pin(&body.pin)
@@ -370,10 +500,24 @@ pub(crate) async fn enroll_employee(
         biometric_types,
     );
     repo.create_enrollment(&enrollment).await?;
-    Ok((StatusCode::CREATED, Json(ApiEnvelope::success(crate::dto::StatusResponse::created()))))
+    Ok((StatusCode::CREATED, Json(ApiEnvelope::success(StatusResponse::created()))))
 }
 
 /// List employees enrolled on a device.
+#[utoipa::path(
+    get,
+    path = "/api/devices/{sn}/enrollments",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    responses(
+        (status = 200, description = "Device enrollments", body = Vec<EmployeeResponse>),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+    )
+)]
 pub(crate) async fn list_device_enrollments(
     State(state): State<AppState>,
     Path(device_sn): Path<String>,
@@ -394,14 +538,27 @@ pub(crate) async fn list_device_enrollments(
 /// Get monthly attendance trend for an employee.
 ///
 /// Returns one data point per month with attendance percentage.
+#[utoipa::path(
+    get,
+    path = "/api/employees/{pin}/monthly",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("pin" = String, Path, description = "Employee PIN"),
+        WorkDayQuery,
+    ),
+    responses(
+        (status = 200, description = "Employee monthly attendance trend", body = Vec<MonthlyTrendResponse>),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn employee_monthly_trend(
     State(state): State<AppState>,
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
-) -> Result<Json<ApiEnvelope<Vec<crate::dto::MonthlyTrendResponse>>>, AppError> {
-    let policy =
-        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
-    let (since, until) = resolve_date_range(q.from, q.to);
+) -> Result<Json<ApiEnvelope<Vec<MonthlyTrendResponse>>>, AppError> {
+    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
     let punches = state
         .storage
@@ -424,8 +581,8 @@ pub(crate) async fn employee_monthly_trend(
         Vec::new()
     };
 
-    let responses: Vec<crate::dto::MonthlyTrendResponse> =
-        trend.iter().map(crate::dto::MonthlyTrendResponse::from).collect();
+    let responses: Vec<MonthlyTrendResponse> =
+        trend.iter().map(MonthlyTrendResponse::from).collect();
 
     Ok(Json(ApiEnvelope::success(responses)))
 }
@@ -434,14 +591,27 @@ pub(crate) async fn employee_monthly_trend(
 ///
 /// Query params: `year` and `month` (both required).
 /// Returns one CalendarDay per day of the month.
+#[utoipa::path(
+    get,
+    path = "/api/employees/{pin}/calendar",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("pin" = String, Path, description = "Employee PIN"),
+        WorkDayQuery,
+    ),
+    responses(
+        (status = 200, description = "Employee calendar", body = Vec<CalendarDayResponse>),
+        (status = 401, description = "Unauthorized"),
+    )
+)]
 pub(crate) async fn employee_calendar(
     State(state): State<AppState>,
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
-) -> Result<Json<ApiEnvelope<Vec<crate::dto::CalendarDayResponse>>>, AppError> {
-    let policy =
-        state.storage.get_system_settings().await.map(|s| s.work_policy).unwrap_or_default();
-    let (since, until) = resolve_date_range(q.from, q.to);
+) -> Result<Json<ApiEnvelope<Vec<CalendarDayResponse>>>, AppError> {
+    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
     let punches = state
         .storage
@@ -464,24 +634,32 @@ pub(crate) async fn employee_calendar(
         Vec::new()
     };
 
-    let responses: Vec<crate::dto::CalendarDayResponse> =
-        calendar.iter().map(crate::dto::CalendarDayResponse::from).collect();
+    let responses: Vec<CalendarDayResponse> =
+        calendar.iter().map(CalendarDayResponse::from).collect();
 
     Ok(Json(ApiEnvelope::success(responses)))
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-fn resolve_date_range(
-    from: Option<i64>,
-    to: Option<i64>,
-) -> (Option<Timestamp>, Option<Timestamp>) {
-    let now = Timestamp::now();
-    let default_since =
-        now.saturating_sub(jiff::Span::new().try_days(7).expect("7 days")).unwrap_or(now);
-    let since = from.and_then(|ts| Timestamp::from_second(ts).ok()).unwrap_or(default_since);
-    let until = to.and_then(|ts| Timestamp::from_second(ts).ok()).unwrap_or(now);
-    (Some(since), Some(until))
+/// Resolve department name from UUID.
+///
+/// When `department_id` is provided, looks up the department by UUID
+/// and returns both the ID and the resolved display name.
+async fn resolve_department(
+    state: &AppState,
+    department_id: Option<&str>,
+) -> Result<(Option<String>, Option<String>), AppError> {
+    match department_id {
+        Some(id) => {
+            let dept = state.storage.get_department(id).await?;
+            match dept {
+                Some(d) => Ok((Some(d.id.to_string()), Some(d.name))),
+                None => Err(AppError::not_found(format!("department '{id}' not found"))),
+            }
+        },
+        None => Ok((None, None)),
+    }
 }
 
 // ─── Employee Sync (push to devices) ─────────────────────────────────
@@ -490,10 +668,25 @@ fn resolve_date_range(
 ///
 /// Publishes `EmployeeSyncRequested` which is handled by the
 /// application layer to push the employee to each device via SDK.
+#[utoipa::path(
+    post,
+    path = "/api/employees/{id}/sync-to-devices",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Employee ID or PIN"),
+    ),
+    responses(
+        (status = 200, description = "Sync triggered", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 404, description = "Employee not found"),
+    )
+)]
 pub(crate) async fn sync_employee_to_devices(
     State(state): State<AppState>,
     Path(id_or_pin): Path<String>,
-) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
     // Resolve the employee to verify they exist
     let repo = employees(&state)?;
     let emp_id = timekeep_core::EmployeeId::from(id_or_pin.as_str());
@@ -510,17 +703,32 @@ pub(crate) async fn sync_employee_to_devices(
         employee_pin: employee.pin.clone(),
     });
 
-    Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::requested())))
+    Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
 }
 
 /// Trigger removal of an employee from all their enrolled devices.
 ///
 /// Publishes `EmployeeRemoveRequested` which is handled by the
 /// application layer to delete the employee from each device via SDK.
+#[utoipa::path(
+    post,
+    path = "/api/employees/{id}/remove-from-devices",
+    tag = "Employees",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Employee ID or PIN"),
+    ),
+    responses(
+        (status = 200, description = "Employee removed from devices", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Admin only"),
+        (status = 404, description = "Employee not found"),
+    )
+)]
 pub(crate) async fn remove_employee_from_devices(
     State(state): State<AppState>,
     Path(id_or_pin): Path<String>,
-) -> Result<Json<ApiEnvelope<crate::dto::StatusResponse>>, AppError> {
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
     let repo = employees(&state)?;
     let emp_id = timekeep_core::EmployeeId::from(id_or_pin.as_str());
     let employee = repo.find_employee(&emp_id).await?;
@@ -536,7 +744,7 @@ pub(crate) async fn remove_employee_from_devices(
         employee_pin: employee.pin.clone(),
     });
 
-    Ok(Json(ApiEnvelope::success(crate::dto::StatusResponse::requested())))
+    Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
 }
 
 /// Return the entity schema for employees.

@@ -1,17 +1,28 @@
 import { useMemo, useCallback } from "react";
+import { useAtomValue } from "jotai";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { useFilterUrl } from "@/infrastructure/query-params";
 import { useReportSummary } from "./use-report-summary";
 import { useReportPresets } from "./use-report-presets";
+import { useReportCharts } from "./use-report-charts";
 import { fetchPunches } from "@/lib/api";
+import { clientConfigState } from "@/infrastructure/state";
+import { APP_NAME } from "@/lib/constants";
 import type { ActiveFilter } from "@/components/ui";
 
-const reportFilterDefaults = {
-  date_from: "",
-  date_to: "",
-};
+const reportFilterDefaults = { date_from: "", date_to: "" };
+
+
+
+const PDF_CHART_SELECTORS = [
+  '[data-pdf-chart="punch-type-distribution"]',
+  '[data-pdf-chart="daily-punch-volume"]',
+  '[data-pdf-chart="attendance-distribution"]',
+  '[data-pdf-chart="weekly-hours"]',
+  '[data-pdf-chart="daily-work-hours"]',
+];
 
 function isoToUnixStart(iso: string): number {
   if (!iso) return 0;
@@ -25,12 +36,10 @@ function isoToUnixEnd(iso: string): number {
 
 export function useReportsPage() {
   const { _ } = useLingui();
-
   const { filters, setFilter, resetFilters, hasActiveFilters } = useFilterUrl({
     namespace: "reports",
     defaults: reportFilterDefaults,
   });
-
   const presets = useReportPresets();
 
   const apiFilter = useMemo(() => {
@@ -41,6 +50,7 @@ export function useReportsPage() {
   }, [filters.date_from, filters.date_to]);
 
   const { data: summary, isLoading, error, refetch } = useReportSummary(apiFilter);
+  const charts = useReportCharts(summary);
 
   const activeFilters: ActiveFilter[] = useMemo(() => {
     const result: ActiveFilter[] = [];
@@ -61,64 +71,6 @@ export function useReportsPage() {
     return result;
   }, [filters, setFilter, _]);
 
-  /** Chart data: punch type distribution pie */
-  const pieData = useMemo(() => {
-    if (!summary) return [];
-    return [
-      { name: _(msg`Check In`), value: summary.check_ins },
-      { name: _(msg`Check Out`), value: summary.check_outs },
-      { name: _(msg`Break Out`), value: summary.break_outs },
-      { name: _(msg`Break In`), value: summary.break_ins },
-      { name: _(msg`OT In`), value: summary.overtime_ins },
-      { name: _(msg`OT Out`), value: summary.overtime_outs },
-    ].filter((d) => d.value > 0);
-  }, [summary, _]);
-
-  /** Chart data: daily punch volume */
-  const barData = useMemo(() => {
-    if (!summary?.daily_breakdown) return [];
-    return summary.daily_breakdown.map((d) => ({
-      name: new Date(d.date * 1000).toLocaleDateString(),
-      value: d.count,
-    }));
-  }, [summary]);
-
-  /** Status distribution donut data (full/half/absent) */
-  const statusData = useMemo(() => {
-    if (!summary?.status_distribution) return [];
-    const labels: Record<string, string> = {
-      full: _(msg`Full Day`),
-      half: _(msg`Half Day`),
-      absent: _(msg`Absent`),
-    };
-    return summary.status_distribution.map((d) => ({
-      name: labels[d.status] ?? d.status,
-      value: d.count,
-    }));
-  }, [summary, _]);
-
-  /** Daily hours chart data: regular + overtime stacked lines. */
-  const dailyHoursData = useMemo(() => {
-    if (!summary?.daily_hours) return [];
-    return summary.daily_hours.map((d) => ({
-      date: new Date(d.date * 1000).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      }),
-      regular: +(d.regular_seconds / 3600).toFixed(1),
-      overtime: +(d.overtime_seconds / 3600).toFixed(1),
-    }));
-  }, [summary]);
-
-  /** Weekly hours chart data: trend line. */
-  const weeklyHoursData = useMemo(() => {
-    if (!summary?.weekly_hours) return [];
-    return summary.weekly_hours.map((w) => ({
-      week: `${_(msg`W`)}${w.week}`,
-      hours: +(w.total_seconds / 3600).toFixed(1),
-    }));
-  }, [summary, _]);
-
   const handleFetchPunches = useCallback(async () => {
     const result = await fetchPunches({
       since: filters.date_from || undefined,
@@ -135,6 +87,9 @@ export function useReportsPage() {
     [filters.date_from, filters.date_to],
   );
 
+  const clientConfig = useAtomValue(clientConfigState.atom);
+  const workspaceName = clientConfig?.workspace_name || APP_NAME;
+
   return {
     filters,
     setFilter,
@@ -146,12 +101,10 @@ export function useReportsPage() {
     error,
     refetch,
     activeFilters,
-    pieData,
-    barData,
-    statusData,
-    dailyHoursData,
-    weeklyHoursData,
+    ...charts,
     handleFetchPunches,
     exportFilter,
+    workspaceName,
+    chartSelectors: PDF_CHART_SELECTORS,
   };
 }

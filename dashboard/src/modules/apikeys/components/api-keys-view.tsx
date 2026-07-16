@@ -22,6 +22,12 @@ import type { ApiKey } from "@/lib/api";
  * fit well in a table row. The TopBar provides search and consistent
  * toolbar appearance with other list pages.
  *
+ * RATIONALE: Create uses a Dialog instead of the side panel pattern.
+ * API key creation reveals a one-time secret that must be copied immediately.
+ * A dialog keeps the user's context (the key list) visible while showing
+ * the secret, whereas navigating to the side panel would obscure the list.
+ * This is the only intentional dialog for a form in the app.
+ *
  * TODO(ENTERPRISE): Consider a table layout if more keys need bulk management.
  * Phase: API key management scaling
  * Impact: Card layout won't scale past ~20 keys.

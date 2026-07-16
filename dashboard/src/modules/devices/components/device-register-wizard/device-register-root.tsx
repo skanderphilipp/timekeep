@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { SidePanelFormContainer } from "@/infrastructure/side-panel/components/side-panel-form-container";
-import { SidePanelSubPageRouter } from "@/infrastructure/side-panel/components/side-panel-sub-page-router";
+import { SidePanelSubPageRouter } from "@/infrastructure/side-panel/components/side-panel-sub-page-router/side-panel-sub-page-router";
 import { DeviceRegisterScanStep } from "./device-register-scan-step";
 import { DeviceRegisterConfigureStep } from "./device-register-configure-step";
 import { DeviceRegisterTestStep } from "./device-register-test-step";
