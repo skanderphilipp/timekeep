@@ -27,11 +27,12 @@
 //! whatever fields the specific integration type requires.
 
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 /// Supported integration types.
 ///
 /// Each variant corresponds to a distributor crate.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum IntegrationKind {
     /// Outbound HTTP webhook — POSTs JSON payloads to any URL.

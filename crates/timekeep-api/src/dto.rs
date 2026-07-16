@@ -140,6 +140,17 @@ pub struct DeviceSummary {
     /// Physical location
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
+
+    /// Whether this device was auto-registered via ADMS discovery
+    /// (as opposed to being manually configured). When true, the device
+    /// came online through the ZKTeco provider's ADMS push without any
+    /// manual SDK polling configuration.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub auto_registered: bool,
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
 }
 
 impl From<&DeviceConfig> for DeviceSummary {
@@ -157,6 +168,7 @@ impl From<&DeviceConfig> for DeviceSummary {
             sdk_last_poll: None,
             last_seen_at: None,
             location: c.location.clone(),
+            auto_registered: false,
         }
     }
 }
@@ -176,6 +188,7 @@ impl From<&Device> for DeviceSummary {
             sdk_last_poll: None,
             last_seen_at: d.last_seen.map(|t| t.as_second()),
             location: d.location.clone(),
+            auto_registered: false,
         }
     }
 }
@@ -423,6 +436,9 @@ pub(crate) fn device_event_label(e: &DeviceEvent) -> String {
 pub struct DeviceDiscoverResponse {
     /// Whether the device responded to the probe.
     pub reachable: bool,
+    /// The IP address or hostname that was probed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ip_address: Option<String>,
     /// Detected vendor key (e.g. "zkteco").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vendor: Option<String>,
@@ -451,6 +467,7 @@ impl DeviceDiscoverResponse {
     pub fn from_probe(probe: &DeviceProbe) -> Self {
         Self {
             reachable: true,
+            ip_address: None, // populated by caller when known
             vendor: Some(probe.vendor.clone()),
             serial_number: Some(probe.serial_number.clone()),
             model: if probe.model.is_empty() { None } else { Some(probe.model.clone()) },
@@ -470,9 +487,19 @@ impl DeviceDiscoverResponse {
         }
     }
 
+    /// Build from probe with the known IP address.
+    pub fn from_probe_with_ip(probe: &DeviceProbe, ip: &str) -> Self {
+        let mut resp = Self::from_probe(probe);
+        if !ip.is_empty() {
+            resp.ip_address = Some(ip.to_string());
+        }
+        resp
+    }
+
     pub fn unreachable() -> Self {
         Self {
             reachable: false,
+            ip_address: None,
             vendor: None,
             serial_number: None,
             model: None,

@@ -42,11 +42,12 @@ use crate::response::*;
 )]
 pub(crate) async fn list_api_keys(
     State(state): State<AppState>,
-) -> Result<Json<ApiEnvelope<Vec<ApiKeyResponse>>>, AppError> {
+    Query(params): Query<timekeep_core::ListParams>,
+) -> Result<axum::response::Response, AppError> {
     let keys = state.storage.list_api_keys().await?;
     let responses: Vec<ApiKeyResponse> = keys.iter().map(ApiKeyResponse::from).collect();
     let total = responses.len() as u64;
-    Ok(Json(ApiEnvelope::paginated(responses, PageMeta::with_total(total))))
+    crate::response::build_sparse_envelope(responses, PageMeta::with_total(total), &params.fields)
 }
 
 /// Create a new API key for an integration partner.
@@ -364,9 +365,10 @@ fn export_as_xlsx(punches: &[timekeep_core::AttendancePunch]) -> Result<ExportRe
 pub(crate) async fn list_endpoints(
     State(state): State<AppState>,
     Query(params): Query<timekeep_core::ListParams>,
-) -> Result<Json<ApiEnvelope<Vec<EndpointResponse>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     use timekeep_core::EndpointFilter;
 
+    let __fields = params.fields.clone();
     let filter = EndpointFilter { params };
     let result = state.storage.list_endpoints_filtered(&filter).await?;
     let responses: Vec<EndpointResponse> =
@@ -378,7 +380,7 @@ pub(crate) async fn list_endpoints(
         total: result.total,
     };
 
-    Ok(Json(ApiEnvelope::paginated(responses, meta)))
+    crate::response::build_sparse_envelope(responses, meta, &__fields)
 }
 
 /// Create a new integration endpoint.
@@ -409,9 +411,7 @@ pub(crate) async fn create_endpoint(
         return Err(AppError::validation("name is required"));
     }
 
-    let kind = timekeep_core::IntegrationKind::from_str(&body.kind).ok_or_else(|| {
-        AppError::validation(format!("unknown integration kind: '{}'", body.kind))
-    })?;
+    let kind = body.kind;
 
     let mut endpoint = timekeep_core::IntegrationEndpoint::new(body.name, kind);
 
@@ -643,9 +643,10 @@ fn parse_time(s: &str) -> Result<jiff::civil::Time, AppError> {
 pub(crate) async fn query_audit(
     State(state): State<AppState>,
     Query(params): Query<AuditListQuery>,
-) -> Result<Json<ApiEnvelope<Vec<AuditEventResponse>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     use timekeep_core::AuditFilter;
 
+    let __fields = params.fields.clone();
     let filter = AuditFilter {
         actor: params.actor,
         action: params.action,
@@ -669,7 +670,7 @@ pub(crate) async fn query_audit(
         total: result.total,
     };
 
-    Ok(Json(ApiEnvelope::paginated(items, meta)))
+    crate::response::build_sparse_envelope(items, meta, &__fields)
 }
 
 /// Return the entity schema for audit logs.

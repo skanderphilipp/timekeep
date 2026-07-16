@@ -115,6 +115,20 @@ impl Employee {
         }
     }
 
+    /// Assign or clear the department for this employee.
+    ///
+    /// `department_id` is the UUID FK reference. `department` is the
+    /// cached display name resolved by the API layer.
+    pub fn set_department(
+        &mut self,
+        department_id: Option<String>,
+        department_name: Option<String>,
+    ) {
+        self.department_id = department_id;
+        self.department = department_name;
+        self.updated_at = Timestamp::now();
+    }
+
     /// Mark this employee as inactive (soft delete).
     pub fn deactivate(&mut self) {
         self.active = false;

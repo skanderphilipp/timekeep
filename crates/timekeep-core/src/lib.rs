@@ -79,6 +79,7 @@ pub use facet::{
     employee_facet_dimensions, punch_facet_dimensions,
 };
 pub use query::cursor::{Cursor, CursorValue, decode_cursor, encode_cursor, encode_offset_cursor};
+pub use query::field_selector::{FieldSelector, IncludeDirective};
 pub use query::filters::{
     DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter,
 };

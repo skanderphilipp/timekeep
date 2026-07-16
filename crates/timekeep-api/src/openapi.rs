@@ -34,6 +34,10 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Config ──
         crate::routes::auth::client_config,
 
+        // ── Setup ──
+        crate::routes::auth::setup_status,
+        crate::routes::auth::perform_setup,
+
         // ── Search ──
         crate::routes::search::global_search,
 
@@ -175,6 +179,15 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         crate::routes::device_groups::delete_group,
         crate::routes::device_groups::list_devices_in_group,
         crate::routes::device_groups::set_device_group,
+
+        // ── Work Policies ──
+        crate::routes::work_policy_templates::list_templates,
+        crate::routes::work_policy_templates::get_template,
+        crate::routes::work_policy_templates::create_template,
+        crate::routes::work_policy_templates::update_template,
+        crate::routes::work_policy_templates::delete_template,
+        crate::routes::work_policy_templates::template_schema,
+        crate::routes::work_policy_templates::template_filters,
     ),
     components(
         schemas(
@@ -310,10 +323,24 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
             // Client Config
             ClientConfigResponse,
+
+            // Setup
+            SetupStatusResponse,
+            SetupCompletedResponse,
+            SetupRequest,
+
+            // Work Policies
+            WorkPolicyTemplateResponse,
+            CreateWorkPolicyTemplateRequest,
+            UpdateWorkPolicyTemplateRequest,
+
+            // Integration Kinds (enum, used by EndpointResponse)
+            timekeep_core::IntegrationKind,
         )
     ),
     tags(
         (name = "Auth", description = "Authentication — JWT token issuance"),
+        (name = "Setup", description = "First-run onboarding — status check and initial admin creation"),
         (name = "Config", description = "Client bootstrap configuration — workspace info, setup status, feature flags"),
         (name = "Health", description = "Health check and Prometheus metrics"),
         (name = "Search", description = "Full-text search across all indexed entities"),
@@ -333,6 +360,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         (name = "Employees", description = "Employee directory — CRUD, attendance queries, device enrollment"),
         (name = "Departments", description = "Organizational departments with work policy overrides — groups employees for scheduling and reporting"),
         (name = "Device Groups", description = "Device groups for department-scoped employee sync operations"),
+        (name = "Work Policies", description = "Work policy templates — reusable shift configurations referenced by departments"),
     )
 )]
 pub struct ApiDoc;

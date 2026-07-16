@@ -24,7 +24,7 @@ use axum::{
 use crate::AppState;
 use crate::dto::DepartmentResponse;
 use crate::request::{CreateDepartmentRequest, GenericFacetParams, UpdateDepartmentRequest};
-use crate::response::{ApiEnvelope, AppError};
+use crate::response::{ApiEnvelope, AppError, PageMeta};
 
 /// Resolve the display title for a department's work policy template.
 async fn resolve_policy_title(state: &AppState, work_policy_id: Option<&str>) -> Option<String> {
@@ -102,22 +102,19 @@ fn resolve_policy(
 )]
 pub(crate) async fn list_departments(
     State(state): State<AppState>,
-) -> Result<Json<ApiEnvelope<Vec<DepartmentResponse>>>, AppError> {
+    Query(params): Query<timekeep_core::ListParams>,
+) -> Result<axum::response::Response, AppError> {
     let departments = state.storage.list_departments().await?;
 
     let employee_store = crate::employees::employees(&state)?;
     let mut responses: Vec<DepartmentResponse> = Vec::with_capacity(departments.len());
-    // PERF: Individual COUNT queries per department.
-    // TODO(ENTERPRISE): Add batch counting to EmployeeStore for large orgs.
-    // Phase: Production scaling
-    // Impact: N+1 queries when listing departments. Acceptable for < 50 departments.
-    // Fix: Add count_employees_by_departments(&[String]) -> HashMap<String, u64>
     for dept in &departments {
         let count = employee_store.count_employees_in_department(&dept.id.0).await.ok();
         let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
         responses.push(DepartmentResponse::from_department(dept, count, policy_title));
     }
-    Ok(Json(ApiEnvelope::success(responses)))
+
+    crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
 }
 
 /// Get a single department by ID.

@@ -36,9 +36,10 @@ use timekeep_core::{DeviceEventFilter, DeviceEventType};
 pub(crate) async fn list_devices(
     State(state): State<AppState>,
     Query(params): Query<timekeep_core::ListParams>,
-) -> Result<Json<ApiEnvelope<Vec<DeviceSummary>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     use timekeep_core::DeviceFilter;
 
+    let __fields = params.fields.clone();
     let filter = DeviceFilter { params };
     let result = state.storage.list_device_configs_filtered(&filter).await?;
 
@@ -72,6 +73,7 @@ pub(crate) async fn list_devices(
             sdk_last_poll,
             last_seen_at: last_seen,
             location: config.location.clone(),
+            auto_registered: adms,
         });
     }
 
@@ -81,7 +83,7 @@ pub(crate) async fn list_devices(
         total: result.total,
     };
 
-    Ok(Json(ApiEnvelope::paginated(items, meta)))
+    crate::response::build_sparse_envelope(items, meta, &__fields)
 }
 
 /// Get a single device by serial number.
@@ -370,6 +372,8 @@ pub(crate) async fn device_events(
             sort_order: query.sort_order,
             limit: query.limit.min(200),
             cursor: query.cursor,
+            fields: None,
+            include: None,
             ..Default::default()
         },
         device_sn: Some(sn),
@@ -465,7 +469,7 @@ pub(crate) async fn device_activity(
 pub(crate) async fn search_devices(
     State(state): State<AppState>,
     Query(query): Query<DeviceSearchQuery>,
-) -> Result<Json<ApiEnvelope<Vec<DeviceSummary>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     use timekeep_core::DeviceFilter;
 
     let filter = DeviceFilter {
@@ -475,6 +479,8 @@ pub(crate) async fn search_devices(
             sort_order: query.sort_order,
             limit: query.limit.min(200),
             cursor: query.cursor,
+            fields: query.fields.clone(),
+            include: query.include.clone(),
         },
     };
 
@@ -529,6 +535,7 @@ pub(crate) async fn search_devices(
             sdk_last_poll,
             last_seen_at: last_seen,
             location: config.location.clone(),
+            auto_registered: adms,
         });
     }
 
@@ -538,7 +545,7 @@ pub(crate) async fn search_devices(
         total: result.total,
     };
 
-    Ok(Json(ApiEnvelope::paginated(items, meta)))
+    crate::response::build_sparse_envelope(items, meta, &query.fields)
 }
 
 // ── Device Health ────────────────────────────────────────────────────
@@ -640,11 +647,13 @@ pub(crate) async fn discover_device(
     match state.provider_registry.probe_all(&body.host, body.port).await {
         Ok(probe) => {
             state.event_bus.publish(DomainEvent::DeviceDiscovered { probe: probe.clone() });
-            let resp = DeviceDiscoverResponse::from_probe(&probe);
+            let resp = DeviceDiscoverResponse::from_probe_with_ip(&probe, &body.host);
             Ok((StatusCode::OK, Json(ApiEnvelope::success(resp))))
         },
         Err(_) => {
-            Ok((StatusCode::OK, Json(ApiEnvelope::success(DeviceDiscoverResponse::unreachable()))))
+            let mut resp = DeviceDiscoverResponse::unreachable();
+            resp.ip_address = Some(body.host.clone());
+            Ok((StatusCode::OK, Json(ApiEnvelope::success(resp))))
         },
     }
 }

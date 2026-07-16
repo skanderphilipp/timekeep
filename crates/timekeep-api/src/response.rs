@@ -237,7 +237,7 @@ impl From<timekeep_core::Error> for AppError {
 pub struct EndpointResponse {
     pub id: String,
     pub name: String,
-    pub kind: String,
+    pub kind: timekeep_core::IntegrationKind,
     pub enabled: bool,
     /// Type-specific configuration as a JSON object.
     pub config: serde_json::Value,
@@ -250,7 +250,7 @@ impl From<&timekeep_core::IntegrationEndpoint> for EndpointResponse {
         Self {
             id: ep.id.clone(),
             name: ep.name.clone(),
-            kind: ep.kind.to_string(),
+            kind: ep.kind,
             enabled: ep.enabled,
             config: ep.config.clone(),
             created_at: ep.created_at,
@@ -579,4 +579,92 @@ fn urlencoding(s: &str) -> String {
             }
         })
         .collect()
+}
+
+// ─── Sparse Field Selection Envelope ────────────────────────────────────
+
+/// Build a response envelope with optional field selection.
+///
+/// When selector is wildcard (no ?fields= param), returns the standard
+/// typed ApiEnvelope for maximum type safety and OpenAPI compatibility.
+///
+/// When selector is active, serializes data to serde_json::Value,
+/// recursively filters JSON keys, and builds an envelope with the filtered
+/// payload. Zero-boilerplate per entity — no custom DTOs needed.
+///
+/// Every list handler follows the same 3-line pattern:
+///
+/// ```ignore
+/// let selector = FieldSelector::parse(q.fields.as_deref());
+/// // ... fetch data, build responses, compute meta ...
+/// build_sparse_envelope(&list_response, meta, &selector)
+/// ```
+pub fn build_sparse_envelope<T: serde::Serialize + utoipa::ToSchema>(
+    data: T,
+    meta: PageMeta,
+    fields: impl Into<timekeep_core::FieldSelector>,
+) -> Result<axum::response::Response, AppError> {
+    use axum::response::IntoResponse;
+
+    let selector: timekeep_core::FieldSelector = fields.into();
+
+    if selector.is_wildcard() {
+        return Ok(Json(ApiEnvelope::paginated(data, meta)).into_response());
+    }
+
+    let raw = serde_json::to_value(&data).map_err(|e| {
+        AppError::Internal(format!("serialization failed: {e}"))
+    })?;
+    let filtered = filter_json_keys(raw, &selector);
+
+    let envelope = serde_json::json!({
+        "data": filtered,
+        "meta": {
+            "has_more": meta.has_more,
+            "next_cursor": meta.next_cursor,
+            "total": meta.total,
+        },
+        "error": null,
+    });
+
+    Ok(Json(envelope).into_response())
+}
+
+fn filter_json_keys(
+    value: serde_json::Value,
+    selector: &timekeep_core::FieldSelector,
+) -> serde_json::Value {
+    filter_json_keys_inner(value, selector, true)
+}
+
+fn filter_json_keys_inner(
+    value: serde_json::Value,
+    selector: &timekeep_core::FieldSelector,
+    is_root: bool,
+) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(map) if is_root => {
+            // At root level, preserve wrapper keys (e.g. "punches", "items")
+            // but filter elements inside any array values.
+            let filtered: serde_json::Map<String, serde_json::Value> = map
+                .into_iter()
+                .map(|(k, v)| (k, filter_json_keys_inner(v, selector, false)))
+                .collect();
+            serde_json::Value::Object(filtered)
+        }
+        serde_json::Value::Object(map) => {
+            let filtered: serde_json::Map<String, serde_json::Value> = map
+                .into_iter()
+                .filter(|(k, _)| selector.allows(k))
+                .map(|(k, v)| (k, filter_json_keys_inner(v, selector, false)))
+                .collect();
+            serde_json::Value::Object(filtered)
+        }
+        serde_json::Value::Array(items) => {
+            serde_json::Value::Array(
+                items.into_iter().map(|v| filter_json_keys_inner(v, selector, false)).collect(),
+            )
+        }
+        scalar => scalar,
+    }
 }

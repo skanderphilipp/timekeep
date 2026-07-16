@@ -17,13 +17,6 @@ use timekeep_core::events::DomainEvent;
 use timekeep_core::query::cursor::{Cursor, CursorValue};
 
 /// Get a single punch by its deduplication ID.
-///
-/// Used by the frontend punch detail view (side panel record detail).
-///
-/// **Important:** Punches are identified by their deduplication ID, which is a
-/// content-addressed hash of (device_sn, user_pin, timestamp, status).
-/// This is NOT a sequential PK — it's a SHA-256 prefix used for idempotent
-/// storage. The frontend must have the full dedup ID to look up a punch.
 #[utoipa::path(
     get,
     path = "/api/punches/{id}",
@@ -52,6 +45,10 @@ pub(crate) async fn get_punch(
 }
 
 /// Query punches with cursor-based pagination (management API).
+///
+/// Supports sparse field selection via `?fields=` and eager-loaded relationships
+/// via `?include=`. When no field selector is active, returns the full
+/// `PunchResponse` schema.
 #[utoipa::path(
     get,
     path = "/api/punches",
@@ -66,7 +63,8 @@ pub(crate) async fn get_punch(
 pub(crate) async fn query_punches_mgmt(
     State(state): State<AppState>,
     Query(q): Query<PunchListQuery>,
-) -> Result<Json<ApiEnvelope<PunchListResponse>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
+
     // ── Tantivy full-text search path ────────────────────────────
     if q.q.as_ref().is_some_and(|s| !s.trim().is_empty()) {
         return query_punches_via_search(&state, &q).await;
@@ -87,22 +85,20 @@ pub(crate) async fn query_punches_mgmt(
         } else {
             PageMeta::single()
         }
+    } else if is_cursor {
+        PageMeta { has_more: false, next_cursor: None, total: None }
     } else {
-        if is_cursor {
-            PageMeta { has_more: false, next_cursor: None, total: None }
-        } else {
-            PageMeta::single()
-        }
+        PageMeta::single()
     };
 
-    Ok(Json(ApiEnvelope::paginated(PunchListResponse { punches: responses }, meta)))
+    crate::response::build_sparse_envelope(PunchListResponse { punches: responses }, meta, &q.params.fields)
 }
 
 /// Query punches through Tantivy full-text search.
 async fn query_punches_via_search(
     state: &AppState,
     q: &PunchListQuery,
-) -> Result<Json<ApiEnvelope<PunchListResponse>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     let search_term = q.q.as_deref().unwrap_or("");
 
     let search_query = timekeep_core::SearchQuery {
@@ -118,25 +114,25 @@ async fn query_punches_via_search(
             .await
             .map_err(|e| AppError::Internal(format!("search failed: {e}")))?,
         None => {
-            // Fall back to SQL path
             let filter = build_punch_filter(q);
             let punches = state.storage.query_punches(&filter).await?;
             let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
-            return Ok(Json(ApiEnvelope::paginated(
+            return crate::response::build_sparse_envelope(
                 PunchListResponse { punches: responses },
                 PageMeta::single(),
-            )));
+                &q.params.fields,
+            );
         },
     };
 
-    // Cross-reference search results with the database using batch ID lookup
     let ids: Vec<String> = results.hits.iter().map(|h| h.entity_id.clone()).collect();
 
     if ids.is_empty() {
-        return Ok(Json(ApiEnvelope::paginated(
+        return crate::response::build_sparse_envelope(
             PunchListResponse { punches: vec![] },
             PageMeta::single(),
-        )));
+            &q.params.fields,
+        );
     }
 
     let filter = PunchFilter {
@@ -150,15 +146,14 @@ async fn query_punches_via_search(
     let has_more = results.has_more;
     let meta = if has_more { PageMeta::has_more(String::new()) } else { PageMeta::single() };
 
-    Ok(Json(ApiEnvelope::paginated(PunchListResponse { punches: responses }, meta)))
+    crate::response::build_sparse_envelope(PunchListResponse { punches: responses }, meta, &q.params.fields)
 }
+
 
 /// Build a PunchFilter from a PunchListQuery.
 pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
-    // Decode cursor for keyset pagination
     let cursor_after = q.params.cursor.as_deref().and_then(Cursor::decode);
 
-    // Time range filters (for initial page loads, not cursor continuation)
     let since = q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok());
     let until = q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok());
 
@@ -196,10 +191,6 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
     }
 }
 
-/// Build the next cursor from the last punch in a page.
-///
-/// Uses the schema to determine which columns to encode based on the active
-/// sort column. The tiebreaker (`id`) is always included.
 fn build_next_punch_cursor(
     last: &timekeep_core::model::AttendancePunch,
     sort_by: Option<&str>,
@@ -224,10 +215,6 @@ fn build_next_punch_cursor(
     Cursor::from_values(values).encode()
 }
 
-/// Return the entity schema for a given entity type.
-///
-/// Returns column metadata (field names, types, sortable, filterable, facet kind)
-/// that the frontend data container uses to auto-generate table columns and controls.
 #[utoipa::path(
     get,
     path = "/api/punches/schema",
@@ -242,10 +229,6 @@ pub(crate) async fn punch_schema() -> Json<ApiEnvelope<timekeep_core::EntitySche
     Json(ApiEnvelope::success(timekeep_core::PUNCH_SCHEMA.clone()))
 }
 
-/// Return faceted filter metadata for punches (contextual counts).
-///
-/// Supports `?dimension=` for a single facet, or returns all dimensions.
-/// Context filters (device_sn, since, until, status, etc.) constrain counts.
 #[utoipa::path(
     get,
     path = "/api/punches/filters",
@@ -305,7 +288,6 @@ pub(crate) async fn punch_filters(
     Ok(Json(ApiEnvelope::success(groups)))
 }
 
-/// Manually correct a punch (HR override).
 #[utoipa::path(
     post,
     path = "/api/punches/correct",
@@ -360,7 +342,6 @@ pub(crate) async fn correct_punch(
 
 // ── Punches (Integration) ───────────────────────────────────────────
 
-/// Query punches via integration API (API key auth).
 #[utoipa::path(
     get,
     path = "/api/v1/punches",

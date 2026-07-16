@@ -17,14 +17,14 @@
 
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 
 use crate::AppState;
 use crate::dto::WorkPolicyTemplateResponse;
 use crate::request::{CreateWorkPolicyTemplateRequest, UpdateWorkPolicyTemplateRequest};
-use crate::response::{ApiEnvelope, AppError};
+use crate::response::{ApiEnvelope, AppError, PageMeta};
 
 /// Parse an "HH:MM" string into a `jiff::civil::Time`.
 fn parse_time(s: &str) -> Result<jiff::civil::Time, AppError> {
@@ -58,11 +58,12 @@ fn parse_time(s: &str) -> Result<jiff::civil::Time, AppError> {
 )]
 pub(crate) async fn list_templates(
     State(state): State<AppState>,
-) -> Result<Json<ApiEnvelope<Vec<WorkPolicyTemplateResponse>>>, AppError> {
+    Query(params): Query<timekeep_core::ListParams>,
+) -> Result<axum::response::Response, AppError> {
     let templates = state.storage.list_work_policy_templates().await?;
     let responses: Vec<WorkPolicyTemplateResponse> =
         templates.iter().map(WorkPolicyTemplateResponse::from).collect();
-    Ok(Json(ApiEnvelope::success(responses)))
+    crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
 }
 
 /// Get a single work policy template by ID.

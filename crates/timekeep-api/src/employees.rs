@@ -12,7 +12,9 @@ use axum::{
 };
 
 use std::sync::Arc;
-use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter};
+use timekeep_core::{
+    AttendanceCalculator, DayStatus, PunchFilter,
+};
 
 use crate::AppState;
 use crate::dto::{
@@ -20,7 +22,7 @@ use crate::dto::{
     MonthlyTrendResponse, QuickStatsResponse, StatusResponse, WorkDayResponse,
 };
 use crate::request::WorkDayQuery;
-use crate::response::{ApiEnvelope, AppError};
+use crate::response::{ApiEnvelope, AppError, PageMeta};
 
 /// Resolve the employee repository or return an error if not configured.
 pub(crate) fn employees(
@@ -246,13 +248,14 @@ pub(crate) async fn create_employee(
 pub(crate) async fn list_employees(
     State(state): State<AppState>,
     Query(q): Query<crate::request::EmployeeListQuery>,
-) -> Result<Json<ApiEnvelope<Vec<EmployeeResponse>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     // ── Tantivy full-text search path ──────────────────────────────
     if q.q.as_ref().is_some_and(|s| !s.trim().is_empty()) {
         return list_employees_via_search(&state, &q).await;
     }
 
     // ── Legacy SQL LIKE path ───────────────────────────────────────
+    let __fields = q.params.fields.clone();
     let filter = timekeep_core::EmployeeFilter {
         params: q.params,
         department_id: q.department_id,
@@ -262,18 +265,18 @@ pub(crate) async fn list_employees(
     let responses: Vec<EmployeeResponse> =
         result.items.iter().map(EmployeeResponse::from).collect();
     let meta = if result.has_more {
-        crate::response::PageMeta::has_more(result.next_cursor.unwrap_or_default())
+        PageMeta::has_more(result.next_cursor.unwrap_or_default())
     } else {
-        crate::response::PageMeta::single()
+        PageMeta::single()
     };
-    Ok(Json(ApiEnvelope::paginated(responses, meta)))
+    crate::response::build_sparse_envelope(responses, meta, &__fields)
 }
 
 /// Execute full-text search via Tantivy, then cross-reference with the DB.
 async fn list_employees_via_search(
     state: &AppState,
     q: &crate::request::EmployeeListQuery,
-) -> Result<Json<ApiEnvelope<Vec<EmployeeResponse>>>, AppError> {
+) -> Result<axum::response::Response, AppError> {
     let search_term = q.q.as_deref().unwrap_or("");
 
     let search_query = timekeep_core::SearchQuery {
@@ -291,7 +294,8 @@ async fn list_employees_via_search(
             .map_err(|e| AppError::Internal(format!("search failed: {e}")))?
     } else {
         // No search store — fall back to SQL LIKE path
-        let filter = timekeep_core::EmployeeFilter {
+        let __fields = q.params.fields.clone();
+    let filter = timekeep_core::EmployeeFilter {
             params: q.params.clone(),
             department_id: q.department_id.clone(),
             active: q.active.as_deref().and_then(|a| a.parse::<bool>().ok()),
@@ -299,7 +303,7 @@ async fn list_employees_via_search(
         let result = employees(state)?.list_employees_filtered(&filter).await?;
         let responses: Vec<EmployeeResponse> =
             result.items.iter().map(EmployeeResponse::from).collect();
-        return Ok(Json(ApiEnvelope::paginated(responses, crate::response::PageMeta::single())));
+        return crate::response::build_sparse_envelope(responses, PageMeta::single(), &q.params.fields);
     };
 
     // Cross-reference search results with the database
@@ -329,12 +333,12 @@ async fn list_employees_via_search(
     let meta = if has_more {
         let next_idx = q.params.clamped_limit();
         let next_cursor = timekeep_core::encode_offset_cursor(next_idx as i64);
-        crate::response::PageMeta::has_more(next_cursor)
+        PageMeta::has_more(next_cursor)
     } else {
-        crate::response::PageMeta::single()
+        PageMeta::single()
     };
 
-    Ok(Json(ApiEnvelope::paginated(responses, meta)))
+    crate::response::build_sparse_envelope(responses, meta, &q.params.fields)
 }
 
 /// Get a single employee by ID or PIN.
@@ -392,10 +396,6 @@ pub(crate) async fn update_employee(
     Path(id): Path<String>,
     Json(body): Json<crate::request::UpdateEmployeeRequest>,
 ) -> Result<Json<ApiEnvelope<EmployeeResponse>>, AppError> {
-    // Resolve department name from department_id for the display cache
-    let (department_id, department_name) =
-        resolve_department(&state, body.department_id.as_deref()).await?;
-
     let repo = employees(&state)?;
     let emp_id = timekeep_core::EmployeeId::from(id);
     let mut employee = repo
@@ -405,8 +405,19 @@ pub(crate) async fn update_employee(
     if let Some(name) = body.name {
         employee.rename(name);
     }
-    employee.department = department_name;
-    employee.department_id = department_id;
+    // Only update department when explicitly provided in the request.
+    // `None` means the key was absent — leave the existing value intact.
+    // (Serde deserialises a missing optional field to `None`.)
+    if let Some(ref dept_id_opt) = body.department_id {
+        if dept_id_opt.is_empty() {
+            // Explicit empty string → clear the department FK
+            employee.set_department(None, None);
+        } else {
+            let (department_id, department_name) =
+                resolve_department(&state, Some(dept_id_opt)).await?;
+            employee.set_department(department_id, department_name);
+        }
+    }
     if let Some(ext_id) = body.external_id {
         employee.external_id = Some(ext_id);
     }
@@ -640,11 +651,13 @@ pub(crate) async fn employee_calendar(
     Ok(Json(ApiEnvelope::success(responses)))
 }
 
+
+
 // ─── Helpers ──────────────────────────────────────────────────────────
 
 /// Resolve department name from UUID.
 ///
-/// When `department_id` is provided, looks up the department by UUID
+/// When department_id is provided, looks up the department by UUID
 /// and returns both the ID and the resolved display name.
 async fn resolve_department(
     state: &AppState,
@@ -655,7 +668,7 @@ async fn resolve_department(
             let dept = state.storage.get_department(id).await?;
             match dept {
                 Some(d) => Ok((Some(d.id.to_string()), Some(d.name))),
-                None => Err(AppError::not_found(format!("department '{id}' not found"))),
+                None => Err(AppError::not_found(format!("department {id} not found"))),
             }
         },
         None => Ok((None, None)),

@@ -217,6 +217,12 @@ pub struct DeviceSearchQuery {
     /// Sort field. Default: "label".
     #[serde(default = "default_device_sort")]
     pub sort_by: String,
+    /// Sparse field selection: comma-separated field names.
+    #[serde(default)]
+    pub fields: Option<String>,
+    /// Eager-loaded relationships.
+    #[serde(default)]
+    pub include: Option<String>,
     /// Sort direction.
     #[serde(default)]
     pub sort_order: timekeep_core::SortOrder,
@@ -276,6 +282,14 @@ pub struct PunchListQuery {
     pub verify_mode: Option<String>,
     /// When "true", return only punches flagged as anomalous.
     pub anomalies_only: Option<String>,
+
+    /// Sparse field selection: comma-separated field names to return.
+    /// Omit to return all fields. Example: fields=id,timestamp,status,device_label
+    pub fields: Option<String>,
+
+    /// Eager-loaded relationships. Supported: device, employee.
+    /// Example: include=device,employee
+    pub include: Option<String>,
 }
 
 // ─── Reports ──────────────────────────────────────────────────────────
@@ -318,6 +332,14 @@ pub struct AuditListQuery {
     pub limit: u32,
     /// Cursor for pagination.
     pub cursor: Option<String>,
+
+    /// Sparse field selection: comma-separated field names.
+    #[serde(default)]
+    pub fields: Option<String>,
+
+    /// Eager-loaded relationships.
+    #[serde(default)]
+    pub include: Option<String>,
 }
 
 fn default_audit_sort() -> String {
@@ -399,8 +421,8 @@ pub struct CreateEndpointRequest {
     /// Human-readable name (e.g. "Odoo Production")
     pub name: String,
 
-    /// Integration kind: "webhook", "odoo", "sap", "zapier"
-    pub kind: String,
+    /// Integration kind.
+    pub kind: timekeep_core::IntegrationKind,
 
     /// Optional initial config. If omitted, the default for this kind is used.
     #[serde(default)]
@@ -553,7 +575,7 @@ pub struct CreateEmployeeRequest {
     ///
     /// When provided, the department name is resolved and returned as the
     /// denormalized `department` display field on the response.
-    #[serde(default)]
+    #[serde(default, alias = "department")]
     pub department_id: Option<String>,
     /// External ERP reference (Odoo/SAP employee ID).
     #[serde(default)]
@@ -728,8 +750,10 @@ pub struct UpdateEmployeeRequest {
     ///
     /// When provided, the department name is resolved and stored as the
     /// denormalized `department` display field on the response.
+    #[serde(default, alias = "department")]
     pub department_id: Option<String>,
     /// New external ERP reference.
+    #[serde(default)]
     pub external_id: Option<String>,
 }
 
@@ -746,6 +770,14 @@ pub struct EmployeeListQuery {
     pub department_id: Option<String>,
     /// Filter by active status ("true" or "false").
     pub active: Option<String>,
+
+    /// Sparse field selection: comma-separated field names to return.
+    /// Example: fields=id,name,department,pin
+    pub fields: Option<String>,
+
+    /// Eager-loaded relationships. Supported: department, recentPunches.
+    /// Example: include=department
+    pub include: Option<String>,
 }
 
 /// Enroll an employee on a device.

@@ -33,7 +33,7 @@ use crate::dto::DashboardUserResponse;
 use crate::request::{
     ChangePasswordRequest, CreateDashboardUserRequest, UpdateDashboardUserRequest,
 };
-use crate::response::ApiEnvelope;
+use crate::response::{ApiEnvelope, PageMeta};
 
 // ─── Response types ──────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ pub(crate) async fn whoami(
 pub(crate) async fn list_users(
     State(state): State<AppState>,
     Query(params): Query<timekeep_core::ListParams>,
-) -> Result<Json<ApiEnvelope<Vec<DashboardUserResponse>>>, crate::response::AppError> {
+) -> Result<axum::response::Response, crate::response::AppError> {
     let result =
         state.storage.list_dashboard_users(&params).await.map_err(|e| {
             crate::response::AppError::Internal(format!("failed to list users: {e}"))
@@ -113,7 +113,9 @@ pub(crate) async fn list_users(
     let users: Vec<DashboardUserResponse> =
         result.items.iter().map(DashboardUserResponse::from).collect();
 
-    Ok(Json(ApiEnvelope::success(users)))
+    let meta = PageMeta::single();
+    let __fields = params.fields.clone();
+    crate::response::build_sparse_envelope(users, meta, &__fields)
 }
 
 // ─── Create user (Admin) ─────────────────────────────────────────────

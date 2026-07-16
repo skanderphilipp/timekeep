@@ -33,6 +33,7 @@
 //! 4. Implement the storage method
 
 pub mod cursor;
+pub mod field_selector;
 pub mod filters;
 pub mod schema;
 pub mod search;
@@ -108,6 +109,17 @@ pub struct ListParams {
 
     /// Opaque cursor for cursor-based pagination.
     pub cursor: Option<String>,
+
+    /// Sparse field selection: comma-separated field names to include.
+    /// Omit to return all fields. Example: fields=id,name,status
+    #[serde(default)]
+    pub fields: Option<String>,
+
+    /// Eager-loaded relationships: comma-separated relationship names.
+    /// Handlers resolve supported names; unknown names are silently ignored.
+    /// Example: include=department,recentPunches
+    #[serde(default)]
+    pub include: Option<String>,
 }
 
 /// Custom deserializer for the `limit` field.
@@ -154,6 +166,8 @@ impl Default for ListParams {
             sort_order: SortOrder::default(),
             limit: default_limit(),
             cursor: None,
+            fields: None,
+            include: None,
         }
     }
 }

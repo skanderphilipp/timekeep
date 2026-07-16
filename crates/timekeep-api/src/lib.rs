@@ -1967,4 +1967,240 @@ mod tests {
         assert_eq!(v["data"].as_array().unwrap().len(), 1);
         assert_eq!(v["data"][0]["serial_number"], "OFFICE-01");
     }
+
+    #[tokio::test]
+    async fn test_create_group_with_department_ids() {
+        let tok = admin_token();
+        let app = test_mgmt_with_groups();
+
+        // Create a group with department assignments
+        let body = serde_json::json!({
+            "name": "office",
+            "description": "Main office devices",
+            "department_ids": ["dept-hr", "dept-mgmt"]
+        });
+        let req = axum::http::Request::post("/api/device-groups")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&body).unwrap()))
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(app.clone(), req).await.unwrap();
+        assert_eq!(resp.status(), 201);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["name"], "office");
+        assert_eq!(v["data"]["department_ids"].as_array().unwrap().len(), 2);
+        assert_eq!(v["data"]["department_ids"][0], "dept-hr");
+
+        // Fetch the group and verify department_ids are persisted
+        let group_id = v["data"]["id"].as_str().unwrap();
+        let req = axum::http::Request::get(format!("/api/device-groups/{group_id}"))
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(app, req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["department_ids"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_create_group_empty_department_ids_means_all() {
+        let tok = admin_token();
+        let app = test_mgmt_with_groups();
+
+        // Create a group without department_ids (empty = all departments)
+        let body = serde_json::json!({"name": "all-hands"});
+        let req = axum::http::Request::post("/api/device-groups")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&body).unwrap()))
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(app, req).await.unwrap();
+        assert_eq!(resp.status(), 201);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["name"], "all-hands");
+        // Empty department_ids means all departments — should serialize as empty array
+        assert!(v["data"]["department_ids"].as_array().unwrap().is_empty());
+    }
+
+    // ── Sparse Field Selection ─────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_punches_fields_returns_only_requested_keys() {
+        let router = test_mgmt();
+        let tok = admin_token();
+
+        // Seed one punch
+        let punch_body = serde_json::json!({
+            "user_pin": "145", "device_sn": "DEV001", "status": "check_in",
+            "verify_mode": "fingerprint", "timestamp": 1752129600
+        });
+        let req = axum::http::Request::post("/api/punches/correct")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&punch_body).unwrap()))
+            .unwrap();
+        let _resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        let req = axum::http::Request::get("/api/punches?fields=id,timestamp,status")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        let punches = v["data"]["punches"].as_array().unwrap();
+        assert!(!punches.is_empty(), "should have at least one punch");
+        let punch = &punches[0];
+        // Should have only requested fields
+        assert!(punch.get("id").is_some(), "id should be present");
+        assert!(punch.get("timestamp").is_some(), "timestamp should be present");
+        assert!(punch.get("status").is_some(), "status should be present");
+        // Should NOT have non-requested fields
+        assert!(punch.get("device_sn").is_none(), "device_sn should be absent");
+        assert!(punch.get("verify_mode").is_none(), "verify_mode should be absent");
+        assert!(punch.get("user_pin").is_none(), "user_pin should be absent");
+        // Meta should still be present
+        assert!(v["meta"].is_object(), "meta should be present");
+    }
+
+    #[tokio::test]
+    async fn test_punches_without_fields_returns_all_keys() {
+        let router = test_mgmt();
+        let tok = admin_token();
+
+        // Seed one punch
+        let punch_body = serde_json::json!({
+            "user_pin": "145", "device_sn": "DEV001", "status": "check_in",
+            "verify_mode": "fingerprint", "timestamp": 1752129600
+        });
+        let req = axum::http::Request::post("/api/punches/correct")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&punch_body).unwrap()))
+            .unwrap();
+        let _resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        let req = axum::http::Request::get("/api/punches")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        let punches = v["data"]["punches"].as_array().unwrap();
+        assert!(!punches.is_empty());
+        let punch = &punches[0];
+        // All fields should be present (backward compat)
+        assert!(punch.get("id").is_some());
+        assert!(punch.get("device_sn").is_some());
+        assert!(punch.get("user_pin").is_some());
+        assert!(punch.get("timestamp").is_some());
+        assert!(punch.get("status").is_some());
+        assert!(punch.get("verify_mode").is_some());
+    }
+
+    #[tokio::test]
+    async fn test_fields_case_insensitive() {
+        let router = test_mgmt();
+        let tok = admin_token();
+
+        let punch_body = serde_json::json!({
+            "user_pin": "145", "device_sn": "DEV001", "status": "check_in",
+            "verify_mode": "fingerprint", "timestamp": 1752129600
+        });
+        let req = axum::http::Request::post("/api/punches/correct")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&punch_body).unwrap()))
+            .unwrap();
+        let _resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        let req = axum::http::Request::get("/api/punches?fields=ID,DEVICE_SN,STATUS")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        let punch = &v["data"]["punches"].as_array().unwrap()[0];
+        assert!(punch.get("id").is_some(), "case-insensitive ID");
+        assert!(punch.get("device_sn").is_some(), "case-insensitive DEVICE_SN");
+        assert!(punch.get("status").is_some(), "case-insensitive STATUS");
+    }
+
+    #[tokio::test]
+    async fn test_fields_unknown_names_silently_ignored() {
+        let router = test_mgmt();
+        let tok = admin_token();
+
+        let punch_body = serde_json::json!({
+            "user_pin": "145", "device_sn": "DEV001", "status": "check_in",
+            "verify_mode": "fingerprint", "timestamp": 1752129600
+        });
+        let req = axum::http::Request::post("/api/punches/correct")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&punch_body).unwrap()))
+            .unwrap();
+        let _resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        let req = axum::http::Request::get("/api/punches?fields=id,nonexistent,also_fake")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        let punch = &v["data"]["punches"].as_array().unwrap()[0];
+        assert!(punch.get("id").is_some(), "valid field should still be present");
+        assert!(punch.get("nonexistent").is_none(), "unknown field should be absent");
+    }
+
+    #[tokio::test]
+    async fn test_devices_fields_returns_only_requested_keys() {
+        let router = test_mgmt();
+        let tok = admin_token();
+
+        // Seed a device config
+        let device_body = serde_json::json!({
+            "serial_number": "DEV-SEL-001", "host": "192.168.1.50",
+            "label": "Field Test Device", "vendor": "zkteco"
+        });
+        let req = axum::http::Request::post("/api/devices")
+            .header("content-type", "application/json")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::from(serde_json::to_string(&device_body).unwrap()))
+            .unwrap();
+        let _resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        let req = axum::http::Request::get("/api/devices?fields=serial_number,label,host")
+            .header("Authorization", format!("Bearer {tok}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        let devices = v["data"].as_array().unwrap();
+        assert!(!devices.is_empty());
+        let device = &devices[0];
+        assert!(device.get("serial_number").is_some());
+        assert!(device.get("label").is_some());
+        assert!(device.get("host").is_some());
+        assert!(device.get("port").is_none(), "port should be absent");
+        assert!(device.get("vendor").is_none(), "vendor should be absent");
+    }
 }

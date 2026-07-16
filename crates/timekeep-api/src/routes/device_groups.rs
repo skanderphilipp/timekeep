@@ -18,14 +18,14 @@
 
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 
 use crate::AppState;
 use crate::dto::{DeviceGroupResponse, DeviceResponse, StatusResponse};
 use crate::request::{CreateDeviceGroupRequest, SetDeviceGroupRequest, UpdateDeviceGroupRequest};
-use crate::response::{ApiEnvelope, AppError};
+use crate::response::{ApiEnvelope, AppError, PageMeta};
 
 // ─── CRUD Endpoints ────────────────────────────────────────────────────
 
@@ -42,11 +42,12 @@ use crate::response::{ApiEnvelope, AppError};
 )]
 pub(crate) async fn list_groups(
     State(state): State<AppState>,
-) -> Result<Json<ApiEnvelope<Vec<DeviceGroupResponse>>>, AppError> {
+    Query(params): Query<timekeep_core::ListParams>,
+) -> Result<axum::response::Response, AppError> {
     let groups = state.storage.list_device_groups().await?;
     let responses: Vec<DeviceGroupResponse> =
         groups.iter().map(|g| DeviceGroupResponse::from_group(g, None)).collect();
-    Ok(Json(ApiEnvelope::success(responses)))
+    crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
 }
 
 /// Get a single device group by ID.
@@ -223,7 +224,8 @@ pub(crate) async fn delete_group(
 pub(crate) async fn list_devices_in_group(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<Json<ApiEnvelope<Vec<DeviceResponse>>>, AppError> {
+    Query(params): Query<timekeep_core::ListParams>,
+) -> Result<axum::response::Response, AppError> {
     // Verify group exists
     if state.storage.get_device_group(&id).await?.is_none() {
         return Err(AppError::not_found(format!("device group '{id}'")));
@@ -232,7 +234,7 @@ pub(crate) async fn list_devices_in_group(
     let devices = state.storage.list_devices_in_group(&id).await?;
     let responses: Vec<DeviceResponse> = devices.iter().map(DeviceResponse::from).collect();
 
-    Ok(Json(ApiEnvelope::success(responses)))
+    crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
 }
 
 /// Set a device's group membership.
