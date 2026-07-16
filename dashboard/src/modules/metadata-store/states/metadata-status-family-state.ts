@@ -7,7 +7,7 @@ import { createFamilyState } from "@/infrastructure/state/jotai";
  * - `'loading'` — currently fetching from API
  * - `'ready'` — schema is available in the family state
  */
-export type MetadataStatus = "empty" | "loading" | "ready";
+export type MetadataStatus = "empty" | "loading" | "ready" | "error";
 
 /**
  * Atom family tracking the hydration status of each entity schema.

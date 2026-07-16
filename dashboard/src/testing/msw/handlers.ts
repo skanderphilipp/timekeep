@@ -357,5 +357,12 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
 
       return HttpResponse.json(envelope(page, meta));
     }),
+
+    // ── Catch-all (MUST be last) ──────────────────────────────────────────
+    //
+    // Any /api/* request not handled above returns an empty envelope.
+    // This prevents unmocked routes from hitting the real network in
+    // Storybook / Vitest, avoiding 404 storms and infinite retry loops.
+    http.all("/api/*", () => HttpResponse.json(envelope(null))),
   ];
 }

@@ -61,7 +61,7 @@ export function useEntitySchema(entity: string): EntitySchema | null {
         setStatus("ready");
       })
       .catch(() => {
-        setStatus("empty"); // reset so it can retry
+        setStatus("error"); // prevent infinite retry loop
       });
   }, [entity, status, setSchema, setStatus]);
 
@@ -73,5 +73,5 @@ export function useEntitySchema(entity: string): EntitySchema | null {
  */
 export function useEntitySchemaLoading(entity: string): boolean {
   const status = useAtomValue(metadataStatusFamilyState(entity));
-  return status === "loading" || status === "empty";
+  return status === "loading";
 }

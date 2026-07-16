@@ -67,8 +67,7 @@ export function useHydrateMetadata() {
           store.set(metadataStatusFamilyState(entity), "ready");
         })
         .catch(() => {
-          // Reset to empty so components can retry
-          store.set(metadataStatusFamilyState(entity), "empty");
+          store.set(metadataStatusFamilyState(entity), "error");
         });
     }
   }, [store]);
