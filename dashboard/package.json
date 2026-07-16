@@ -38,7 +38,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm depcruise && pnpm check-size && pnpm lint:style && pnpm lint:tokens && pnpm check:dupes",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "prepare": "husky"
+    "prepare": "husky && npx msw init public/ --save"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
