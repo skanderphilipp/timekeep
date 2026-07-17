@@ -273,3 +273,169 @@ async fn verify_mode_names_are_correct() {
     assert_eq!(VerifyMode::Face.name(), "Face Recognition");
     assert_eq!(VerifyMode::Palm.name(), "Palm Vein");
 }
+
+
+// ─── Punch Filter (user_pins / device_sns via CSV) ────────────────
+
+/// Helper: seed N punches with different PINs on the same device.
+async fn seed_punches(app: &axum::Router, token: &str, pins: &[&str], device: &str) {
+    let mut ts = 1752129600_i64;
+    for pin in pins {
+        let body = serde_json::json!({
+            "user_pin": pin,
+            "device_sn": device,
+            "status": "check_in",
+            "timestamp": ts
+        });
+        send(app, post_authed("/api/punches/correct", token, body)).await;
+        ts += 60;
+    }
+}
+
+#[tokio::test]
+async fn filter_by_single_user_pin() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?user_pins=145", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 1, "should return only pin 145");
+    assert_eq!(punches[0]["user_pin"], "145");
+}
+
+#[tokio::test]
+async fn filter_by_multiple_user_pins_csv() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?user_pins=145,147", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 2, "should return pins 145 and 147");
+    let returned_pins: Vec<&str> = punches.iter()
+        .map(|p| p["user_pin"].as_str().unwrap())
+        .collect();
+    assert!(returned_pins.contains(&"145"));
+    assert!(returned_pins.contains(&"147"));
+}
+
+#[tokio::test]
+async fn filter_by_user_pin_no_matches() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "SN001").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?user_pins=999", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert!(punches.is_empty(), "no punches should match PIN 999");
+}
+
+#[tokio::test]
+async fn filter_by_single_device_sn() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
+    seed_punches(&app, &token, &["147"], "DEV-B").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?device_sns=DEV-A", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 2, "should return only DEV-A punches");
+    for p in punches {
+        assert_eq!(p["device_sn"], "DEV-A");
+    }
+}
+
+#[tokio::test]
+async fn filter_by_multiple_device_sns_csv() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
+    seed_punches(&app, &token, &["147"], "DEV-B").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?device_sns=DEV-A,DEV-B", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 3, "should return punches from both devices");
+}
+
+#[tokio::test]
+async fn filter_combined_device_and_user_pin() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
+    seed_punches(&app, &token, &["145"], "DEV-B").await;
+
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?device_sns=DEV-A&user_pins=145", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 1);
+    assert_eq!(punches[0]["user_pin"], "145");
+    assert_eq!(punches[0]["device_sn"], "DEV-A");
+}
+
+#[tokio::test]
+async fn filter_by_user_pins_with_spaces_in_csv() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
+
+    // Test that spaces around commas are trimmed
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?user_pins=145,%20147", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 2, "spaces should be trimmed");
+}
+
+#[tokio::test]
+async fn filter_missing_user_pins_returns_all() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "SN001").await;
+
+    let (status, body) = send(&app, get_authed("/api/punches", &token)).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 2, "no filter should return all punches");
+}
+
+#[tokio::test]
+async fn filter_by_empty_user_pins_returns_all() {
+    let (app, _storage) = test_app();
+    let token = login_as_admin(&app).await;
+    seed_punches(&app, &token, &["145", "146"], "SN001").await;
+
+    // Empty string value — split produces empty vec, treated as no filter
+    let (status, body) = send(
+        &app,
+        get_authed("/api/punches?user_pins=", &token),
+    ).await;
+    assert_eq!(status, 200);
+    let punches = body["data"]["punches"].as_array().unwrap();
+    assert_eq!(punches.len(), 2, "empty filter should return all punches");
+}

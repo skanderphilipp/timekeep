@@ -256,10 +256,9 @@ pub(crate) async fn list_employees(
     let __fields = q.params.fields.clone();
     let filter = timekeep_core::EmployeeFilter {
         params: q.params,
-        department_ids: q
-            .department_ids
-            .clone()
-            .or_else(|| q.department_id.clone().map(|d| vec![d])),
+        department_ids: q.department_ids.as_ref().map(|s| {
+            s.split(',').map(|p| p.trim().to_string()).filter(|p| !p.is_empty()).collect()
+        }),
         active: q.active.and_then(|a| a.parse::<bool>().ok()),
     };
     let result = employees(&state)?.list_employees_filtered(&filter).await?;
@@ -298,10 +297,9 @@ async fn list_employees_via_search(
         let __fields = q.params.fields.clone();
         let filter = timekeep_core::EmployeeFilter {
             params: q.params.clone(),
-            department_ids: q
-                .department_ids
-                .clone()
-                .or_else(|| q.department_id.clone().map(|d| vec![d])),
+            department_ids: q.department_ids.as_ref().map(|s| {
+                s.split(',').map(|p| p.trim().to_string()).filter(|p| !p.is_empty()).collect()
+            }),
             active: q.active.as_deref().and_then(|a| a.parse::<bool>().ok()),
         };
         let result = employees(state)?.list_employees_filtered(&filter).await?;
@@ -322,8 +320,9 @@ async fn list_employees_via_search(
         let emp_id = timekeep_core::EmployeeId::from(hit.entity_id.as_str());
         if let Some(emp) = repo.find_employee(&emp_id).await? {
             // Apply department/active filters (Tantivy may return extra results)
-            let dept_ids =
-                q.department_ids.clone().or_else(|| q.department_id.clone().map(|d| vec![d]));
+            let dept_ids: Option<Vec<String>> = q.department_ids.as_ref().map(|s| {
+                s.split(',').map(|p| p.trim().to_string()).filter(|p| !p.is_empty()).collect()
+            });
             if let Some(ref dept_ids) = dept_ids
                 && !dept_ids.is_empty()
                 && !dept_ids.iter().any(|id| emp.department_id.as_deref() == Some(id.as_str()))

@@ -83,9 +83,61 @@ impl Storage for FakeStorage {
     }
     async fn query_punches(
         &self,
-        _: &timekeep_core::PunchFilter,
+        filter: &timekeep_core::PunchFilter,
     ) -> Result<Vec<AttendancePunch>, timekeep_core::Error> {
-        Ok(self.punches.lock().unwrap().clone())
+        let punches = self.punches.lock().unwrap();
+        let mut result: Vec<AttendancePunch> = punches
+            .iter()
+            .filter(|p| {
+                if let Some(ref ids) = filter.ids {
+                    if ids.is_empty() {
+                        return false;
+                    }
+                    return ids.contains(&p.id);
+                }
+                if let Some(ref sns) = filter.device_sns {
+                    if !sns.is_empty() && !sns.iter().any(|sn| sn == &p.device_sn) {
+                        return false;
+                    }
+                }
+                if let Some(ref pins) = filter.user_pins {
+                    if !pins.is_empty() && !pins.iter().any(|pin| pin == &p.user_pin) {
+                        return false;
+                    }
+                }
+                if let Some(ref since) = filter.since {
+                    if p.timestamp < *since {
+                        return false;
+                    }
+                }
+                if let Some(ref until) = filter.until {
+                    if p.timestamp > *until {
+                        return false;
+                    }
+                }
+                if let Some(ref status) = filter.status {
+                    if p.status != *status {
+                        return false;
+                    }
+                }
+                if let Some(ref mode) = filter.verify_mode {
+                    if p.verify_mode != *mode {
+                        return false;
+                    }
+                }
+                true
+            })
+            .cloned()
+            .collect();
+        if filter.params.sort_by.as_deref() == Some("timestamp") {
+            result.sort_by(|a, b| match filter.params.sort_order {
+                timekeep_core::SortOrder::Asc => a.timestamp.cmp(&b.timestamp),
+                timekeep_core::SortOrder::Desc => b.timestamp.cmp(&a.timestamp),
+            });
+        }
+        let limit = filter.params.limit.min(10_000) as usize;
+        result.truncate(limit);
+        Ok(result)
     }
     async fn punch_facets(
         &self,

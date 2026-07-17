@@ -264,20 +264,14 @@ pub struct PunchListQuery {
     /// Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
     pub q: Option<String>,
 
-    /// Filter by device serial numbers (OR logic).
-    /// Accepts `?device_sns[]=DEV-001&device_sns[]=DEV-002`.
-    #[serde(default, alias = "device_sns[]")]
-    pub device_sns: Option<Vec<String>>,
-    /// Filter by device serial number (single, backward compat).
-    /// Prefer `device_sns` for multi-select.
-    pub device_sn: Option<String>,
-    /// Filter by user PINs (OR logic).
-    /// Accepts `?user_pins[]=123&user_pins[]=456`.
-    #[serde(default, alias = "user_pins[]")]
-    pub user_pins: Option<Vec<String>>,
-    /// Filter by user PIN (single, backward compat).
-    /// Prefer `user_pins` for multi-select.
-    pub user_pin: Option<String>,
+    /// Filter by device serial numbers, comma-separated (OR logic).
+    /// Single: `?device_sns=DEV-001`
+    /// Multiple: `?device_sns=DEV-001,DEV-002`
+    pub device_sns: Option<String>,
+    /// Filter by user PINs, comma-separated (OR logic).
+    /// Single: `?user_pins=123`
+    /// Multiple: `?user_pins=123,456`
+    pub user_pins: Option<String>,
     /// Unix timestamp (seconds) — return punches after this time.
     pub since: Option<i64>,
     /// Unix timestamp (seconds) — return punches before this time.
@@ -491,19 +485,11 @@ pub struct UpdateWorkPolicyRequest {
 /// Query parameters for punch data export.
 #[derive(Debug, Deserialize, IntoParams)]
 pub struct ExportQueryParams {
-    /// Filter by device serial numbers (OR logic).
-    #[serde(default, alias = "device_sns[]")]
-    pub device_sns: Option<Vec<String>>,
+    /// Filter by device serial numbers, comma-separated (OR logic).
+    pub device_sns: Option<String>,
 
-    /// Filter by device serial number (single, backward compat).
-    pub device_sn: Option<String>,
-
-    /// Filter by user PINs (OR logic).
-    #[serde(default, alias = "user_pins[]")]
-    pub user_pins: Option<Vec<String>>,
-
-    /// Filter by user PIN (single, backward compat).
-    pub user_pin: Option<String>,
+    /// Filter by user PINs, comma-separated (OR logic).
+    pub user_pins: Option<String>,
 
     /// Unix timestamp (seconds) — return punches after this time
     pub since: Option<i64>,
@@ -780,13 +766,10 @@ pub struct EmployeeListQuery {
     /// typo-tolerant, ranked, across name/pin/external_id).
     /// Takes priority over `params.search` when both are present.
     pub q: Option<String>,
-    /// Filter by department UUIDs (OR logic).
-    /// Accepts `?department_ids[]=DEPT-1&department_ids[]=DEPT-2`.
-    #[serde(default, alias = "department_ids[]")]
-    pub department_ids: Option<Vec<String>>,
-    /// Filter by department UUID (single, backward compat).
-    /// Prefer `department_ids` for multi-select.
-    pub department_id: Option<String>,
+    /// Filter by department UUIDs, comma-separated (OR logic).
+    /// Single: `?department_ids=DEPT-1`
+    /// Multiple: `?department_ids=DEPT-1,DEPT-2`
+    pub department_ids: Option<String>,
     /// Filter by active status ("true" or "false").
     pub active: Option<String>,
 
@@ -835,16 +818,10 @@ pub struct FacetFilterParams {
     pub search: Option<String>,
     #[serde(default = "default_facet_limit")]
     pub limit: u32,
-    /// Filter by device serial numbers (OR logic).
-    #[serde(default, alias = "device_sns[]")]
-    pub device_sns: Option<Vec<String>>,
-    /// Filter by device serial number (single, backward compat).
-    pub device_sn: Option<String>,
-    /// Filter by user PINs (OR logic).
-    #[serde(default, alias = "user_pins[]")]
-    pub user_pins: Option<Vec<String>>,
-    /// Filter by user PIN (single, backward compat).
-    pub user_pin: Option<String>,
+    /// Filter by device serial numbers, comma-separated (OR logic).
+    pub device_sns: Option<String>,
+    /// Filter by user PINs, comma-separated (OR logic).
+    pub user_pins: Option<String>,
     pub since: Option<i64>,
     pub until: Option<i64>,
     pub status: Option<String>,

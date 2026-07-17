@@ -156,6 +156,18 @@ async fn query_punches_via_search(
     )
 }
 
+
+/// Split a comma-separated string into a Vec, trimming whitespace.
+/// Returns None for empty input.
+fn split_csv(input: &Option<String>) -> Option<Vec<String>> {
+    input.as_ref().map(|s| {
+        s.split(',')
+            .map(|part| part.trim().to_string())
+            .filter(|p| !p.is_empty())
+            .collect()
+    })
+}
+
 /// Build a PunchFilter from a PunchListQuery.
 pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
     let cursor_after = q.params.cursor.as_deref().and_then(Cursor::decode);
@@ -184,10 +196,8 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
 
     PunchFilter {
         params: q.params.clone(),
-        device_sns: q.device_sns.clone()
-            .or_else(|| q.device_sn.clone().map(|s| vec![s])),
-        user_pins: q.user_pins.clone()
-            .or_else(|| q.user_pin.clone().map(|p| vec![p])),
+        device_sns: split_csv(&q.device_sns),
+        user_pins: split_csv(&q.user_pins),
         since,
         until,
         status,
@@ -275,8 +285,7 @@ pub(crate) async fn punch_filters(
     let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
 
     let context = FacetContext {
-        device_sns: q.device_sns.clone()
-            .or_else(|| q.device_sn.clone().map(|s| vec![s])),
+        device_sns: split_csv(&q.device_sns),
         since: q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status,
