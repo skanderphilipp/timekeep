@@ -30,7 +30,7 @@ use timekeep_core::{
 
 /// SQLite-backed attendance storage.
 pub struct SqliteStorage {
-    pub(crate) pool: SqlitePool,
+    pub pool: SqlitePool,
 }
 
 impl SqliteStorage {

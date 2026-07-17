@@ -65,6 +65,7 @@ argon2 = "0.5"
 
 # RNG for Argon2 salt generation
 rand_core = { version = "0.6", features = ["getrandom"] }
+rand_distr = "0.4"
 
 # Async traits (for trait objects with Send bound)
 async-trait = "0.1"
