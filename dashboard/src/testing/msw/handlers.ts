@@ -9,6 +9,8 @@ import type {
   Punch,
   PunchCorrectedResponse,
   AuditEvent,
+  FacetGroup,
+  FacetOption,
 } from "@/lib/api";
 
 // ── Envelope helpers ──────────────────────────────────────────────────────────
@@ -264,6 +266,156 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
     http.get("/api/dashboard/today", () => HttpResponse.json(envelope(todaySummary))),
 
     // ── Punches ──────────────────────────────────────────────────────────────
+
+    // GET /api/punches/schema — entity schema metadata for punch columns.
+    // Rust: ApiEnvelope<EntitySchema>
+    http.get("/api/punches/schema", () =>
+      HttpResponse.json(
+        envelope({
+          entity: "punch",
+          columns: [
+            { field: "timestamp", label: "Time", value_type: "int", sortable: true, filterable: false },
+            { field: "user_pin", label: "Employee PIN", value_type: "text", sortable: true, filterable: true, facet_kind: { type: "reference" } },
+            { field: "employee_name", label: "Employee", value_type: "text", sortable: false, filterable: false },
+            { field: "device_sn", label: "Device", value_type: "text", sortable: true, filterable: true, facet_kind: { type: "reference" } },
+            { field: "device_label", label: "Device Name", value_type: "text", sortable: false, filterable: false },
+            { field: "status", label: "Status", value_type: "int", sortable: true, filterable: true, facet_kind: { type: "enum" } },
+            { field: "verify_mode", label: "Method", value_type: "int", sortable: false, filterable: true, facet_kind: { type: "enum" } },
+            { field: "id", label: "ID", value_type: "text", sortable: false, filterable: false },
+          ],
+          default_sort: "timestamp",
+          default_sort_order: "desc",
+          tiebreaker: "id",
+        }),
+      ),
+    ),
+
+    // GET /api/punches/filters — facet filter metadata for punch queries.
+    // Rust: ApiEnvelope<Vec<FacetGroup>>
+    http.get("/api/punches/filters", ({ request }) => {
+      const url = new URL(request.url);
+      const dimension = url.searchParams.get("dimension");
+
+      const deviceOptions: FacetOption[] = devices.map((d) => ({
+        value: d.serial_number,
+        label: d.label ?? d.serial_number,
+        count: null,
+      }));
+
+      const employeeOptions: FacetOption[] = [
+        { value: "145", label: "Ahmed Al-Sabah", count: null },
+        { value: "203", label: "Mohammed Khalid", count: null },
+        { value: "301", label: "Fatima Noor", count: null },
+      ];
+
+      const statusOptions: FacetOption[] = [
+        { value: "check_in", label: "Check In", count: null },
+        { value: "check_out", label: "Check Out", count: null },
+        { value: "break_out", label: "Break Out", count: null },
+        { value: "break_in", label: "Break In", count: null },
+        { value: "overtime_in", label: "Overtime In", count: null },
+        { value: "overtime_out", label: "Overtime Out", count: null },
+      ];
+
+      const verifyModeOptions: FacetOption[] = [
+        { value: "fingerprint", label: "Fingerprint", count: null },
+        { value: "face", label: "Face", count: null },
+        { value: "card", label: "RF Card", count: null },
+        { value: "password", label: "Password", count: null },
+        { value: "palm", label: "Palm", count: null },
+      ];
+
+      let groups: FacetGroup[] = [];
+
+      switch (dimension) {
+        case "device_sn":
+          groups = [
+            {
+              key: "device_sn",
+              label: "Device",
+              kind: "reference",
+              options: deviceOptions,
+              has_more: false,
+              total: deviceOptions.length,
+            },
+          ];
+          break;
+        case "employee":
+          groups = [
+            {
+              key: "employee",
+              label: "Employee",
+              kind: "reference",
+              options: employeeOptions,
+              has_more: false,
+              total: employeeOptions.length,
+            },
+          ];
+          break;
+        case "status":
+          groups = [
+            {
+              key: "status",
+              label: "Status",
+              kind: "enum",
+              options: statusOptions,
+              has_more: false,
+              total: statusOptions.length,
+            },
+          ];
+          break;
+        case "verify_mode":
+          groups = [
+            {
+              key: "verify_mode",
+              label: "Method",
+              kind: "enum",
+              options: verifyModeOptions,
+              has_more: false,
+              total: verifyModeOptions.length,
+            },
+          ];
+          break;
+        default:
+          // Return all groups when no specific dimension requested
+          groups = [
+            {
+              key: "device_sn",
+              label: "Device",
+              kind: "reference",
+              options: deviceOptions,
+              has_more: false,
+              total: deviceOptions.length,
+            },
+            {
+              key: "employee",
+              label: "Employee",
+              kind: "reference",
+              options: employeeOptions,
+              has_more: false,
+              total: employeeOptions.length,
+            },
+            {
+              key: "status",
+              label: "Status",
+              kind: "enum",
+              options: statusOptions,
+              has_more: false,
+              total: statusOptions.length,
+            },
+            {
+              key: "verify_mode",
+              label: "Method",
+              kind: "enum",
+              options: verifyModeOptions,
+              has_more: false,
+              total: verifyModeOptions.length,
+            },
+          ];
+      }
+
+      return HttpResponse.json(envelope(groups));
+    }),
 
     // GET /api/punches — query punches with filters + cursor pagination.
     // Rust: ApiEnvelope<PunchListResponse { punches: PunchResponse[] }>

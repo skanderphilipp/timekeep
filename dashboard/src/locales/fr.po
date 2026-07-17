@@ -13,21 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. placeholder {0}: opt.label
-#: src/modules/devices/components/enroll-employee-dialog.tsx:91
-msgid "{0}"
-msgstr ""
-
 #. placeholder {0}: page.anomalyCount
-#: src/modules/punches/components/punch-query-view.tsx:280
+#: src/modules/punches/components/punch-query-view.tsx:138
 msgid "{0} anomalies detected in current view"
-msgstr ""
+msgstr "{0} anomalies détectées dans la vue actuelle"
 
-#. placeholder {0}: entry.entityType
-#. placeholder {1}: entry.entityId
-#: src/infrastructure/side-panel/side-panel-router.tsx:51
-msgid "{0} detail: {1}"
-msgstr "{0} détails : {1}"
+#. placeholder {0}: result.label ?? result.serial_number
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:112
+msgid "{0} is now connected and active."
+msgstr "{0} est maintenant connecté et actif."
 
 #. placeholder {0}: Math.floor(diff / SECONDS_PER_DAY)
 #: src/modules/shared/components/activity-feed/activity-feed.tsx:152
@@ -48,14 +42,18 @@ msgstr "il y a {0} h"
 msgid "{0}m ago"
 msgstr "il y a {0} min"
 
-#: src/modules/devices/components/device-detail-view.tsx:335
-#~ msgid "{0}s ago"
-#~ msgstr ""
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:61
+msgid "{count, plural, one {# device} other {# devices}} in this group. Remove devices here or assign new ones via the device edit form."
+msgstr "{count, plural, one {# appareil} other {# appareils}} dans ce groupe. Supprimez des appareils ici ou assignez-en de nouveaux via le formulaire de modification."
+
+#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:23
+msgid "{entityType} {entityId}"
+msgstr "{entityType} {entityId}"
 
 #: src/components/ui/filter-bar/filter-bar.tsx:69
 #: src/modules/shared/components/top-bar/top-bar.tsx:73
 msgid "{resultCount} results"
-msgstr ""
+msgstr "{resultCount} résultats"
 
 #: src/modules/data-renderer/components/data-table-footer.tsx:40
 msgid "{selectedCount} of {totalRows} selected"
@@ -65,25 +63,21 @@ msgstr "{selectedCount} sur {totalRows} sélectionnés"
 msgid "{totalRows} rows"
 msgstr "{totalRows} lignes"
 
-#: src/modules/dashboard/components/checked-in-list.tsx:78
-#~ msgid "+ {0} more employees"
-#~ msgstr ""
-
-#: src/components/ui/view-bar/view-bar.tsx:148
-#~ msgid "+ Filter"
-#~ msgstr "+ Filtrer"
-
-#: src/components/ui/view-bar/view-bar.tsx:143
-#~ msgid "+ Sort"
-#~ msgstr "+ Trier"
-
 #: src/modules/devices/schemas/device-form.schema.ts:84
 msgid "0"
 msgstr "0"
 
+#: src/modules/employees/schemas/employee-form.schema.ts:53
+msgid "1001"
+msgstr "1001"
+
 #: src/components/ui/expiry-picker/expiry-picker.tsx:80
 msgid "180 days"
 msgstr "180 jours"
+
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:76
+msgid "192.168.1.0/24"
+msgstr "192.168.1.0/24"
 
 #: src/modules/devices/schemas/device-form.schema.ts:76
 msgid "192.168.1.100:4370"
@@ -105,18 +99,25 @@ msgstr "60 jours"
 msgid "90 days"
 msgstr "90 jours"
 
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:54
+msgid "A unique name for this work policy template (e.g., \"Night Shift\")"
+msgstr "Un nom unique pour ce modèle de politique de travail (ex. \"Équipe de nuit\")"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:82
 #: src/modules/reports/components/report-summary-cards.tsx:56
 msgid "Absence Rate"
-msgstr ""
+msgstr "Taux d'absence"
 
+#: src/lib/employee-stats.tsx:30
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:83
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:33
 #: src/modules/dashboard/components/dashboard-metrics.tsx:28
-#: src/modules/employees/components/employee-attendance-log.tsx:42
-#: src/modules/employees/lib/employee-stats.tsx:30
-#: src/modules/punches/components/attendance-table.tsx:67
-#: src/modules/reports/components/employee-kpi-table.tsx:31
-#: src/modules/reports/hooks/use-reports-page.ts:92
+#: src/modules/employees/components/employee-attendance-log.tsx:43
+#: src/modules/employees/components/employee-calendar-view.tsx:93
+#: src/modules/exports/components/export-bar/export-bar.tsx:102
+#: src/modules/punches/components/attendance-table.tsx:68
+#: src/modules/reports/components/employee-kpi-table.tsx:32
+#: src/modules/reports/hooks/use-report-charts.ts:41
 msgid "Absent"
 msgstr "Absent"
 
@@ -124,89 +125,128 @@ msgstr "Absent"
 msgid "Access"
 msgstr "Accès"
 
-#: src/modules/settings/components/settings-view.tsx:221
+#: src/modules/settings/components/settings-view.tsx:249
 msgid "Account"
 msgstr "Compte"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:44
 msgid "Acme Corp"
-msgstr ""
+msgstr "Acme Corp"
 
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:42
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:44
 msgid "Action"
 msgstr "Action"
 
-#: src/modules/integrations/components/endpoints-view.tsx:91
-#: src/modules/users/hooks/use-users-page.tsx:118
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:83
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:85
+#: src/modules/users/hooks/use-users-page.tsx:165
+#: src/modules/users/hooks/use-users-page.tsx:167
 msgid "Actions"
 msgstr "Actions"
 
 #: src/modules/apikeys/components/api-key-card.tsx:34
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:71
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:78
 #: src/modules/devices/components/device-info-tab.tsx:77
-#: src/modules/employees/components/employee-detail-view.tsx:100
-#: src/modules/integrations/components/endpoints-view.tsx:85
-#: src/modules/users/hooks/use-users-page.tsx:112
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:76
+#: src/modules/record-detail/components/record-detail-header.tsx:92
+#: src/modules/users/hooks/use-users-page.tsx:158
 #: src/modules/users/schemas/user-form.schema.ts:81
 msgid "Active"
 msgstr "Actif"
 
-#: src/modules/devices/components/device-detail-view.tsx:156
+#: src/modules/devices/components/device-detail-content.tsx:104
 msgid "Activity"
-msgstr ""
+msgstr "Activité"
 
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:29
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:31
 msgid "Actor"
 msgstr "Acteur"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:116
+#: src/modules/devices/components/scan-network-dialog.tsx:135
 msgid "Add"
-msgstr ""
+msgstr "Ajouter"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:196
+#: src/modules/devices/components/scan-network-dialog.tsx:215
 msgid "Add All Discovered"
-msgstr ""
+msgstr "Ajouter tous les appareils découverts"
 
 #: src/modules/integrations/states/endpoint-list-empty.tsx:17
 msgid "Add an endpoint to start sending attendance events."
 msgstr "Ajouter un point de terminaison pour envoyer les événements de pointage."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:86
-#: src/modules/devices/components/device-form.tsx:56
-#: src/modules/devices/components/device-list-view.tsx:53
-#: src/modules/devices/pages/device-form-page.tsx:18
+#: src/modules/departments/components/departments-view.tsx:27
+#: src/modules/departments/components/departments-view.tsx:39
+#: src/modules/departments/components/departments-view.tsx:74
+msgid "Add Department"
+msgstr "Ajouter un département"
+
+#: src/infrastructure/commands/global-commands-registrar.tsx:54
+#: src/modules/devices/components/device-list-view.tsx:88
+#: src/modules/devices/hooks/use-device-list-commands.ts:22
 #: src/modules/devices/states/device-list-empty.tsx:54
 msgid "Add Device"
 msgstr "Ajouter un appareil"
 
-#: src/modules/employees/components/employee-list-view.tsx:81
-#: src/modules/employees/components/employee-list-view.tsx:117
-msgid "Add Employee"
-msgstr ""
+#: src/modules/device-groups/components/device-groups-view.tsx:111
+msgid "Add Device Group"
+msgstr "Ajouter un groupe d'appareils"
 
-#: src/modules/integrations/components/endpoints-view.tsx:133
+#: src/modules/employees/components/employee-list-view.tsx:30
+#: src/modules/employees/components/employee-list-view.tsx:42
+#: src/modules/employees/components/employee-list-view.tsx:89
+msgid "Add Employee"
+msgstr "Ajouter un employé"
+
+#: src/modules/integrations/components/endpoints-view.tsx:132
+#: src/modules/integrations/components/endpoints-view.tsx:169
 #: src/modules/integrations/states/endpoint-list-empty.tsx:20
 msgid "Add Endpoint"
 msgstr "Ajouter un point de terminaison"
 
-#: src/modules/users/components/users-view.tsx:34
+#: src/modules/device-groups/components/device-groups-view.tsx:129
+#: src/modules/device-groups/components/device-groups-view.tsx:163
+msgid "Add Group"
+msgstr "Ajouter un groupe"
+
+#: src/modules/work-policies/components/work-policies-view.tsx:39
+#: src/modules/work-policies/components/work-policies-view.tsx:74
+msgid "Add Policy"
+msgstr "Ajouter une politique"
+
+#: src/modules/users/components/users-view.tsx:75
 #: src/modules/users/states/user-list-empty.tsx:20
 msgid "Add User"
 msgstr "Ajouter un utilisateur"
+
+#: src/modules/work-policies/components/work-policies-view.tsx:27
+msgid "Add Work Policy"
+msgstr "Ajouter une politique de travail"
 
 #: src/modules/devices/states/device-list-empty.tsx:50
 msgid "Add your first biometric scanner to start collecting attendance data."
 msgstr "Ajoutez votre premier scanner biométrique pour commencer la collecte des données de pointage."
 
-#: src/modules/employees/components/employee-list-view.tsx:114
-msgid "Add your first employee to get started."
-msgstr ""
+#: src/modules/users/components/users-view.tsx:109
+msgid "Add your first dashboard user to get started."
+msgstr "Ajoutez votre premier utilisateur du tableau de bord pour commencer."
 
-#: src/modules/devices/components/scan-network-dialog.tsx:196
+#: src/modules/devices/components/device-list-view.tsx:119
+msgid "Add your first device or scan the network to discover ZKTeco scanners."
+msgstr "Ajoutez votre premier appareil ou scannez le réseau pour découvrir les scanners ZKTeco."
+
+#: src/modules/employees/components/employee-list-view.tsx:86
+msgid "Add your first employee to get started."
+msgstr "Ajoutez votre premier employé pour commencer."
+
+#: src/modules/integrations/components/endpoints-view.tsx:166
+msgid "Add your first integration endpoint to get started."
+msgstr "Ajoutez votre premier point de terminaison d'intégration pour commencer."
+
+#: src/modules/devices/components/scan-network-dialog.tsx:215
 msgid "Added {bulkDone} devices"
-msgstr ""
+msgstr "{bulkDone} appareils ajoutés"
 
 #: src/modules/auth/schemas/login-form.schema.ts:39
 #: src/modules/auth/schemas/setup-form.schema.ts:50
@@ -221,36 +261,44 @@ msgstr "Admin"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:54
 msgid "Admin Password"
-msgstr ""
+msgstr "Mot de passe administrateur"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:48
 msgid "Admin Username"
-msgstr ""
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:95
-#~ msgid "ADMS active"
-#~ msgstr "ADMS actif"
+msgstr "Nom d'utilisateur administrateur"
 
 #: src/modules/devices/components/device-info-tab.tsx:66
 msgid "ADMS Active"
-msgstr ""
+msgstr "ADMS actif"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:95
-#~ msgid "ADMS inactive"
-#~ msgstr "ADMS inactif"
+#: src/modules/data-renderer/components/reference-facet-selector.tsx:162
+#: src/modules/departments/hooks/use-departments-page.ts:119
+#: src/modules/employees/hooks/use-employee-facet-options.tsx:115
+msgid "All"
+msgstr "Tout"
+
+#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:191
+msgid "All commands"
+msgstr "Toutes les commandes"
+
+#: src/modules/device-groups/components/device-group-sync-section.tsx:36
+#: src/modules/device-groups/components/device-group-sync-section.tsx:62
+#: src/modules/employees/hooks/use-employee-facet-options.tsx:62
+msgid "All Departments"
+msgstr "Tous les départements"
 
 #: src/modules/punches/hooks/use-punch-facet-options.tsx:60
 msgid "All Devices"
-msgstr ""
+msgstr "Tous les appareils"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:69
+#: src/infrastructure/navigation/use-navigation.ts:73
 msgid "nav.devices.list"
 msgstr "Liste des appareils"
 
 #: src/modules/dashboard/components/dashboard-device-status.tsx:55
 msgid "All devices are currently offline. Attendance data may be stale."
-msgstr ""
+msgstr "Tous les appareils sont actuellement hors ligne. Les données de présence peuvent être obsolètes."
 
 #: src/modules/dashboard/components/dashboard-device-status.tsx:54
 msgid "All Devices Offline"
@@ -258,74 +306,67 @@ msgstr "Tous les appareils hors ligne"
 
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:75
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:134
-#: src/modules/employees/components/employee-detail-view.tsx:80
 msgid "All Employees"
 msgstr "Tous les employés"
 
 #: src/modules/dashboard/components/checked-in-list.tsx:36
 msgid "All employees have checked out for the day."
-msgstr ""
+msgstr "Tous les employés ont pointé leur départ pour la journée."
 
-#: src/modules/punches/components/punch-query-view.tsx:49
+#: src/modules/punches/components/punch-query-view.tsx:29
 msgid "All Methods"
-msgstr ""
+msgstr "Toutes les méthodes"
 
-#: src/modules/data-renderer/components/data-table-container.tsx:174
+#: src/modules/data-renderer/components/data-table-container.tsx:186
 msgid "All records loaded"
 msgstr "Tous les enregistrements chargés"
 
-#: src/modules/punches/components/punch-query-view.tsx:35
+#: src/modules/punches/components/punch-query-view.tsx:18
 msgid "All Statuses"
-msgstr ""
+msgstr "Tous les statuts"
 
-#: src/components/ui/error-boundary/error-boundary.tsx:79
+#: src/components/ui/error-boundary/error-boundary.tsx:78
 msgid "An unexpected error occurred. Please try refreshing the page."
 msgstr "Une erreur inattendue est survenue. Veuillez rafraîchir la page."
 
-#: src/modules/punches/components/punch-query-view.tsx:279
-msgid "Anomalies Detected"
-msgstr "Anomalies détectées"
+#: src/modules/exports/components/export-bar/export-bar.tsx:105
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:78
+msgid "Anomalies"
+msgstr "Anomalies"
 
-#: src/modules/punches/hooks/use-active-punch-filters.ts:82
+#: src/modules/punches/hooks/use-active-punch-filters.ts:121
 msgid "Anomalies only"
-msgstr ""
+msgstr "Anomalies uniquement"
 
-#: src/modules/employees/components/employee-attendance-log.tsx:40
+#: src/modules/employees/components/employee-attendance-log.tsx:41
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:102
 msgid "Anomaly"
-msgstr ""
+msgstr "Anomalie"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:126
-msgid "Anomaly Detected"
-msgstr ""
-
-#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:38
-msgid "API Key {entityId}"
-msgstr "Clé API {entityId}"
-
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:51
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:46
 msgid "API Key Created"
 msgstr "Clé API créée"
 
-#: src/modules/apikeys/components/api-keys-view.tsx:37
+#: src/modules/apikeys/hooks/use-api-key-form.ts:67
+msgid "API key created successfully."
+msgstr "Clé API créée avec succès."
+
+#: src/modules/apikeys/components/api-keys-view.tsx:53
 msgid "API key revoked."
 msgstr "Clé API révoquée."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:119
-#: src/modules/apikeys/components/api-keys-view.tsx:48
+#: src/infrastructure/commands/global-commands-registrar.tsx:81
+#: src/infrastructure/navigation/use-breadcrumbs.ts:66
+#: src/modules/apikeys/components/api-keys-view.tsx:79
 msgid "API Keys"
 msgstr "Clés API"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:76
+#: src/infrastructure/navigation/use-navigation.ts:83
 msgid "nav.settings.apiKeys"
 msgstr "Clés API"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:46
-msgid "breadcrumb.apiKeys"
-msgstr "Clés API"
-
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:153
+#: src/infrastructure/commands/global-commands-registrar.tsx:109
 msgid "Application configuration"
 msgstr "Configuration de l'application"
 
@@ -335,166 +376,170 @@ msgid "Are you sure you want to delete {0}? This action cannot be undone."
 msgstr "Êtes-vous sûr de vouloir supprimer {0} ? Cette action est irréversible."
 
 #. placeholder {0}: device.label || device.serial_number
-#: src/modules/devices/components/device-detail-view.tsx:225
+#: src/modules/devices/components/device-detail-content.tsx:122
 msgid "Are you sure you want to remove \"{0}\"? This action cannot be undone."
-msgstr ""
+msgstr "Êtes-vous sûr de vouloir supprimer \"{0}\" ? Cette action est irréversible."
 
 #: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:56
 msgid "Arrivals"
-msgstr ""
+msgstr "Arrivées"
 
-#: src/modules/devices/components/enroll-employee-dialog.tsx:74
+#: src/modules/devices/components/enroll-employee-dialog.tsx:82
 msgid "Assign an employee PIN and biometric types to this device."
-msgstr ""
+msgstr "Attribuez un PIN employé et des types biométriques à cet appareil."
 
-#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:55
-#~ msgid "Attendance Activity (24h)"
-#~ msgstr "Activité de pointage (24 h)"
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:53
+msgid "Assign devices to this group via the device edit form. Open any device and select this group in the Config tab."
+msgstr "Assignez des appareils à ce groupe via le formulaire de modification d'appareil. Ouvrez un appareil et sélectionnez ce groupe dans l'onglet Configuration."
 
 #. placeholder {0}: 0
 #. placeholder {1}: 0
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:216
 msgid "Attendance calendar for {0} {1}"
-msgstr ""
+msgstr "Calendrier de présence pour {0} {1}"
 
-#: src/modules/punches/components/punch-query-view.tsx:323
+#: src/modules/punches/components/punch-query-view.tsx:183
 msgid "Attendance data will appear here once devices start recording punches."
 msgstr "Les données de pointage apparaîtront ici une fois que les appareils commenceront à enregistrer."
 
-#: src/modules/reports/components/reports-view.tsx:107
+#: src/modules/reports/components/reports-view.tsx:125
+#: src/modules/reports/components/reports-view.tsx:129
 msgid "Attendance Distribution"
-msgstr ""
+msgstr "Distribution des présences"
 
-#: src/modules/reports/components/employee-kpi-table.tsx:69
+#: src/modules/reports/components/employee-kpi-table.tsx:70
 msgid "Attendance KPIs per employee for the selected date range."
-msgstr ""
+msgstr "KPI de présence par employé pour la plage de dates sélectionnée."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:65
+#: src/infrastructure/commands/global-commands-registrar.tsx:37
 msgid "Attendance overview"
-msgstr ""
+msgstr "Aperçu des présences"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:28
+#: src/modules/dashboard/hooks/use-dashboard-page.ts:41
 msgid "Attendance overview and device status."
 msgstr "Aperçu des pointages et état des appareils."
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:56
-msgid "Attendance Punch Report"
-msgstr "Rapport de pointage"
-
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:64
 msgid "Attendance records will appear here as employees scan in."
-msgstr ""
+msgstr "Les enregistrements de présence apparaîtront ici lorsque les employés scannent."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:142
+#: src/modules/exports/components/export-bar/export-bar.tsx:70
+msgid "Attendance Report"
+msgstr "Rapport de présence"
+
+#: src/infrastructure/commands/global-commands-registrar.tsx:100
 msgid "Attendance reports and exports"
 msgstr "Rapports et exports de pointage"
 
-#: src/modules/reports/components/reports-view.tsx:30
+#: src/modules/reports/components/reports-view.tsx:35
 msgid "Attendance statistics, punch distribution, and exports."
 msgstr "Statistiques de pointage, distribution des pointages et exports."
 
-#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:41
-msgid "Audit Event {entityId}"
-msgstr "Événement d'audit {entityId}"
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:110
+msgid "Attendance Thresholds"
+msgstr "Seuils de présence"
 
 #: src/modules/audit/states/audit-log-empty.tsx:12
 msgid "Audit events will appear here as users perform actions."
 msgstr "Les événements d'audit apparaîtront ici lorsque les utilisateurs effectueront des actions."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:130
+#: src/infrastructure/commands/global-commands-registrar.tsx:90
+#: src/infrastructure/navigation/use-breadcrumbs.ts:67
 msgid "Audit Log"
 msgstr "Journal d'audit"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:79
+#: src/infrastructure/navigation/use-navigation.ts:86
 msgid "nav.settings.audit"
-msgstr "Audit"
-
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:47
-msgid "breadcrumb.audit"
 msgstr "Audit"
 
 #: src/modules/devices/components/device-card.tsx:38
 msgid "Auto"
-msgstr ""
+msgstr "Auto"
 
 #: src/modules/settings/schemas/settings-form.schema.ts:49
 msgid "Auto-discover devices"
 msgstr "Découverte automatique des appareils"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:80
 #: src/modules/reports/components/report-summary-cards.tsx:40
 msgid "Avg Hours"
-msgstr ""
+msgstr "Heures moy."
 
-#: src/modules/reports/components/employee-kpi-table.tsx:43
+#: src/modules/exports/components/export-bar/export-bar.tsx:104
+#: src/modules/reports/components/employee-kpi-table.tsx:44
 msgid "Avg/Day"
-msgstr ""
+msgstr "Moy./Jour"
 
-#: src/modules/devices/components/device-detail-view.tsx:114
-msgid "Back to Devices"
-msgstr ""
+#: src/infrastructure/side-panel/components/side-panel-sub-page-router/side-panel-sub-page-router.tsx:85
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:122
+msgid "Back"
+msgstr "Retour"
 
-#: src/modules/employees/components/employee-detail-view.tsx:61
-msgid "Back to Employees"
-msgstr ""
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:145
+msgid "Back to Configure"
+msgstr "Retour à la configuration"
 
-#: src/modules/devices/components/enroll-employee-dialog.tsx:87
+#: src/modules/devices/components/enroll-employee-dialog.tsx:97
 msgid "Biometric Types"
-msgstr ""
+msgstr "Types biométriques"
 
 #: src/components/ui/breadcrumb/breadcrumb.tsx:37
-#: src/infrastructure/app-shell/app-top-bar.tsx:59
+#: src/infrastructure/app-shell/app-top-bar.tsx:109
 msgid "Breadcrumb"
 msgstr "Fil d'Ariane"
 
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:81
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:100
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:67
 msgid "Break"
 msgstr "Pause"
 
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:29
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:31
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:22
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:21
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:27
-#: src/modules/reports/hooks/use-reports-page.ts:71
+#: src/modules/reports/hooks/use-report-charts.ts:22
 msgid "Break In"
 msgstr "Début de pause"
 
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:30
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:29
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:21
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:20
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:28
-#: src/modules/reports/hooks/use-reports-page.ts:70
+#: src/modules/reports/hooks/use-report-charts.ts:21
 msgid "Break Out"
 msgstr "Fin de pause"
 
-#: src/modules/reports/components/reports-view.tsx:75
+#: src/modules/reports/components/reports-view.tsx:81
+#: src/modules/reports/components/reports-view.tsx:85
 msgid "Breakdown of attendance events by type."
 msgstr "Répartition des événements de pointage par type."
 
-#: src/components/ui/view-bar/view-bar.tsx:175
-#~ msgid "Calendar"
-#~ msgstr "Calendrier"
+#: src/modules/employees/hooks/use-employee-list-page.tsx:169
+msgid "Calendar"
+msgstr "Calendrier"
 
-#: src/modules/apikeys/components/api-keys-view.tsx:90
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:68
-#: src/modules/devices/components/device-form.tsx:52
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:94
-#: src/modules/devices/components/enroll-employee-dialog.tsx:106
-#: src/modules/integrations/components/endpoint-form.tsx:32
-#: src/modules/integrations/components/endpoints-view.tsx:177
+#: src/infrastructure/side-panel/components/side-panel-form-container/side-panel-form-container.tsx:108
+#: src/modules/apikeys/components/api-keys-view.tsx:133
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:63
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:93
+#: src/modules/devices/components/enroll-employee-dialog.tsx:119
+#: src/modules/integrations/components/endpoints-view.tsx:192
 #: src/modules/users/components/change-password-dialog.tsx:73
 #: src/modules/users/components/delete-user-dialog.tsx:33
-#: src/modules/users/components/user-form.tsx:43
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/modules/auth/hooks/use-setup-page.ts:32
+#: src/modules/auth/hooks/use-setup-page.ts:53
 msgid "Cannot reach the server. Is it running?"
-msgstr ""
+msgstr "Impossible d'atteindre le serveur. Est-il en cours d'exécution ?"
 
-#: src/modules/users/hooks/use-users-page.tsx:127
+#: src/modules/devices/components/enroll-employee-dialog.tsx:46
+msgid "Card"
+msgstr "Carte"
+
+#: src/modules/users/hooks/use-users-page.tsx:181
 msgid "Change password"
 msgstr "Changer le mot de passe"
 
@@ -504,49 +549,45 @@ msgstr "Changer le mot de passe"
 msgid "Change Password"
 msgstr "Changer le mot de passe"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:106
+msgid "Charts"
+msgstr "Graphiques"
+
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:27
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:25
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:19
-#: src/modules/employees/components/employee-attendance-log.tsx:50
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:18
+#: src/modules/employees/components/employee-attendance-log.tsx:51
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:25
-#: src/modules/reports/hooks/use-reports-page.ts:68
+#: src/modules/reports/hooks/use-report-charts.ts:19
 msgid "Check In"
 msgstr "Pointage entrée"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:62
+#: src/modules/exports/components/export-bar/export-bar.tsx:89
 msgid "Check Ins"
 msgstr "Entrées"
 
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:28
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:27
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:20
-#: src/modules/employees/components/employee-attendance-log.tsx:56
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:19
+#: src/modules/employees/components/employee-attendance-log.tsx:57
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:26
-#: src/modules/reports/hooks/use-reports-page.ts:69
+#: src/modules/reports/hooks/use-report-charts.ts:20
 msgid "Check Out"
 msgstr "Pointage sortie"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:64
-#~ msgid "Check-Ins (24h)"
-#~ msgstr "Entrées (24 h)"
+#: src/modules/exports/components/export-bar/export-bar.tsx:90
+msgid "Check Outs"
+msgstr "Départs"
 
 #: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:44
 msgid "Check-ins grouped by hour of day."
-msgstr ""
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:65
-#~ msgid "Check-Outs (24h)"
-#~ msgstr "Sorties (24 h)"
+msgstr "Arrivées groupées par heure de la journée."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:49
 msgid "Choose a secure username for the administrator account."
-msgstr ""
+msgstr "Choisissez un nom d'utilisateur sécurisé pour le compte administrateur."
 
-#: src/components/ui/filter-input/filter-input.tsx:78
-#~ msgid "Clear"
-#~ msgstr "Effacer"
-
-#: src/components/ui/date-picker/date-picker.tsx:183
+#: src/components/ui/date-picker/date-picker.tsx:216
 msgid "Clear date"
 msgstr "Effacer la date"
 
@@ -569,24 +610,23 @@ msgstr "Fermer"
 
 #: src/components/ui/dialog/dialog.tsx:80
 msgid "Close dialog"
-msgstr ""
+msgstr "Fermer la boîte de dialogue"
 
-#: src/infrastructure/side-panel/components/side-panel/side-panel.tsx:152
+#: src/infrastructure/side-panel/components/side-panel/side-panel.tsx:173
 msgid "Close panel"
 msgstr "Fermer le panneau"
 
-#: src/infrastructure/app-shell/app-sidebar.tsx:88
-msgid "Collapse"
-msgstr "Réduire"
+#: src/infrastructure/app-shell/app-sidebar.tsx:139
+msgid "Close sidebar"
+msgstr "Fermer la barre latérale"
 
-#: src/infrastructure/app-shell/app-sidebar.tsx:85
+#: src/infrastructure/app-shell/app-sidebar.tsx:124
+#: src/infrastructure/app-shell/app-sidebar.tsx:125
 msgid "Collapse sidebar"
 msgstr "Réduire la barre latérale"
 
-#: src/modules/punches/components/punch-query-view.tsx:153
-#~ msgid "Columns"
-#~ msgstr ""
-
+#: src/modules/devices/components/device-form.tsx:149
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:87
 #: src/modules/devices/schemas/device-form.schema.ts:82
 msgid "Comm Key"
 msgstr "Clé de communication"
@@ -599,23 +639,27 @@ msgstr "La clé de communication est requise"
 msgid "Comm key must be non-negative"
 msgstr "La clé de communication doit être non négative"
 
-#: src/infrastructure/command-palette/command-palette.tsx:199
-#~ msgid "Command palette"
-#~ msgstr "Palette de commandes"
-
 #: src/modules/devices/schemas/device-form.schema.ts:83
 msgid "Communication key (0 = default)"
 msgstr "Clé de communication (0 = par défaut)"
 
-#: src/modules/devices/components/device-detail-view.tsx:179
-msgid "Config"
-msgstr ""
+#: src/modules/exports/components/export-bar/export-bar.tsx:75
+msgid "Confidential"
+msgstr "Confidentiel"
 
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:54
 msgid "Config (JSON)"
 msgstr "Configuration (JSON)"
 
-#: src/modules/integrations/components/endpoints-view.tsx:128
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:62
+msgid "Configure Device"
+msgstr "Configurer l'appareil"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:111
+msgid "Configure how attendance rules are calculated."
+msgstr "Configurez comment les règles de présence sont calculées."
+
+#: src/modules/integrations/components/endpoints-view.tsx:127
 msgid "Configure where attendance events are delivered — webhooks, Odoo, SAP, Zapier."
 msgstr "Configurez où les événements de pointage sont envoyés — webhooks, Odoo, SAP, Zapier."
 
@@ -625,14 +669,13 @@ msgstr "Configurez où les événements de pointage sont envoyés."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:64
 msgid "Configure Workspace"
-msgstr ""
+msgstr "Configurer l'espace de travail"
 
 #: src/modules/auth/components/setup-form.tsx:79
 msgid "Configure your workspace and create your admin account."
-msgstr ""
+msgstr "Configurez votre espace de travail et créez votre compte administrateur."
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:81
-#: src/modules/settings/components/settings-view.tsx:32
+#: src/modules/settings/components/settings-view.tsx:35
 msgid "Connected"
 msgstr "Connecté"
 
@@ -640,49 +683,45 @@ msgstr "Connecté"
 msgid "Connection"
 msgstr "Connexion"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:56
-#~ msgid "Connection Error"
-#~ msgstr "Erreur de connexion"
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:140
+msgid "Connection test failed"
+msgstr "Échec du test de connexion"
+
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:117
+msgid "Connection test passed"
+msgstr "Test de connexion réussi"
 
 #: src/modules/settings/schemas/settings-form.schema.ts:58
 msgid "Control how the server reads attendance data from connected scanners."
 msgstr "Contrôlez comment le serveur lit les données de pointage des scanners connectés."
 
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:88
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:87
 msgid "Copy failed. Check that both devices are online and try again."
-msgstr ""
+msgstr "Échec de la copie. Vérifiez que les deux appareils sont en ligne et réessayez."
 
-#: src/modules/devices/components/device-detail-view.tsx:210
+#: src/modules/devices/components/device-detail-content.tsx:186
 msgid "Copy from Device"
-msgstr ""
+msgstr "Copier depuis l'appareil"
 
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:56
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:51
 msgid "Copy this key now. It will not be shown again."
 msgstr "Copiez cette clé maintenant. Elle ne sera plus affichée."
 
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:102
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:101
 msgid "Copy Users"
-msgstr ""
+msgstr "Copier les utilisateurs"
 
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:66
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:65
 msgid "Copy Users from Device"
-msgstr ""
-
-#: src/modules/devices/pages/device-list-page.tsx:54
-#~ msgid "Could not connect to the timekeep server."
-#~ msgstr "Impossible de se connecter au serveur timekeep."
+msgstr "Copier les utilisateurs depuis l'appareil"
 
 #: src/components/ui/page-error/page-error.tsx:50
 msgid "Could not connect to the timekeep server. Check that the backend is running and try again."
-msgstr ""
+msgstr "Impossible de se connecter au serveur timekeep. Vérifiez que le backend est en cours d'exécution et réessayez."
 
-#: src/modules/devices/components/device-detail-view.tsx:97
-msgid "Could not load device information."
-msgstr ""
-
-#: src/modules/employees/components/employee-detail-view.tsx:43
-msgid "Could not load employee information."
-msgstr ""
+#: src/modules/record-detail/components/record-detail-states.tsx:29
+msgid "Could not load {entityType} information."
+msgstr "Impossible de charger les informations de {entityType}."
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:65
 msgid "Create a key for an integration partner."
@@ -690,142 +729,159 @@ msgstr "Créer une clé pour un partenaire d'intégration."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:69
 msgid "Create Admin Account"
-msgstr ""
+msgstr "Créer le compte administrateur"
 
 #: src/modules/apikeys/states/api-key-list-empty.tsx:13
 msgid "Create an API key to allow external integrations to query attendance data."
 msgstr "Créer une clé API pour permettre aux intégrations externes d'interroger les données de pointage."
 
-#: src/modules/apikeys/components/api-keys-view.tsx:52
+#: src/modules/apikeys/components/api-keys-view.tsx:83
 msgid "Create API Key"
 msgstr "Créer une clé API"
 
-#: src/modules/integrations/components/endpoint-form.tsx:35
-#: src/modules/integrations/components/endpoints-view.tsx:158
+#: src/modules/integrations/components/endpoints-view.tsx:70
 msgid "Create Endpoint"
 msgstr "Créer un point de terminaison"
 
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:71
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:66
 msgid "Create Key"
 msgstr "Créer une clé"
 
-#: src/modules/users/components/user-form.tsx:46
-#: src/modules/users/components/users-view.tsx:59
+#: src/modules/users/components/users-view.tsx:31
 msgid "Create User"
 msgstr "Créer un utilisateur"
 
 #: src/modules/auth/components/setup-form.tsx:98
 msgid "Create Workspace"
-msgstr ""
-
-#: src/modules/auth/components/setup-form.tsx:77
-#~ msgid "Create your admin account to get started."
-#~ msgstr ""
+msgstr "Créer l'espace de travail"
 
 #: src/modules/users/states/user-list-empty.tsx:17
 msgid "Create your first dashboard user to get started."
 msgstr "Créez votre premier utilisateur du tableau de bord pour commencer."
 
-#: src/modules/data-renderer/column-definitions/api-key-columns.ts:29
-#: src/modules/data-renderer/column-definitions/api-key-columns.ts:31
+#: src/modules/departments/components/departments-view.tsx:71
+msgid "Create your first department to organize employees."
+msgstr "Créez votre premier département pour organiser les employés."
+
+#: src/modules/device-groups/components/device-groups-view.tsx:160
+msgid "Create your first device group to organize scanners."
+msgstr "Créez votre premier groupe d'appareils pour organiser les scanners."
+
+#: src/modules/work-policies/components/work-policies-view.tsx:71
+msgid "Create your first work policy template to standardize schedules."
+msgstr "Créez votre premier modèle de politique de travail pour standardiser les horaires."
+
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:28
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:30
 #: src/modules/employees/components/employee-info-panel.tsx:35
 msgid "Created"
 msgstr "Créé"
 
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:71
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:66
 msgid "Creating…"
 msgstr "Création…"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:142
+#: src/modules/exports/components/export-bar/export-bar.tsx:211
 msgid "CSV"
 msgstr "CSV"
 
 #: src/modules/dashboard/components/checked-in-list.tsx:46
 msgid "Currently Checked In"
-msgstr ""
+msgstr "Actuellement pointés"
+
+#: src/modules/departments/hooks/use-departments-page.ts:120
+msgid "Custom"
+msgstr "Personnalisé"
 
 #: src/components/ui/expiry-picker/expiry-picker.tsx:82
 msgid "Custom date"
 msgstr "Date personnalisée"
 
-#: src/modules/reports/components/reports-view.tsx:88
+#: src/modules/settings/components/work-policy-form.tsx:190
+msgid "Daily"
+msgstr "Quotidien"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:88
+msgid "Daily hours threshold after which overtime is calculated"
+msgstr "Seuil d'heures quotidiennes après lequel les heures supplémentaires sont calculées"
+
+#: src/modules/reports/components/reports-view.tsx:100
+#: src/modules/reports/components/reports-view.tsx:104
 msgid "Daily Punch Volume"
 msgstr "Volume quotidien de pointages"
 
-#: src/modules/reports/components/reports-view.tsx:145
+#: src/modules/reports/components/reports-view.tsx:175
+#: src/modules/reports/components/reports-view.tsx:179
 msgid "Daily Work Hours"
-msgstr ""
+msgstr "Heures de travail quotidiennes"
 
-#: src/infrastructure/app-shell/app-top-bar.tsx:94
+#: src/infrastructure/app-shell/app-sidebar.tsx:178
 msgid "Dark Mode"
 msgstr "Mode sombre"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:64
-#: src/modules/dashboard/pages/dashboard-page.tsx:34
+#: src/infrastructure/commands/global-commands-registrar.tsx:36
+#: src/infrastructure/navigation/use-breadcrumbs.ts:58
+#: src/modules/dashboard/pages/dashboard-page.tsx:25
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:67
+#: src/infrastructure/navigation/use-navigation.ts:71
 msgid "nav.dashboard"
 msgstr "Tableau de bord"
 
-#: src/modules/settings/components/settings-view.tsx:71
+#: src/modules/settings/components/settings-view.tsx:70
 msgid "Database"
-msgstr ""
+msgstr "Base de données"
 
-#: src/modules/employees/components/employee-attendance-log.tsx:32
-#: src/modules/exports/components/export-bar/export-bar.tsx:63
+#: src/modules/employees/components/employee-attendance-log.tsx:33
+#: src/modules/exports/components/export-bar/export-bar.tsx:91
 msgid "Date"
 msgstr "Date"
-
-#: src/modules/punches/components/punch-query-view.tsx:89
-#~ msgid "Date range"
-#~ msgstr ""
-
-#: src/modules/reports/components/report-summary-cards.tsx:34
-#~ msgid "Date Range"
-#~ msgstr "Période"
 
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:84
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:34
 msgid "Day Off"
 msgstr "Jour de congé"
 
-#: src/modules/settings/components/settings-view.tsx:140
+#: src/modules/settings/components/settings-view.tsx:118
 msgid "dead"
-msgstr ""
+msgstr "mort"
 
-#: src/components/ui/device-status-badge/device-status-badge.tsx:38
-#~ msgid "Decommissioned"
-#~ msgstr "Mis hors service"
+#: src/modules/departments/hooks/use-departments-page.ts:121
+msgid "Default"
+msgstr "Par défaut"
 
-#: src/modules/settings/components/settings-view.tsx:30
+#: src/modules/devices/components/device-form.tsx:142
+msgid "Default: {DEFAULT_ZKTECO_PORT}"
+msgstr "Par défaut : {DEFAULT_ZKTECO_PORT}"
+
+#: src/modules/settings/components/settings-view.tsx:34
 msgid "Degraded"
-msgstr ""
+msgstr "Dégradé"
 
-#: src/modules/devices/components/device-detail-view.tsx:227
-#: src/modules/integrations/components/endpoints-view.tsx:111
-#: src/modules/integrations/components/endpoints-view.tsx:180
+#: src/modules/devices/components/device-detail-content.tsx:124
+#: src/modules/integrations/components/endpoints-view.tsx:195
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:103
 #: src/modules/users/components/delete-user-dialog.tsx:36
-#: src/modules/users/hooks/use-users-page.tsx:135
+#: src/modules/users/hooks/use-users-page.tsx:189
 msgid "Delete"
 msgstr "Supprimer"
 
 #. placeholder {0}: deleting?.name ?? ""
-#: src/modules/integrations/components/endpoints-view.tsx:169
+#: src/modules/integrations/components/endpoints-view.tsx:184
 msgid "Delete {0}? This cannot be undone."
 msgstr "Supprimer {0} ? Cette action est irréversible."
 
-#: src/modules/devices/components/device-detail-view.tsx:141
+#: src/modules/devices/components/device-detail-content.tsx:89
 msgid "Delete device"
-msgstr ""
+msgstr "Supprimer l'appareil"
 
-#: src/modules/devices/components/device-detail-view.tsx:223
+#: src/modules/devices/components/device-detail-content.tsx:120
 msgid "Delete Device"
-msgstr ""
+msgstr "Supprimer l'appareil"
 
-#: src/modules/integrations/components/endpoints-view.tsx:168
+#: src/modules/integrations/components/endpoints-view.tsx:183
 msgid "Delete Endpoint"
 msgstr "Supprimer le point de terminaison"
 
@@ -833,40 +889,71 @@ msgstr "Supprimer le point de terminaison"
 msgid "Delete User"
 msgstr "Supprimer l'utilisateur"
 
-#: src/modules/settings/components/settings-view.tsx:129
+#: src/modules/settings/components/settings-view.tsx:116
 msgid "delivered"
-msgstr ""
+msgstr "livré"
 
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:50
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:52
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:54
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:56
+#: src/modules/departments/pages/department-detail-page.tsx:28
 #: src/modules/employees/components/employee-info-panel.tsx:24
+#: src/modules/employees/schemas/employee-form.schema.ts:63
 msgid "Department"
-msgstr ""
+msgstr "Département"
+
+#: src/modules/departments/hooks/use-department-form.ts:79
+msgid "Department created successfully."
+msgstr "Département créé avec succès."
+
+#: src/modules/device-groups/components/device-group-sync-section.tsx:74
+msgid "Department filter"
+msgstr "Filtre de département"
+
+#: src/modules/departments/schemas/department-form.schema.ts:32
+msgid "Department Information"
+msgstr "Informations du département"
+
+#: src/modules/departments/schemas/department-form.schema.ts:23
+msgid "Department Name"
+msgstr "Nom du département"
+
+#: src/modules/departments/hooks/use-department-form.ts:78
+msgid "Department updated successfully."
+msgstr "Département mis à jour avec succès."
+
+#: src/modules/departments/components/departments-view.tsx:35
+msgid "Departments"
+msgstr "Départements"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:77
+msgid "nav.departments"
+msgstr "Départements"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:59
+msgid "Description"
+msgstr "Description"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:15
+msgid "Description must be 500 characters or fewer"
+msgstr "La description doit contenir 500 caractères ou moins"
 
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:49
 msgid "Destination URL for events"
 msgstr "URL de destination des événements"
 
-#: src/modules/employees/pages/employee-detail-page.tsx:26
-msgid "Detail"
-msgstr ""
-
 #: src/modules/users/schemas/user-form.schema.ts:72
 msgid "Determines what the user can access"
 msgstr "Détermine ce à quoi l'utilisateur peut accéder"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:104
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:83
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:85
-#: src/modules/devices/pages/device-detail-page.tsx:25
-#: src/modules/punches/components/attendance-table.tsx:119
-#: src/modules/punches/hooks/use-active-punch-filters.ts:44
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:93
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:95
+#: src/modules/devices/hooks/use-device-detail-page.ts:18
+#: src/modules/exports/components/export-bar/export-bar.tsx:96
+#: src/modules/punches/components/attendance-table.tsx:120
+#: src/modules/punches/hooks/use-active-punch-filters.ts:65
 msgid "Device"
 msgstr "Appareil"
-
-#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:28
-msgid "Device {entityId}"
-msgstr "Appareil {entityId}"
 
 #: src/modules/navigation/hooks/use-navigate-to-record.ts:37
 msgid "Device {sn}"
@@ -874,39 +961,56 @@ msgstr "Appareil {sn}"
 
 #: src/modules/devices/components/device-actions-menu.tsx:46
 msgid "Device actions"
-msgstr ""
+msgstr "Actions de l'appareil"
 
-#: src/modules/devices/components/device-detail-view.tsx:161
+#: src/modules/devices/components/device-detail-content.tsx:109
 #: src/modules/devices/states/activity-empty.tsx:19
 msgid "Device activity will appear here once the engine starts collecting events."
-msgstr ""
+msgstr "L'activité de l'appareil apparaîtra ici une fois que le moteur commencera à collecter des événements."
 
-#: src/modules/devices/hooks/use-device-form.ts:76
-msgid "Device added successfully."
-msgstr "Appareil ajouté avec succès."
+#: src/modules/devices/components/device-form.tsx:150
+msgid "Device communication key (default: 0)."
+msgstr "Clé de communication de l'appareil (par défaut : 0)."
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:82
 #: src/modules/devices/components/device-detail-panel.tsx:24
 msgid "Device details will be available when connected to the timekeep server."
 msgstr "Les détails de l'appareil seront disponibles une fois connecté au serveur timekeep."
+
+#: src/modules/device-groups/hooks/use-device-group-detail-page.ts:32
+#: src/modules/devices/components/device-form.tsx:165
+msgid "Device Group"
+msgstr "Groupe d'appareils"
+
+#: src/modules/device-groups/components/device-groups-view.tsx:125
+msgid "Device Groups"
+msgstr "Groupes d'appareils"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:79
+msgid "nav.devices.groups"
+msgstr "Groupes d'appareils"
 
 #: src/modules/devices/schemas/device-form.schema.ts:97
 msgid "Device Identity"
 msgstr "Identité de l'appareil"
 
-#: src/modules/devices/components/device-detail-view.tsx:175
-msgid "Device Info"
-msgstr ""
-
-#: src/modules/devices/components/device-detail-view.tsx:110
-msgid "Device not found"
-msgstr ""
-
 #: src/modules/settings/schemas/settings-form.schema.ts:57
 msgid "Device Polling"
 msgstr "Interrogation des appareils"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:67
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:111
+msgid "Device Registered"
+msgstr "Appareil enregistré"
+
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:64
+msgid "Device registered successfully."
+msgstr "Appareil enregistré avec succès."
+
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:36
+msgid "Device removed from group."
+msgstr "Appareil retiré du groupe."
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:95
 msgid "Device SN"
 msgstr "N° de série appareil"
 
@@ -914,142 +1018,160 @@ msgstr "N° de série appareil"
 msgid "Device Status"
 msgstr "État de l'appareil"
 
-#: src/modules/devices/hooks/use-device-form.ts:76
-msgid "Device updated successfully."
-msgstr "Appareil mis à jour avec succès."
+#: src/modules/devices/components/device-form.tsx:111
+msgid "Device updated."
+msgstr "Appareil mis à jour."
 
-#: src/modules/devices/components/device-detail-view.tsx:314
-#~ msgid "Device users not yet available"
-#~ msgstr ""
-
-#. placeholder {0}: p.device_sn
-#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:66
-msgid "Device: {0}"
-msgstr "Appareil : {0}"
-
-#: src/modules/devices/components/scan-network-dialog.tsx:185
+#: src/modules/devices/components/scan-network-dialog.tsx:204
 msgid "device(s) across"
-msgstr ""
+msgstr "appareil(s) sur"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:75
-#: src/modules/devices/components/device-list-view.tsx:40
-#: src/modules/devices/pages/device-detail-page.tsx:35
-#: src/modules/settings/components/settings-view.tsx:105
+#: src/infrastructure/commands/global-commands-registrar.tsx:45
+#: src/infrastructure/navigation/use-breadcrumbs.ts:59
+#: src/modules/devices/components/device-list-view.tsx:66
+#: src/modules/settings/components/settings-view.tsx:94
 msgid "Devices"
 msgstr "Appareils"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:68
+#: src/infrastructure/navigation/use-navigation.ts:72
 msgid "nav.devices"
 msgstr "Appareils"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:40
-msgid "breadcrumb.devices"
-msgstr "Appareils"
-
-#: src/components/ui/device-status-badge/device-status-badge.tsx:53
-#~ msgid "Disconnected"
-#~ msgstr "Déconnecté"
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:88
+msgid "Disabled"
+msgstr "Désactivé"
 
 #: src/components/ui/banner/banner.tsx:110
 #: src/infrastructure/toast/toast.tsx:107
 msgid "Dismiss"
 msgstr "Ignorer"
 
-#: src/modules/users/hooks/use-users-page.tsx:96
+#: src/modules/users/hooks/use-users-page.tsx:122
+#: src/modules/users/hooks/use-users-page.tsx:124
 #: src/modules/users/schemas/user-form.schema.ts:65
 msgid "Display Name"
 msgstr "Nom d'affichage"
 
-#: src/modules/settings/components/settings-view.tsx:125
+#: src/modules/settings/components/settings-view.tsx:113
 msgid "Distributors"
-msgstr ""
+msgstr "Distributeurs"
 
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:60
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:55
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:125
 #: src/modules/devices/components/sync-progress-indicator.tsx:60
 msgid "Done"
 msgstr "Terminé"
 
-#: src/modules/devices/components/enroll-employee-dialog.tsx:79
+#: src/modules/punches/hooks/use-punch-query-commands.ts:32
+msgid "Download punch data as CSV"
+msgstr "Télécharger les données de pointage en CSV"
+
+#: src/modules/devices/components/enroll-employee-dialog.tsx:88
 msgid "e.g. 145"
-msgstr ""
+msgstr "ex. 145"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:44
 msgid "e.g. Odoo Production Integration"
 msgstr "Ex. : Intégration Odoo Production"
 
-#: src/modules/punches/components/attendance-table.tsx:69
+#: src/modules/punches/components/attendance-table.tsx:70
 msgid "Early"
 msgstr "En avance"
 
-#: src/modules/devices/pages/device-form-page.tsx:18
-#: src/modules/employees/components/employee-detail-view.tsx:83
-#: src/modules/integrations/components/endpoints-view.tsx:100
-#: src/modules/users/hooks/use-users-page.tsx:122
+#: src/infrastructure/navigation/use-breadcrumbs.ts:69
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:97
+#: src/modules/users/hooks/use-users-page.tsx:176
 msgid "Edit"
 msgstr "Modifier"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:49
-msgid "breadcrumb.edit"
-msgstr "Modifier"
+#. placeholder {0}: field.label
+#: src/modules/record-detail/components/record-detail-fields.tsx:150
+msgid "Edit {0}"
+msgstr "Modifier {0}"
 
-#: src/modules/integrations/components/endpoints-view.tsx:158
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:62
 msgid "Edit Endpoint"
 msgstr "Modifier le point de terminaison"
 
-#: src/modules/users/components/users-view.tsx:59
-msgid "Edit User"
-msgstr "Modifier l'utilisateur"
+#: src/modules/record-detail/components/record-detail-header.tsx:82
+msgid "Edit name"
+msgstr "Modifier le nom"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:63
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:70
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:72
-#: src/modules/employees/pages/employee-detail-page.tsx:23
-#: src/modules/exports/components/export-bar/export-bar.tsx:66
-#: src/modules/punches/components/attendance-table.tsx:75
-#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:147
-#: src/modules/reports/components/employee-kpi-table.tsx:20
+#: src/modules/employees/schemas/employee-form.schema.ts:71
+msgid "EMP-001"
+msgstr "EMP-001"
+
+#: src/modules/employees/hooks/use-employee-detail-page.ts:21
+#: src/modules/exports/components/export-bar/export-bar.tsx:94
+#: src/modules/punches/components/attendance-table.tsx:76
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:214
+#: src/modules/reports/components/employee-kpi-table.tsx:21
 msgid "Employee"
 msgstr "Employé"
 
-#: src/modules/reports/components/employee-kpi-table.tsx:68
+#: src/modules/reports/components/employee-kpi-table.tsx:69
 msgid "Employee Attendance"
-msgstr ""
+msgstr "Présence de l'employé"
 
-#: src/modules/devices/components/device-detail-view.tsx:316
-#~ msgid "Employee enrollment on this device will be displayed here once the backend employee repository is configured."
-#~ msgstr ""
+#: src/modules/exports/components/export-bar/export-bar.tsx:100
+msgid "Employee Attendance KPIs"
+msgstr "KPI de présence de l'employé"
 
-#: src/modules/employees/components/employee-detail-view.tsx:57
-msgid "Employee not found"
-msgstr ""
+#: src/modules/employees/schemas/employee-form.schema.ts:78
+msgid "Employee Identity"
+msgstr "Identité de l'employé"
 
-#: src/modules/devices/components/enroll-employee-dialog.tsx:77
+#: src/modules/devices/components/enroll-employee-dialog.tsx:86
 msgid "Employee PIN"
-msgstr ""
+msgstr "PIN de l'employé"
 
-#: src/modules/employees/components/employee-list-view.tsx:77
-#: src/modules/employees/pages/employee-detail-page.tsx:25
+#: src/modules/employees/hooks/use-employee-sync.ts:23
+msgid "Employee synced to devices successfully."
+msgstr "Employé synchronisé avec les appareils avec succès."
+
+#: src/modules/employees/schemas/employee-form.schema.ts:58
+msgid "Employee's full name as displayed in reports"
+msgstr "Nom complet de l'employé tel qu'affiché dans les rapports"
+
+#: src/infrastructure/navigation/use-breadcrumbs.ts:60
+#: src/modules/departments/components/department-employees-list.tsx:48
+#: src/modules/departments/components/department-employees-list.tsx:75
+#: src/modules/departments/components/department-employees-list.tsx:91
+#: src/modules/employees/components/employee-list-view.tsx:38
 msgid "Employees"
-msgstr ""
+msgstr "Employés"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:71
+#: src/infrastructure/navigation/use-navigation.ts:75
 msgid "nav.employees"
-msgstr ""
+msgstr "Employés"
+
+#: src/modules/devices/components/device-form.tsx:158
+msgid "Enable real-time attendance push from this device."
+msgstr "Activer la poussée de présence en temps réel depuis cet appareil."
 
 #: src/modules/devices/schemas/device-form.schema.ts:108
 msgid "Enable real-time attendance push from this scanner."
 msgstr "Activer l'envoi en temps réel des pointages depuis ce scanner."
 
-#: src/modules/integrations/hooks/use-endpoint-form.ts:62
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:88
+msgid "Enabled"
+msgstr "Activé"
+
+#: src/modules/settings/components/work-policy-form.tsx:121
+msgid "End"
+msgstr "Fin"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:72
+msgid "End of the work day in 24h format"
+msgstr "Fin de la journée de travail au format 24h"
+
+#: src/modules/integrations/hooks/use-endpoint-form.ts:77
 msgid "Endpoint created."
 msgstr "Point de terminaison créé."
 
-#: src/modules/integrations/components/endpoints-view.tsx:56
+#: src/modules/integrations/components/endpoints-view.tsx:58
 msgid "Endpoint deleted."
 msgstr "Point de terminaison supprimé."
 
@@ -1061,90 +1183,82 @@ msgstr "Point de terminaison désactivé."
 msgid "Endpoint enabled."
 msgstr "Point de terminaison activé."
 
-#: src/modules/integrations/hooks/use-endpoint-form.ts:62
+#: src/modules/integrations/hooks/use-endpoint-form.ts:77
 msgid "Endpoint updated."
 msgstr "Point de terminaison mis à jour."
 
+#: src/infrastructure/navigation/use-breadcrumbs.ts:65
+msgid "Endpoints"
+msgstr "Points de terminaison"
+
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:78
+#: src/infrastructure/navigation/use-navigation.ts:85
 msgid "nav.settings.endpoints"
 msgstr "Points de terminaison"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:45
-msgid "breadcrumb.endpoints"
-msgstr "Points de terminaison"
-
-#: src/modules/settings/components/settings-view.tsx:84
+#: src/modules/settings/components/settings-view.tsx:82
 msgid "Engine Pipeline"
-msgstr ""
+msgstr "Pipeline du moteur"
 
-#: src/modules/devices/components/enroll-employee-dialog.tsx:109
+#: src/modules/devices/components/enroll-employee-dialog.tsx:122
 msgid "Enroll"
-msgstr ""
+msgstr "Inscrire"
 
-#: src/modules/devices/components/device-detail-view.tsx:202
-#: src/modules/devices/components/enroll-employee-dialog.tsx:73
+#: src/modules/devices/components/device-detail-content.tsx:178
+#: src/modules/devices/components/enroll-employee-dialog.tsx:81
 msgid "Enroll Employee"
-msgstr ""
+msgstr "Inscrire un employé"
 
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:79
-msgid "Enrollment"
-msgstr "Inscription"
-
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:83
-msgid "Enrollment details will be available when connected to the timekeep server."
-msgstr "Les détails d'inscription seront disponibles une fois connecté au serveur timekeep."
-
-#: src/modules/devices/components/enroll-employee-dialog.tsx:100
+#: src/modules/devices/components/enroll-employee-dialog.tsx:113
 msgid "Enrollment failed. Check the PIN and try again."
-msgstr ""
+msgstr "Échec de l'inscription. Vérifiez le PIN et réessayez."
 
-#: src/modules/devices/components/scan-network-dialog.tsx:211
+#: src/modules/devices/components/scan-network-dialog.tsx:230
 msgid "Enter a subnet or leave empty for auto-detect, then click Start Scan."
-msgstr ""
+msgstr "Entrez un sous-réseau ou laissez vide pour la détection automatique, puis cliquez sur Démarrer le scan."
 
 #: src/modules/auth/components/login-form.tsx:69
 #: src/modules/auth/schemas/login-form.schema.ts:53
 msgid "Enter your credentials to access the dashboard"
 msgstr "Saisissez vos identifiants pour accéder au tableau de bord"
 
-#: src/modules/settings/components/settings-view.tsx:34
+#: src/modules/settings/components/settings-view.tsx:36
 msgid "Error"
 msgstr "Erreur"
 
-#: src/components/ui/error-boundary/error-boundary.tsx:85
+#: src/components/ui/error-boundary/error-boundary.tsx:84
 msgid "Error Details"
 msgstr "Détails de l'erreur"
 
-#: src/modules/settings/components/settings-view.tsx:91
-msgid "Events Distributed"
-msgstr ""
-
-#: src/modules/settings/components/settings-view.tsx:88
-msgid "Events Dropped"
-msgstr ""
-
-#: src/modules/settings/components/settings-view.tsx:94
-msgid "Events Failed"
-msgstr ""
-
 #: src/modules/settings/components/settings-view.tsx:85
-msgid "Events Processed"
-msgstr ""
+msgid "Events Distributed"
+msgstr "Événements distribués"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:152
+#: src/modules/settings/components/settings-view.tsx:84
+msgid "Events Dropped"
+msgstr "Événements abandonnés"
+
+#: src/modules/settings/components/settings-view.tsx:86
+msgid "Events Failed"
+msgstr "Événements échoués"
+
+#: src/modules/settings/components/settings-view.tsx:83
+msgid "Events Processed"
+msgstr "Événements traités"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:221
 msgid "Excel"
 msgstr "Excel"
 
-#: src/infrastructure/app-shell/app-sidebar.tsx:85
+#: src/infrastructure/app-shell/app-top-bar.tsx:100
+#: src/infrastructure/app-shell/app-top-bar.tsx:101
 msgid "Expand sidebar"
 msgstr "Développer la barre latérale"
 
 #: src/components/ui/expiry-picker/expiry-picker.tsx:130
 #: src/modules/apikeys/components/api-key-card.tsx:43
-#: src/modules/data-renderer/column-definitions/api-key-columns.ts:43
-#: src/modules/data-renderer/column-definitions/api-key-columns.ts:45
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:42
+#: src/modules/data-renderer/column-definitions/api-key-columns.ts:44
 msgid "Expires"
 msgstr "Expire le"
 
@@ -1156,173 +1270,138 @@ msgstr "Expiration"
 msgid "Expiry duration"
 msgstr "Durée d'expiration"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:132
+#: src/modules/exports/components/export-bar/export-bar.tsx:201
 msgid "Export"
 msgstr "Exporter"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:117
+#: src/modules/exports/components/export-bar/export-bar.tsx:173
 msgid "Export downloaded."
 msgstr "Export téléchargé."
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:119
-msgid "Export failed."
-msgstr "Échec de l'export."
+#: src/modules/exports/components/export-bar/export-bar.tsx:175
+msgid "Export failed. Please try again."
+msgstr "Échec de l'exportation. Veuillez réessayer."
+
+#: src/modules/punches/hooks/use-punch-query-commands.ts:31
+msgid "Export Punches"
+msgstr "Exporter les pointages"
 
 #: src/modules/employees/components/employee-info-panel.tsx:29
+#: src/modules/employees/schemas/employee-form.schema.ts:69
 msgid "External ID"
-msgstr ""
+msgstr "Identifiant externe"
 
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:121
-#: src/modules/punches/components/punch-query-view.tsx:51
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:133
+#: src/modules/devices/components/enroll-employee-dialog.tsx:45
+#: src/modules/punches/components/punch-query-view.tsx:31
 msgid "Face"
-msgstr ""
+msgstr "Visage"
 
 #: src/modules/devices/components/device-info-tab.tsx:92
 msgid "Faces"
-msgstr ""
+msgstr "Visages"
 
 #: src/modules/devices/components/sync-progress-indicator.tsx:69
 msgid "Failed"
-msgstr ""
+msgstr "Échec"
 
 #: src/modules/users/components/change-password-dialog.tsx:54
 msgid "Failed to change password."
 msgstr "Échec du changement de mot de passe."
 
-#: src/modules/integrations/components/endpoints-view.tsx:59
+#: src/modules/integrations/components/endpoints-view.tsx:61
 msgid "Failed to delete endpoint."
 msgstr "Échec de la suppression du point de terminaison."
 
-#: src/modules/users/hooks/use-users-page.tsx:78
+#: src/modules/users/hooks/use-users-page.tsx:86
 msgid "Failed to delete user."
 msgstr "Échec de la suppression de l'utilisateur."
 
 #: src/modules/shared/components/list-error/list-error.tsx:27
 msgid "Failed to load {resource}. Check your network connection and try again."
-msgstr ""
-
-#: src/modules/settings/states/settings-error.tsx:18
-#~ msgid "Failed to load {section}. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/modules/apikeys/states/api-key-list-error.tsx:16
-#~ msgid "Failed to load API keys. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/modules/audit/pages/audit-log-page.tsx:130
-#~ msgid "Failed to load audit log."
-#~ msgstr "Échec du chargement du journal d'audit."
-
-#: src/modules/audit/states/audit-log-error.tsx:16
-#~ msgid "Failed to load audit logs. Check your network connection and try again."
-#~ msgstr ""
+msgstr "Échec du chargement de {resource}. Vérifiez votre connexion réseau et réessayez."
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:184
 msgid "Failed to load calendar"
-msgstr ""
+msgstr "Échec du chargement du calendrier"
 
 #: src/components/ui/chart/chart.tsx:69
 msgid "Failed to load chart data"
 msgstr "Échec du chargement des données du graphique"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:57
-#~ msgid "Failed to load dashboard data. Is the timekeep server running?"
-#~ msgstr "Échec du chargement des données du tableau de bord. Le serveur timekeep est-il en cours d'exécution ?"
+#: src/modules/departments/components/department-employees-list.tsx:61
+msgid "Failed to load employees."
+msgstr "Échec du chargement des employés."
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:38
-msgid "Failed to load device details."
-msgstr "Échec du chargement des détails de l'appareil."
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:66
+msgid "Failed to provision device. Check the connection and try again."
+msgstr "Échec du provisionnement de l'appareil. Vérifiez la connexion et réessayez."
 
-#: src/modules/devices/pages/device-list-page.tsx:53
-#~ msgid "Failed to load devices"
-#~ msgstr "Échec du chargement des appareils"
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:41
+msgid "Failed to remove device."
+msgstr "Échec de la suppression de l'appareil."
 
-#: src/modules/devices/components/device-list-view.tsx:73
-#~ msgid "Failed to load devices."
-#~ msgstr ""
-
-#: src/modules/devices/states/device-list-error.tsx:22
-#~ msgid "Failed to load devices. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/modules/integrations/pages/endpoints-page.tsx:80
-#~ msgid "Failed to load endpoints"
-#~ msgstr "Échec du chargement des points de terminaison"
-
-#: src/modules/integrations/states/endpoint-list-error.tsx:16
-#~ msgid "Failed to load endpoints. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:40
-#~ msgid "Failed to load punch details."
-#~ msgstr "Échec du chargement des détails du pointage."
-
-#: src/modules/reports/states/report-error.tsx:16
-#~ msgid "Failed to load report data. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/modules/reports/pages/reports-page.tsx:120
-#~ msgid "Failed to load report data. Is the backend running?"
-#~ msgstr "Échec du chargement des données du rapport. Le backend est-il en cours d'exécution ?"
-
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:42
-msgid "Failed to load user details."
-msgstr "Échec du chargement des détails de l'utilisateur."
-
-#: src/modules/users/pages/users-page.tsx:175
-#~ msgid "Failed to load users"
-#~ msgstr "Échec du chargement des utilisateurs"
-
-#: src/modules/users/states/user-list-error.tsx:16
-#~ msgid "Failed to load users. Check your network connection and try again."
-#~ msgstr ""
-
-#: src/modules/apikeys/components/api-keys-view.tsx:39
+#: src/modules/apikeys/components/api-keys-view.tsx:55
 msgid "Failed to revoke API key."
 msgstr "Échec de la révocation de la clé API."
+
+#. placeholder {0}: err.message
+#: src/modules/settings/components/settings-view.tsx:155
+msgid "Failed to save work policy: {0}"
+msgstr "Échec de l'enregistrement de la politique de travail : {0}"
+
+#: src/modules/devices/components/device-list-view.tsx:49
+msgid "Failed to start sync."
+msgstr "Échec du démarrage de la synchronisation."
 
 #: src/modules/integrations/components/endpoints-view.tsx:48
 msgid "Failed to toggle endpoint."
 msgstr "Échec du basculement du point de terminaison."
 
+#: src/modules/devices/components/device-form.tsx:114
+msgid "Failed to update device."
+msgstr "Échec de la mise à jour de l'appareil."
+
 #: src/components/ui/data-table/cells/boolean-cell.tsx:29
 msgid "False"
 msgstr "Non"
 
-#: src/components/ui/filter-dropdown/filter-dropdown.tsx:76
+#: src/components/ui/filter-dropdown/filter-dropdown.tsx:86
 msgid "Filter"
-msgstr ""
+msgstr "Filtrer"
 
-#: src/components/ui/filter-dropdown/filter-dropdown.tsx:100
+#: src/components/ui/filter-dropdown/filter-dropdown.tsx:126
 msgid "Filter by"
-msgstr ""
+msgstr "Filtrer par"
 
-#: src/modules/punches/components/punch-query-view.tsx:138
-#~ msgid "Filter by device…"
-#~ msgstr ""
-
-#: src/components/ui/filter-dropdown/filter-dropdown.tsx:82
+#: src/components/ui/filter-dropdown/filter-dropdown.tsx:101
 msgid "Filter options"
-msgstr ""
+msgstr "Options de filtre"
 
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:120
-#: src/modules/punches/components/punch-query-view.tsx:50
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:132
+#: src/modules/devices/components/enroll-employee-dialog.tsx:44
+#: src/modules/punches/components/punch-query-view.tsx:30
 msgid "Fingerprint"
-msgstr ""
+msgstr "Empreinte digitale"
 
 #: src/modules/devices/components/device-health-cards.tsx:62
 #: src/modules/devices/components/device-info-tab.tsx:86
 msgid "Fingerprints"
-msgstr ""
+msgstr "Empreintes digitales"
 
 #: src/modules/devices/components/device-health-cards.tsx:74
 #: src/modules/devices/components/device-info-tab.tsx:46
 msgid "Firmware"
-msgstr ""
+msgstr "Micrologiciel"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:185
+#: src/modules/devices/components/scan-network-dialog.tsx:204
 msgid "Found"
-msgstr ""
+msgstr "Trouvé"
+
+#. placeholder {0}: results.length
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:110
+msgid "Found {0} device(s). Select one to configure."
+msgstr "{0} appareil(s) trouvé(s). Sélectionnez-en un à configurer."
 
 #: src/modules/shared/components/storage-gauge/storage-gauge.tsx:58
 msgid "Free"
@@ -1332,76 +1411,95 @@ msgstr "Libre"
 msgid "Fri"
 msgstr "Ven"
 
-#: src/modules/punches/hooks/use-active-punch-filters.ts:58
-#: src/modules/reports/hooks/use-reports-page.ts:50
+#: src/modules/exports/components/export-bar/export-bar.tsx:72
+#: src/modules/punches/hooks/use-active-punch-filters.ts:81
+#: src/modules/reports/hooks/use-reports-page.ts:60
 msgid "From"
 msgstr "De"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:58
-msgid "From: "
-msgstr "De :"
-
-#: src/modules/reports/hooks/use-reports-page.ts:90
+#: src/modules/reports/hooks/use-report-charts.ts:39
 msgid "Full Day"
-msgstr ""
+msgstr "Jour complet"
 
-#: src/modules/reports/components/reports-view.tsx:108
+#: src/modules/reports/components/reports-view.tsx:126
+#: src/modules/reports/components/reports-view.tsx:130
 msgid "Full day, half day, and absent breakdown."
-msgstr ""
+msgstr "Répartition jour complet, demi-journée et absent."
+
+#: src/modules/employees/schemas/employee-form.schema.ts:57
+msgid "Full Name"
+msgstr "Nom complet"
 
 #: src/modules/users/schemas/user-form.schema.ts:66
 msgid "Full name shown in the interface"
 msgstr "Nom complet affiché dans l'interface"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:57
-msgid "Generated: "
-msgstr "Généré :"
+#: src/modules/exports/components/export-bar/export-bar.tsx:71
+msgid "Generated"
+msgstr "Générée"
 
-#: src/infrastructure/side-panel/components/side-panel/side-panel.tsx:140
+#: src/modules/departments/schemas/department-form.schema.ts:33
+msgid "Give the department a clear and unique name."
+msgstr "Donnez au département un nom clair et unique."
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:101
+msgid "Give the work policy a clear, descriptive name."
+msgstr "Donnez à la politique de travail un nom clair et descriptif."
+
+#: src/infrastructure/side-panel/components/side-panel-sub-page-router/side-panel-sub-page-router.tsx:81
+#: src/infrastructure/side-panel/components/side-panel/side-panel.tsx:160
 msgid "Go back"
-msgstr ""
+msgstr "Retour"
 
 #: src/modules/navigation/components/not-found-content.tsx:21
 msgid "Go to Dashboard"
-msgstr ""
+msgstr "Aller au tableau de bord"
 
-#: src/modules/reports/hooks/use-reports-page.ts:91
+#: src/modules/reports/hooks/use-report-charts.ts:40
 msgid "Half Day"
-msgstr ""
+msgstr "Demi-journée"
 
-#: src/modules/settings/components/settings-view.tsx:28
+#: src/modules/settings/components/settings-view.tsx:33
 msgid "Healthy"
-msgstr ""
+msgstr "En bonne santé"
 
 #: src/components/ui/table-options-dropdown/table-options-dropdown.tsx:75
 msgid "Hide all"
-msgstr ""
+msgstr "Tout masquer"
 
+#: src/components/ui/input/input.tsx:114
+msgid "Hide password"
+msgstr "Masquer le mot de passe"
+
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:68
+#: src/modules/devices/components/device-form.tsx:134
 #: src/modules/devices/components/device-info-tab.tsx:29
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:85
 msgid "Host"
-msgstr ""
+msgstr "Hôte"
 
 #: src/modules/devices/schemas/device-form.schema.ts:74
 msgid "Host & Port"
 msgstr "Hôte et port"
 
+#: src/modules/devices/components/device-form.tsx:28
 #: src/modules/devices/schemas/device-form.schema.ts:27
 #: src/modules/devices/schemas/device-form.schema.ts:28
 msgid "Host is required"
 msgstr "L'hôte est requis"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:186
+#: src/modules/devices/components/scan-network-dialog.tsx:205
 msgid "hosts on"
-msgstr ""
+msgstr "hôtes sur"
 
 #: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:43
 msgid "Hourly Arrivals"
-msgstr ""
+msgstr "Arrivées par heure"
 
-#: src/modules/employees/components/employee-attendance-log.tsx:62
-#: src/modules/reports/components/reports-view.tsx:126
+#: src/modules/employees/components/employee-attendance-log.tsx:63
+#: src/modules/reports/components/reports-view.tsx:154
 msgid "Hours"
-msgstr ""
+msgstr "Heures"
 
 #: src/modules/settings/schemas/settings-form.schema.ts:44
 msgid "How often the server checks scanners for new records. Lower = fresher data, more network load."
@@ -1413,30 +1511,37 @@ msgstr "Libellé lisible pour cette intégration"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:43
 msgid "Human-readable name for this API key"
-msgstr ""
+msgstr "Nom lisible pour cette clé API"
 
 #: src/modules/devices/schemas/device-form.schema.ts:69
 msgid "Human-readable name for this device"
 msgstr "Nom lisible pour cet appareil"
 
+#: src/modules/devices/components/device-form.tsx:128
+msgid "Human-readable name for this scanner."
+msgstr "Nom lisible pour ce scanner."
+
+#: src/modules/employees/schemas/employee-form.schema.ts:70
+msgid "Identifier from external HR/ERP system (optional)"
+msgstr "Identifiant du système RH/ERP externe (optionnel)"
+
 #: src/modules/users/schemas/user-form.schema.ts:101
 msgid "Identity"
 msgstr "Identité"
 
-#: src/modules/apikeys/components/create-api-key-dialog.tsx:55
+#: src/modules/apikeys/components/create-api-key-dialog.tsx:50
 msgid "Important"
 msgstr "Important"
 
-#: src/modules/data-renderer/field-displays/direction-field-display.tsx:19
-#: src/modules/punches/components/attendance-table.tsx:100
+#: src/modules/punches/components/attendance-table.tsx:101
 msgid "IN"
 msgstr "ENTRÉE"
 
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:72
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:79
 #: src/modules/devices/components/device-info-tab.tsx:79
-#: src/modules/employees/components/employee-detail-view.tsx:100
-#: src/modules/integrations/components/endpoints-view.tsx:85
-#: src/modules/users/hooks/use-users-page.tsx:112
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:76
+#: src/modules/record-detail/components/record-detail-header.tsx:92
+#: src/modules/users/hooks/use-users-page.tsx:158
 msgid "Inactive"
 msgstr "Inactif"
 
@@ -1444,7 +1549,7 @@ msgstr "Inactif"
 msgid "Inactive users cannot log in"
 msgstr "Les utilisateurs inactifs ne peuvent pas se connecter"
 
-#: src/modules/integrations/components/endpoints-view.tsx:126
+#: src/modules/integrations/components/endpoints-view.tsx:125
 msgid "Integration Endpoints"
 msgstr "Points de terminaison d'intégration"
 
@@ -1452,16 +1557,16 @@ msgstr "Points de terminaison d'intégration"
 msgid "Integration protocol"
 msgstr "Protocole d'intégration"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:96
+#: src/modules/devices/components/scan-network-dialog.tsx:115
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: src/components/ui/ip-port-input/ip-port-input.tsx:179
 msgid "IP address"
 msgstr "Adresse IP"
 
-#: src/modules/data-renderer/column-definitions/device-columns.ts:48
-#: src/modules/data-renderer/column-definitions/device-columns.ts:50
+#: src/modules/data-renderer/column-definitions/device-columns.ts:52
+#: src/modules/data-renderer/column-definitions/device-columns.ts:54
 msgid "IP Address"
 msgstr "Adresse IP"
 
@@ -1469,12 +1574,11 @@ msgstr "Adresse IP"
 msgid "IP address and port of the scanner (e.g., 192.168.1.100:4370)"
 msgstr "Adresse IP et port du scanner (ex. : 192.168.1.100:4370)"
 
-#: src/modules/audit/pages/audit-log-page.tsx:131
-#: src/modules/integrations/pages/endpoints-page.tsx:80
-#: src/modules/users/pages/users-page.tsx:176
-#~ msgid "Is the backend running?"
-#~ msgstr "Le backend est-il en cours d'exécution ?"
+#: src/modules/devices/components/device-form.tsx:135
+msgid "IP address or hostname of the device."
+msgstr "Adresse IP ou nom d'hôte de l'appareil."
 
+#: src/modules/employees/schemas/employee-form.schema.ts:59
 #: src/modules/users/schemas/user-form.schema.ts:67
 msgid "John Doe"
 msgstr "Jean Dupont"
@@ -1488,56 +1592,68 @@ msgstr "jean.dupont"
 msgid "just now"
 msgstr "à l'instant"
 
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:67
+#: src/modules/devices/components/device-form.tsx:127
 #: src/modules/devices/components/device-info-tab.tsx:28
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:84
 #: src/modules/devices/schemas/device-form.schema.ts:68
 msgid "Label"
 msgstr "Libellé"
 
+#: src/modules/devices/components/device-form.tsx:27
+msgid "Label is required"
+msgstr "L'étiquette est requise"
+
 #: src/modules/punches/hooks/use-attendance-presets.ts:38
 msgid "Last 30 days"
-msgstr ""
+msgstr "30 derniers jours"
 
 #: src/modules/punches/hooks/use-attendance-presets.ts:33
 msgid "Last 7 days"
-msgstr ""
+msgstr "7 derniers jours"
 
 #: src/modules/reports/hooks/use-report-presets.ts:48
 msgid "Last Month"
-msgstr ""
+msgstr "Le mois dernier"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:70
-#~ msgid "Last Punch"
-#~ msgstr "Dernier pointage"
-
-#: src/modules/settings/components/settings-view.tsx:112
+#: src/modules/settings/components/settings-view.tsx:101
 msgid "Last seen"
-msgstr ""
+msgstr "Dernière vue"
 
 #: src/modules/devices/components/device-info-tab.tsx:108
 msgid "Last Seen"
-msgstr ""
+msgstr "Dernière vue"
 
 #: src/modules/devices/components/device-info-tab.tsx:100
 msgid "Last Sync"
-msgstr ""
+msgstr "Dernière synchro"
 
 #: src/modules/apikeys/components/api-key-card.tsx:38
 msgid "Last used"
 msgstr "Dernière utilisation"
 
+#: src/lib/employee-stats.tsx:38
 #: src/modules/dashboard/components/dashboard-metrics.tsx:36
-#: src/modules/employees/components/employee-attendance-log.tsx:43
-#: src/modules/employees/lib/employee-stats.tsx:38
-#: src/modules/punches/components/attendance-table.tsx:66
-#: src/modules/reports/components/employee-kpi-table.tsx:37
+#: src/modules/employees/components/employee-attendance-log.tsx:44
+#: src/modules/exports/components/export-bar/export-bar.tsx:103
+#: src/modules/punches/components/attendance-table.tsx:67
+#: src/modules/reports/components/employee-kpi-table.tsx:38
 msgid "Late"
 msgstr "En retard"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:142
-msgid "Leave empty to auto-detect"
-msgstr ""
+#: src/modules/settings/components/work-policy-form.tsx:157
+msgid "Late threshold (min)"
+msgstr "Seuil de retard (min)"
 
-#: src/infrastructure/app-shell/app-top-bar.tsx:94
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:77
+msgid "Late Threshold (minutes)"
+msgstr "Seuil de retard (minutes)"
+
+#: src/modules/devices/components/scan-network-dialog.tsx:161
+msgid "Leave empty to auto-detect"
+msgstr "Laisser vide pour la détection automatique"
+
+#: src/infrastructure/app-shell/app-sidebar.tsx:178
 msgid "Light Mode"
 msgstr "Mode clair"
 
@@ -1546,25 +1662,17 @@ msgstr "Mode clair"
 msgid "Loading"
 msgstr "Chargement"
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:28
-msgid "Loading device {serialNumber}"
-msgstr "Chargement de l'appareil {serialNumber}"
-
 #: src/modules/devices/states/activity-loading.tsx:12
 msgid "Loading device activity…"
-msgstr ""
+msgstr "Chargement de l'activité de l'appareil…"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:30
-#~ msgid "Loading punch record…"
-#~ msgstr "Chargement de l'enregistrement de pointage…"
-
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:32
-msgid "Loading user details…"
-msgstr "Chargement des détails de l'utilisateur…"
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:46
+msgid "Loading devices…"
+msgstr "Chargement des appareils…"
 
 #: src/components/ui/list-loading/list-loading.tsx:43
 msgid "Loading…"
-msgstr ""
+msgstr "Chargement…"
 
 #: src/modules/users/schemas/user-form.schema.ts:60
 msgid "Login username (must be unique)"
@@ -1572,57 +1680,65 @@ msgstr "Nom d'utilisateur (doit être unique)"
 
 #: src/modules/devices/components/device-info-tab.tsx:58
 msgid "MAC Address"
-msgstr ""
+msgstr "Adresse MAC"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:76
+#: src/infrastructure/commands/global-commands-registrar.tsx:46
 msgid "Manage biometric scanners"
 msgstr "Gérer les scanners biométriques"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:109
+#: src/infrastructure/commands/global-commands-registrar.tsx:73
 msgid "Manage dashboard accounts"
-msgstr ""
+msgstr "Gérer les comptes du tableau de bord"
 
-#: src/modules/users/components/users-view.tsx:30
+#: src/modules/users/components/users-view.tsx:71
 msgid "Manage dashboard users, roles, and passwords."
 msgstr "Gérer les utilisateurs du tableau de bord, les rôles et les mots de passe."
 
-#: src/modules/employees/components/employee-list-view.tsx:78
+#: src/modules/employees/components/employee-list-view.tsx:39
 msgid "Manage employee records and view attendance."
-msgstr ""
+msgstr "Gérer les dossiers des employés et voir les présences."
 
-#: src/modules/apikeys/components/api-keys-view.tsx:49
+#: src/modules/apikeys/components/api-keys-view.tsx:80
 msgid "Manage integration API keys for Odoo, Zapier, and other partners."
 msgstr "Gérer les clés API d'intégration pour Odoo, Zapier et autres partenaires."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:120
+#: src/infrastructure/commands/global-commands-registrar.tsx:82
 msgid "Manage integration keys"
-msgstr ""
+msgstr "Gérer les clés d'intégration"
 
-#: src/modules/devices/components/device-list-view.tsx:41
+#: src/modules/departments/components/departments-view.tsx:36
+msgid "Manage organizational units and work policies."
+msgstr "Gérer les unités organisationnelles et les politiques de travail."
+
+#: src/modules/work-policies/components/work-policies-view.tsx:36
+msgid "Manage reusable work policy templates for departments."
+msgstr "Gérer les modèles de politique de travail réutilisables pour les départements."
+
+#: src/modules/devices/components/device-list-view.tsx:67
 msgid "Manage your biometric attendance scanners."
 msgstr "Gérez vos scanners de pointage biométriques."
 
 #: src/modules/settings/schemas/settings-form.schema.ts:25
 msgid "Maximum {MAX_POLL_INTERVAL_SECS} seconds"
-msgstr ""
+msgstr "Maximum {MAX_POLL_INTERVAL_SECS} secondes"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:79
-#~ msgid "Metadata"
-#~ msgstr "Métadonnées"
-
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:100
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:112
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:114
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:124
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:126
+#: src/modules/punches/hooks/use-active-punch-filters.ts:111
 msgid "Method"
 msgstr "Méthode"
 
+#: src/modules/settings/components/work-policy-form.tsx:166
+msgid "Min hours (full day)"
+msgstr "Heures min. (jour complet)"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:82
+msgid "Min Hours for Full Day"
+msgstr "Heures min. pour jour complet"
+
 #: src/modules/settings/schemas/settings-form.schema.ts:24
 msgid "Minimum {MIN_POLL_INTERVAL_SECS} seconds"
-msgstr ""
-
-#: src/modules/settings/hooks/use-system-settings.ts:13
-#~ msgid "Minimum 5 seconds"
-#~ msgstr "Minimum 5 secondes"
+msgstr "Minimum {MIN_POLL_INTERVAL_SECS} secondes"
 
 #: src/modules/users/schemas/user-form.schema.ts:88
 msgid "Minimum 6 characters"
@@ -1634,12 +1750,24 @@ msgstr "Minimum 6 caractères."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:55
 msgid "Minimum 6 characters. Store this safely."
-msgstr ""
+msgstr "Minimum 6 caractères. Conservez-le en lieu sûr."
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:83
+msgid "Minimum worked hours to count as a full attendance day"
+msgstr "Heures travaillées minimum pour compter comme une journée de présence complète"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:78
+msgid "Minutes after work_start before employee is marked late"
+msgstr "Minutes après le début du travail avant que l'employé ne soit marqué en retard"
+
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:51
+msgid "Missing device configuration. Go back and fill in all fields."
+msgstr "Configuration de l'appareil manquante. Revenez en arrière et remplissez tous les champs."
 
 #: src/modules/devices/components/device-info-tab.tsx:40
-#: src/modules/devices/components/scan-network-dialog.tsx:91
+#: src/modules/devices/components/scan-network-dialog.tsx:110
 msgid "Model"
-msgstr ""
+msgstr "Modèle"
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:154
 msgid "Mon"
@@ -1649,6 +1777,21 @@ msgstr "Lun"
 msgid "more events"
 msgstr "événements supplémentaires"
 
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:26
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:31
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:36
+msgid "Must be 0 or greater"
+msgstr "Doit être 0 ou plus"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:27
+msgid "Must be 120 or fewer"
+msgstr "Doit être 120 ou moins"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:32
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:37
+msgid "Must be 24 or fewer"
+msgstr "Doit être 24 ou moins"
+
 #: src/modules/devices/schemas/device-form.schema.ts:29
 msgid "Must be a valid IPv4 address (e.g., 192.168.1.100)"
 msgstr "Doit être une adresse IPv4 valide (ex. : 192.168.1.100)"
@@ -1656,34 +1799,48 @@ msgstr "Doit être une adresse IPv4 valide (ex. : 192.168.1.100)"
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:42
 #: src/modules/data-renderer/column-definitions/api-key-columns.ts:15
 #: src/modules/data-renderer/column-definitions/api-key-columns.ts:17
-#: src/modules/data-renderer/column-definitions/device-columns.ts:35
-#: src/modules/data-renderer/column-definitions/device-columns.ts:37
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:38
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:40
-#: src/modules/data-renderer/column-definitions/user-columns.ts:39
-#: src/modules/data-renderer/column-definitions/user-columns.ts:41
+#: src/modules/data-renderer/column-definitions/device-columns.ts:39
+#: src/modules/data-renderer/column-definitions/device-columns.ts:41
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:42
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:44
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:77
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:79
+#: src/modules/data-renderer/column-definitions/user-columns.ts:43
+#: src/modules/data-renderer/column-definitions/user-columns.ts:45
 #: src/modules/devices/components/device-users-tab.tsx:31
 #: src/modules/devices/components/device-users-tab.tsx:33
 #: src/modules/employees/components/employee-info-panel.tsx:21
-#: src/modules/integrations/components/endpoints-view.tsx:78
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:53
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:55
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:34
 msgid "Name"
 msgstr "Nom"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:19
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:19
+#: src/modules/departments/schemas/department-form.schema.ts:10
+#: src/modules/departments/schemas/department-form.schema.ts:11
+#: src/modules/employees/schemas/employee-form.schema.ts:23
+#: src/modules/employees/schemas/employee-form.schema.ts:24
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:10
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:10
 msgid "Name is required"
 msgstr "Le nom est requis"
 
+#: src/modules/departments/schemas/department-form.schema.ts:12
+msgid "Name must be 100 characters or fewer"
+msgstr "Le nom doit contenir 100 caractères ou moins"
+
+#: src/modules/employees/schemas/employee-form.schema.ts:25
+msgid "Name must be 200 characters or fewer"
+msgstr "Le nom doit contenir 200 caractères ou moins"
+
 #: src/modules/devices/schemas/device-form.schema.ts:103
 msgid "Network address and protocol settings for the ZKTeco scanner."
 msgstr "Paramètres d'adresse réseau et de protocole pour le scanner ZKTeco."
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:48
-msgid "breadcrumb.new"
+#: src/infrastructure/navigation/use-breadcrumbs.ts:68
+msgid "New"
 msgstr "Nouveau"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:64
@@ -1710,10 +1867,15 @@ msgstr "Mois suivant"
 msgid "Next page"
 msgstr "Page suivante"
 
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:55
+msgid "Night Shift"
+msgstr "Équipe de nuit"
+
+#: src/components/ui/display/boolean-display.tsx:30
 #: src/modules/devices/components/device-info-tab.tsx:34
 #: src/modules/devices/components/device-info-tab.tsx:70
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #: src/modules/shared/components/activity-feed/activity-feed.tsx:71
 msgid "No activity yet"
@@ -1721,7 +1883,7 @@ msgstr "Aucune activité pour le moment"
 
 #: src/modules/devices/states/activity-empty.tsx:15
 msgid "No Activity Yet"
-msgstr ""
+msgstr "Pas encore d'activité"
 
 #: src/modules/apikeys/states/api-key-list-empty.tsx:11
 msgid "No API keys"
@@ -1729,53 +1891,65 @@ msgstr "Aucune clé API"
 
 #: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:48
 msgid "No arrivals yet today."
-msgstr ""
+msgstr "Pas encore d'arrivées aujourd'hui."
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:193
 msgid "No attendance data"
-msgstr ""
+msgstr "Aucune donnée de présence"
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:194
 msgid "No attendance data for this month"
-msgstr ""
+msgstr "Aucune donnée de présence pour ce mois"
 
-#: src/modules/employees/components/employee-attendance-log.tsx:92
+#: src/modules/employees/components/employee-attendance-log.tsx:93
 msgid "No attendance records found for this period."
-msgstr ""
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:140
-#~ msgid "No attendance records in the last 24 hours. Punches will appear here as employees scan in."
-#~ msgstr "Aucun enregistrement de pointage dans les dernières 24 heures. Les pointages apparaîtront ici lorsque les employés pointeront."
-
-#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:60
-#~ msgid "No attendance records in the past 24 hours."
-#~ msgstr "Aucun enregistrement de pointage dans les dernières 24 heures."
+msgstr "Aucun enregistrement de présence trouvé pour cette période."
 
 #: src/modules/audit/states/audit-log-empty.tsx:11
 msgid "No audit events"
 msgstr "Aucun événement d'audit"
 
 #: src/components/ui/chart/chart.tsx:74
-#: src/modules/reports/components/reports-view.tsx:81
+#: src/modules/reports/components/reports-view.tsx:92
 #: src/modules/reports/states/report-empty.tsx:11
 msgid "No data"
 msgstr "Aucune donnée"
 
-#: src/components/ui/chart/chart.tsx:72
-#~ msgid "No data available"
-#~ msgstr "Aucune donnée disponible"
-
-#: src/modules/exports/components/export-bar/export-bar.tsx:91
+#: src/modules/exports/components/export-bar/export-bar.tsx:124
 msgid "No data available for PDF export."
 msgstr "Aucune donnée disponible pour l'export PDF."
 
 #: src/components/ui/chart/chart.tsx:75
 msgid "No data available for this period"
-msgstr ""
+msgstr "Aucune donnée disponible pour cette période"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:177
+#: src/modules/departments/components/departments-view.tsx:70
+msgid "No departments"
+msgstr "Aucun département"
+
+#: src/modules/departments/components/departments-view.tsx:65
+msgid "No departments match"
+msgstr "Aucun département ne correspond"
+
+#: src/modules/device-groups/components/device-groups-view.tsx:159
+msgid "No device groups"
+msgstr "Aucun groupe d'appareils"
+
+#: src/modules/devices/components/device-list-view.tsx:118
+msgid "No devices"
+msgstr "Aucun appareil"
+
+#: src/modules/devices/components/scan-network-dialog.tsx:196
 msgid "No devices found"
-msgstr ""
+msgstr "Aucun appareil trouvé"
+
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:52
+msgid "No devices in this group"
+msgstr "Aucun appareil dans ce groupe"
+
+#: src/modules/devices/components/device-list-view.tsx:113
+msgid "No devices match"
+msgstr "Aucun appareil ne correspond"
 
 #: src/modules/devices/states/device-list-empty.tsx:36
 msgid "No devices match your search"
@@ -1785,21 +1959,27 @@ msgstr "Aucun appareil ne correspond à votre recherche"
 msgid "No devices registered"
 msgstr "Aucun appareil enregistré"
 
-#: src/modules/reports/components/reports-view.tsx:114
+#: src/modules/reports/components/reports-view.tsx:137
 msgid "No distribution data"
-msgstr ""
+msgstr "Aucune donnée de distribution"
 
-#: src/modules/employees/components/employee-list-view.tsx:113
+#: src/modules/departments/components/department-employees-list.tsx:79
+#: src/modules/employees/components/employee-list-view.tsx:85
 msgid "No employees"
-msgstr ""
+msgstr "Aucun employé"
 
-#: src/modules/employees/components/employee-list-view.tsx:108
+#: src/modules/employees/components/employee-list-view.tsx:80
 msgid "No employees match"
-msgstr ""
+msgstr "Aucun employé ne correspond"
 
+#: src/modules/integrations/components/endpoints-view.tsx:165
 #: src/modules/integrations/states/endpoint-list-empty.tsx:16
 msgid "No endpoints"
 msgstr "Aucun point de terminaison"
+
+#: src/modules/integrations/components/endpoints-view.tsx:160
+msgid "No endpoints match"
+msgstr "Aucun point de terminaison ne correspond"
 
 #: src/components/ui/expiry-picker/expiry-picker.tsx:122
 msgid "No expiration"
@@ -1809,113 +1989,141 @@ msgstr "Sans expiration"
 msgid "No expiry"
 msgstr "Sans expiration"
 
+#: src/modules/device-groups/components/device-groups-view.tsx:154
+msgid "No groups match"
+msgstr "Aucun groupe ne correspond"
+
 #: src/modules/dashboard/components/checked-in-list.tsx:35
 msgid "No one currently checked in"
-msgstr ""
+msgstr "Personne n'est actuellement pointé"
 
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:82
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:81
 msgid "No other devices available as source. Add another device first."
-msgstr ""
+msgstr "Aucun autre appareil disponible comme source. Ajoutez d'abord un autre appareil."
 
-#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:48
+#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:69
 msgid "No permissions found"
 msgstr "Aucune permission trouvée"
 
+#: src/modules/work-policies/components/work-policies-view.tsx:65
+msgid "No policies match"
+msgstr "Aucune politique ne correspond"
+
 #: src/modules/dashboard/components/attendance-calendar/day-detail-panel.tsx:40
-#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:152
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:219
 msgid "No punch records for this day."
 msgstr "Aucun enregistrement de pointage pour ce jour."
 
-#: src/modules/punches/components/punch-query-view.tsx:319
+#: src/modules/punches/components/punch-query-view.tsx:179
 msgid "No punch records found"
 msgstr "Aucun enregistrement de pointage trouvé"
 
-#: src/modules/reports/components/reports-view.tsx:82
+#: src/modules/reports/components/reports-view.tsx:93
 msgid "No punch records found for the selected date range."
 msgstr "Aucun enregistrement de pointage trouvé pour la période sélectionnée."
 
 #: src/modules/reports/states/report-empty.tsx:13
 msgid "No punch records found for the selected date range. Try adjusting the filters."
-msgstr ""
+msgstr "Aucun enregistrement de pointage trouvé pour la plage de dates sélectionnée. Essayez d'ajuster les filtres."
 
-#: src/modules/punches/components/punch-query-view.tsx:322
+#: src/modules/punches/components/punch-query-view.tsx:182
 msgid "No punch records match the current filters. Try adjusting or clearing them."
-msgstr ""
-
-#: src/modules/exports/components/export-bar/export-bar.tsx:96
-msgid "No punch records to export."
-msgstr "Aucun enregistrement de pointage à exporter."
+msgstr "Aucun enregistrement de pointage ne correspond aux filtres actuels. Essayez de les ajuster ou de les effacer."
 
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:63
 msgid "No Recent Activity"
 msgstr "Aucune activité récente"
 
-#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:43
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:48
 msgid "No records for this day."
 msgstr "Aucun enregistrement pour ce jour."
 
-#: src/modules/data-renderer/components/data-list-view.tsx:211
+#: src/modules/data-renderer/components/data-list-view.tsx:170
 msgid "No records found"
-msgstr ""
+msgstr "Aucun enregistrement trouvé"
 
-#: src/modules/data-renderer/components/data-list-view.tsx:214
+#: src/modules/data-renderer/components/data-list-view.tsx:173
 msgid "No records match the current filters. Try adjusting or clearing them."
-msgstr ""
+msgstr "Aucun enregistrement ne correspond aux filtres actuels. Essayez de les ajuster ou de les effacer."
 
-#: src/modules/data-renderer/components/data-list-view.tsx:215
+#: src/modules/exports/components/export-bar/export-bar.tsx:129
+msgid "No records to export."
+msgstr "Aucun enregistrement à exporter."
+
+#: src/modules/data-renderer/components/data-list-view.tsx:174
 msgid "No records yet."
-msgstr ""
+msgstr "Pas encore d'enregistrements."
 
-#: src/components/ui/combobox/combobox.tsx:109
-#: src/components/ui/multi-select/multi-select.tsx:84
+#: src/components/ui/combobox/combobox.tsx:135
+#: src/components/ui/multi-select/multi-select.tsx:109
+#: src/modules/data-renderer/components/reference-facet-selector.tsx:189
 msgid "No results found"
 msgstr "Aucun résultat trouvé"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:212
+#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:105
 msgid "No results found."
 msgstr "Aucun résultat trouvé."
 
-#: src/modules/reports/components/reports-view.tsx:115
+#: src/modules/reports/components/reports-view.tsx:138
 msgid "No status distribution available for the selected range."
-msgstr ""
+msgstr "Aucune distribution de statut disponible pour la plage sélectionnée."
 
+#: src/modules/users/components/users-view.tsx:108
 #: src/modules/users/states/user-list-empty.tsx:16
 msgid "No users"
 msgstr "Aucun utilisateur"
 
 #: src/modules/devices/components/device-users-tab.tsx:127
 msgid "No users have been synced from this device yet. Users are synced automatically when the engine starts."
-msgstr ""
+msgstr "Aucun utilisateur n'a encore été synchronisé depuis cet appareil. Les utilisateurs sont synchronisés automatiquement au démarrage du moteur."
 
-#: src/modules/reports/components/reports-view.tsx:135
+#: src/modules/users/components/users-view.tsx:103
+msgid "No users match"
+msgstr "Aucun utilisateur ne correspond"
+
+#: src/modules/reports/components/reports-view.tsx:164
 msgid "No weekly breakdown available for the selected range."
-msgstr ""
+msgstr "Aucune répartition hebdomadaire disponible pour la plage sélectionnée."
 
-#: src/modules/reports/components/reports-view.tsx:134
+#: src/modules/reports/components/reports-view.tsx:163
 msgid "No weekly data"
-msgstr ""
+msgstr "Aucune donnée hebdomadaire"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:179
+#: src/modules/work-policies/components/work-policies-view.tsx:70
+msgid "No work policies"
+msgstr "Aucune politique de travail"
+
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:105
+msgid "No ZKTeco devices found on this subnet."
+msgstr "Aucun appareil ZKTeco trouvé sur ce sous-réseau."
+
+#: src/modules/devices/components/scan-network-dialog.tsx:198
 msgid "No ZKTeco devices were discovered on this subnet. Try a different subnet or check network connectivity."
-msgstr ""
+msgstr "Aucun appareil ZKTeco n'a été découvert sur ce sous-réseau. Essayez un autre sous-réseau ou vérifiez la connectivité réseau."
 
-#: src/modules/settings/components/settings-view.tsx:225
+#: src/modules/devices/components/device-form.tsx:175
+#: src/modules/settings/components/settings-view.tsx:252
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
-#: src/modules/reports/components/reports-view.tsx:89
+#: src/modules/reports/components/reports-view.tsx:101
+#: src/modules/reports/components/reports-view.tsx:105
 msgid "Number of punches per day in the selected range."
 msgstr "Nombre de pointages par jour dans la période sélectionnée."
+
+#: src/modules/employees/schemas/employee-form.schema.ts:52
+msgid "Numeric employee ID used on the biometric scanner (e.g., 1001)"
+msgstr "Identifiant numérique de l'employé utilisé sur le scanner biométrique (ex. 1001)"
 
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:36
 msgid "Odoo Production"
 msgstr "Production Odoo"
 
-#: src/modules/employees/lib/employee-stats.tsx:24
-#: src/modules/employees/lib/employee-stats.tsx:32
-#: src/modules/employees/lib/employee-stats.tsx:40
-#: src/modules/employees/lib/employee-stats.tsx:48
-#: src/modules/exports/components/export-bar/export-bar.tsx:73
+#: src/lib/employee-stats.tsx:24
+#: src/lib/employee-stats.tsx:32
+#: src/lib/employee-stats.tsx:40
+#: src/lib/employee-stats.tsx:48
+#: src/modules/exports/components/export-bar/export-bar.tsx:77
 msgid "of"
 msgstr "de"
 
@@ -1923,7 +2131,7 @@ msgstr "de"
 #: src/modules/dashboard/components/dashboard-metrics.tsx:22
 #: src/modules/dashboard/components/dashboard-metrics.tsx:30
 msgid "of {0}"
-msgstr ""
+msgstr "sur {0}"
 
 #: src/modules/devices/schemas/device-form.schema.ts:70
 msgid "Office Scanner"
@@ -1933,23 +2141,31 @@ msgstr "Scanner bureau"
 msgid "Offline"
 msgstr "Hors ligne"
 
+#: src/lib/employee-stats.tsx:46
 #: src/modules/dashboard/components/dashboard-metrics.tsx:44
-#: src/modules/employees/lib/employee-stats.tsx:46
 msgid "On Time"
-msgstr ""
+msgstr "À l'heure"
 
 #: src/modules/dashboard/components/dashboard-device-status.tsx:39
 msgid "Online"
 msgstr "En ligne"
 
-#: src/infrastructure/command-palette/command-palette-trigger.tsx:25
-#~ msgid "Open command palette"
-#~ msgstr "Ouvrir la palette de commandes"
+#: src/modules/punches/hooks/use-punch-query-commands.ts:23
+msgid "Open attendance reports and exports"
+msgstr "Ouvrir les rapports de présence et les exports"
+
+#: src/infrastructure/side-panel/hooks/use-side-panel-actions.tsx:30
+msgid "Open in main view"
+msgstr "Ouvrir dans la vue principale"
 
 #: src/modules/auth/components/role-badge/role-badge.tsx:22
 #: src/modules/users/schemas/user-form.schema.ts:48
 msgid "Operator"
 msgstr "Opérateur"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:60
+msgid "Optional description of this policy's purpose"
+msgstr "Description optionnelle de l'objectif de cette politique"
 
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:55
 msgid "Optional JSON configuration object. Merge with URL for webhooks."
@@ -1957,37 +2173,70 @@ msgstr "Objet de configuration JSON optionnel. Fusionné avec l'URL pour les web
 
 #: src/components/ui/table-options-dropdown/table-options-dropdown.tsx:44
 msgid "Options"
-msgstr ""
+msgstr "Options"
 
-#: src/modules/reports/components/employee-kpi-table.tsx:51
+#: src/modules/settings/components/settings-view.tsx:162
+msgid "Organization Default Work Policy"
+msgstr "Politique de travail par défaut de l'organisation"
+
+#: src/modules/employees/schemas/employee-form.schema.ts:64
+msgid "Organizational unit (optional — leave empty if unassigned)"
+msgstr "Unité organisationnelle (optionnel — laissez vide si non assigné)"
+
+#: src/modules/departments/schemas/department-form.schema.ts:24
+msgid "Organizational unit name (e.g., Warehouse, Office, Sales)"
+msgstr "Nom de l'unité organisationnelle (ex. Entrepôt, Bureau, Ventes)"
+
+#: src/modules/device-groups/components/device-groups-view.tsx:126
+msgid "Organize scanners for department-scoped sync."
+msgstr "Organisez les scanners pour la synchronisation par département."
+
+#: src/modules/reports/components/employee-kpi-table.tsx:52
 msgid "OT"
-msgstr ""
+msgstr "Heures sup."
 
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:33
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:23
-#: src/modules/reports/hooks/use-reports-page.ts:72
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:22
+#: src/modules/reports/hooks/use-report-charts.ts:23
 msgid "OT In"
 msgstr "Début heure sup."
 
 #: src/modules/dashboard/components/dashboard-activity-feed.tsx:35
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:24
-#: src/modules/reports/hooks/use-reports-page.ts:73
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:23
+#: src/modules/reports/hooks/use-report-charts.ts:24
 msgid "OT Out"
 msgstr "Fin heure sup."
 
-#: src/modules/data-renderer/field-displays/direction-field-display.tsx:19
-#: src/modules/punches/components/attendance-table.tsx:100
+#: src/modules/punches/components/attendance-table.tsx:101
 msgid "OUT"
 msgstr "SORTIE"
 
+#: src/modules/settings/components/work-policy-form.tsx:126
+msgid "Overnight"
+msgstr "De nuit"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:61
+msgid "Overnight warehouse shift with extended hours"
+msgstr "Équipe de nuit d'entrepôt avec heures étendues"
+
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:82
-#: src/modules/employees/components/employee-attendance-log.tsx:68
-#: src/modules/punches/components/attendance-table.tsx:68
+#: src/modules/employees/components/employee-attendance-log.tsx:69
+#: src/modules/exports/components/export-bar/export-bar.tsx:81
+#: src/modules/punches/components/attendance-table.tsx:69
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:101
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:72
 #: src/modules/reports/components/report-summary-cards.tsx:48
-#: src/modules/reports/components/reports-view.tsx:159
+#: src/modules/reports/components/reports-view.tsx:193
 msgid "Overtime"
 msgstr "Heures supplémentaires"
+
+#: src/modules/settings/components/work-policy-form.tsx:176
+msgid "Overtime after (h)"
+msgstr "Heures sup. après (h)"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:87
+msgid "Overtime After (hours)"
+msgstr "Heures sup. après (heures)"
 
 #: src/modules/dashboard/components/attendance-calendar/use-attendance-calendar.ts:31
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:29
@@ -1999,28 +2248,33 @@ msgstr "Début heure sup."
 msgid "Overtime Out"
 msgstr "Fin heure sup."
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:72
+#: src/modules/exports/components/export-bar/export-bar.tsx:76
 msgid "Page"
 msgstr "Page"
 
+#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:170
+msgid "Page commands"
+msgstr "Commandes de page"
+
 #: src/modules/navigation/components/not-found-content.tsx:17
 msgid "Page not found"
-msgstr ""
+msgstr "Page introuvable"
 
 #: src/components/ui/pagination/pagination.tsx:30
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:124
-#: src/modules/punches/components/punch-query-view.tsx:54
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:136
+#: src/modules/punches/components/punch-query-view.tsx:34
 msgid "Palm"
-msgstr ""
+msgstr "Paume"
 
 #: src/modules/auth/schemas/login-form.schema.ts:43
 #: src/modules/auth/schemas/login-form.schema.ts:44
 #: src/modules/auth/schemas/setup-form.schema.ts:56
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:123
-#: src/modules/punches/components/punch-query-view.tsx:53
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:135
+#: src/modules/devices/components/enroll-employee-dialog.tsx:47
+#: src/modules/punches/components/punch-query-view.tsx:33
 #: src/modules/users/schemas/user-form.schema.ts:87
 #: src/modules/users/schemas/user-form.schema.ts:89
 msgid "Password"
@@ -2043,45 +2297,73 @@ msgstr "Le mot de passe est requis"
 msgid "Password must be at least 6 characters"
 msgstr "Le mot de passe doit comporter au moins 6 caractères"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:166
+#: src/modules/exports/components/export-bar/export-bar.tsx:235
 msgid "PDF"
 msgstr "PDF"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:84
 #: src/modules/reports/components/report-summary-cards.tsx:42
 msgid "per day"
-msgstr ""
+msgstr "par jour"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:78
+msgid "Period Summary"
+msgstr "Résumé de la période"
 
 #: src/modules/settings/schemas/settings-form.schema.ts:50
 msgid "Periodically scan the local network for new ZKTeco scanners."
 msgstr "Analyser périodiquement le réseau local pour de nouveaux scanners ZKTeco."
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:48
-#: src/modules/settings/components/settings-view.tsx:224
+#: src/modules/settings/components/settings-view.tsx:252
 msgid "Permissions"
 msgstr "Permissions"
 
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:25
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:27
-#: src/modules/data-renderer/column-definitions/user-columns.ts:25
-#: src/modules/data-renderer/column-definitions/user-columns.ts:27
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:29
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:31
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:62
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:64
+#: src/modules/data-renderer/column-definitions/user-columns.ts:28
+#: src/modules/data-renderer/column-definitions/user-columns.ts:30
 #: src/modules/devices/components/device-users-tab.tsx:21
 #: src/modules/devices/components/device-users-tab.tsx:23
 #: src/modules/employees/components/employee-info-panel.tsx:20
+#: src/modules/employees/schemas/employee-form.schema.ts:51
+#: src/modules/punches/hooks/use-active-punch-filters.ts:43
 msgid "PIN"
 msgstr "Code PIN"
 
+#: src/modules/employees/schemas/employee-form.schema.ts:18
+#: src/modules/employees/schemas/employee-form.schema.ts:19
+msgid "PIN is required"
+msgstr "Le PIN est requis"
+
+#: src/modules/employees/schemas/employee-form.schema.ts:20
+msgid "PIN must be 20 characters or fewer"
+msgstr "Le PIN doit contenir 20 caractères ou moins"
+
+#: src/modules/employees/schemas/employee-form.schema.ts:21
+msgid "PIN must contain only digits"
+msgstr "Le PIN doit contenir uniquement des chiffres"
+
 #: src/modules/devices/components/device-info-tab.tsx:52
 msgid "Platform"
-msgstr ""
+msgstr "Plateforme"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:100
+msgid "Policy Information"
+msgstr "Informations de la politique"
 
 #: src/modules/settings/schemas/settings-form.schema.ts:42
 msgid "Poll Interval (seconds)"
 msgstr "Intervalle d'interrogation (secondes)"
 
 #: src/components/ui/ip-port-input/ip-port-input.tsx:200
-#: src/modules/data-renderer/column-definitions/device-columns.ts:61
-#: src/modules/data-renderer/column-definitions/device-columns.ts:63
+#: src/modules/data-renderer/column-definitions/device-columns.ts:65
+#: src/modules/data-renderer/column-definitions/device-columns.ts:67
+#: src/modules/devices/components/device-form.tsx:141
 #: src/modules/devices/components/device-info-tab.tsx:30
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:86
 msgid "Port"
 msgstr "Port"
 
@@ -2091,33 +2373,24 @@ msgstr "Le port est requis"
 
 #: src/modules/devices/schemas/device-form.schema.ts:33
 msgid "Port must be at least {MIN_PORT}"
-msgstr ""
-
-#: src/modules/devices/schemas/device-form.schema.ts:31
-#~ msgid "Port must be at least 1"
-#~ msgstr "Le port doit être au moins 1"
+msgstr "Le port doit être au moins {MIN_PORT}"
 
 #: src/modules/devices/schemas/device-form.schema.ts:34
 msgid "Port must be at most {MAX_PORT}"
-msgstr ""
+msgstr "Le port doit être au maximum {MAX_PORT}"
 
-#: src/modules/devices/schemas/device-form.schema.ts:32
-#~ msgid "Port must be at most 65535"
-#~ msgstr "Le port doit être au maximum 65535"
-
+#: src/lib/employee-stats.tsx:22
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:80
 #: src/modules/dashboard/components/dashboard-metrics.tsx:20
-#: src/modules/employees/components/employee-attendance-log.tsx:41
-#: src/modules/employees/lib/employee-stats.tsx:22
-#: src/modules/punches/components/attendance-table.tsx:65
+#: src/modules/employees/components/employee-attendance-log.tsx:42
+#: src/modules/employees/components/employee-calendar-view.tsx:89
+#: src/modules/exports/components/export-bar/export-bar.tsx:101
+#: src/modules/punches/components/attendance-table.tsx:66
 #: src/modules/punches/components/daily-timeline/daily-timeline-blocks.ts:99
-#: src/modules/reports/components/employee-kpi-table.tsx:25
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:63
+#: src/modules/reports/components/employee-kpi-table.tsx:26
 msgid "Present"
 msgstr "Présent"
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:63
-#~ msgid "Present (24h)"
-#~ msgstr "Présents (24 h)"
 
 #: src/modules/dashboard/components/attendance-calendar/attendance-calendar.tsx:60
 msgid "Previous month"
@@ -2127,57 +2400,44 @@ msgstr "Mois précédent"
 msgid "Previous page"
 msgstr "Page précédente"
 
-#: src/components/ui/device-status-badge/device-status-badge.tsx:37
-#~ msgid "Provisioning"
-#~ msgstr "Provisionnement"
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:94
+msgid "Provision & Test Connection"
+msgstr "Provisionner et tester la connexion"
 
-#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:35
-msgid "Punch {entityId}"
-msgstr "Pointage {entityId}"
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:103
+msgid "Provisioning device…"
+msgstr "Provisionnement de l'appareil en cours…"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:83
-#~ msgid "Punch details will be available when the detail API is implemented."
-#~ msgstr "Les détails du pointage seront disponibles lorsque l'API détaillée sera implémentée."
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:134
+msgid "Provisioning Failed"
+msgstr "Échec du provisionnement"
 
-#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:56
-#~ msgid "Punch events grouped by hour of day."
-#~ msgstr "Événements de pointage groupés par heure."
+#: src/modules/punches/components/daily-timeline/daily-timeline.tsx:88
+msgid "Punch Log"
+msgstr "Journal de pointage"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:143
-msgid "Punch ID"
-msgstr "ID pointage"
-
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:48
-msgid "Punch Not Found"
-msgstr ""
-
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:50
-#~ msgid "Punch Record"
-#~ msgstr "Enregistrement de pointage"
-
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:97
-#: src/modules/punches/pages/punch-query-page.tsx:13
+#: src/infrastructure/commands/global-commands-registrar.tsx:63
+#: src/infrastructure/navigation/use-breadcrumbs.ts:61
+#: src/modules/exports/components/export-bar/export-bar.tsx:86
+#: src/modules/punches/pages/punch-query-page.tsx:15
 msgid "Punch Records"
 msgstr "Enregistrements de pointage"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:41
-msgid "breadcrumb.punches"
-msgstr "Pointages"
-
-#: src/modules/reports/components/reports-view.tsx:74
+#: src/modules/reports/components/reports-view.tsx:80
+#: src/modules/reports/components/reports-view.tsx:84
 msgid "Punch Type Distribution"
 msgstr "Distribution des types de pointage"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:70
+#: src/infrastructure/navigation/use-navigation.ts:74
 msgid "nav.punches"
 msgstr "Pointages"
 
-#: src/modules/dashboard/components/attendance-chart/attendance-chart.tsx:69
-#~ msgid "Punches"
-#~ msgstr "Pointages"
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:88
+msgid "Push"
+msgstr "Pousser"
 
+#: src/modules/devices/components/device-form.tsx:157
 #: src/modules/devices/components/device-info-tab.tsx:33
 #: src/modules/devices/schemas/device-form.schema.ts:88
 msgid "Push Enabled"
@@ -2187,17 +2447,21 @@ msgstr "Envoi activé"
 msgid "Push Events"
 msgstr "Événements push"
 
-#: src/modules/punches/pages/punch-query-page.tsx:14
+#: src/modules/punches/pages/punch-query-page.tsx:16
 msgid "Query and filter all attendance punch records."
 msgstr "Interroger et filtrer tous les enregistrements de pointage."
 
-#: src/modules/settings/components/settings-view.tsx:134
+#: src/modules/settings/components/settings-view.tsx:117
 msgid "queued"
-msgstr ""
+msgstr "en attente"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:209
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:80
+msgid "Ready to register the following device:"
+msgstr "Prêt à enregistrer l'appareil suivant :"
+
+#: src/modules/devices/components/scan-network-dialog.tsx:228
 msgid "Ready to scan"
-msgstr ""
+msgstr "Prêt à scanner"
 
 #: src/modules/devices/schemas/device-form.schema.ts:89
 msgid "Receive real-time punch events"
@@ -2207,77 +2471,83 @@ msgstr "Recevoir les événements de pointage en temps réel"
 msgid "Recent Activity"
 msgstr "Activité récente"
 
-#: src/components/ui/view-bar/view-bar.tsx:187
-#~ msgid "records"
-#~ msgstr "enregistrements"
-
 #: src/modules/devices/components/device-health-cards.tsx:55
 msgid "Records"
-msgstr ""
+msgstr "Enregistrements"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:38
+#: src/modules/dashboard/pages/dashboard-page.tsx:30
 msgid "Refresh"
-msgstr ""
+msgstr "Actualiser"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:38
+#: src/modules/dashboard/pages/dashboard-page.tsx:30
 msgid "Refresh dashboard"
-msgstr ""
+msgstr "Rafraîchir le tableau de bord"
 
 #: src/modules/devices/components/device-actions-menu.tsx:55
 msgid "Refresh Data"
-msgstr ""
+msgstr "Actualiser les données"
 
-#: src/components/ui/error-boundary/error-boundary.tsx:100
+#: src/modules/devices/hooks/use-device-list-commands.ts:31
+msgid "Refresh Devices"
+msgstr "Actualiser les appareils"
+
+#: src/components/ui/error-boundary/error-boundary.tsx:99
 msgid "Refresh Page"
 msgstr "Rafraîchir la page"
 
-#: src/modules/devices/pages/device-form-page.tsx:23
-msgid "Register a new biometric scanner."
-msgstr "Enregistrer un nouveau scanner biométrique."
+#: src/modules/devices/components/device-register-wizard/device-register-root.tsx:33
+msgid "Register"
+msgstr "Enregistrer"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:87
+#: src/modules/devices/hooks/use-device-list-commands.ts:23
+msgid "Register a new biometric scanner"
+msgstr "Enregistrer un nouveau scanner biométrique"
+
+#: src/infrastructure/commands/global-commands-registrar.tsx:55
 msgid "Register a new scanner"
 msgstr "Enregistrer un nouveau scanner"
 
-#: src/modules/reports/components/reports-view.tsx:153
-msgid "Regular"
-msgstr ""
+#: src/modules/devices/components/device-list-view.tsx:56
+#: src/modules/devices/components/device-register-wizard/device-register-root.tsx:30
+msgid "Register Device"
+msgstr "Enregistrer un appareil"
 
-#: src/modules/reports/components/reports-view.tsx:146
+#: src/modules/reports/components/reports-view.tsx:187
+msgid "Regular"
+msgstr "Régulier"
+
+#: src/modules/reports/components/reports-view.tsx:176
+#: src/modules/reports/components/reports-view.tsx:180
 msgid "Regular and overtime hours per day."
-msgstr ""
+msgstr "Heures régulières et supplémentaires par jour."
+
+#: src/modules/devices/hooks/use-device-list-commands.ts:32
+msgid "Reload device list from server"
+msgstr "Recharger la liste des appareils depuis le serveur"
+
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:97
+msgid "Remove"
+msgstr "Supprimer"
 
 #: src/components/ui/tag/tag.tsx:108
 msgid "Remove {text}"
 msgstr "Supprimer {text}"
 
-#: src/components/ui/view-bar/view-bar.tsx:154
-#~ msgid "Remove filter {0}"
-#~ msgstr "Supprimer le filtre {0}"
-
-#: src/components/ui/view-bar/view-bar.tsx:125
-#~ msgid "Remove sort {0}"
-#~ msgstr "Supprimer le tri {0}"
-
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:141
-#: src/modules/reports/components/reports-view.tsx:29
+#: src/infrastructure/commands/global-commands-registrar.tsx:99
+#: src/infrastructure/navigation/use-breadcrumbs.ts:62
+#: src/modules/reports/components/reports-view.tsx:34
 msgid "Reports"
 msgstr "Rapports"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:72
+#: src/infrastructure/navigation/use-navigation.ts:76
 msgid "nav.reports"
-msgstr "Rapports"
-
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:42
-msgid "breadcrumb.reports"
 msgstr "Rapports"
 
 #: src/components/ui/filter-bar/filter-bar.tsx:80
 #: src/modules/shared/components/top-bar/top-bar.tsx:84
 msgid "Reset"
-msgstr ""
+msgstr "Réinitialiser"
 
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:55
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:57
@@ -2286,59 +2556,57 @@ msgstr "Ressource"
 
 #: src/modules/devices/components/device-actions-menu.tsx:79
 msgid "Restart"
-msgstr ""
+msgstr "Redémarrer"
 
 #: src/modules/devices/components/device-actions-menu.tsx:66
 #: src/modules/devices/components/device-actions-menu.tsx:75
 msgid "Restart Device"
-msgstr ""
+msgstr "Redémarrer l'appareil"
 
 #: src/modules/devices/components/user-sync-actions.tsx:47
 msgid "Resync"
-msgstr ""
+msgstr "Resynchroniser"
 
 #: src/modules/devices/components/user-sync-actions.tsx:37
 #: src/modules/devices/components/user-sync-actions.tsx:43
 msgid "Resync Device"
-msgstr ""
+msgstr "Resynchroniser l'appareil"
 
 #: src/components/ui/page-error/page-error.tsx:57
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:148
 msgid "Retry"
-msgstr ""
+msgstr "Réessayer"
 
 #: src/modules/apikeys/components/api-key-card.tsx:48
-#: src/modules/apikeys/components/api-keys-view.tsx:89
+#: src/modules/apikeys/components/api-keys-view.tsx:132
 msgid "Revoke"
 msgstr "Révoquer"
 
-#: src/modules/apikeys/components/api-keys-view.tsx:87
+#: src/modules/apikeys/components/api-keys-view.tsx:130
 msgid "Revoke API Key"
-msgstr ""
+msgstr "Révoquer la clé API"
 
 #. placeholder {0}: revokeTarget.name
-#: src/modules/apikeys/components/api-keys-view.tsx:88
+#: src/modules/apikeys/components/api-keys-view.tsx:131
 msgid "Revoke API key \"{0}\"? This cannot be undone."
-msgstr ""
-
-#: src/modules/apikeys/components/api-keys-view.tsx:28
-#~ msgid "Revoke API key \"{name}\"? This cannot be undone."
-#~ msgstr "Révoquer la clé API « {name} » ? Cette action est irréversible."
+msgstr "Révoquer la clé API \"{0}\" ? Cette action est irréversible."
 
 #: src/modules/apikeys/components/api-key-card.tsx:34
 msgid "Revoked"
 msgstr "Révoqué"
 
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:122
-#: src/modules/punches/components/punch-query-view.tsx:52
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:134
+#: src/modules/punches/components/punch-query-view.tsx:32
 msgid "RF Card"
-msgstr ""
+msgstr "Carte RF"
 
-#: src/modules/data-renderer/column-definitions/user-columns.ts:52
-#: src/modules/data-renderer/column-definitions/user-columns.ts:54
+#: src/modules/data-renderer/column-definitions/user-columns.ts:56
+#: src/modules/data-renderer/column-definitions/user-columns.ts:58
 #: src/modules/devices/components/device-users-tab.tsx:40
 #: src/modules/devices/components/device-users-tab.tsx:42
-#: src/modules/settings/components/settings-view.tsx:223
-#: src/modules/users/hooks/use-users-page.tsx:102
+#: src/modules/settings/components/settings-view.tsx:251
+#: src/modules/users/hooks/use-users-page.tsx:133
+#: src/modules/users/hooks/use-users-page.tsx:135
 #: src/modules/users/schemas/user-form.schema.ts:71
 msgid "Role"
 msgstr "Rôle"
@@ -2351,132 +2619,175 @@ msgstr "Rôle, mot de passe et état d'activation."
 msgid "Sat"
 msgstr "Sam"
 
-#: src/modules/settings/components/settings-view.tsx:208
+#: src/infrastructure/side-panel/components/side-panel-form-container/side-panel-form-container.tsx:69
+#: src/modules/settings/components/settings-view.tsx:233
 msgid "Save"
 msgstr "Enregistrer"
 
-#: src/modules/devices/components/device-form.tsx:56
-#: src/modules/integrations/components/endpoint-form.tsx:35
-#: src/modules/users/components/user-form.tsx:46
+#: src/modules/devices/components/device-form.tsx:187
 msgid "Save Changes"
 msgstr "Enregistrer les modifications"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:169
+#: src/modules/settings/components/settings-view.tsx:169
+msgid "Save Work Policy"
+msgstr "Enregistrer la politique"
+
+#: src/modules/devices/components/scan-network-dialog.tsx:188
 msgid "Scan Failed"
 msgstr "Échec de l'analyse"
 
-#: src/modules/devices/components/device-list-view.tsx:50
-#: src/modules/devices/components/scan-network-dialog.tsx:128
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:50
+msgid "Scan failed. Check the subnet and try again."
+msgstr "Échec du scan. Vérifiez le sous-réseau et réessayez."
+
+#: src/modules/devices/components/device-list-view.tsx:85
+#: src/modules/devices/components/device-list-view.tsx:122
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:87
+#: src/modules/devices/components/scan-network-dialog.tsx:147
 #: src/modules/devices/states/device-list-empty.tsx:57
 msgid "Scan Network"
-msgstr ""
+msgstr "Scanner le réseau"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:131
+#: src/modules/devices/components/scan-network-dialog.tsx:150
 msgid "Scan your local network to find ZKTeco attendance scanners."
-msgstr ""
+msgstr "Scannez votre réseau local pour trouver les scanners de présence ZKTeco."
 
-#: src/modules/devices/components/scan-network-dialog.tsx:163
+#: src/modules/devices/components/device-register-wizard/device-register-root.tsx:31
+msgid "Scan your network, configure, and provision a ZKTeco scanner."
+msgstr "Scannez votre réseau, configurez et provisionnez un scanner ZKTeco."
+
+#: src/modules/devices/components/scan-network-dialog.tsx:182
 msgid "Scanning network… this may take up to 30 seconds."
-msgstr ""
+msgstr "Scan du réseau en cours… cela peut prendre jusqu'à 30 secondes."
+
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:87
+msgid "Scanning…"
+msgstr "Scan en cours…"
+
+#: src/modules/settings/components/work-policy-form.tsx:105
+msgid "Schedule"
+msgstr "Horaire"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:49
 msgid "Scoped permissions for this API key."
 msgstr "Permissions limitées pour cette clé API."
 
-#: src/modules/data-renderer/components/data-table-container.tsx:170
+#: src/modules/data-renderer/components/data-table-container.tsx:182
 msgid "Scroll for more"
 msgstr "Faire défiler pour plus"
 
 #: src/modules/devices/components/device-info-tab.tsx:75
 msgid "SDK Poll"
-msgstr ""
+msgstr "Interrogation SDK"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:97
-#~ msgid "SDK poll active"
-#~ msgstr "Interrogation SDK active"
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:97
-#~ msgid "SDK poll inactive"
-#~ msgstr "Interrogation SDK inactive"
-
-#: src/modules/punches/hooks/use-active-punch-filters.ts:33
+#: src/modules/punches/hooks/use-active-punch-filters.ts:53
 msgid "Search"
-msgstr ""
+msgstr "Rechercher"
 
-#: src/modules/audit/components/audit-log-view.tsx:33
+#: src/infrastructure/app-shell/app-sidebar.tsx:112
+#: src/infrastructure/app-shell/app-sidebar.tsx:113
+msgid "Search (Cmd+K)"
+msgstr "Rechercher (Cmd+K)"
+
+#: src/modules/audit/components/audit-log-view.tsx:32
 msgid "Search actors, actions, resources…"
 msgstr "Rechercher acteurs, actions, ressources…"
 
-#: src/modules/punches/components/punch-query-view.tsx:292
+#: src/modules/punches/components/punch-query-view.tsx:150
 msgid "Search by employee name or PIN…"
-msgstr ""
+msgstr "Rechercher par nom d'employé ou PIN…"
 
-#: src/modules/employees/components/employee-list-view.tsx:95
+#: src/modules/devices/components/device-list-view.tsx:103
+msgid "Search by label, serial, or host…"
+msgstr "Rechercher par étiquette, série ou hôte…"
+
+#: src/modules/apikeys/components/api-keys-view.tsx:92
+msgid "Search by name or prefix…"
+msgstr "Rechercher par nom ou préfixe…"
+
+#: src/modules/integrations/components/endpoints-view.tsx:147
+msgid "Search by name or type…"
+msgstr "Rechercher par nom ou type…"
+
+#: src/modules/employees/components/employee-list-view.tsx:56
 msgid "Search by name, PIN, or department…"
-msgstr ""
+msgstr "Rechercher par nom, PIN ou département…"
 
-#: src/infrastructure/command-palette/command-palette-trigger.tsx:26
-#~ msgid "Search commands"
-#~ msgstr "Rechercher des commandes"
+#: src/modules/departments/components/departments-view.tsx:53
+#: src/modules/device-groups/components/device-groups-view.tsx:143
+msgid "Search by name…"
+msgstr "Rechercher par nom…"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:203
+#: src/modules/work-policies/components/work-policies-view.tsx:53
+msgid "Search by title…"
+msgstr "Rechercher par titre…"
+
+#: src/modules/users/components/users-view.tsx:90
+msgid "Search by username or display name…"
+msgstr "Rechercher par nom d'utilisateur ou nom d'affichage…"
+
+#: src/infrastructure/app-shell/app-top-bar.tsx:123
+msgid "Search commands (Cmd+K)"
+msgstr "Rechercher des commandes (Cmd+K)"
+
+#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:96
 msgid "Search commands…"
 msgstr "Rechercher des commandes…"
 
-#: src/modules/devices/components/device-list-view.tsx:62
-msgid "Search devices…"
-msgstr "Rechercher des appareils…"
-
-#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:47
+#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:68
 msgid "Search permissions…"
 msgstr "Rechercher des permissions…"
 
 #: src/modules/devices/components/device-users-tab.tsx:105
 msgid "Search users by name or PIN…"
-msgstr ""
+msgstr "Rechercher des utilisateurs par nom ou PIN…"
 
-#: src/components/ui/combobox/combobox.tsx:108
+#: src/components/ui/combobox/combobox.tsx:134
 #: src/components/ui/dropdown-search/dropdown-search.tsx:35
-#: src/components/ui/multi-select/multi-select.tsx:83
+#: src/components/ui/multi-select/multi-select.tsx:108
 #: src/components/ui/search-input/search-input.tsx:45
-#: src/modules/data-renderer/components/data-list-view.tsx:179
+#: src/modules/data-renderer/components/data-list-view.tsx:195
+#: src/modules/data-renderer/components/reference-facet-selector.tsx:175
 msgid "Search…"
 msgstr "Rechercher…"
 
 #: src/modules/devices/components/device-to-device-copy-dialog.tsx:72
 msgid "Select a device…"
-msgstr ""
+msgstr "Sélectionner un appareil…"
 
-#: src/modules/devices/components/device-to-device-copy-dialog.tsx:67
+#: src/modules/devices/components/device-to-device-copy-dialog.tsx:66
 msgid "Select a source device to copy its enrolled users to this device."
-msgstr ""
+msgstr "Sélectionnez un appareil source pour copier ses utilisateurs inscrits vers cet appareil."
 
-#: src/modules/punches/components/punch-query-view.tsx:107
-#: src/modules/reports/components/reports-view.tsx:49
+#: src/modules/reports/components/reports-view.tsx:54
 msgid "Select date range…"
-msgstr ""
+msgstr "Sélectionner une plage de dates…"
 
-#: src/components/ui/date-picker/date-picker.tsx:171
+#: src/components/ui/date-picker/date-picker.tsx:204
 msgid "Select date…"
 msgstr "Sélectionner une date…"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:51
-#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:46
+#: src/modules/shared/components/permission-multiselect/permission-multiselect.tsx:67
 msgid "Select permissions…"
 msgstr "Sélectionner des permissions…"
 
-#: src/components/ui/combobox/combobox.tsx:107
-#: src/components/ui/multi-select/multi-select.tsx:82
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:93
+msgid "Select the days of the week this policy applies to"
+msgstr "Sélectionnez les jours de la semaine auxquels cette politique s'applique"
+
+#: src/components/ui/combobox/combobox.tsx:133
+#: src/components/ui/multi-select/multi-select.tsx:107
 msgid "Select…"
 msgstr "Sélectionner…"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:86
+#: src/modules/devices/components/device-register-wizard/device-register-test-step.tsx:83
+#: src/modules/devices/components/scan-network-dialog.tsx:105
 msgid "Serial"
-msgstr ""
+msgstr "Série"
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:63
-#: src/modules/data-renderer/column-definitions/device-columns.ts:21
-#: src/modules/data-renderer/column-definitions/device-columns.ts:23
+#: src/modules/data-renderer/column-definitions/device-columns.ts:24
+#: src/modules/data-renderer/column-definitions/device-columns.ts:26
 #: src/modules/devices/components/device-detail-panel.tsx:19
 #: src/modules/devices/components/device-info-tab.tsx:27
 #: src/modules/devices/schemas/device-form.schema.ts:63
@@ -2490,7 +2801,7 @@ msgstr "Le numéro de série est requis"
 
 #: src/components/ui/page-error/page-error.tsx:45
 msgid "Server Unreachable"
-msgstr ""
+msgstr "Serveur inaccessible"
 
 #. placeholder {0}: user.display_name || user.username
 #: src/modules/users/components/change-password-dialog.tsx:67
@@ -2499,28 +2810,28 @@ msgstr "Définir un nouveau mot de passe pour {0}"
 
 #: src/modules/users/schemas/change-password-form.schema.ts:41
 msgid "Set a new password for this user."
-msgstr ""
+msgstr "Définir un nouveau mot de passe pour cet utilisateur."
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:106
+msgid "Set the standard work schedule for this policy."
+msgstr "Définissez l'horaire de travail standard pour cette politique."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:70
 msgid "Set up the initial administrator credentials for timekeep."
-msgstr ""
+msgstr "Configurez les identifiants administrateur initiaux pour timekeep."
 
 #: src/modules/auth/schemas/setup-form.schema.ts:65
 msgid "Set up your organization's workspace for timekeep."
-msgstr ""
+msgstr "Configurez l'espace de travail de votre organisation pour timekeep."
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:152
+#: src/infrastructure/commands/global-commands-registrar.tsx:108
+#: src/infrastructure/navigation/use-breadcrumbs.ts:63
 msgid "Settings"
 msgstr "Paramètres"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:73
+#: src/infrastructure/navigation/use-navigation.ts:80
 msgid "nav.settings"
-msgstr "Paramètres"
-
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:43
-msgid "breadcrumb.settings"
 msgstr "Paramètres"
 
 #: src/modules/settings/hooks/use-system-settings.ts:42
@@ -2533,15 +2844,19 @@ msgstr "Échec de la configuration"
 
 #: src/modules/auth/components/setup-form.tsx:68
 msgid "Setup failed. The server may already be configured."
-msgstr ""
+msgstr "Échec de la configuration. Le serveur est peut-être déjà configuré."
 
 #: src/components/ui/table-options-dropdown/table-options-dropdown.tsx:69
 msgid "Show all"
-msgstr ""
+msgstr "Tout afficher"
 
-#: src/modules/punches/components/punch-query-view.tsx:129
+#: src/modules/punches/components/punch-query-view.tsx:88
 msgid "Show only anomalous punches"
-msgstr ""
+msgstr "Afficher uniquement les pointages anormaux"
+
+#: src/components/ui/input/input.tsx:115
+msgid "Show password"
+msgstr "Afficher le mot de passe"
 
 #: src/modules/auth/components/login-form.tsx:88
 #: src/modules/auth/schemas/login-form.schema.ts:52
@@ -2556,62 +2871,76 @@ msgstr "Échec de la connexion"
 msgid "Sign in to timekeep"
 msgstr "Se connecter à timekeep"
 
-#: src/infrastructure/app-shell/app-top-bar.tsx:104
-#: src/infrastructure/app-shell/app-top-bar.tsx:105
+#: src/infrastructure/app-shell/app-sidebar.tsx:194
+#: src/infrastructure/app-shell/app-sidebar.tsx:195
 msgid "Sign out"
 msgstr "Déconnexion"
 
 #: src/infrastructure/app-shell/skip-to-content.tsx:11
 msgid "Skip to content"
-msgstr ""
+msgstr "Aller au contenu"
 
 #. placeholder {0}: device.serial_number
-#: src/modules/devices/components/device-detail-view.tsx:138
+#: src/modules/devices/components/device-detail-content.tsx:86
 msgid "SN: {0}"
 msgstr "N° série : {0}"
 
-#: src/components/ui/error-boundary/error-boundary.tsx:75
+#: src/components/ui/error-boundary/error-boundary.tsx:74
 msgid "Something went wrong"
 msgstr "Une erreur est survenue"
 
-#: src/components/ui/animated-button/animated-button.tsx:57
-#~ msgid "Soon"
-#~ msgstr "Bientôt"
-
 #: src/modules/devices/components/device-to-device-copy-dialog.tsx:70
 msgid "Source Device"
-msgstr ""
+msgstr "Appareil source"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:145
+#: src/modules/settings/components/work-policy-form.tsx:112
+msgid "Start"
+msgstr "Début"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:66
+msgid "Start of the work day in 24h format"
+msgstr "Début de la journée de travail au format 24h"
+
+#: src/modules/devices/components/scan-network-dialog.tsx:164
 msgid "Start Scan"
-msgstr ""
+msgstr "Démarrer le scan"
 
-#: src/infrastructure/side-panel/detail-views/device-detail-view.tsx:75
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:84
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:68
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:70
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:63
-#: src/modules/data-renderer/column-definitions/employee-columns.ts:65
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:97
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:99
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:70
+#: src/modules/data-renderer/column-definitions/employee-columns.ts:72
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:109
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:111
+#: src/modules/device-groups/components/device-group-devices-tab.tsx:69
 #: src/modules/devices/components/device-detail-panel.tsx:22
-#: src/modules/employees/components/employee-attendance-log.tsx:38
-#: src/modules/exports/components/export-bar/export-bar.tsx:68
-#: src/modules/integrations/components/endpoints-view.tsx:81
-#: src/modules/punches/components/attendance-table.tsx:109
-#: src/modules/punches/hooks/use-active-punch-filters.ts:74
-#: src/modules/settings/components/settings-view.tsx:62
-#: src/modules/users/hooks/use-users-page.tsx:108
+#: src/modules/employees/components/employee-attendance-log.tsx:39
+#: src/modules/exports/components/export-bar/export-bar.tsx:97
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:65
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:67
+#: src/modules/punches/components/attendance-table.tsx:110
+#: src/modules/punches/hooks/use-active-punch-filters.ts:100
+#: src/modules/settings/components/settings-view.tsx:64
+#: src/modules/users/hooks/use-users-page.tsx:147
+#: src/modules/users/hooks/use-users-page.tsx:149
 msgid "Status"
 msgstr "Statut"
 
+#. placeholder {0}: currentStep.step
+#: src/infrastructure/side-panel/components/side-panel-sub-page-router/side-panel-sub-page-router.tsx:101
+msgid "Step \"{0}\" not found in stepMap."
+msgstr "Étape \"{0}\" introuvable dans stepMap."
+
 #: src/modules/devices/components/device-health-cards.tsx:80
 msgid "Storage"
-msgstr ""
+msgstr "Stockage"
 
-#: src/modules/devices/components/scan-network-dialog.tsx:138
+#: src/modules/devices/components/scan-network-dialog.tsx:157
 msgid "Subnet"
-msgstr ""
+msgstr "Sous-réseau"
+
+#: src/modules/record-detail/components/record-detail-fields.tsx:219
+msgid "Summary"
+msgstr "Résumé"
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:160
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:164
@@ -2625,186 +2954,233 @@ msgstr "Changer de langue"
 
 #: src/modules/devices/components/device-actions-menu.tsx:92
 msgid "Sync"
-msgstr ""
+msgstr "Synchroniser"
+
+#: src/modules/devices/components/device-list-view.tsx:77
+msgid "Sync All"
+msgstr "Tout synchroniser"
 
 #: src/modules/devices/components/device-actions-menu.tsx:60
 #: src/modules/devices/components/device-actions-menu.tsx:88
 msgid "Sync Clock"
-msgstr ""
+msgstr "Synchroniser l'horloge"
 
-#: src/modules/employees/components/employee-detail-view.tsx:86
+#: src/modules/device-groups/components/device-group-sync-section.tsx:110
+msgid "Sync complete"
+msgstr "Synchronisation terminée"
+
+#: src/modules/device-groups/components/device-group-sync-section.tsx:68
+msgid "Sync employees to all devices in this group."
+msgstr "Synchroniser les employés vers tous les appareils de ce groupe."
+
+#: src/modules/device-groups/components/device-group-sync-section.tsx:115
+msgid "Sync failed"
+msgstr "Échec de la synchronisation"
+
+#. placeholder {0}: err.message
+#: src/modules/employees/hooks/use-employee-sync.ts:28
+msgid "Sync failed: {0}"
+msgstr "Échec de la synchronisation : {0}"
+
+#: src/modules/device-groups/components/device-group-sync-section.tsx:106
+msgid "Sync Now"
+msgstr "Synchroniser maintenant"
+
+#: src/modules/devices/components/device-list-view.tsx:45
+msgid "Sync started for all devices."
+msgstr "Synchronisation démarrée pour tous les appareils."
+
+#: src/modules/employees/pages/employee-detail-page.tsx:40
 msgid "Sync to Devices"
-msgstr ""
+msgstr "Synchroniser vers les appareils"
 
-#: src/components/ui/device-status-badge/device-status-badge.tsx:35
-#~ msgid "Syncing"
-#~ msgstr "Synchronisation"
-
+#: src/modules/device-groups/components/device-group-sync-section.tsx:106
+#: src/modules/devices/components/device-list-view.tsx:77
 #: src/modules/devices/components/sync-progress-indicator.tsx:46
 msgid "Syncing…"
-msgstr ""
+msgstr "Synchronisation en cours…"
 
-#: src/modules/settings/components/settings-view.tsx:175
+#: src/modules/settings/components/settings-view.tsx:200
 msgid "System"
-msgstr ""
+msgstr "Système"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:74
+#: src/infrastructure/navigation/use-navigation.ts:81
 msgid "nav.settings.system"
 msgstr "Système"
 
-#: src/modules/settings/pages/settings-page.tsx:38
-#~ msgid "System configuration and account information."
-#~ msgstr "Configuration système et informations du compte."
-
-#: src/modules/settings/components/settings-view.tsx:176
+#: src/modules/settings/components/settings-view.tsx:201
 msgid "System configuration, health status, and account information."
-msgstr ""
+msgstr "Configuration système, état de santé et informations du compte."
 
-#: src/modules/settings/components/settings-view.tsx:61
+#: src/modules/settings/components/settings-view.tsx:63
 msgid "System Health"
-msgstr ""
+msgstr "Santé du système"
 
-#: src/modules/employees/components/employee-list-view.tsx:67
-#: src/modules/punches/components/punch-query-view.tsx:199
+#: src/modules/audit/components/audit-log-view.tsx:18
+#: src/modules/employees/hooks/use-employee-list-page.tsx:168
+#: src/modules/integrations/components/endpoints-view.tsx:118
+#: src/modules/punches/components/punch-query-view.tsx:108
+#: src/modules/users/components/users-view.tsx:60
 msgid "Table"
 msgstr "Tableau"
 
+#: src/modules/device-groups/components/device-group-sync-section.tsx:95
+msgid "Target devices: {count}"
+msgstr "Appareils cibles : {count}"
+
+#: src/modules/devices/components/device-register-wizard/device-register-configure-step.tsx:79
+msgid "Test & Register"
+msgstr "Tester et enregistrer"
+
 #: src/modules/devices/components/device-actions-menu.tsx:77
 msgid "The device will reboot and be offline for about 30–60 seconds. Attendance records already stored on the device are safe."
-msgstr ""
+msgstr "L'appareil redémarrera et sera hors ligne pendant environ 30 à 60 secondes. Les enregistrements de présence déjà stockés sur l'appareil sont en sécurité."
 
 #: src/modules/navigation/components/not-found-content.tsx:18
 msgid "The page you are looking for doesn't exist or has been moved."
-msgstr ""
+msgstr "La page que vous recherchez n'existe pas ou a été déplacée."
 
-#: src/modules/devices/components/device-detail-view.tsx:111
-msgid "This device may have been removed or the serial number is incorrect."
-msgstr ""
-
-#: src/modules/employees/components/employee-detail-view.tsx:58
-msgid "This employee may have been removed."
-msgstr ""
+#: src/modules/departments/components/department-employees-list.tsx:80
+msgid "This department has no employees assigned yet."
+msgstr "Ce département n'a pas encore d'employés assignés."
 
 #: src/modules/punches/hooks/use-attendance-presets.ts:46
 #: src/modules/reports/hooks/use-report-presets.ts:37
 msgid "This Month"
-msgstr ""
+msgstr "Ce mois"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:83
 #: src/modules/reports/components/report-summary-cards.tsx:34
 #: src/modules/reports/components/report-summary-cards.tsx:58
 msgid "this period"
-msgstr ""
+msgstr "cette période"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:50
-msgid "This punch record may have been scrolled out of view. Try searching by the punch ID."
-msgstr ""
+#: src/modules/settings/components/settings-view.tsx:164
+msgid "This policy applies to all departments that do not have a custom work policy."
+msgstr "Cette politique s'applique à tous les départements qui n'ont pas de politique de travail personnalisée."
 
 #: src/modules/reports/hooks/use-report-presets.ts:23
 msgid "This Week"
-msgstr ""
+msgstr "Cette semaine"
 
 #: src/modules/devices/components/user-sync-actions.tsx:45
 msgid "This will pull all users and attendance records from the device and push any pending changes. The device will remain online during this operation."
-msgstr ""
+msgstr "Cela extraira tous les utilisateurs et enregistrements de présence de l'appareil et enverra les modifications en attente. L'appareil restera en ligne pendant cette opération."
 
 #: src/modules/devices/components/device-actions-menu.tsx:90
 msgid "This will set the device clock to match the server time. Any existing attendance records will be unaffected."
-msgstr ""
+msgstr "Cela réglera l'horloge de l'appareil pour correspondre à l'heure du serveur. Les enregistrements de présence existants ne seront pas affectés."
+
+#: src/modules/settings/components/work-policy-form.tsx:150
+msgid "Thresholds"
+msgstr "Seuils"
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:157
 msgid "Thu"
 msgstr "Jeu"
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:72
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:15
 #: src/modules/data-renderer/column-definitions/audit-columns.ts:17
-#: src/modules/exports/components/export-bar/export-bar.tsx:64
-#: src/modules/punches/components/attendance-table.tsx:88
+#: src/modules/exports/components/export-bar/export-bar.tsx:92
+#: src/modules/punches/components/attendance-table.tsx:89
 msgid "Time"
 msgstr "Heure"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:71
-msgid "timekeep — Confidential"
-msgstr "timekeep — Confidentiel"
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:20
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:23
+msgid "Time must be in HH:MM format"
+msgstr "L'heure doit être au format HH:MM"
 
-#: src/components/ui/view-bar/view-bar.tsx:176
-#~ msgid "Timeline"
-#~ msgstr "Chronologie"
+#: src/modules/punches/components/punch-query-view.tsx:109
+msgid "Timeline"
+msgstr "Chronologie"
 
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:56
-#: src/modules/data-renderer/column-definitions/punch-columns.ts:58
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:48
+#: src/modules/data-renderer/column-definitions/punch-columns.ts:50
 msgid "Timestamp"
-msgstr ""
+msgstr "Horodatage"
 
-#: src/modules/punches/hooks/use-active-punch-filters.ts:66
-#: src/modules/reports/hooks/use-reports-page.ts:57
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:53
+msgid "Title"
+msgstr "Titre"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:10
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:11
+msgid "Title is required"
+msgstr "Le titre est requis"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:12
+msgid "Title must be 150 characters or fewer"
+msgstr "Le titre doit contenir 150 caractères ou moins"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:73
+#: src/modules/punches/hooks/use-active-punch-filters.ts:90
+#: src/modules/reports/hooks/use-reports-page.ts:67
 msgid "To"
 msgstr "À"
-
-#: src/modules/exports/components/export-bar/export-bar.tsx:59
-msgid "To: "
-msgstr "À : "
 
 #: src/modules/dashboard/components/dashboard-metrics.tsx:38
 #: src/modules/dashboard/components/dashboard-metrics.tsx:46
 msgid "today"
-msgstr ""
+msgstr "aujourd'hui"
 
 #: src/modules/punches/hooks/use-attendance-presets.ts:23
 #: src/modules/reports/hooks/use-report-presets.ts:14
 msgid "Today"
-msgstr ""
+msgstr "Aujourd'hui"
 
-#: src/infrastructure/command-palette/command-palette.tsx:97
-#~ msgid "Today's attendance overview"
-#~ msgstr "Aperçu des pointages du jour"
-
-#: src/modules/integrations/components/endpoints-view.tsx:95
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:94
 msgid "Toggle"
 msgstr "Basculer"
 
-#: src/infrastructure/app-shell/app-top-bar.tsx:50
+#: src/infrastructure/app-shell/app-top-bar.tsx:88
 msgid "Toggle menu"
 msgstr "Basculer le menu"
 
-#: src/infrastructure/app-shell/app-top-bar.tsx:93
+#: src/infrastructure/app-shell/app-sidebar.tsx:177
 msgid "Toggle theme"
 msgstr "Basculer le thème"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:85
 #: src/modules/reports/components/report-summary-cards.tsx:50
 msgid "total"
-msgstr ""
+msgstr "total"
 
-#: src/modules/reports/components/reports-view.tsx:122
+#: src/modules/reports/components/reports-view.tsx:146
+#: src/modules/reports/components/reports-view.tsx:150
 msgid "Total hours worked per week."
-msgstr ""
+msgstr "Total des heures travaillées par semaine."
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:60
+#: src/modules/exports/components/export-bar/export-bar.tsx:87
 msgid "Total Punches"
 msgstr "Total pointages"
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:66
-#~ msgid "Total Punches (24h)"
-#~ msgstr "Total pointages (24 h)"
-
-#: src/modules/audit/components/audit-log-view.tsx:100
-#~ msgid "Track every authenticated write operation across the system."
-#~ msgstr "Suivre chaque opération d'écriture authentifiée à travers le système."
 
 #: src/components/ui/data-table/cells/boolean-cell.tsx:29
 msgid "True"
 msgstr "Oui"
 
-#: src/modules/employees/components/employee-list-view.tsx:109
+#: src/modules/employees/components/employee-list-view.tsx:81
 msgid "Try adjusting or clearing your search and filter."
-msgstr ""
+msgstr "Essayez d'ajuster ou d'effacer votre recherche et vos filtres."
+
+#: src/modules/devices/components/device-list-view.tsx:114
+#: src/modules/integrations/components/endpoints-view.tsx:161
+#: src/modules/users/components/users-view.tsx:104
+msgid "Try adjusting or clearing your search."
+msgstr "Essayez d'ajuster ou d'effacer votre recherche."
 
 #: src/modules/devices/states/device-list-empty.tsx:37
 msgid "Try adjusting your search terms."
 msgstr "Essayez d'ajuster vos termes de recherche."
 
-#: src/components/ui/error-boundary/error-boundary.tsx:103
+#: src/modules/departments/components/departments-view.tsx:66
+#: src/modules/device-groups/components/device-groups-view.tsx:155
+#: src/modules/work-policies/components/work-policies-view.tsx:66
+msgid "Try adjusting your search."
+msgstr "Essayez d'ajuster votre recherche."
+
+#: src/components/ui/error-boundary/error-boundary.tsx:102
 msgid "Try Again"
 msgstr "Réessayer"
 
@@ -2812,9 +3188,10 @@ msgstr "Réessayer"
 msgid "Tue"
 msgstr "Mar"
 
-#: src/modules/integrations/components/endpoints-view.tsx:74
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:39
+#: src/modules/integrations/hooks/use-endpoint-columns.tsx:41
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:40
-#: src/modules/punches/components/attendance-table.tsx:95
+#: src/modules/punches/components/attendance-table.tsx:96
 msgid "Type"
 msgstr "Type"
 
@@ -2822,56 +3199,49 @@ msgstr "Type"
 msgid "Unique identifier and human-readable name for this scanner."
 msgstr "Identifiant unique et nom lisible pour ce scanner."
 
+#: src/modules/employees/schemas/employee-form.schema.ts:79
+msgid "Unique PIN, full name, and external reference for this employee."
+msgstr "PIN unique, nom complet et référence externe pour cet employé."
+
 #: src/modules/devices/schemas/device-form.schema.ts:64
 msgid "Unique scanner identifier (e.g., CQZ7232960836)"
 msgstr "Identifiant unique du scanner (ex. : CQZ7232960836)"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:61
+#: src/modules/exports/components/export-bar/export-bar.tsx:88
 msgid "Unique Users"
 msgstr "Utilisateurs uniques"
 
 #: src/modules/devices/components/device-card.tsx:34
-#: src/modules/settings/components/settings-view.tsx:222
-#: src/modules/settings/components/settings-view.tsx:223
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:141
+#: src/modules/settings/components/settings-view.tsx:250
+#: src/modules/settings/components/settings-view.tsx:251
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
-#: src/components/ui/chip/chip.tsx:92
-#~ msgid "Untitled"
-#~ msgstr "Sans titre"
-
-#: src/modules/devices/pages/device-form-page.tsx:22
-msgid "Update scanner connection details."
-msgstr "Mettre à jour les détails de connexion du scanner."
+#: src/modules/devices/components/device-register-wizard/device-register-scan-step.tsx:163
+msgid "unreachable"
+msgstr "inaccessible"
 
 #. placeholder {0}: Math.floor(s / 3600)
-#: src/modules/dashboard/pages/dashboard-page.tsx:23
+#: src/modules/dashboard/hooks/use-dashboard-page.ts:14
 msgid "Updated {0}h ago"
-msgstr ""
+msgstr "Mis à jour il y a {0} h"
 
-#: src/modules/dashboard/components/dashboard-header-actions.tsx:16
-#~ msgid "Updated {0}m ago"
-#~ msgstr ""
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:23
+#: src/modules/dashboard/hooks/use-dashboard-page.ts:14
 msgid "Updated {m}m ago"
-msgstr ""
+msgstr "Mis à jour il y a {m} min"
 
-#: src/modules/dashboard/pages/dashboard-page.tsx:21
+#: src/modules/dashboard/hooks/use-dashboard-page.ts:12
 msgid "Updated {s}s ago"
-msgstr ""
+msgstr "Mis à jour il y a {s} s"
 
-#: src/modules/dashboard/components/dashboard-header-actions.tsx:15
-#~ msgid "Updated {seconds}s ago"
-#~ msgstr ""
-
-#: src/modules/dashboard/pages/dashboard-page.tsx:20
+#: src/modules/dashboard/hooks/use-dashboard-page.ts:11
 msgid "Updated just now"
-msgstr ""
+msgstr "Mis à jour à l'instant"
 
-#: src/modules/settings/components/settings-view.tsx:76
+#: src/modules/settings/components/settings-view.tsx:75
 msgid "Uptime"
-msgstr ""
+msgstr "Disponibilité"
 
 #: src/modules/integrations/schemas/endpoint-form.schema.ts:48
 msgid "URL"
@@ -2887,39 +3257,28 @@ msgstr "Utilisé"
 
 #: src/modules/devices/components/device-users-tab.tsx:64
 msgid "User"
-msgstr ""
+msgstr "Utilisateur"
 
-#: src/modules/data-renderer/hooks/use-cell-click-handler.ts:31
-msgid "User {entityId}"
-msgstr "Utilisateur {entityId}"
-
-#: src/modules/users/hooks/use-user-form.ts:85
+#: src/modules/users/hooks/use-user-form.ts:96
 msgid "User created successfully."
 msgstr "Utilisateur créé avec succès."
 
-#: src/modules/users/hooks/use-users-page.tsx:75
+#: src/modules/users/hooks/use-users-page.tsx:83
 msgid "User deleted."
 msgstr "Utilisateur supprimé."
 
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:67
-msgid "User ID"
-msgstr "ID utilisateur"
-
-#: src/modules/exports/components/export-bar/export-bar.tsx:65
+#: src/modules/exports/components/export-bar/export-bar.tsx:93
 msgid "User PIN"
 msgstr "Code PIN utilisateur"
 
-#: src/infrastructure/side-panel/detail-views/user-detail-view.tsx:52
-msgid "User PIN: {userPin}"
-msgstr "Code PIN : {userPin}"
-
-#: src/modules/users/hooks/use-user-form.ts:85
+#: src/modules/users/hooks/use-user-form.ts:96
 msgid "User updated successfully."
 msgstr "Utilisateur mis à jour avec succès."
 
 #: src/modules/auth/schemas/login-form.schema.ts:38
-#: src/modules/settings/components/settings-view.tsx:222
-#: src/modules/users/hooks/use-users-page.tsx:93
+#: src/modules/settings/components/settings-view.tsx:250
+#: src/modules/users/hooks/use-users-page.tsx:111
+#: src/modules/users/hooks/use-users-page.tsx:113
 #: src/modules/users/schemas/user-form.schema.ts:59
 msgid "Username"
 msgstr "Nom d'utilisateur"
@@ -2942,106 +3301,162 @@ msgstr "Le nom d'utilisateur est requis"
 msgid "Username must be at least 3 characters"
 msgstr "Le nom d'utilisateur doit comporter au moins 3 caractères"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:108
+#: src/infrastructure/commands/global-commands-registrar.tsx:72
+#: src/infrastructure/navigation/use-breadcrumbs.ts:64
 #: src/modules/devices/components/device-health-cards.tsx:39
-#: src/modules/users/components/users-view.tsx:29
+#: src/modules/users/components/users-view.tsx:70
 msgid "Users"
 msgstr "Utilisateurs"
 
 #. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-navigation.ts:75
+#: src/infrastructure/navigation/use-navigation.ts:82
 msgid "nav.settings.users"
 msgstr "Utilisateurs"
 
-#. js-lingui-explicit-id
-#: src/infrastructure/navigation/use-breadcrumbs.ts:44
-msgid "breadcrumb.users"
-msgstr "Utilisateurs"
+#: src/modules/settings/components/work-policy-form.tsx:93
+msgid "Using organization default work policy."
+msgstr "Utilisation de la politique de travail par défaut de l'organisation."
 
-#: src/modules/devices/components/device-detail-view.tsx:183
-msgid "Users on Device"
-msgstr ""
-
-#: src/modules/devices/components/scan-network-dialog.tsx:101
+#: src/modules/devices/components/scan-network-dialog.tsx:120
 msgid "Vendor"
-msgstr ""
+msgstr "Fournisseur"
 
-#: src/modules/punches/components/attendance-table.tsx:132
+#: src/modules/punches/components/attendance-table.tsx:133
 msgid "Verification"
 msgstr "Vérification"
 
-#: src/modules/exports/components/export-bar/export-bar.tsx:69
+#: src/modules/exports/components/export-bar/export-bar.tsx:98
 msgid "Verify"
 msgstr "Vérifier"
 
-#: src/modules/settings/components/settings-view.tsx:70
+#: src/modules/settings/components/settings-view.tsx:69
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:131
+#: src/infrastructure/commands/global-commands-registrar.tsx:91
 msgid "View activity history"
-msgstr ""
+msgstr "Voir l'historique d'activité"
 
-#: src/infrastructure/side-panel/components/side-panel-cmdk.tsx:98
+#: src/infrastructure/commands/global-commands-registrar.tsx:64
 msgid "View and query attendance data"
 msgstr "Afficher et interroger les données de pointage"
+
+#: src/modules/punches/hooks/use-punch-query-commands.ts:22
+msgid "View Reports"
+msgstr "Voir les rapports"
 
 #: src/modules/auth/components/role-badge/role-badge.tsx:24
 #: src/modules/users/schemas/user-form.schema.ts:49
 msgid "Viewer"
 msgstr "Lecteur"
 
-#: src/modules/reports/hooks/use-reports-page.ts:117
+#: src/modules/reports/hooks/use-report-charts.ts:64
 msgid "W"
-msgstr ""
+msgstr "S"
+
+#: src/modules/departments/schemas/department-form.schema.ts:25
+msgid "Warehouse"
+msgstr "Entrepôt"
 
 #: src/modules/shared/components/calendar-month/calendar-month.tsx:156
 msgid "Wed"
 msgstr "Mer"
 
-#: src/modules/reports/components/reports-view.tsx:121
+#: src/modules/settings/components/work-policy-form.tsx:196
+msgid "Weekly"
+msgstr "Hebdomadaire"
+
+#: src/modules/reports/components/reports-view.tsx:145
+#: src/modules/reports/components/reports-view.tsx:149
 msgid "Weekly Hours"
-msgstr ""
+msgstr "Heures hebdomadaires"
 
 #: src/modules/auth/components/setup-form.tsx:77
 msgid "Welcome to timekeep"
-msgstr ""
+msgstr "Bienvenue sur timekeep"
 
 #: src/modules/apikeys/schemas/api-key-form.schema.ts:56
 msgid "When this API key expires. Choose \"No expiry\" for permanent keys."
 msgstr "Date d'expiration de cette clé API. Choisissez « Sans expiration » pour les clés permanentes."
 
-#: src/infrastructure/side-panel/detail-views/punch-detail-view.tsx:114
-#: src/modules/exports/components/export-bar/export-bar.tsx:70
+#: src/modules/device-groups/components/device-group-sync-section.tsx:92
+msgid "Will sync employees from: {dept}"
+msgstr "Synchronisera les employés depuis : {dept}"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:99
 msgid "Work Code"
 msgstr "Code travail"
 
+#: src/modules/exports/components/export-bar/export-bar.tsx:79
 #: src/modules/reports/components/report-summary-cards.tsx:32
 msgid "Work Days"
-msgstr ""
+msgstr "Jours travaillés"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:71
+msgid "Work End Time"
+msgstr "Heure de fin"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:22
+msgid "Work end time is required"
+msgstr "L'heure de fin est requise"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:105
+msgid "Work Hours & Days"
+msgstr "Heures et jours de travail"
+
+#: src/modules/work-policies/components/work-policies-view.tsx:35
+msgid "Work Policies"
+msgstr "Politiques de travail"
+
+#. js-lingui-explicit-id
+#: src/infrastructure/navigation/use-navigation.ts:78
+msgid "nav.workPolicies"
+msgstr "Politiques de travail"
+
+#: src/modules/settings/components/settings-view.tsx:152
+msgid "Work policy saved."
+msgstr "Politique de travail enregistrée."
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:65
+msgid "Work Start Time"
+msgstr "Heure de début"
+
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:19
+msgid "Work start time is required"
+msgstr "L'heure de début est requise"
+
+#: src/modules/settings/components/work-policy-form.tsx:136
+#: src/modules/work-policies/schemas/work-policy-form.schema.ts:92
+msgid "Working Days"
+msgstr "Jours de travail"
+
+#: src/modules/exports/components/export-bar/export-bar.tsx:74
+msgid "Workspace"
+msgstr "Espace de travail"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:42
 msgid "Workspace Name"
-msgstr ""
+msgstr "Nom de l'espace de travail"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:17
 #: src/modules/auth/schemas/setup-form.schema.ts:18
 msgid "Workspace name is required"
-msgstr ""
+msgstr "Le nom de l'espace de travail est requis"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:19
 msgid "Workspace name must be at least 2 characters"
-msgstr ""
+msgstr "Le nom de l'espace de travail doit contenir au moins 2 caractères"
 
+#: src/components/ui/display/boolean-display.tsx:30
 #: src/modules/devices/components/device-info-tab.tsx:34
 #: src/modules/devices/components/device-info-tab.tsx:68
 msgid "Yes"
-msgstr ""
+msgstr "Oui"
 
 #: src/modules/punches/hooks/use-attendance-presets.ts:28
 msgid "Yesterday"
-msgstr ""
+msgstr "Hier"
 
 #: src/modules/auth/schemas/setup-form.schema.ts:43
 msgid "Your company or organization name. Shown on the login screen."
-msgstr ""
+msgstr "Le nom de votre entreprise ou organisation. Affiché sur l'écran de connexion."

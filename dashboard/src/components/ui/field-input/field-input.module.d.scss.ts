@@ -4,6 +4,8 @@ declare const classNames: {
   readonly fieldBooleanReadonly: "fieldBooleanReadonly";
   readonly fieldSelectDropdown: "fieldSelectDropdown";
   readonly fieldWeekdayContainer: "fieldWeekdayContainer";
+  readonly weekdayGroup: "weekdayGroup";
+  readonly weekdayToggle: "weekdayToggle";
   readonly fieldTimeWrapper: "fieldTimeWrapper";
   readonly fieldTimeTrigger: "fieldTimeTrigger";
   readonly fieldTimeChevron: "fieldTimeChevron";

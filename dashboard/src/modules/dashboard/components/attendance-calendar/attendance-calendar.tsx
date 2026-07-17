@@ -7,7 +7,7 @@ import { useLingui } from "@lingui/react";
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { Select, IconButton, Button, Text, ActionGroup, StatusDot } from "@/components/ui";
 import { CalendarMonth, type CalendarDayData } from "@/modules/shared/components";
-import { useAttendanceCalendar } from "./use-attendance-calendar";
+import { useAttendanceCalendar } from "@/modules/attendance";
 import { DayDetailPanel } from "./day-detail-panel";
 
 import styles from "./attendance-calendar.module.scss";

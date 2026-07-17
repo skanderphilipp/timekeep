@@ -4,7 +4,7 @@ import { useSetAtom } from "jotai";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { AppRoute, punchesForDevice, punchesForUser } from "@/lib/navigation";
+import { AppRoute, attendanceForDevice, attendanceForUser } from "@/lib/navigation";
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { selectedDeviceSnState } from "@/modules/devices/states/device-atoms";
 
@@ -13,8 +13,8 @@ import { selectedDeviceSnState } from "@/modules/devices/states/device-atoms";
  *
  * Provides helpers for each navigation pattern in the app:
  * - `toDeviceDetail(sn)` — opens device detail in the side panel
- * - `toDevicePunches(sn)` — navigates to punch list filtered by device
- * - `toUserPunches(pin)` — navigates to punch list filtered by user
+ * - `toDeviceAttendance(sn)` — navigates to attendance list filtered by device
+ * - `toUserAttendance(pin)` — navigates to attendance list filtered by user
  * - And direct route access via `routes`
  *
  * @example
@@ -41,18 +41,18 @@ export function useNavigateToRecord() {
     [openSidePanel, setSelectedDevice],
   );
 
-  /** Navigate to punch list filtered to a specific device. */
-  const toDevicePunches = useCallback(
+  /** Navigate to attendance list filtered to a specific device. */
+  const toDeviceAttendance = useCallback(
     (sn: string) => {
-      navigate(punchesForDevice(sn));
+      navigate(attendanceForDevice(sn));
     },
     [navigate],
   );
 
-  /** Navigate to punch list filtered to a specific user. */
-  const toUserPunches = useCallback(
+  /** Navigate to attendance list filtered to a specific user. */
+  const toUserAttendance = useCallback(
     (pin: string) => {
-      navigate(punchesForUser(pin));
+      navigate(attendanceForUser(pin));
     },
     [navigate],
   );
@@ -61,8 +61,8 @@ export function useNavigateToRecord() {
     /** Route definitions (for direct use with `<Link to={...}>`). */
     routes: AppRoute,
     toDeviceDetail,
-    toDevicePunches,
-    toUserPunches,
+    toDeviceAttendance,
+    toUserAttendance,
     /** Raw navigate function for ad-hoc navigation. */
     navigate,
   } as const;

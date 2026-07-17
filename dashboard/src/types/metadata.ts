@@ -17,14 +17,19 @@ export type CursorValueType = "int" | "text";
 /** How a filterable column behaves in the UI. */
 export type FacetKind = "enum" | "reference";
 
-/** Single column descriptor returned by the schema endpoint. */
+/** Single column descriptor returned by the schema endpoint.
+ *
+ * `facet_kind` can arrive in two formats from the backend:
+ *   - String: `"reference"` | `"enum"` (preferred)
+ *   - Object: `{ type: "reference" }` | `{ type: "enum" }`
+ * Consumers should use `normalizeFacetKind()` to get a consistent string. */
 export interface ColumnMeta {
 	field: string;
 	label: string;
 	value_type: CursorValueType;
 	sortable: boolean;
 	filterable: boolean;
-	facet_kind: FacetKind | null;
+	facet_kind: FacetKind | { type: FacetKind } | null;
 }
 
 /** Full entity schema returned by GET /api/{entity}/schema. */

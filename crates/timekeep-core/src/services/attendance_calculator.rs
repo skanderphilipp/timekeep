@@ -1243,4 +1243,246 @@ mod tests {
         assert_eq!(snap.late, 1);
         assert_eq!(snap.on_time, 1);
     }
+
+    // ── Edge-case tests ──────────────────────────────────────────────
+
+    /// Edge case: Two breaks in one day (BreakOut→BreakIn→BreakOut→BreakIn).
+    #[test]
+    fn consecutive_breaks_in_one_day() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(10, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(10, 15, 0), PunchStatus::BreakIn),
+            punch_at("145", d, time(12, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(12, 30, 0), PunchStatus::BreakIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        // Two break periods: 15min + 30min = 45min total break
+        assert_eq!(day.total_break_seconds, 45 * 60);
+        // Regular = 8h, Net = 8h - 45min = 7h15m
+        assert_eq!(day.total_regular_seconds, 8 * 3600);
+        assert_eq!(day.net_work_seconds(), 8 * 3600 - 45 * 60);
+        assert!(day.anomalies.is_empty());
+    }
+
+    /// Edge case: Duplicate BreakOut anomaly — BreakOut followed by
+    /// another BreakOut without intervening BreakIn.
+    #[test]
+    fn duplicate_break_out_anomaly() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(10, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(10, 30, 0), PunchStatus::BreakOut), // duplicate
+            punch_at("145", d, time(11, 0, 0), PunchStatus::BreakIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        // The pairing algorithm closes the first BreakOut with the duplicate
+        // (treating it as a BreakIn that closes the break), then the
+        // duplicate opens a new break that gets closed by the real BreakIn.
+        // Both breaks contribute to total_break_seconds.
+        let break_periods: Vec<_> =
+            day.periods.iter().filter(|p| p.kind == PeriodKind::Break).collect();
+        assert_eq!(break_periods.len(), 2, "two break periods from duplicate");
+    }
+
+    /// Edge case: Orphaned BreakIn — BreakIn without preceding BreakOut.
+    #[test]
+    fn orphaned_break_in_without_break_out() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(10, 0, 0), PunchStatus::BreakIn), // orphaned
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        // The BreakIn without a BreakOut becomes a 0-duration break period
+        // that is immediately opened and closed at the same timestamp.
+        // Main thing: it shouldn't crash and should produce a valid WorkDay.
+        assert_eq!(day.total_regular_seconds, 8 * 3600);
+    }
+
+    /// Edge case: Early leave detection — employee checks out before work_end.
+    #[test]
+    fn early_leave_detection() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(16, 0, 0), PunchStatus::CheckOut), // 1h early
+        ];
+        let policy = WorkPolicy::standard_9to5(); // work_end = 17:00
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+        assert_eq!(
+            work_days[0].status,
+            DayStatus::EarlyLeave,
+            "leaving at 16:00 should be EarlyLeave when work_end is 17:00"
+        );
+    }
+
+    /// Edge case: All punch types in one day.
+    #[test]
+    fn all_punch_types_in_one_day() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(12, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(12, 30, 0), PunchStatus::BreakIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::OvertimeIn),
+            punch_at("145", d, time(19, 0, 0), PunchStatus::OvertimeOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        assert_eq!(day.total_regular_seconds, 8 * 3600);
+        assert_eq!(day.total_break_seconds, 30 * 60);
+        assert_eq!(day.total_overtime_seconds, 2 * 3600);
+        assert_eq!(day.net_work_seconds(), 8 * 3600 - 30 * 60);
+        assert_eq!(day.status, DayStatus::Present);
+        assert!(day.anomalies.is_empty());
+
+        // Verify all three period kinds are present
+        let kinds: Vec<PeriodKind> = day.periods.iter().map(|p| p.kind).collect();
+        assert!(kinds.contains(&PeriodKind::Regular));
+        assert!(kinds.contains(&PeriodKind::Break));
+        assert!(kinds.contains(&PeriodKind::Overtime));
+    }
+
+    /// Edge case: Net work seconds calculation — CheckIn 09:00, CheckOut 17:00,
+    /// BreakOut 12:00, BreakIn 12:30 → net = 7.5h (regular - breaks).
+    #[test]
+    fn net_work_seconds_excludes_breaks() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(12, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(12, 30, 0), PunchStatus::BreakIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        assert_eq!(day.total_regular_seconds, 28800); // 8h
+        assert_eq!(day.total_break_seconds, 1800); // 30min
+        // net = regular - break = 27000s = 7.5h
+        assert_eq!(day.net_work_seconds(), 27000);
+        assert_eq!(day.net_work_seconds(), 7 * 3600 + 1800); // explicitly 7.5h
+    }
+
+    /// Edge case: Zero-duration period — CheckIn and CheckOut at the same
+    /// second should produce a 0-duration period, not crash.
+    #[test]
+    fn zero_duration_period() {
+        let d = date_2026_07_10();
+        let t = time(12, 0, 0);
+        let punches = vec![
+            punch_at("145", d, t, PunchStatus::CheckIn),
+            punch_at("145", d, t, PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        assert_eq!(work_days.len(), 1);
+
+        let day = &work_days[0];
+        assert_eq!(day.total_regular_seconds, 0);
+        assert_eq!(day.total_break_seconds, 0);
+        assert_eq!(day.net_work_seconds(), 0);
+    }
+
+    /// Edge case: Only BreakOut/BreakIn without CheckIn — orphaned break
+    /// punches should be handled without crashing.
+    #[test]
+    fn only_break_punches_without_check_in() {
+        let d = date_2026_07_10();
+        let punches = vec![
+            punch_at("145", d, time(12, 0, 0), PunchStatus::BreakOut),
+            punch_at("145", d, time(12, 30, 0), PunchStatus::BreakIn),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+        // Should produce a WorkDay (not crash), even though there's no CheckIn
+        assert_eq!(work_days.len(), 1);
+        let day = &work_days[0];
+        assert_eq!(day.total_regular_seconds, 0);
+        assert_eq!(day.total_break_seconds, 30 * 60);
+    }
+
+    /// Edge case: Multi-month weekly aggregation — test that
+    /// `aggregate_weekly_hours` correctly splits across ISO week boundaries
+    /// when dates span month/year boundaries.
+    #[test]
+    fn aggregate_weekly_hours_crosses_month_boundary() {
+        // Monday 2026-06-29 (ISO week 27 of 2026) and Tuesday 2026-07-01
+        // These are in different months but potentially the same ISO week.
+        // ISO week 27 2026 runs from June 29 to July 5.
+        let d1 = Date::new(2026, 6, 29).unwrap(); // Mon
+        let d2 = Date::new(2026, 7, 1).unwrap(); // Wed
+        let d3 = Date::new(2026, 7, 6).unwrap(); // Mon (ISO week 28)
+
+        let dh = vec![
+            DailyHours { date: d1, regular_seconds: 28800, overtime_seconds: 0 },
+            DailyHours { date: d2, regular_seconds: 14400, overtime_seconds: 0 },
+            DailyHours { date: d3, regular_seconds: 3600, overtime_seconds: 3600 },
+        ];
+
+        let weeks = AttendanceCalculator::aggregate_weekly_hours(&dh);
+        // d1 and d2 should be in the same ISO week, d3 in the next
+        assert_eq!(weeks.len(), 2, "should produce two ISO weeks");
+        assert!(weeks.iter().any(|w| w.total_seconds == 28800 + 14400));
+        assert!(weeks.iter().any(|w| w.total_seconds == 3600 + 3600));
+    }
+
+    /// Edge case: Status distribution skips weekends — verify that weekends
+    /// don't count as absent days even when no punches exist.
+    #[test]
+    fn status_distribution_skips_weekends() {
+        // Mon 2026-07-06 to Fri 2026-07-10 (5 working days)
+        let from = Date::new(2026, 7, 6).unwrap();
+        let to = Date::new(2026, 7, 10).unwrap();
+
+        // Employee "145" punches on Tue only
+        let d_tue = Date::new(2026, 7, 7).unwrap();
+        let punches = vec![
+            punch_at("145", d_tue, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d_tue, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+        let policy = WorkPolicy::standard_9to5();
+        let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+
+        let dist = AttendanceCalculator::compute_status_distribution(&work_days, &policy, from, to);
+        // Only 5 working days (Mon-Fri). Tue is full, the other 4 are absent.
+        assert_eq!(dist.full_days, 1);
+        assert_eq!(dist.half_days, 0);
+        assert_eq!(dist.absent_days, 4);
+        // Total = 5 working days, weekends (Sat/Sun) excluded entirely.
+        assert_eq!(dist.total_employee_days(), 5);
+    }
 }

@@ -397,7 +397,7 @@ impl SqliteStorage {
              WHERE 1=1",
         );
 
-        // ── Device filter (multi-select takes precedence; single is backward compat) ──
+        // ── Device filter ────────────────────────────────────────────────
         if let Some(sns) = &filter.device_sns {
             if !sns.is_empty() {
                 builder.push(" AND p.device_sn IN (");
@@ -407,13 +407,17 @@ impl SqliteStorage {
                 }
                 separated.push_unseparated(")");
             }
-        } else if let Some(sn) = &filter.device_sn {
-            builder.push(" AND p.device_sn = ");
-            builder.push_bind(sn);
         }
-        if let Some(pin) = &filter.user_pin {
-            builder.push(" AND p.user_pin = ");
-            builder.push_bind(pin);
+        // ── User PIN filter ─────────────────────────────────────────────
+        if let Some(pins) = &filter.user_pins {
+            if !pins.is_empty() {
+                builder.push(" AND p.user_pin IN (");
+                let mut separated = builder.separated(", ");
+                for pin in pins {
+                    separated.push_bind(pin);
+                }
+                separated.push_unseparated(")");
+            }
         }
         if let Some(since) = &filter.since {
             builder.push(" AND p.timestamp >= ");
@@ -733,7 +737,7 @@ pub(crate) mod tests {
             .await
             .unwrap();
 
-        let filter = PunchFilter { device_sn: Some("SN001".into()), ..Default::default() };
+        let filter = PunchFilter { device_sns: Some(vec!["SN001".into()]), ..Default::default() };
         let results = storage.query_punches(&filter).await.unwrap();
         assert_eq!(results.len(), 2);
         for r in &results {
@@ -757,7 +761,7 @@ pub(crate) mod tests {
             .await
             .unwrap();
 
-        let filter = PunchFilter { user_pin: Some("145".into()), ..Default::default() };
+        let filter = PunchFilter { user_pins: Some(vec!["145".into()]), ..Default::default() };
         let results = storage.query_punches(&filter).await.unwrap();
         assert_eq!(results.len(), 2);
         for r in &results {
@@ -843,7 +847,7 @@ pub(crate) mod tests {
 
         // Attempt SQL injection via device_sn filter
         let filter =
-            PunchFilter { device_sn: Some("SN001' OR 1=1 --".into()), ..Default::default() };
+            PunchFilter { device_sns: Some(vec!["SN001' OR 1=1 --".into()]), ..Default::default() };
         // Should return 0 results (no device with that exact string), NOT all records
         let results = storage.query_punches(&filter).await.unwrap();
         assert_eq!(results.len(), 0, "SQL injection via device_sn should be blocked");
@@ -859,7 +863,7 @@ pub(crate) mod tests {
 
         // Attempt SQL injection via user_pin filter
         let filter = PunchFilter {
-            user_pin: Some("145'; DROP TABLE attendance_punches; --".into()),
+            user_pins: Some(vec!["145'; DROP TABLE attendance_punches; --".into()]),
             ..Default::default()
         };
         let results = storage.query_punches(&filter).await.unwrap();
@@ -1152,7 +1156,7 @@ pub(crate) mod tests {
             };
 
             let filter =
-                PunchFilter { params, device_sn: Some("SN001".into()), ..Default::default() };
+                PunchFilter { params, device_sns: Some(vec!["SN001".into()]), ..Default::default() };
             let results = storage.query_punches(&filter).await.unwrap();
 
             if results.is_empty() {

@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { IconTable, IconTimeline } from "@tabler/icons-react";
+import { IconTable, IconTimeline, IconCalendar } from "@tabler/icons-react";
 
 import { usePunchQueryPage } from "../hooks/use-punch-query-page";
 import { useMemo, useState, useCallback } from "react";
@@ -10,6 +10,7 @@ import type { ViewType } from "@/modules/shared/components";
 import { Section, EmptyState, Banner, type ColumnOption } from "@/components/ui";
 import { PUNCH_STATUSES } from "@shared/punch-statuses";
 import { PunchTimelineView } from "./punch-timeline-view";
+import { AttendanceCalendarView } from "@/modules/attendance";
 
 function useStatusOptions() {
 	const { _ } = useLingui();
@@ -107,6 +108,7 @@ export function PunchQueryView() {
 		() => [
 			{ value: "table" as const, label: _(msg`Table`), icon: <IconTable size={14} /> },
 			{ value: "timeline" as const, label: _(msg`Timeline`), icon: <IconTimeline size={14} /> },
+			{ value: "calendar" as const, label: _(msg`Calendar`), icon: <IconCalendar size={14} /> },
 		],
 		[_],
 	);
@@ -123,6 +125,15 @@ export function PunchQueryView() {
 						filterUntil={page.filters.until}
 						punches={page.punches}
 						isLoading={page.isLoading}
+					/>
+				);
+			}
+			if (view === "calendar") {
+				const today = new Date();
+				return (
+					<AttendanceCalendarView
+						year={page.dateFrom?.getFullYear() ?? today.getFullYear()}
+						month={(page.dateFrom?.getMonth() ?? today.getMonth()) + 1}
 					/>
 				);
 			}

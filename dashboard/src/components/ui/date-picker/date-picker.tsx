@@ -58,7 +58,111 @@ type DatePickerProps = {
   className?: string;
   /** HTML id (auto-generated if omitted). */
   id?: string;
+  /**
+   * When true, renders the calendar inline without a FloatingPortal.
+   * Required when the DatePicker is nested inside another popover/dialog
+   * (e.g., FilterDropdown), because a FloatingPortal would place the
+   * calendar outside the parent popover's DOM, causing the parent to
+   * detect calendar clicks as "outside clicks" and dismiss prematurely.
+   */
+  disablePortal?: boolean;
 };
+
+// ── Calendar content (shared between portal and inline) ────────────────────
+
+type CalendarOverlayProps = {
+  refs: ReturnType<typeof useFloating>["refs"];
+  floatingStyles: ReturnType<typeof useFloating>["floatingStyles"];
+  getFloatingProps: ReturnType<typeof useInteractions>["getFloatingProps"];
+  isRange: boolean;
+  presets?: DateRangePreset[];
+  calendarStartDate: Date | null;
+  calendarEndDate: Date | null;
+  value: Date | null;
+  handleRangeChange: (dates: [Date | null, Date | null]) => void;
+  handleSingleChange: (date: Date | null) => void;
+  handlePresetClick: (preset: DateRangePreset) => void;
+  minDate?: Date;
+  maxDate?: Date;
+};
+
+function CalendarContent({
+  refs,
+  floatingStyles,
+  getFloatingProps,
+  isRange,
+  presets,
+  calendarStartDate,
+  calendarEndDate,
+  value,
+  handleRangeChange,
+  handleSingleChange,
+  handlePresetClick,
+  minDate,
+  maxDate,
+}: CalendarOverlayProps) {
+  return (
+    <div
+      data-slot="date-picker-popup"
+      ref={refs.setFloating}
+      style={floatingStyles}
+      className={styles.popup}
+      {...getFloatingProps()}
+    >
+      {isRange && presets && presets.length > 0 && (
+        <div data-slot="date-picker-presets" className={styles.presets}>
+          {presets.map((preset) => (
+            <Tag
+              key={preset.key}
+              text={preset.label()}
+              color="accent"
+              variant="outline"
+              onClick={() => handlePresetClick(preset)}
+            />
+          ))}
+        </div>
+      )}
+
+      {isRange ? (
+        <ReactDatePicker
+          inline
+          selectsRange
+          startDate={calendarStartDate}
+          endDate={calendarEndDate ?? undefined}
+          onChange={handleRangeChange}
+          minDate={minDate}
+          maxDate={maxDate}
+          calendarClassName={styles.calendar}
+        />
+      ) : (
+        <ReactDatePicker
+          inline
+          selected={value}
+          onChange={handleSingleChange}
+          minDate={minDate}
+          maxDate={maxDate}
+          calendarClassName={styles.calendar}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Wrapper: portal or inline depending on disablePortal ───────────────────
+
+function CalendarOverlay({
+  disablePortal,
+  ...rest
+}: CalendarOverlayProps & { disablePortal: boolean }) {
+  if (disablePortal) {
+    return <CalendarContent {...rest} />;
+  }
+  return (
+    <FloatingPortal>
+      <CalendarContent {...rest} />
+    </FloatingPortal>
+  );
+}
 
 // ── Component ──────────────────────────────────────────────────────────────
 
@@ -81,6 +185,7 @@ export function DatePicker({
   disabled = false,
   className,
   id: externalId,
+  disablePortal = false,
 }: DatePickerProps) {
   const { _ } = useLingui();
   const autoId = useId();
@@ -232,51 +337,22 @@ export function DatePicker({
       )}
 
       {open && (
-        <FloatingPortal>
-          <div
-            data-slot="date-picker-popup"
-            ref={refs.setFloating}
-            style={floatingStyles}
-            className={styles.popup}
-            {...getFloatingProps()}
-          >
-            {isRange && presets && presets.length > 0 && (
-              <div data-slot="date-picker-presets" className={styles.presets}>
-                {presets.map((preset) => (
-                  <Tag
-                    key={preset.key}
-                    text={preset.label()}
-                    color="accent"
-                    variant="outline"
-                    onClick={() => handlePresetClick(preset)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {isRange ? (
-              <ReactDatePicker
-                inline
-                selectsRange
-                startDate={calendarStartDate}
-                endDate={calendarEndDate ?? undefined}
-                onChange={handleRangeChange}
-                minDate={minDate}
-                maxDate={maxDate}
-                calendarClassName={styles.calendar}
-              />
-            ) : (
-              <ReactDatePicker
-                inline
-                selected={value}
-                onChange={handleSingleChange}
-                minDate={minDate}
-                maxDate={maxDate}
-                calendarClassName={styles.calendar}
-              />
-            )}
-          </div>
-        </FloatingPortal>
+        <CalendarOverlay
+          disablePortal={disablePortal}
+          refs={refs}
+          floatingStyles={floatingStyles}
+          getFloatingProps={getFloatingProps}
+          isRange={isRange}
+          presets={presets}
+          calendarStartDate={calendarStartDate}
+          calendarEndDate={calendarEndDate}
+          value={value}
+          handleRangeChange={handleRangeChange}
+          handleSingleChange={handleSingleChange}
+          handlePresetClick={handlePresetClick}
+          minDate={minDate}
+          maxDate={maxDate}
+        />
       )}
     </div>
   );

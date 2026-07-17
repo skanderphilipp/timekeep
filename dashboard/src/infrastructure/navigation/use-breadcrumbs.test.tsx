@@ -60,9 +60,9 @@ describe("useBreadcrumbs", () => {
       ]);
     });
 
-    it('derives single segment from "/punches"', () => {
-      expect(renderBreadcrumbs("/punches")).toEqual([
-        { label: "Punch Records", path: "/punches" },
+    it('derives single segment from "/attendance"', () => {
+      expect(renderBreadcrumbs("/attendance")).toEqual([
+        { label: "Attendance", path: "/attendance" },
       ]);
     });
 

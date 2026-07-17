@@ -290,6 +290,10 @@ pub(crate) async fn remove_device(
     State(state): State<AppState>,
     Path(sn): Path<String>,
 ) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    // Verify existence first
+    if state.storage.list_device_configs().await?.iter().all(|d| d.serial_number != sn) {
+        return Err(AppError::not_found(format!("device '{sn}'")));
+    }
     state.storage.delete_device_config(&sn).await?;
     state.event_bus.publish(DomainEvent::DeviceRemoved { device_sn: sn });
     Ok(Json(ApiEnvelope::success(StatusResponse::deleted())))

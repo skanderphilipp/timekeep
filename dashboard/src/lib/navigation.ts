@@ -12,12 +12,12 @@ export { AppRoute } from "@shared/paths";
 
 // ── Navigation helpers (for programmatic use) ─────────────────────────────
 
-/** Navigate to the punch list pre-filtered for a device. */
-export function punchesForDevice(deviceSn: string): string {
-  return `/punches?device_sn=${encodeURIComponent(deviceSn)}`;
+/** Navigate to the attendance list pre-filtered for a device. */
+export function attendanceForDevice(deviceSn: string): string {
+  return `/attendance?device_sn=${encodeURIComponent(deviceSn)}`;
 }
 
-/** Navigate to the punch list pre-filtered for a user. */
-export function punchesForUser(userPin: string): string {
-  return `/punches?user_pin=${encodeURIComponent(userPin)}`;
+/** Navigate to the attendance list pre-filtered for a user. */
+export function attendanceForUser(userPin: string): string {
+  return `/attendance?user_pin=${encodeURIComponent(userPin)}`;
 }

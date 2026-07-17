@@ -13,6 +13,26 @@ import { useSchemaColumns } from "./use-schema-columns";
 import type { FacetKind } from "@/lib/api";
 import type { DateRangePreset } from "@/components/ui";
 
+// ── Helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Normalize `facet_kind` from the backend schema.
+ *
+ * The backend returns `facet_kind` as either:
+ *   - A string: `"reference"` | `"enum"`
+ *   - An object: `{ type: "reference" }` | `{ type: "enum" }`
+ *
+ * Both formats are normalized to a plain string or null.
+ */
+function normalizeFacetKind(raw: unknown): FacetKind | null {
+	if (raw === null || raw === undefined) return null;
+	if (typeof raw === "string") return raw as FacetKind;
+	if (typeof raw === "object" && raw !== null && "type" in raw) {
+		return (raw as { type: string }).type as FacetKind;
+	}
+	return null;
+}
+
 // ── Types ───────────────────────────────────────────────────────────────
 
 /** Describes a single filterable dimension from the schema or entity config. */
@@ -76,11 +96,13 @@ export function useFilterFields(entity: string): UseFilterFieldsResult {
 			for (const col of schema.columns) {
 				if (!col.filterable) continue;
 
+				const facetKind = normalizeFacetKind(col.facet_kind);
+
 				dims.push({
 					field: col.field,
 					label: col.label,
-					facetKind: col.facet_kind ?? null,
-					uiKind: col.facet_kind === "reference" ? "reference" : "enum",
+					facetKind,
+					uiKind: facetKind === "reference" ? "reference" : "enum",
 				});
 			}
 		}

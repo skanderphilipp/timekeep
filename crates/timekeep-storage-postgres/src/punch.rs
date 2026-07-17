@@ -384,13 +384,17 @@ impl PostgresStorage {
                 }
                 separated.push_unseparated(")");
             }
-        } else if let Some(sn) = &filter.device_sn {
-            builder.push(" AND p.device_sn = ");
-            builder.push_bind(sn);
         }
-        if let Some(pin) = &filter.user_pin {
-            builder.push(" AND p.user_pin = ");
-            builder.push_bind(pin);
+        // ── User PIN filter ─────────────────────────────────────────────
+        if let Some(pins) = &filter.user_pins {
+            if !pins.is_empty() {
+                builder.push(" AND p.user_pin IN (");
+                let mut separated = builder.separated(", ");
+                for pin in pins {
+                    separated.push_bind(pin);
+                }
+                separated.push_unseparated(")");
+            }
         }
         if let Some(since) = &filter.since {
             builder.push(" AND p.timestamp >= ");
@@ -720,7 +724,7 @@ mod tests {
             .await
             .unwrap();
 
-        let filter = PunchFilter { device_sn: Some("DEV001".into()), ..Default::default() };
+        let filter = PunchFilter { device_sns: Some(vec!["DEV001".into()]), ..Default::default() };
         let results = storage.query_punches(&filter).await.unwrap();
         assert_eq!(results.len(), 2);
         for r in &results {
@@ -746,7 +750,7 @@ mod tests {
             .await
             .unwrap();
 
-        let filter = PunchFilter { user_pin: Some("145".into()), ..Default::default() };
+        let filter = PunchFilter { user_pins: Some(vec!["145".into()]), ..Default::default() };
         let results = storage.query_punches(&filter).await.unwrap();
         assert_eq!(results.len(), 2);
         for r in &results {

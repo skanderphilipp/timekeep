@@ -14,13 +14,12 @@ use crate::query::{ListParams, SortOrder};
 pub struct PunchFilter {
     /// Shared search/sort/page params.
     pub params: ListParams,
-    /// Filter by device serial number (single, for backward compat).
-    /// Prefer `device_sns` for multi-select.
-    pub device_sn: Option<String>,
-    /// Filter by multiple device serial numbers (OR logic).
+    /// Filter by device serial numbers (OR logic).
+    /// Accepts single or multiple values; always stored as a Vec.
     pub device_sns: Option<Vec<String>>,
-    /// Filter by user PIN (exact match).
-    pub user_pin: Option<String>,
+    /// Filter by user PINs (OR logic).
+    /// Accepts single or multiple values; always stored as a Vec.
+    pub user_pins: Option<Vec<String>>,
     /// Only punches after this timestamp (inclusive).
     pub since: Option<jiff::Timestamp>,
     /// Only punches before this timestamp (inclusive).
@@ -55,9 +54,8 @@ impl Default for PunchFilter {
                 limit: 10_000,
                 ..Default::default()
             },
-            device_sn: None,
             device_sns: None,
-            user_pin: None,
+            user_pins: None,
             since: None,
             until: None,
             status: None,
@@ -93,8 +91,9 @@ impl Default for DeviceFilter {
 pub struct EmployeeFilter {
     /// Shared search/sort/page params.
     pub params: ListParams,
-    /// Filter by department UUID (exact match).
-    pub department_id: Option<String>,
+    /// Filter by department UUIDs (OR logic).
+    /// Accepts single or multiple values; always stored as a Vec.
+    pub department_ids: Option<Vec<String>>,
     /// Filter by active status.
     pub active: Option<bool>,
 }
@@ -107,7 +106,7 @@ impl Default for EmployeeFilter {
                 sort_order: SortOrder::Asc,
                 ..Default::default()
             },
-            department_id: None,
+            department_ids: None,
             active: None,
         }
     }

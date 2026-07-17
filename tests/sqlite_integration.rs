@@ -150,7 +150,7 @@ async fn test_query_filter_by_device() {
         .await
         .unwrap();
 
-    let filter = PunchFilter { device_sn: Some("DEV001".into()), ..Default::default() };
+    let filter = PunchFilter { device_sns: Some(vec!["DEV001".into()]), ..Default::default() };
     let results = storage.query_punches(&filter).await.unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].user_pin, "145");
@@ -169,7 +169,7 @@ async fn test_query_filter_by_user_pin() {
         .await
         .unwrap();
 
-    let filter = PunchFilter { user_pin: Some("145".into()), ..Default::default() };
+    let filter = PunchFilter { user_pins: Some(vec!["145".into()]), ..Default::default() };
     let results = storage.query_punches(&filter).await.unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].device_sn, "DEV001");

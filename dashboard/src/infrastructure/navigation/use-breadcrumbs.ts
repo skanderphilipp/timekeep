@@ -58,7 +58,7 @@ export function useBreadcrumbs(options?: UseBreadcrumbsOptions): BreadcrumbSegme
       dashboard: _(msg`Dashboard`),
       devices: _(msg`Devices`),
       employees: _(msg`Employees`),
-      punches: _(msg`Punch Records`),
+      attendance: _(msg`Attendance`),
       reports: _(msg`Reports`),
       settings: _(msg`Settings`),
       users: _(msg`Users`),

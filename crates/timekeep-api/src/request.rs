@@ -6,7 +6,60 @@
 //! All types derive `utoipa::ToSchema` for automatic OpenAPI 3.1 spec generation.
 
 use serde::Deserialize;
+use serde::de::{self, Deserializer, SeqAccess, Visitor};
+use std::fmt;
 use utoipa::{IntoParams, ToSchema};
+
+/// Deserialize an optional multi-value filter field.
+///
+/// Accepts both singular (`?key=val`) and array syntax
+/// (`?key[]=val1&key[]=val2`). Always normalizes into
+/// `Option<Vec<String>>` — `None` when absent, `Some(vec![…])`
+/// when at least one value is present.
+pub(crate) fn deserialize_multi<'de, D>(deserializer: D) -> Result<Option<Vec<String>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct MultiVisitor;
+
+    impl<'de> Visitor<'de> for MultiVisitor {
+        type Value = Option<Vec<String>>;
+
+        fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str("a string or sequence of strings")
+        }
+
+        fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
+            Ok(Some(vec![v.to_owned()]))
+        }
+
+        fn visit_string<E: de::Error>(self, v: String) -> Result<Self::Value, E> {
+            Ok(Some(vec![v]))
+        }
+
+        fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+            let mut values = Vec::new();
+            while let Some(s) = seq.next_element::<String>()? {
+                values.push(s);
+            }
+            if values.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(values))
+            }
+        }
+
+        fn visit_none<E: de::Error>(self) -> Result<Self::Value, E> {
+            Ok(None)
+        }
+
+        fn visit_unit<E: de::Error>(self) -> Result<Self::Value, E> {
+            Ok(None)
+        }
+    }
+
+    deserializer.deserialize_any(MultiVisitor)
+}
 
 // ─── Auth ───────────────────────────────────────────────────────────
 
@@ -264,14 +317,16 @@ pub struct PunchListQuery {
     /// Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
     pub q: Option<String>,
 
-    /// Filter by device serial number (single, backward compat).
-    pub device_sn: Option<String>,
-    /// Filter by multiple device serial numbers (OR logic).
-    /// Accepts repeated query params: `?device_sn[]=DEV-001&device_sn[]=DEV-002`
-    #[serde(default, alias = "device_sn[]")]
+    /// Filter by device serial numbers (OR logic).
+    /// Accepts both `?device_sns=DEV-001` (single) and
+    /// `?device_sns[]=DEV-001&device_sns[]=DEV-002` (multiple).
+    #[serde(default, alias = "device_sns[]", deserialize_with = "deserialize_multi")]
     pub device_sns: Option<Vec<String>>,
-    /// Filter by user PIN (exact match).
-    pub user_pin: Option<String>,
+    /// Filter by user PINs (OR logic).
+    /// Accepts both `?user_pins=123` (single) and
+    /// `?user_pins[]=123&user_pins[]=456` (multiple).
+    #[serde(default, alias = "user_pins[]", deserialize_with = "deserialize_multi")]
+    pub user_pins: Option<Vec<String>>,
     /// Unix timestamp (seconds) — return punches after this time.
     pub since: Option<i64>,
     /// Unix timestamp (seconds) — return punches before this time.
@@ -485,11 +540,13 @@ pub struct UpdateWorkPolicyRequest {
 /// Query parameters for punch data export.
 #[derive(Debug, Deserialize, IntoParams)]
 pub struct ExportQueryParams {
-    /// Filter by device serial number
-    pub device_sn: Option<String>,
+    /// Filter by device serial numbers (OR logic).
+    #[serde(default, alias = "device_sns[]", deserialize_with = "deserialize_multi")]
+    pub device_sns: Option<Vec<String>>,
 
-    /// Filter by user PIN
-    pub user_pin: Option<String>,
+    /// Filter by user PINs (OR logic).
+    #[serde(default, alias = "user_pins[]", deserialize_with = "deserialize_multi")]
+    pub user_pins: Option<Vec<String>>,
 
     /// Unix timestamp (seconds) — return punches after this time
     pub since: Option<i64>,
@@ -766,8 +823,11 @@ pub struct EmployeeListQuery {
     /// typo-tolerant, ranked, across name/pin/external_id).
     /// Takes priority over `params.search` when both are present.
     pub q: Option<String>,
-    /// Filter by department UUID (exact match).
-    pub department_id: Option<String>,
+    /// Filter by department UUIDs (OR logic).
+    /// Accepts both `?department_ids=DEPT-1` (single) and
+    /// `?department_ids[]=DEPT-1&department_ids[]=DEPT-2` (multiple).
+    #[serde(default, alias = "department_ids[]", deserialize_with = "deserialize_multi")]
+    pub department_ids: Option<Vec<String>>,
     /// Filter by active status ("true" or "false").
     pub active: Option<String>,
 
@@ -816,10 +876,12 @@ pub struct FacetFilterParams {
     pub search: Option<String>,
     #[serde(default = "default_facet_limit")]
     pub limit: u32,
-    pub device_sn: Option<String>,
-    #[serde(default, alias = "device_sn[]")]
+    /// Filter by device serial numbers (OR logic).
+    #[serde(default, alias = "device_sns[]", deserialize_with = "deserialize_multi")]
     pub device_sns: Option<Vec<String>>,
-    pub user_pin: Option<String>,
+    /// Filter by user PINs (OR logic).
+    #[serde(default, alias = "user_pins[]", deserialize_with = "deserialize_multi")]
+    pub user_pins: Option<Vec<String>>,
     pub since: Option<i64>,
     pub until: Option<i64>,
     pub status: Option<String>,

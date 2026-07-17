@@ -1,0 +1,30 @@
+.legend {
+  display: flex;
+  gap: var(--ao-spacing-3);
+  padding: var(--ao-spacing-2);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-0_5);
+  font-size: var(--ao-font-size-xs);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--ao-radius-xs);
+}
+
+.swatchPresent {
+  background: var(--ao-status-success-solid);
+}
+
+.swatchLate {
+  background: var(--ao-status-warning-solid);
+}
+
+.swatchAbsent {
+  background: var(--ao-color-gray-200);
+}

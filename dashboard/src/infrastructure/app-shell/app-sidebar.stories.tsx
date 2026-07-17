@@ -40,9 +40,9 @@ const navItems: ResolvedNavItem[] = [
     ],
   },
   {
-    key: "punches",
-    label: L("Punches"),
-    path: "/punches",
+    key: "attendance",
+    label: L("Attendance"),
+    path: "/attendance",
     icon: IconFingerprint,
     end: false,
   },

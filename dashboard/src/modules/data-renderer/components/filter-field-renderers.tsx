@@ -40,6 +40,7 @@ export function renderFilterDimensions(
 								}}
 								placeholder={dim.label}
 								presets={context.dateRange!.presets}
+								disablePortal
 							/>
 						</section>
 					),

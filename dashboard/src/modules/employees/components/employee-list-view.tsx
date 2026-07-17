@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/layout";
 import { DataListView } from "@/modules/data-renderer";
 import { useEmployeeListPage } from "../hooks/use-employee-list-page";
 import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
-import { EmployeeCalendarView } from "./employee-calendar-view";
+import { AttendanceCalendarView } from "@/modules/attendance";
 
 /**
  * EmployeeListView — schema-driven employee directory with facet-powered filters.
@@ -66,7 +66,7 @@ export function EmployeeListView() {
           editingConfig={page.editingConfig}
           renderCustomView={(view) =>
             view === "calendar" ? (
-              <EmployeeCalendarView
+              <AttendanceCalendarView
                 year={page.calendarYear}
                 month={page.calendarMonth}
                 onDayClick={page.onCalendarDayClick}

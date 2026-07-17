@@ -40,7 +40,7 @@ export function App() {
                 <Route path={AppRoute.devices.list} element={<DeviceListPage />} />
                 {/* Device detail (viewer+) */}
                 <Route path="/devices/:sn" element={<DeviceDetailPage />} />
-                <Route path={AppRoute.punches.list} element={<PunchQueryPage />} />
+                <Route path={AppRoute.attendance.list} element={<PunchQueryPage />} />
                 <Route path={AppRoute.employees.list} element={<EmployeeListPage />} />
                 <Route path="/employees/:id" element={<EmployeeDetailPage />} />
                 <Route path={AppRoute.reports} element={<ReportsPage />} />

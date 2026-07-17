@@ -71,7 +71,7 @@ export function useNavigation(): ResolvedNavItem[] {
       "nav.dashboard": () => _(/*i18n*/ { id: "nav.dashboard", message: "Dashboard" }),
       "nav.devices": () => _(/*i18n*/ { id: "nav.devices", message: "Devices" }),
       "nav.devices.list": () => _(/*i18n*/ { id: "nav.devices.list", message: "All Devices" }),
-      "nav.punches": () => _(/*i18n*/ { id: "nav.punches", message: "Punches" }),
+      "nav.attendance": () => _(/*i18n*/ { id: "nav.attendance", message: "Attendance" }),
       "nav.employees": () => _(/*i18n*/ { id: "nav.employees", message: "Employees" }),
       "nav.reports": () => _(/*i18n*/ { id: "nav.reports", message: "Reports" }),
       "nav.departments": () => _(/*i18n*/ { id: "nav.departments", message: "Departments" }),

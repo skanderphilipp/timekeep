@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
@@ -19,12 +19,8 @@ type EnrollEmployeeDialogProps = {
   deviceSn: string;
 };
 
-const BIOMETRIC_OPTIONS = [
-  { key: "fingerprint", label: "Fingerprint" },
-  { key: "face", label: "Face" },
-  { key: "card", label: "Card" },
-  { key: "password", label: "Password" },
-] as const;
+const BIOMETRIC_KEYS = ["fingerprint", "face", "card", "password"] as const;
+type BiometricKey = (typeof BIOMETRIC_KEYS)[number];
 
 /**
  * Enroll employee dialog — PIN input + biometric type checkboxes.
@@ -43,7 +39,20 @@ export function EnrollEmployeeDialog({
   const [pin, setPin] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>(["fingerprint"]);
 
-  const toggleType = (key: string, checked: boolean) => {
+  	const biometricOptions = useMemo(() => {
+  		const labels: Record<BiometricKey, string> = {
+  			fingerprint: _(msg`Fingerprint`),
+  			face: _(msg`Face`),
+  			card: _(msg`Card`),
+  			password: _(msg`Password`),
+  		};
+  		return BIOMETRIC_KEYS.map((key) => ({
+  			key,
+  			label: labels[key],
+  		}));
+  	}, [_]);
+
+  	const toggleType = (key: string, checked: boolean) => {
     setSelectedTypes((prev) =>
       checked ? [...prev, key] : prev.filter((t) => t !== key),
     );
@@ -88,14 +97,14 @@ export function EnrollEmployeeDialog({
             {_(msg`Biometric Types`)}
           </Text>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ao-spacing-3)" }}>
-            {BIOMETRIC_OPTIONS.map((opt) => (
-              <Checkbox
-                key={opt.key}
-                label={_(msg`${opt.label}`)}
-                checked={selectedTypes.includes(opt.key)}
-                onCheckedChange={(checked) => toggleType(opt.key, checked)}
-              />
-            ))}
+            		{biometricOptions.map((opt) => (
+            			<Checkbox
+            				key={opt.key}
+            				label={opt.label}
+            				checked={selectedTypes.includes(opt.key)}
+            				onCheckedChange={(checked) => toggleType(opt.key, checked)}
+            			/>
+            		))}
           </div>
         </div>
 

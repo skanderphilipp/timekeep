@@ -64,7 +64,6 @@ pub(crate) async fn query_punches_mgmt(
     State(state): State<AppState>,
     Query(q): Query<PunchListQuery>,
 ) -> Result<axum::response::Response, AppError> {
-
     // ── Tantivy full-text search path ────────────────────────────
     if q.q.as_ref().is_some_and(|s| !s.trim().is_empty()) {
         return query_punches_via_search(&state, &q).await;
@@ -91,7 +90,11 @@ pub(crate) async fn query_punches_mgmt(
         PageMeta::single()
     };
 
-    crate::response::build_sparse_envelope(PunchListResponse { punches: responses }, meta, &q.params.fields)
+    crate::response::build_sparse_envelope(
+        PunchListResponse { punches: responses },
+        meta,
+        &q.params.fields,
+    )
 }
 
 /// Query punches through Tantivy full-text search.
@@ -146,9 +149,12 @@ async fn query_punches_via_search(
     let has_more = results.has_more;
     let meta = if has_more { PageMeta::has_more(String::new()) } else { PageMeta::single() };
 
-    crate::response::build_sparse_envelope(PunchListResponse { punches: responses }, meta, &q.params.fields)
+    crate::response::build_sparse_envelope(
+        PunchListResponse { punches: responses },
+        meta,
+        &q.params.fields,
+    )
 }
-
 
 /// Build a PunchFilter from a PunchListQuery.
 pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
@@ -178,9 +184,8 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
 
     PunchFilter {
         params: q.params.clone(),
-        device_sn: q.device_sn.clone(),
         device_sns: q.device_sns.clone(),
-        user_pin: q.user_pin.clone(),
+        user_pins: q.user_pins.clone(),
         since,
         until,
         status,
@@ -268,7 +273,7 @@ pub(crate) async fn punch_filters(
     let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
 
     let context = FacetContext {
-        device_sns: q.device_sns.clone().or_else(|| q.device_sn.clone().map(|sn| vec![sn])),
+        device_sns: q.device_sns.clone(),
         since: q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status,
@@ -306,10 +311,15 @@ pub(crate) async fn correct_punch(
     Json(body): Json<CorrectPunchRequest>,
 ) -> Result<(StatusCode, Json<ApiEnvelope<PunchCorrectedResponse>>), AppError> {
     let status = match body.status.as_str() {
+        "check_in" => timekeep_core::PunchStatus::CheckIn,
         "check_out" => timekeep_core::PunchStatus::CheckOut,
         "break_out" => timekeep_core::PunchStatus::BreakOut,
         "break_in" => timekeep_core::PunchStatus::BreakIn,
-        _ => timekeep_core::PunchStatus::CheckIn,
+        other => {
+            return Err(AppError::validation(format!(
+                "invalid punch status '{other}'. Valid statuses: check_in, check_out, break_out, break_in"
+            )));
+        },
     };
 
     let ts = body

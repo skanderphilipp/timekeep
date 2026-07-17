@@ -12,9 +12,7 @@ use axum::{
 };
 
 use std::sync::Arc;
-use timekeep_core::{
-    AttendanceCalculator, DayStatus, PunchFilter,
-};
+use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter};
 
 use crate::AppState;
 use crate::dto::{
@@ -61,7 +59,7 @@ pub(crate) async fn employee_work_days(
     let punches = state
         .storage
         .query_punches(&PunchFilter {
-            user_pin: Some(user_pin.clone()),
+            user_pins: Some(vec![user_pin.clone()]),
             since,
             until,
             ..Default::default()
@@ -100,7 +98,7 @@ pub(crate) async fn employee_summary(
     let punches = state
         .storage
         .query_punches(&PunchFilter {
-            user_pin: Some(user_pin.clone()),
+            user_pins: Some(vec![user_pin.clone()]),
             since,
             until,
             ..Default::default()
@@ -258,7 +256,7 @@ pub(crate) async fn list_employees(
     let __fields = q.params.fields.clone();
     let filter = timekeep_core::EmployeeFilter {
         params: q.params,
-        department_id: q.department_id,
+        department_ids: q.department_ids.clone(),
         active: q.active.and_then(|a| a.parse::<bool>().ok()),
     };
     let result = employees(&state)?.list_employees_filtered(&filter).await?;
@@ -295,15 +293,19 @@ async fn list_employees_via_search(
     } else {
         // No search store — fall back to SQL LIKE path
         let __fields = q.params.fields.clone();
-    let filter = timekeep_core::EmployeeFilter {
+        let filter = timekeep_core::EmployeeFilter {
             params: q.params.clone(),
-            department_id: q.department_id.clone(),
+            department_ids: q.department_ids.clone(),
             active: q.active.as_deref().and_then(|a| a.parse::<bool>().ok()),
         };
         let result = employees(state)?.list_employees_filtered(&filter).await?;
         let responses: Vec<EmployeeResponse> =
             result.items.iter().map(EmployeeResponse::from).collect();
-        return crate::response::build_sparse_envelope(responses, PageMeta::single(), &q.params.fields);
+        return crate::response::build_sparse_envelope(
+            responses,
+            PageMeta::single(),
+            &q.params.fields,
+        );
     };
 
     // Cross-reference search results with the database
@@ -314,8 +316,9 @@ async fn list_employees_via_search(
         let emp_id = timekeep_core::EmployeeId::from(hit.entity_id.as_str());
         if let Some(emp) = repo.find_employee(&emp_id).await? {
             // Apply department/active filters (Tantivy may return extra results)
-            if let Some(ref dept_id) = q.department_id
-                && emp.department_id.as_deref() != Some(dept_id.as_str())
+            if let Some(ref dept_ids) = q.department_ids
+                && !dept_ids.is_empty()
+                && !dept_ids.iter().any(|id| emp.department_id.as_deref() == Some(id.as_str()))
             {
                 continue;
             }
@@ -574,7 +577,7 @@ pub(crate) async fn employee_monthly_trend(
     let punches = state
         .storage
         .query_punches(&PunchFilter {
-            user_pin: Some(user_pin.clone()),
+            user_pins: Some(vec![user_pin.clone()]),
             since,
             until,
             ..Default::default()
@@ -627,7 +630,7 @@ pub(crate) async fn employee_calendar(
     let punches = state
         .storage
         .query_punches(&PunchFilter {
-            user_pin: Some(user_pin.clone()),
+            user_pins: Some(vec![user_pin.clone()]),
             since,
             until,
             ..Default::default()
@@ -650,8 +653,6 @@ pub(crate) async fn employee_calendar(
 
     Ok(Json(ApiEnvelope::success(responses)))
 }
-
-
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 

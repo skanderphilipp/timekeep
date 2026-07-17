@@ -47,8 +47,12 @@ pub trait EmployeeStore: Send + Sync {
         filter: &EmployeeFilter,
     ) -> Result<ListResult<Employee>, Error> {
         let mut result = self.list_employees(&filter.params).await?;
-        if let Some(ref dept_id) = filter.department_id {
-            result.items.retain(|e| e.department_id.as_deref() == Some(dept_id.as_str()));
+        if let Some(ref dept_ids) = filter.department_ids {
+            if !dept_ids.is_empty() {
+                result.items.retain(|e| {
+                    e.department_id.as_deref().is_some_and(|id| dept_ids.iter().any(|d| d == id))
+                });
+            }
         }
         if let Some(active) = filter.active {
             result.items.retain(|e| e.active == active);

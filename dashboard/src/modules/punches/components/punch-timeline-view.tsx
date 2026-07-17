@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { DailyTimeline } from "./daily-timeline";
+import { AttendanceTimelineView } from "@/modules/attendance";
 import type { Punch } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function PunchTimelineView({
 
 	if (isLoading) {
 		return (
-			<DailyTimeline
+			<AttendanceTimelineView
 				date={effectiveDate}
 				filterSince={filterSince}
 				filterUntil={filterUntil}
@@ -72,7 +72,7 @@ export function PunchTimelineView({
 	}
 
 	return (
-		<DailyTimeline
+		<AttendanceTimelineView
 			date={effectiveDate}
 			filterSince={filterSince}
 			filterUntil={filterUntil}

@@ -106,10 +106,13 @@ pub(crate) async fn list_departments(
 ) -> Result<axum::response::Response, AppError> {
     let departments = state.storage.list_departments().await?;
 
-    let employee_store = crate::employees::employees(&state)?;
+    let employee_store = crate::employees::employees(&state).ok();
     let mut responses: Vec<DepartmentResponse> = Vec::with_capacity(departments.len());
     for dept in &departments {
-        let count = employee_store.count_employees_in_department(&dept.id.0).await.ok();
+        let count = match &employee_store {
+            Some(store) => store.count_employees_in_department(&dept.id.0).await.ok(),
+            None => None,
+        };
         let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
         responses.push(DepartmentResponse::from_department(dept, count, policy_title));
     }
@@ -142,8 +145,10 @@ pub(crate) async fn get_department(
         .await?
         .ok_or_else(|| AppError::not_found(format!("department '{id}'")))?;
 
-    let employee_count =
-        crate::employees::employees(&state)?.count_employees_in_department(&dept.id.0).await.ok();
+    let employee_count = match crate::employees::employees(&state).ok() {
+        Some(store) => store.count_employees_in_department(&dept.id.0).await.ok(),
+        None => None,
+    };
     let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
 
     Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(
@@ -288,8 +293,10 @@ pub(crate) async fn update_department(
         name: dept.name.clone(),
     });
 
-    let employee_count =
-        crate::employees::employees(&state)?.count_employees_in_department(&dept.id.0).await.ok();
+    let employee_count = match crate::employees::employees(&state).ok() {
+        Some(store) => store.count_employees_in_department(&dept.id.0).await.ok(),
+        None => None,
+    };
     let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
 
     Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(
