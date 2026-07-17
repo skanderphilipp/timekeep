@@ -18,6 +18,8 @@ import {
   FieldNumberInput,
   FieldTimeInput,
   FieldWeekdayToggle,
+  FieldMultiSelectInput,
+  FieldBooleanInput,
 } from "@/components/ui/field-input";
 import type {
   StatusFieldMetadata,
@@ -138,7 +140,24 @@ export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>
         />
       );
     }
-    // Fallback for non-weekday arrays: plain text input
+    // Labels-based array → multi-select
+    if (meta.labels && Object.keys(meta.labels).length > 0) {
+      const options: ComboboxOption[] = Object.entries(meta.labels).map(([value, label]) => ({
+        value,
+        label,
+      }));
+      const selectedValues = Array.isArray(props.value) ? (props.value as string[]) : [];
+      return (
+        <FieldMultiSelectInput
+          instanceId={props.instanceId}
+          values={selectedValues}
+          options={options}
+          onOptionSelected={(selected) => props.onEnter(selected as TValue)}
+          onEscape={() => props.onEscape(null as TValue)}
+        />
+      );
+    }
+    // Fallback: plain text for arrays without metadata
     return (
       <FieldTextInput
         instanceId={props.instanceId}
@@ -150,6 +169,18 @@ export function FieldEdit<TValue = unknown>(props: EditableCellEditProps<TValue>
         onShiftTab={(v) => props.onShiftTab(v as TValue)}
         onClickOutside={(e, v) => props.onClickOutside(e, v as TValue)}
         autoFocus={props.autoFocus}
+      />
+    );
+  }
+
+  // ── Boolean (toggle, active/inactive) ───────────────────────────────
+
+  if (type === "boolean") {
+    return (
+      <FieldBooleanInput
+        instanceId={props.instanceId}
+        value={Boolean(props.value)}
+        onToggle={(v) => props.onEnter(v as TValue)}
       />
     );
   }

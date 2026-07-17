@@ -35,7 +35,8 @@ export type FieldType =
   | "status"
   | "enum"
   | "reference"
-  | "array";
+  | "array"
+  | "boolean";
 
 // ── Field metadata (type-specific) ───────────────────────────────────────
 
@@ -120,6 +121,16 @@ export interface ArrayFieldMetadata extends BaseFieldMetadata {
   settings?: null;
 }
 
+// ── Boolean (toggle, active/inactive fields) ──────────────────────────
+
+export interface BooleanFieldMetadata extends BaseFieldMetadata {
+  /** Optional custom labels. Defaults to checkmark/X icons when absent. */
+  labels?: { true: string; false: string };
+  /** Optional color map for true/false states. */
+  colors?: { true: TagColor; false: TagColor };
+  settings?: null;
+}
+
 // ── Union type ───────────────────────────────────────────────────────────
 
 export type TagColor = "green" | "red" | "amber" | "blue" | "gray" | "accent";
@@ -131,7 +142,8 @@ export type FieldMetadata =
   | StatusFieldMetadata
   | EnumFieldMetadata
   | ReferenceFieldMetadata
-  | ArrayFieldMetadata;
+  | ArrayFieldMetadata
+  | BooleanFieldMetadata;
 
 // ── Field definition ─────────────────────────────────────────────────────
 

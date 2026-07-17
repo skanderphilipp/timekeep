@@ -4,6 +4,7 @@ import { TimestampFieldDisplay } from "./timestamp-field-display";
 import { EnumFieldDisplay } from "./enum-field-display";
 import { ReferenceFieldDisplay } from "./reference-field-display";
 import { ArrayFieldDisplay } from "./array-field-display";
+import { BooleanDisplay } from "@/components/ui/display";
 import type {
   TimestampFieldMetadata,
   StatusFieldMetadata,
@@ -82,6 +83,12 @@ export function FieldDisplay() {
   if (type === "array") {
     const meta = fieldDefinition.metadata as ArrayFieldMetadata;
     return <ArrayFieldDisplay value={value} metadata={meta} />;
+  }
+
+  // ── Boolean (toggle, active/inactive) ──────────────────────────────
+
+  if (type === "boolean") {
+    return <BooleanDisplay value={Boolean(value)} />;
   }
 
   // ── Default fallback ────────────────────────────────────────────────

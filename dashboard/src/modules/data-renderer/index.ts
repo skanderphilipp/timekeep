@@ -12,7 +12,7 @@ export type {
   SortDirection, SortEntry, FilterEntry, PaginationState, RowSelectionState,
   TextFieldMetadata, NumberFieldMetadata,
   TimestampFieldMetadata, StatusFieldMetadata, EnumFieldMetadata,
-  ReferenceFieldMetadata, ArrayFieldMetadata, TagColor,
+  ReferenceFieldMetadata, ArrayFieldMetadata, BooleanFieldMetadata, TagColor,
 } from "./types";
 
 // ── Guards ─────────────────────────────────────────────────────────────────
