@@ -72,9 +72,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     ],
   },
   {
-    key: "punches",
-    labelKey: "nav.punches",
-    path: "/punches",
+    key: "attendance",
+    labelKey: "nav.attendance",
+    path: "/attendance",
     iconName: "IconFingerprint",
   },
   {

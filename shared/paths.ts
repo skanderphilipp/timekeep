@@ -34,12 +34,12 @@ export const AppRoute = {
     edit: (sn: string) => `/devices/${encodeURIComponent(sn)}/edit`,
   },
 
-  punches: {
-    list: "/punches",
-    /** Opens the punch list filtered to a specific device. */
-    byDevice: (sn: string) => `/punches?device_sn=${encodeURIComponent(sn)}`,
-    /** Opens the punch list filtered to a specific user PIN. */
-    byUser: (pin: string) => `/punches?user_pin=${encodeURIComponent(pin)}`,
+  attendance: {
+    list: "/attendance",
+    /** Opens the attendance list filtered to a specific device. */
+    byDevice: (sn: string) => `/attendance?device_sn=${encodeURIComponent(sn)}`,
+    /** Opens the attendance list filtered to a specific user PIN. */
+    byUser: (pin: string) => `/attendance?user_pin=${encodeURIComponent(pin)}`,
   },
 
   employees: {
@@ -97,7 +97,7 @@ export const ALL_ROUTE_PATHS = [
   AppRoute.devices.groups,
   AppRoute.departments.list,
   AppRoute.workPolicies.list,
-  AppRoute.punches.list,
+  AppRoute.attendance.list,
   AppRoute.employees.list,
   AppRoute.employees.new,
   AppRoute.reports,

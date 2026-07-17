@@ -97,15 +97,21 @@
 
 .barTrack {
   flex: 1;
-  height: var(--ao-spacing-5);
+  height: var(--ao-spacing-7);
   position: relative;
+}
+
+/* Wrapper positions the block. */
+.blockWrapper {
+  height: 100%;
+  padding: 2px 0;
+  position: absolute;
+  top: 0;
 }
 
 .block {
   border-radius: var(--ao-radius-sm);
   height: 100%;
-  position: absolute;
-  top: 0;
   transition: opacity duration(instant) ease;
 
   &:hover {

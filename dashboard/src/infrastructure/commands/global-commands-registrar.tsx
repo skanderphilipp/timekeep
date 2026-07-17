@@ -65,7 +65,7 @@ export function GlobalCommandsRegistrar() {
       icon: IconFingerprint,
       keywords: ["attendance", "records", "check-in"],
       scope: { type: "global" },
-      action: () => navigate(AppRoute.punches.list),
+      action: () => navigate(AppRoute.attendance.list),
     },
     {
       id: "global-users",

@@ -3,6 +3,7 @@ import { IconDeviceDesktop } from "@tabler/icons-react";
 import { PageShell, PageBar } from "@/components/layout";
 import { RecordDetailRenderer } from "@/modules/record-detail";
 import { useDeviceDetailPage } from "../hooks/use-device-detail-page";
+import { useDeviceDetailCommands } from "../hooks/use-device-detail-commands";
 import {
   DeviceDetailExtras,
   DeviceConfigTabContent,
@@ -25,6 +26,7 @@ import {
  */
 export function DeviceDetailPage() {
   const page = useDeviceDetailPage();
+  useDeviceDetailCommands();
 
   return (
     <PageShell

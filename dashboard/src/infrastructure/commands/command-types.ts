@@ -13,7 +13,7 @@ export const PAGE_IDS = [
   "devices.list",
   "devices.new",
   "devices.detail",
-  "punches.list",
+  "attendance.list",
   "employees.list",
   "employees.detail",
   "employees.new",

@@ -1,6 +1,7 @@
-import { type ReactNode } from "react";
+import { type ReactNode, Fragment } from "react";
 import { clsx } from "clsx";
 
+import { TimelineTooltip } from "@/components/ui/timeline-tooltip";
 import { Badge } from "@/components/ui/badge";
 
 import styles from "./timeline.module.scss";
@@ -117,14 +118,26 @@ function TimelineRow({ name, subLabel, blocks, onClick }: TimelineRowData) {
       </div>
 
       <div data-slot="timeline-bar-track" className={styles.barTrack}>
-        {blocks.map((block, i) => (
-          <div
-            key={i}
-            className={clsx(styles.block, BLOCK_STYLES[block.color])}
-            style={{ left: `${block.left}%`, width: `${block.width}%` }}
-            title={block.title}
-          />
-        ))}
+        {blocks.map((block, i) => {
+          const blockElement = (
+            <div
+              className={clsx(styles.blockWrapper)}
+              style={{ left: `${block.left}%`, width: `${block.width}%` }}
+            >
+              <div
+                className={clsx(styles.block, BLOCK_STYLES[block.color])}
+              />
+            </div>
+          );
+
+          return block.title ? (
+            <TimelineTooltip key={i} label={block.title} placement="top">
+              {blockElement}
+            </TimelineTooltip>
+          ) : (
+            <Fragment key={i}>{blockElement}</Fragment>
+          );
+        })}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { msg } from "@lingui/core/macro";
 import { PageShell, PageBar } from "@/components/layout";
 import { RecordDetailRenderer } from "@/modules/record-detail";
 import { useEmployeeDetailPage } from "../hooks/use-employee-detail-page";
+import { useEmployeeDetailCommands } from "../hooks/use-employee-detail-commands";
 import { useEmployeeSync } from "../hooks/use-employee-sync";
 import { Button } from "@/components/ui";
 
@@ -19,6 +20,7 @@ export function EmployeeDetailPage() {
   const page = useEmployeeDetailPage();
   const { _ } = useLingui();
   const syncToDevices = useEmployeeSync(page.id);
+  useEmployeeDetailCommands();
 
   return (
     <PageShell

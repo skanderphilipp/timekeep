@@ -261,3 +261,69 @@ export function formatDuration(totalMinutes: number): string {
 	if (minutes === 0) return `${hours}h`;
 	return `${hours}h ${minutes}m`;
 }
+
+// ── Multi-employee aggregation ─────────────────────────────────────────────────
+
+export type DayAggregation = {
+	status: CalendarDayStatus;
+	presentCount: number;
+	totalCount: number;
+	avgHours: number | null;
+};
+
+/**
+ * Aggregate punches from multiple employees into a single day summary.
+ *
+ * Used for the "All Employees" calendar view. Each employee is classified
+ * individually, then results are aggregated:
+ * - status = "full" if majority present, "late" if any late, "absent" if none
+ * - presentCount = number of employees with any punches
+ * - totalCount = total unique employees who punched that day
+ * - avgHours = average hours across employees with punches
+ */
+export function aggregateDayStatus(punches: Punch[]): DayAggregation {
+	if (punches.length === 0) {
+		return { status: "absent", presentCount: 0, totalCount: 0, avgHours: null };
+	}
+
+	// Group punches by employee
+	const byEmployee = new Map<string, Punch[]>();
+	for (const p of punches) {
+		const existing = byEmployee.get(p.user_pin) ?? [];
+		existing.push(p);
+		byEmployee.set(p.user_pin, existing);
+	}
+
+	let presentCount = 0;
+	let lateCount = 0;
+	let totalHours = 0;
+	let employeesWithHours = 0;
+
+	for (const [, empPunches] of byEmployee) {
+		const { status, hours } = classifyDayFromPunches(empPunches);
+		if (status !== "absent") {
+			presentCount++;
+			if (status === "late") lateCount++;
+			if (hours != null) {
+				totalHours += hours;
+				employeesWithHours++;
+			}
+		}
+	}
+
+	const totalCount = byEmployee.size;
+	const avgHours = employeesWithHours > 0 ? totalHours / employeesWithHours : null;
+
+	let status: CalendarDayStatus;
+	if (presentCount === 0) {
+		status = "absent";
+	} else if (lateCount > 0) {
+		status = "late";
+	} else if (presentCount >= totalCount * 0.8) {
+		status = "full";
+	} else {
+		status = "half";
+	}
+
+	return { status, presentCount, totalCount, avgHours };
+}

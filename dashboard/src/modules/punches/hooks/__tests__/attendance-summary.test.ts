@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { computeAttendanceSummary, formatDuration } from "../../components/daily-timeline/attendance-summary";
+import { computeAttendanceSummary, formatDuration } from "@/modules/attendance/compute";
 import type { Punch } from "@/lib/api";
 
 // ── Helpers ──────────────────────────────────────────────────────────────

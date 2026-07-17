@@ -124,7 +124,6 @@ export function PunchQueryView() {
 						filterSince={page.filters.since}
 						filterUntil={page.filters.until}
 						punches={page.punches}
-						isLoading={page.isLoading}
 					/>
 				);
 			}

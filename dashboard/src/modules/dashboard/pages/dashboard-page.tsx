@@ -6,6 +6,7 @@ import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 
 import { useDashboardPage } from "../hooks/use-dashboard-page";
+import { useDashboardCommands } from "../hooks/use-dashboard-commands";
 import { DashboardMetrics } from "../components/dashboard-metrics";
 import { CheckedInList } from "../components/checked-in-list";
 import { DashboardActivityFeed } from "../components/dashboard-activity-feed";
@@ -17,6 +18,7 @@ import type { TodaySummary } from "@/lib/api";
 export function DashboardPage() {
   const page = useDashboardPage();
   const { _ } = useLingui();
+  useDashboardCommands();
 
   return (
     <PageShell

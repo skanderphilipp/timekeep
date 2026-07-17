@@ -12,7 +12,9 @@ declare const classNames: {
   readonly employeeName: "employeeName";
   readonly employeePin: "employeePin";
   readonly barTrack: "barTrack";
+  readonly blockWrapper: "blockWrapper";
   readonly block: "block";
+  readonly blockTooltip: "blockTooltip";
   readonly blockDefault: "blockDefault";
   readonly blockPresent: "blockPresent";
   readonly blockWarning: "blockWarning";

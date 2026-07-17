@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 
 import { AttendanceTimelineView } from "@/modules/attendance";
 import type { Punch } from "@/lib/api";
@@ -13,8 +13,6 @@ type PunchTimelineViewProps = {
 	filterUntil?: string;
 	/** Punches for the current filter context (used to derive employee list). */
 	punches: Punch[];
-	/** Whether data is loading. */
-	isLoading: boolean;
 };
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -22,14 +20,9 @@ type PunchTimelineViewProps = {
 /**
  * PunchTimelineView — daily timeline visualization for punches.
  *
- * Delegates to the existing {@link DailyTimeline} component. Displays
- * employee punch blocks on a 24-hour timeline for the selected date.
- *
- * When no date filter is active, defaults to today so the timeline
- * always has data to render.
- *
- * Passes `filterSince`/`filterUntil` from the parent page's active
- * date range so the timeline respects the same date window as the table.
+ * Wraps {@link AttendanceTimelineView} with date state management synced
+ * to the parent page's filter context. Supports day-by-day navigation
+ * via prev/next/today buttons.
  *
  * Rendered by {@link DataListView} via `renderCustomView` when the user
  * selects "Timeline" from the ViewPicker.
@@ -39,44 +32,42 @@ export function PunchTimelineView({
 	filterSince,
 	filterUntil,
 	punches,
-	isLoading,
 }: PunchTimelineViewProps) {
-	// Derive employee list from loaded punches
-	const employees = useMemo(
-		() => {
-			const seen = new Set<string>();
-			const list: { pin: string; name: string }[] = [];
-			for (const p of punches) {
-				if (!seen.has(p.user_pin)) {
-					seen.add(p.user_pin);
-					list.push({ pin: p.user_pin, name: p.employee_name ?? p.user_pin });
-				}
-			}
-			return list;
-		},
-		[punches],
-	);
-
-	// Default to today when no date filter is set, so the timeline always renders.
+	// Default to today when no date filter is set
 	const effectiveDate = useMemo(() => date ?? new Date(), [date]);
 
-	if (isLoading) {
-		return (
-			<AttendanceTimelineView
-				date={effectiveDate}
-				filterSince={filterSince}
-				filterUntil={filterUntil}
-				employees={[]}
-			/>
-		);
-	}
+	// Track the selected date for the timeline (starts from page filter, then user can navigate)
+	const [timelineDate, setTimelineDate] = useState(effectiveDate);
+
+	// Sync when page filter changes
+	useEffect(() => {
+		if (date) setTimelineDate(date);
+	}, [date?.toDateString()]);
+
+	// Derive employee list from loaded punches
+	const employees = useMemo(() => {
+		const seen = new Set<string>();
+		const list: { pin: string; name: string }[] = [];
+		for (const p of punches) {
+			if (!seen.has(p.user_pin)) {
+				seen.add(p.user_pin);
+				list.push({ pin: p.user_pin, name: p.employee_name ?? p.user_pin });
+			}
+		}
+		return list;
+	}, [punches]);
+
+	const handleDateChange = useCallback((newDate: Date) => {
+		setTimelineDate(newDate);
+	}, []);
 
 	return (
 		<AttendanceTimelineView
-			date={effectiveDate}
+			date={timelineDate}
 			filterSince={filterSince}
 			filterUntil={filterUntil}
 			employees={employees.length > 0 ? employees : undefined}
+			onDateChange={handleDateChange}
 		/>
 	);
 }

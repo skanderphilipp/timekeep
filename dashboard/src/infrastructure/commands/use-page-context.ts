@@ -16,7 +16,7 @@ const ROUTE_TO_PAGE: Array<{ pattern: string; pageId: PageId }> = [
   { pattern: "/devices", pageId: "devices.list" },
   { pattern: "/devices/new", pageId: "devices.new" },
   { pattern: "/devices/:sn", pageId: "devices.detail" },
-  { pattern: "/punches", pageId: "punches.list" },
+  { pattern: "/attendance", pageId: "attendance.list" },
   { pattern: "/employees", pageId: "employees.list" },
   { pattern: "/employees/new", pageId: "employees.new" },
   { pattern: "/employees/:id", pageId: "employees.detail" },

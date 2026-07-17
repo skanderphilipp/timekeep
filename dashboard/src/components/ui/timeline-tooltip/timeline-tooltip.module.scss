@@ -1,0 +1,12 @@
+.tooltip {
+  background: var(--ao-background-primary);
+  border: 1px solid var(--ao-border-color-medium);
+  border-radius: var(--ao-radius-sm);
+  box-shadow: var(--ao-shadow-md);
+  color: var(--ao-font-color-primary);
+  font-size: var(--ao-font-size-xs);
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 50;
+}

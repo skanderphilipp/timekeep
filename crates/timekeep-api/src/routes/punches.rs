@@ -184,8 +184,10 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
 
     PunchFilter {
         params: q.params.clone(),
-        device_sns: q.device_sns.clone(),
-        user_pins: q.user_pins.clone(),
+        device_sns: q.device_sns.clone()
+            .or_else(|| q.device_sn.clone().map(|s| vec![s])),
+        user_pins: q.user_pins.clone()
+            .or_else(|| q.user_pin.clone().map(|p| vec![p])),
         since,
         until,
         status,
@@ -273,7 +275,8 @@ pub(crate) async fn punch_filters(
     let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
 
     let context = FacetContext {
-        device_sns: q.device_sns.clone(),
+        device_sns: q.device_sns.clone()
+            .or_else(|| q.device_sn.clone().map(|s| vec![s])),
         since: q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status,

@@ -53,6 +53,8 @@ export { Text } from "./text";
 export type { TextVariant, TextColor, TextElement } from "./text";
 export { TextArea } from "./text-area";
 export { Tooltip } from "./tooltip";
+export { TimelineTooltip } from "./timeline-tooltip";
+export type { TimelineTooltipProps } from "./timeline-tooltip";
 export { VisuallyHidden } from "./visually-hidden";
 
 // Display (read-only cell renderers)

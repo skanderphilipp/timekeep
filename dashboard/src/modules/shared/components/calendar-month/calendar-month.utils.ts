@@ -7,6 +7,22 @@
  * Types are defined here (not in calendar-month.tsx) to avoid circular imports.
  */
 
+import type { Day } from "date-fns";
+import {
+  startOfMonth,
+  startOfWeek,
+  eachDayOfInterval,
+  addDays,
+  format,
+  isSameDay,
+  isWeekend as dfIsWeekend,
+  getDate,
+  getMonth,
+} from "date-fns";
+
+// Re-export for backward compatibility (wrapping date-fns internally)
+export { isSameDay as sameDay, dfIsWeekend as isWeekend } from "date-fns";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 /** Attendance status for a calendar day cell. */
@@ -30,24 +46,9 @@ export type CalendarDayData = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-/** Format an ISO date string from numeric year, month, day. */
+/** Format an ISO date string from a Date object. */
 export function isoDate(year: number, month: number, day: number): string {
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-/** Check if a date falls on a weekend (Saturday or Sunday). */
-export function isWeekend(date: Date): boolean {
-  const d = date.getDay();
-  return d === 0 || d === 6;
-}
-
-/** Check if two dates represent the same calendar day. */
-export function sameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  return format(new Date(year, month - 1, day), "yyyy-MM-dd");
 }
 
 /**
@@ -62,22 +63,25 @@ export function sameDay(a: Date, b: Date): boolean {
 export function generateDays(
   year: number,
   month: number,
-  weekStartsOn: number,
+  weekStartsOn: Day,
   dayStatus?: Record<string, { status: CalendarDayStatus; hours?: number | null }>,
 ): CalendarDayData[] {
   const today = new Date();
-  const firstOfMonth = new Date(year, month - 1, 1);
-  const startDayOfWeek = firstOfMonth.getDay();
-  const offset = (startDayOfWeek - weekStartsOn + 7) % 7;
-  const gridStart = new Date(year, month - 1, 1 - offset);
+  const firstOfMonth = startOfMonth(new Date(year, month - 1, 1));
+  const gridStart = startOfWeek(firstOfMonth, { weekStartsOn });
+  const targetMonth = month - 1;
 
   const days: CalendarDayData[] = [];
 
-  for (let i = 0; i < 42; i++) {
-    const date = new Date(gridStart);
-    date.setDate(gridStart.getDate() + i);
-    const key = isoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-    const inMonth = date.getMonth() === month - 1;
+  // Generate exactly 42 days (6 weeks × 7) using date-fns interval
+  const dates = eachDayOfInterval({
+    start: gridStart,
+    end: addDays(gridStart, 41),
+  });
+
+  for (const date of dates) {
+    const key = format(date, "yyyy-MM-dd");
+    const inMonth = getMonth(date) === targetMonth;
     const weekend = isWeekend(date);
 
     const data = dayStatus?.[key];
@@ -100,9 +104,9 @@ export function generateDays(
 
     days.push({
       date: key,
-      day: date.getDate(),
+      day: getDate(date),
       isCurrentMonth: inMonth,
-      isToday: sameDay(date, today),
+      isToday: isSameDay(date, today),
       status,
       hours: hours ?? null,
     });

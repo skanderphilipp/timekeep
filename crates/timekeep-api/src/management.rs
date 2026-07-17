@@ -183,8 +183,8 @@ pub(crate) async fn export_punches(
     use timekeep_core::PunchFilter;
 
     let filter = PunchFilter {
-        device_sns: params.device_sns.clone(),
-        user_pins: params.user_pins.clone(),
+        device_sns: params.device_sns.clone().or_else(|| params.device_sn.clone().map(|s| vec![s])),
+        user_pins: params.user_pins.clone().or_else(|| params.user_pin.clone().map(|p| vec![p])),
         since: params.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: params.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status: None,

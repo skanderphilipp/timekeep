@@ -4,16 +4,12 @@
  * Composes employee and punch data into calendar, timeline, and table views.
  * Owns the attendance computation logic (previously scattered across dashboard,
  * employees, and punches modules).
- *
- * Consumers:
- * - dashboard/  — composes attendance widgets
- * - employees/   — employee detail calendar (via hooks)
- * - punches/     — punch query page (via timeline/calendar views)
  */
 
 // ── Computation (pure logic, zero React) ─────────────────────────────────
 export {
   classifyDayFromPunches,
+  aggregateDayStatus,
   buildBlocks,
   buildLegendItems,
   computeAttendanceSummary,
@@ -26,13 +22,20 @@ export type {
   TimelineBlockColor,
   AttendanceSummary,
   AttendanceEvent,
+  DayAggregation,
 } from "./compute";
 
 // ── Components ───────────────────────────────────────────────────────────
 export { AttendanceCalendarView, createCalendarRenderView } from "./components/calendar-view";
+export { CalendarToolbar } from "./components/calendar-toolbar";
 export { AttendanceTimelineView } from "./components/timeline-view";
-export type { TimelineViewProps, TimelineEmployee } from "./components/timeline-view";
+export { TimelineToolbar } from "./components/timeline-toolbar";
 export { AttendanceTable } from "./components/attendance-table";
+
+export type { AttendanceCalendarViewProps } from "./components/calendar-view";
+export type { CalendarToolbarProps } from "./components/calendar-toolbar";
+export type { TimelineViewProps, TimelineEmployee } from "./components/timeline-view";
+export type { TimelineToolbarProps } from "./components/timeline-toolbar";
 export type { AttendanceTableProps, PunchRecord } from "./components/attendance-table";
 
 // ── Hooks ────────────────────────────────────────────────────────────────
