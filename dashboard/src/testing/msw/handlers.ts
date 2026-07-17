@@ -358,11 +358,25 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
       return HttpResponse.json(envelope(page, meta));
     }),
 
+    // ── Employees (used by detail pages for reference lookups) ────────────
+
+    http.get("/api/employees", () =>
+      HttpResponse.json(envelope([], { has_more: false, total: 0 })),
+    ),
+
+    http.get("/api/employees/filters", () => HttpResponse.json(envelope([]))),
+
+    // ── Departments (used by detail pages for department dropdowns) ────────
+
+    http.get("/api/departments", () => HttpResponse.json(envelope([]))),
+
     // ── Catch-all (MUST be last) ──────────────────────────────────────────
     //
-    // Any /api/* request not handled above returns an empty envelope.
+    // Any /api/* request not handled above returns an empty response.
     // This prevents unmocked routes from hitting the real network in
     // Storybook / Vitest, avoiding 404 storms and infinite retry loops.
-    http.all("/api/*", () => HttpResponse.json(envelope(null))),
+    //
+    // Uses a RegExp because MSW v2 path wildcards only match one segment.
+    http.all(/\/api\/.*/, () => HttpResponse.json(envelope({}))),
   ];
 }
