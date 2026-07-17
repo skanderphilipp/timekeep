@@ -51,11 +51,14 @@ export type UpdateEmployeeRequest = {
    */
   department_id?: string | null;
   external_id?: string | null;
+  /** Whether the employee is currently active (tracked). Set to `false` to deactivate. */
+  active?: boolean | null;
 };
 
 /** Query params for filtering employees. */
 export type EmployeeListQuery = {
-  department_id?: string;
+  /** Comma-separated department UUIDs (OR logic). */
+  department_ids?: string[];
   /** Full-text search query (searches PIN and name). */
   q?: string;
   active?: string;
@@ -63,7 +66,9 @@ export type EmployeeListQuery = {
 
 function buildEmployeeListParams(filter: EmployeeListQuery = {}): string {
   const params = new URLSearchParams();
-  if (filter.department_id) params.set("department_id", filter.department_id);
+  if (filter.department_ids && filter.department_ids.length > 0) {
+    params.set("department_ids", filter.department_ids.join(","));
+  }
   if (filter.q) params.set("q", filter.q);
   if (filter.active) params.set("active", filter.active);
   const qs = params.toString();

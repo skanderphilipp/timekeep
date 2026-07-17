@@ -1,0 +1,58 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-top: auto;
+  padding-top: var(--ao-spacing-0_5);
+}
+
+.bar {
+  border-radius: 1px;
+  height: 3px;
+  width: calc((100% - 7px) / 8);
+}
+
+.overflow {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xxs);
+  line-height: 1;
+  padding-left: 2px;
+}
+
+/* ── Compact mode ────────────────────────────────────────────────────── */
+
+.compact {
+  gap: 1px;
+  padding-top: 1px;
+
+  .bar {
+    height: 2px;
+    width: calc((100% - 3px) / 4);
+  }
+
+  .overflow {
+    font-size: 8px;
+  }
+}
+
+/* ── Status colors ──────────────────────────────────────────────────── */
+
+.barFull {
+  background: var(--ao-color-green9);
+}
+
+.barHalf {
+  background: var(--ao-color-blue9);
+}
+
+.barLate {
+  background: var(--ao-color-amber9);
+}
+
+.barAbsent {
+  background: var(--ao-color-red9);
+}
+
+.barWeekend {
+  background: var(--ao-border-color-light);
+}

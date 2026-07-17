@@ -107,10 +107,10 @@ export function usePunchQueryPage() {
   /** Count of anomalies in the currently loaded punches. */
   const anomalyCount = useMemo(() => punches.filter((p) => p.is_anomaly).length, [punches]);
 
-  /** Unified search bar value: the active `search` or `user_pin` filter. */
+  /** Unified search bar value: the active `search` filter. */
   const searchValue = useMemo(
-    () => (filters.search ?? filters.user_pin ?? ""),
-    [filters.search, filters.user_pin],
+    () => (filters.search ?? ""),
+    [filters.search],
   );
 
   return {

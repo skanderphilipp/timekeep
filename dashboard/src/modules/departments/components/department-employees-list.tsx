@@ -33,7 +33,7 @@ export function DepartmentEmployeesList() {
 
   const employeesQuery = useQuery({
     queryKey: ["employees", "by-department", entityId] as const,
-    queryFn: () => fetchEmployees({ department_id: entityId }),
+    queryFn: () => fetchEmployees({ department_ids: [entityId] }),
     enabled: entityId.length > 0,
   });
 

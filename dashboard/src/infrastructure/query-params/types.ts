@@ -43,3 +43,9 @@ export type ListStateOptions<T extends FilterValues> = {
   sortDefaults?: SortField | null;
   defaultPage?: number;
 };
+
+/** Options for `useViewUrl` — syncs a view ID to URL search params. */
+export type ViewUrlOptions = {
+  /** Namespace scopes the URL param to a specific page (e.g. "punches", "devices"). */
+  namespace: string;
+};

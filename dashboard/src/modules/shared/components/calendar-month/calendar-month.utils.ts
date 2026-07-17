@@ -15,13 +15,13 @@ import {
   addDays,
   format,
   isSameDay,
-  isWeekend as dfIsWeekend,
+  	isWeekend,
   getDate,
   getMonth,
 } from "date-fns";
 
 // Re-export for backward compatibility (wrapping date-fns internally)
-export { isSameDay as sameDay, dfIsWeekend as isWeekend } from "date-fns";
+export { isSameDay as sameDay, isWeekend } from "date-fns";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ export function generateDays(
   for (const date of dates) {
     const key = format(date, "yyyy-MM-dd");
     const inMonth = getMonth(date) === targetMonth;
-    const weekend = isWeekend(date);
+    		const weekend = isWeekend(date);
 
     const data = dayStatus?.[key];
     let status: CalendarDayStatus;

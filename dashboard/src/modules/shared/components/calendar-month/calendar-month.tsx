@@ -43,6 +43,8 @@ export type CalendarMonthProps = {
   isEmpty?: boolean;
   /** Footer content (e.g., legend). */
   footer?: ReactNode;
+  /** Custom content rendered inside each day cell below hours (e.g., mini status bars). */
+  renderDayContent?: (day: CalendarDayData) => ReactNode;
   className?: string;
 };
 
@@ -71,10 +73,12 @@ function DayCell({
   day,
   isSelected,
   onClick,
+  children,
 }: {
   day: CalendarDayData;
   isSelected: boolean;
   onClick?: (day: CalendarDayData) => void;
+  children?: ReactNode;
 }) {
   const handleClick = useCallback(() => onClick?.(day), [onClick, day]);
   const handleKeyDown = useCallback(
@@ -112,6 +116,7 @@ function DayCell({
     >
       <span className={clsx(styles.dayNumber, day.isToday && styles.today)}>{day.day}</span>
       {day.hours != null && <span className={styles.hours}>{formatHours(day.hours)}</span>}
+      {children}
     </div>
   );
 }
@@ -130,6 +135,7 @@ export function CalendarMonth({
   error,
   isEmpty = false,
   footer,
+  renderDayContent,
   className,
 }: CalendarMonthProps) {
   const { _ } = useLingui();
@@ -223,7 +229,9 @@ export function CalendarMonth({
                 day={day}
                 isSelected={selectedDate === day.date}
                 onClick={onDayClick}
-              />
+              >
+                {renderDayContent?.(day)}
+              </DayCell>
             ))}
           </div>
         ))}

@@ -14,10 +14,10 @@ export { AppRoute } from "@shared/paths";
 
 /** Navigate to the attendance list pre-filtered for a device. */
 export function attendanceForDevice(deviceSn: string): string {
-  return `/attendance?device_sn=${encodeURIComponent(deviceSn)}`;
+  return `/attendance?punches_device_sns=${encodeURIComponent(deviceSn)}`;
 }
 
 /** Navigate to the attendance list pre-filtered for a user. */
 export function attendanceForUser(userPin: string): string {
-  return `/attendance?user_pin=${encodeURIComponent(userPin)}`;
+  return `/attendance?punches_user_pins=${encodeURIComponent(userPin)}`;
 }

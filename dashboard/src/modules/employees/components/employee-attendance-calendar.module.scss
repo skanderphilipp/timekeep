@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-3);
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.title {
+  color: var(--ao-font-color-secondary);
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-semibold);
+  text-transform: uppercase;
+}

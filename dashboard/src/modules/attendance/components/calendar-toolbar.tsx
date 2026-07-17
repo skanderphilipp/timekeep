@@ -1,4 +1,4 @@
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from "@tabler/icons-react";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { format } from "date-fns";
@@ -15,6 +15,9 @@ export type CalendarToolbarProps = {
 	onPrev: () => void;
 	onNext: () => void;
 	onToday: () => void;
+	/** Year-level prev/next (optional — used for quick year traversal). */
+	onPrevYear?: () => void;
+	onNextYear?: () => void;
 	/** Optional employee filter — rendered as a right-aligned action. */
 	employeeSelect?: React.ReactNode;
 };
@@ -22,19 +25,12 @@ export type CalendarToolbarProps = {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 /**
- * CalendarToolbar — month navigation bar for calendar views.
+ * CalendarToolbar — month + year navigation bar for calendar views.
  *
- * Renders prev / month-year / next / today buttons.
- * Accepts an optional `employeeSelect` slot for per-employee filtering.
+ * Renders prev / month-year / next month buttons, optional year jump buttons,
+ * and a "Today" action. Accepts an optional `employeeSelect` slot.
  *
- * @example
- * ```tsx
- * <CalendarToolbar
- *   year={2026} month={7}
- *   onPrev={goPrev} onNext={goNext} onToday={goToday}
- *   employeeSelect={<Select ... />}
- * />
- * ```
+ * Layout: [< month] [July 2026] [month >] | [<< year] [year >>] | [employee select]
  */
 export function CalendarToolbar({
 	year,
@@ -42,10 +38,13 @@ export function CalendarToolbar({
 	onPrev,
 	onNext,
 	onToday,
+	onPrevYear,
+	onNextYear,
 	employeeSelect,
 }: CalendarToolbarProps) {
 	const { _ } = useLingui();
 	const monthLabel = format(new Date(year, month - 1, 1), "MMMM yyyy");
+	const hasYearNav = !!onPrevYear && !!onNextYear;
 
 	return (
 		<nav data-slot="calendar-toolbar" className={styles.toolbar}>
@@ -62,6 +61,22 @@ export function CalendarToolbar({
 					<IconChevronRight size={16} />
 				</IconButton>
 			</ActionGroup>
+
+			{hasYearNav && (
+				<ActionGroup>
+					<IconButton onClick={onPrevYear} aria-label={_(msg`Previous year`)} size="sm">
+						<IconChevronsLeft size={16} />
+					</IconButton>
+					<Button variant="ghost" size="sm" onClick={onToday}>
+						<Text variant="caption" color="secondary">
+							{_(msg`Today`)}
+						</Text>
+					</Button>
+					<IconButton onClick={onNextYear} aria-label={_(msg`Next year`)} size="sm">
+						<IconChevronsRight size={16} />
+					</IconButton>
+				</ActionGroup>
+			)}
 
 			{employeeSelect && (
 				<div className={styles.employeeSlot}>

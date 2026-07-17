@@ -2157,8 +2157,12 @@ export interface components {
         EmployeeListQuery: components["schemas"]["ListParams"] & {
             /** @description Filter by active status ("true" or "false"). */
             active?: string | null;
-            /** @description Filter by department UUID (exact match). */
-            department_id?: string | null;
+            /**
+             * @description Filter by department UUIDs, comma-separated (OR logic).
+             *     Single: `?department_ids=DEPT-1`
+             *     Multiple: `?department_ids=DEPT-1,DEPT-2`
+             */
+            department_ids?: string | null;
             /**
              * @description Sparse field selection: comma-separated field names to return.
              *     Example: fields=id,name,department,pin
@@ -2552,13 +2556,12 @@ export interface components {
         PunchListQuery: components["schemas"]["ListParams"] & {
             /** @description When "true", return only punches flagged as anomalous. */
             anomalies_only?: string | null;
-            /** @description Filter by device serial number (single, backward compat). */
-            device_sn?: string | null;
             /**
-             * @description Filter by multiple device serial numbers (OR logic).
-             *     Accepts repeated query params: `?device_sn[]=DEV-001&device_sn[]=DEV-002`
+             * @description Filter by device serial numbers, comma-separated (OR logic).
+             *     Single: `?device_sns=DEV-001`
+             *     Multiple: `?device_sns=DEV-001,DEV-002`
              */
-            device_sns?: string[] | null;
+            device_sns?: string | null;
             /**
              * @description Sparse field selection: comma-separated field names to return.
              *     Omit to return all fields. Example: fields=id,timestamp,status,device_label
@@ -2586,8 +2589,12 @@ export interface components {
              * @description Unix timestamp (seconds) — return punches before this time.
              */
             until?: number | null;
-            /** @description Filter by user PIN (exact match). */
-            user_pin?: string | null;
+            /**
+             * @description Filter by user PINs, comma-separated (OR logic).
+             *     Single: `?user_pins=123`
+             *     Multiple: `?user_pins=123,456`
+             */
+            user_pins?: string | null;
             /** @description Filter by verification method: fingerprint, face, card, password, palm. */
             verify_mode?: string | null;
         };
@@ -2920,6 +2927,12 @@ export interface components {
         };
         /** @description Update an existing employee. */
         UpdateEmployeeRequest: {
+            /**
+             * @description Whether the employee is currently active (tracked).
+             *
+             *     Set to `false` to deactivate (soft-delete). Punches are preserved.
+             */
+            active?: boolean | null;
             /**
              * @description New department UUID for cross-entity navigation.
              *
@@ -5288,8 +5301,12 @@ export interface operations {
                  *     Takes priority over `params.search` when both are present.
                  */
                 q?: string | null;
-                /** @description Filter by department UUID (exact match). */
-                department_id?: string | null;
+                /**
+                 * @description Filter by department UUIDs, comma-separated (OR logic).
+                 *     Single: `?department_ids=DEPT-1`
+                 *     Multiple: `?department_ids=DEPT-1,DEPT-2`
+                 */
+                department_ids?: string | null;
                 /** @description Filter by active status ("true" or "false"). */
                 active?: string | null;
                 /**
@@ -6002,10 +6019,10 @@ export interface operations {
     export_punches: {
         parameters: {
             query?: {
-                /** @description Filter by device serial number */
-                device_sn?: string | null;
-                /** @description Filter by user PIN */
-                user_pin?: string | null;
+                /** @description Filter by device serial numbers, comma-separated (OR logic). */
+                device_sns?: string | null;
+                /** @description Filter by user PINs, comma-separated (OR logic). */
+                user_pins?: string | null;
                 /** @description Unix timestamp (seconds) — return punches after this time */
                 since?: number | null;
                 /** @description Unix timestamp (seconds) — return punches before this time */
@@ -6107,15 +6124,18 @@ export interface operations {
                  *     Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
                  */
                 q?: string | null;
-                /** @description Filter by device serial number (single, backward compat). */
-                device_sn?: string | null;
                 /**
-                 * @description Filter by multiple device serial numbers (OR logic).
-                 *     Accepts repeated query params: `?device_sn[]=DEV-001&device_sn[]=DEV-002`
+                 * @description Filter by device serial numbers, comma-separated (OR logic).
+                 *     Single: `?device_sns=DEV-001`
+                 *     Multiple: `?device_sns=DEV-001,DEV-002`
                  */
-                device_sns?: string[] | null;
-                /** @description Filter by user PIN (exact match). */
-                user_pin?: string | null;
+                device_sns?: string | null;
+                /**
+                 * @description Filter by user PINs, comma-separated (OR logic).
+                 *     Single: `?user_pins=123`
+                 *     Multiple: `?user_pins=123,456`
+                 */
+                user_pins?: string | null;
                 /** @description Unix timestamp (seconds) — return punches after this time. */
                 since?: number | null;
                 /** @description Unix timestamp (seconds) — return punches before this time. */
@@ -6212,9 +6232,10 @@ export interface operations {
                 dimension?: string | null;
                 search?: string | null;
                 limit?: number;
-                device_sn?: string | null;
-                device_sns?: string[] | null;
-                user_pin?: string | null;
+                /** @description Filter by device serial numbers, comma-separated (OR logic). */
+                device_sns?: string | null;
+                /** @description Filter by user PINs, comma-separated (OR logic). */
+                user_pins?: string | null;
                 since?: number | null;
                 until?: number | null;
                 status?: string | null;
@@ -6749,15 +6770,18 @@ export interface operations {
                  *     Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
                  */
                 q?: string | null;
-                /** @description Filter by device serial number (single, backward compat). */
-                device_sn?: string | null;
                 /**
-                 * @description Filter by multiple device serial numbers (OR logic).
-                 *     Accepts repeated query params: `?device_sn[]=DEV-001&device_sn[]=DEV-002`
+                 * @description Filter by device serial numbers, comma-separated (OR logic).
+                 *     Single: `?device_sns=DEV-001`
+                 *     Multiple: `?device_sns=DEV-001,DEV-002`
                  */
-                device_sns?: string[] | null;
-                /** @description Filter by user PIN (exact match). */
-                user_pin?: string | null;
+                device_sns?: string | null;
+                /**
+                 * @description Filter by user PINs, comma-separated (OR logic).
+                 *     Single: `?user_pins=123`
+                 *     Multiple: `?user_pins=123,456`
+                 */
+                user_pins?: string | null;
                 /** @description Unix timestamp (seconds) — return punches after this time. */
                 since?: number | null;
                 /** @description Unix timestamp (seconds) — return punches before this time. */

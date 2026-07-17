@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import type { PunchFilter } from "@/lib/api";
 import { useListState } from "@/infrastructure/query-params";
@@ -7,10 +8,8 @@ import { toDateString } from "@/lib/date";
 
 const punchFilterDefaults: Omit<
   PunchFilter,
-  "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns"
+  "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns" | "user_pins"
 > = {
-  device_sn: "",
-  user_pin: "",
   search: "",
   status: "",
   verify_mode: "",
@@ -32,7 +31,7 @@ const punchFilterDefaults: Omit<
  */
 export function useInfinitePunchQuery() {
   const { filters, sort, setFilter, toggleSort, resetFilters, hasActiveFilters } = useListState<
-    Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">
+    Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns" | "user_pins">
   >({
     namespace: "punches",
     filterDefaults: punchFilterDefaults,
@@ -54,11 +53,31 @@ export function useInfinitePunchQuery() {
     }
   }, [filters.since, filters.until, setFilter]);
 
+  // ── Read device_sns / user_pins from URL on mount (navigation helpers) ──
+
+  const initializedUrlParamsRef = useRef(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (initializedUrlParamsRef.current) return;
+    initializedUrlParamsRef.current = true;
+
+    const urlDeviceSns = searchParams.get("punches_device_sns");
+    if (urlDeviceSns && !deviceSns.length) {
+      setDeviceSns(urlDeviceSns.split(",").filter(Boolean));
+    }
+    const urlUserPins = searchParams.get("punches_user_pins");
+    if (urlUserPins) {
+      setFilter({ user_pins: urlUserPins.split(",").filter(Boolean) } as any);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   /** Merge URL filter state + local multi-device state + sort into API shape. */
   const apiFilter = useMemo<Omit<PunchFilter, "limit" | "offset" | "cursor">>(
     () => ({
       ...filters,
       device_sns: deviceSns.length > 0 ? deviceSns : undefined,
+      user_pins: undefined,
       sort_by: sort?.column,
       sort_order: sort?.direction,
     }),
@@ -77,7 +96,7 @@ export function useInfinitePunchQuery() {
   const handleFilterChange = useCallback(
     (
       patch: Partial<
-        Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns">
+        Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns" | "user_pins">
       >,
     ) => setFilter(patch),
     [setFilter],
@@ -91,7 +110,7 @@ export function useInfinitePunchQuery() {
   }, [resetFilters]);
 
   return {
-    filters: { ...filters, device_sns: deviceSns.length > 0 ? deviceSns : undefined } as Omit<
+    filters: { ...filters, device_sns: deviceSns.length > 0 ? deviceSns : undefined, user_pins: undefined } as Omit<
       PunchFilter,
       "limit" | "offset" | "order_desc" | "cursor" | "sort_by"
     >,

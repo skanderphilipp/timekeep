@@ -37,9 +37,9 @@ export function useRecordDetail(entityType: EntityType, entityId: string) {
         case "device":
           return fetchDeviceDetail(entityId) as Promise<Record<string, unknown>>;
         case "user":
-          // entityId for user is a PIN — look up employee by PIN
-          const allEmployees = await fetchEmployees();
-          const empByPin = allEmployees.find((e) => e.pin === entityId);
+          // entityId for user is a PIN — search by PIN (avoids fetching entire list)
+          const employees = await fetchEmployees({ q: entityId });
+          const empByPin = employees.find((e) => e.pin === entityId);
           return (empByPin ?? null) as Record<string, unknown> | null;
         case "punch":
           return fetchPunch(entityId) as Promise<Record<string, unknown>>;

@@ -9,6 +9,44 @@ import type {
   ReferenceFieldMetadata,
   ArrayFieldMetadata,
 } from "@/modules/data-renderer";
+import type { Icon } from "@tabler/icons-react";
+
+// ── Action System Types ────────────────────────────────────────────────────
+
+/** Where an action button renders in the detail view layout. */
+export type ActionPlacement = "header" | "footer" | "both";
+
+/** Button variant for action buttons. */
+type ActionVariant = "primary" | "secondary" | "ghost" | "danger";
+
+/** A record-level action (edit, delete, sync, etc.) rendered in detail views. */
+export type RecordAction = {
+  /** Unique action identifier. */
+  id: string;
+  /** Display label (already translated). */
+  label: string;
+  /** Tabler icon component. */
+  icon?: Icon;
+  /** Where to render the action button. */
+  placement: ActionPlacement;
+  /** Button style variant. */
+  variant?: ActionVariant;
+  /** Async handler executed on click (after confirm dialog if `confirm` is set). */
+  action: () => Promise<void>;
+  /** Optional confirmation dialog before executing the action. */
+  confirm?: {
+    title: string;
+    message: string;
+  };
+  /** If true, renders the button in destructive (red) style. */
+  danger?: boolean;
+  /** If true, shows a loading spinner on the button. */
+  loading?: boolean;
+  /** If true, the button is disabled. */
+  disabled?: boolean;
+};
+
+// ── Detail View Config Types ─────────────────────────────────────────────
 
 /**
  * A single field rendered in a detail view.
@@ -153,6 +191,17 @@ export const DETAIL_VIEW_CONFIGS: Partial<Record<EntityType, DetailViewConfig>> 
             editable: true,
           },
           {
+            fieldId: "active",
+            label: "Status",
+            type: "status",
+            metadata: {
+              fieldName: "active",
+              labels: { true: "Active", false: "Inactive" },
+              colors: { true: "green", false: "gray" },
+            } satisfies StatusFieldMetadata,
+            editable: true,
+          },
+          {
             fieldId: "created_at",
             label: "Created",
             type: "timestamp",
@@ -215,14 +264,14 @@ export const DETAIL_VIEW_CONFIGS: Partial<Record<EntityType, DetailViewConfig>> 
                 fieldId: "work_policy.work_start",
                 label: "Work Start",
                 type: "text",
-                metadata: { fieldName: "work_start" } satisfies TextFieldMetadata,
+                metadata: { fieldName: "work_start", inputType: "time" } satisfies TextFieldMetadata,
                 editable: true,
               },
               {
                 fieldId: "work_policy.work_end",
                 label: "Work End",
                 type: "text",
-                metadata: { fieldName: "work_end" } satisfies TextFieldMetadata,
+                metadata: { fieldName: "work_end", inputType: "time" } satisfies TextFieldMetadata,
                 editable: true,
               },
               {
@@ -262,7 +311,6 @@ export const DETAIL_VIEW_CONFIGS: Partial<Record<EntityType, DetailViewConfig>> 
                 metadata: {
                   fieldName: "working_days",
                   positionLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                  colors: { active: "green", inactive: "gray" },
                 } satisfies ArrayFieldMetadata,
                 editable: false,
               },
@@ -336,7 +384,6 @@ export const DETAIL_VIEW_CONFIGS: Partial<Record<EntityType, DetailViewConfig>> 
             metadata: {
               fieldName: "working_days",
               positionLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-              colors: { active: "green", inactive: "gray" },
             } satisfies ArrayFieldMetadata,
             editable: true,
           },

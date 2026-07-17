@@ -28,13 +28,13 @@ describe("useActivePunchFilters", () => {
     expect(result.current).toHaveLength(0);
   });
 
-  it("creates a chip for user_pin search with accent color", () => {
+  it("creates a chip for user_pins search with accent color", () => {
     const { result } = renderHook(
-      () => useActivePunchFilters({ user_pin: "42" }, vi.fn()),
+      () => useActivePunchFilters({ user_pins: ["42"] }, vi.fn()),
       { wrapper: Wrapper },
     );
     expect(result.current).toHaveLength(1);
-    expect(result.current[0].key).toBe("user_pin");
+    expect(result.current[0].key).toBe("user_pin_42");
     expect(result.current[0].color).toBe("accent");
     expect(result.current[0].label).toContain("42");
   });
@@ -61,12 +61,12 @@ describe("useActivePunchFilters", () => {
     expect(result.current[0].label).toContain("Office Entrance");
   });
 
-  it("creates a chip for single device_sn (backward compat)", () => {
+  it("creates a chip for single device_sns", () => {
     const labelBySn = new Map([["DEV-001", "Main Gate"]]);
     const { result } = renderHook(
       () =>
         useActivePunchFilters(
-          { device_sn: "DEV-001" },
+          { device_sns: ["DEV-001"] },
           vi.fn(),
           labelBySn,
         ),
@@ -138,7 +138,7 @@ describe("useActivePunchFilters", () => {
       () =>
         useActivePunchFilters(
           {
-            user_pin: "42",
+            user_pins: ["42"],
             status: "check_in",
             verify_mode: "fingerprint",
             anomalies_only: "true",
@@ -152,7 +152,7 @@ describe("useActivePunchFilters", () => {
     expect(result.current).toHaveLength(5);
     const keys = result.current.map((c) => c.key);
     expect(keys).toEqual([
-      "user_pin",
+      "user_pin_42",
       "since",
       "status",
       "verify_mode",

@@ -37,13 +37,18 @@ export function useActivePunchFilters(
     const result: ActiveFilter[] = [];
 
 		// Search — PIN exact match (digit-only input)
-		if (filters.user_pin) {
-			result.push({
-				key: "user_pin",
-				label: `${_(msg`PIN`)}: ${filters.user_pin}`,
-				color: "accent",
-				onRemove: () => onFilterChange({ user_pin: undefined, search: undefined }),
-			});
+		if (filters.user_pins && filters.user_pins.length > 0) {
+			for (const pin of filters.user_pins) {
+				result.push({
+					key: `user_pin_${pin}`,
+					label: `${_(msg`PIN`)}: ${pin}`,
+					color: "accent",
+					onRemove: () => {
+						const remaining = (filters.user_pins ?? []).filter((p) => p !== pin);
+						onFilterChange({ user_pins: remaining.length > 0 ? remaining : undefined, search: undefined });
+					},
+				});
+			}
 		}
 
 		// Search — full-text (name or mixed input)
@@ -52,12 +57,12 @@ export function useActivePunchFilters(
 				key: "search",
 				label: `${_(msg`Search`)}: ${filters.search}`,
 				color: "accent",
-				onRemove: () => onFilterChange({ search: undefined, user_pin: undefined }),
+				onRemove: () => onFilterChange({ search: undefined, user_pins: undefined }),
 			});
 		}
 
     // Multi-device chips
-    const deviceSns = filters.device_sns ?? (filters.device_sn ? [filters.device_sn] : []);
+    const deviceSns = filters.device_sns ?? [];
     for (const sn of deviceSns) {
       const label = deviceLabelBySn?.get(sn) ?? sn;
       result.push({
@@ -68,7 +73,6 @@ export function useActivePunchFilters(
           const remaining = deviceSns.filter((s) => s !== sn);
           onFilterChange({
             device_sns: remaining.length > 0 ? remaining : undefined,
-            device_sn: remaining.length === 1 ? remaining[0] : undefined,
           });
         },
       });

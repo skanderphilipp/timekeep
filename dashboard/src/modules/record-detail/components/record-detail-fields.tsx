@@ -109,9 +109,9 @@ export function RecordDetailFields({
         </FieldContext.Provider>
       );
 
-      if (!field.editable) {
-        return displayNode;
-      }
+  if (!field.editable) {
+    return displayNode;
+  }
       /**
        * For reference fields, edit mode initialises with the ID (not the display name)
        * so the Combobox/Select can match against its option values.

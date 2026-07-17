@@ -31,11 +31,11 @@ export type Punch = {
 };
 
 export type PunchFilter = {
-  device_sn?: string;
-  /** Multi-select device filter (OR logic). */
+  /** Multi-select device filter — sent comma-separated (OR logic). */
   device_sns?: string[];
-  user_pin?: string;
-  /** Full-text search (searches user_pin). */
+  /** Multi-select user PIN filter — sent comma-separated (OR logic). */
+  user_pins?: string[];
+  /** Full-text search (searches user_pin, employee_name). */
   search?: string;
   since?: string;
   until?: string;
@@ -60,13 +60,12 @@ export type PunchFilter = {
 
 function buildPunchParams(filter: PunchFilter): string {
   const params = new URLSearchParams();
-  if (filter.device_sn) params.set("device_sn", filter.device_sn);
-  if (filter.device_sns) {
-    for (const sn of filter.device_sns) {
-      params.append("device_sn[]", sn);
-    }
+  if (filter.device_sns && filter.device_sns.length > 0) {
+    params.set("device_sns", filter.device_sns.join(","));
   }
-  if (filter.user_pin) params.set("user_pin", filter.user_pin);
+  if (filter.user_pins && filter.user_pins.length > 0) {
+    params.set("user_pins", filter.user_pins.join(","));
+  }
   if (filter.search) params.set("search", filter.search);
   if (filter.status) params.set("status", filter.status);
   if (filter.verify_mode) params.set("verify_mode", filter.verify_mode);
@@ -116,8 +115,10 @@ export type FacetFilterParams = {
   dimension?: string;
   search?: string;
   limit?: number;
-  device_sn?: string;
+  /** Comma-separated device serial numbers (OR logic). */
   device_sns?: string[];
+  /** Comma-separated user PINs (OR logic). */
+  user_pins?: string[];
   since?: string;
   until?: string;
   status?: string;
@@ -130,11 +131,11 @@ function buildFacetParams(filter: FacetFilterParams): string {
   if (filter.dimension) params.set("dimension", filter.dimension);
   if (filter.search) params.set("search", filter.search);
   if (filter.limit !== undefined) params.set("limit", String(filter.limit));
-  if (filter.device_sn) params.set("device_sn", filter.device_sn);
-  if (filter.device_sns) {
-    for (const sn of filter.device_sns) {
-      params.append("device_sn[]", sn);
-    }
+  if (filter.device_sns && filter.device_sns.length > 0) {
+    params.set("device_sns", filter.device_sns.join(","));
+  }
+  if (filter.user_pins && filter.user_pins.length > 0) {
+    params.set("user_pins", filter.user_pins.join(","));
   }
   if (filter.since) params.set("since", toUnixSeconds(filter.since));
   if (filter.until) params.set("until", toUnixSeconds(filter.until));
@@ -196,8 +197,10 @@ export function fetchPunchSchema(): Promise<EntitySchema> {
 // ── Export ─────────────────────────────────────────────────────────────────
 
 export type ExportFilter = {
-  device_sn?: string;
-  user_pin?: string;
+  /** Comma-separated device serial numbers (OR logic). */
+  device_sns?: string[];
+  /** Comma-separated user PINs (OR logic). */
+  user_pins?: string[];
   since?: string;
   until?: string;
   limit?: number;
@@ -207,8 +210,8 @@ export type ExportFilter = {
 
 function buildExportParams(f: ExportFilter): string {
   const params = new URLSearchParams();
-  if (f.device_sn) params.set("device_sn", f.device_sn);
-  if (f.user_pin) params.set("user_pin", f.user_pin);
+  if (f.device_sns && f.device_sns.length > 0) params.set("device_sns", f.device_sns.join(","));
+  if (f.user_pins && f.user_pins.length > 0) params.set("user_pins", f.user_pins.join(","));
   if (f.since) params.set("since", toUnixSeconds(f.since));
   if (f.until) params.set("until", toUnixSeconds(f.until));
   if (f.limit !== undefined) params.set("limit", String(f.limit));

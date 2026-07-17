@@ -1,179 +1,178 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
 import { classifyDayFromPunches, aggregateDayStatus, type CalendarDayStatus } from "../compute";
+import { useCalendarNavigation } from "./use-calendar-navigation";
+import type { EmployeeStatusEntry } from "../components/mini-status-bars";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type EmployeeOption = {
-  value: string;
-  label: string;
+	value: string;
+	label: string;
 };
 
 export type UseAttendanceCalendarOptions = {
-  /** External year control. When provided, overrides internal year state. */
-  year?: number;
-  /** External month control. When provided, overrides internal month state. */
-  month?: number;
-  /** Filter to a single employee PIN ("all" = no filter). */
-  userPin?: string;
+	/** External year control. When provided, overrides internal year state. */
+	year?: number;
+	/** External month control. When provided, overrides internal month state. */
+	month?: number;
+	/** Filter to a single employee PIN ("all" = no filter). */
+	userPin?: string;
+	/** @deprecated Use `userPin` instead. Kept for backward compat. */
+	userPins?: string[];
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function isoToDateKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}-${m}-${d}`;
 }
+
+// ── Hook ───────────────────────────────────────────────────────────────────────
 
 /**
  * Attendance calendar orchestration hook.
  *
- * Handles month navigation, employee filtering, punch data fetching,
- * grouping by day, and day status classification for CalendarMonth.
+ * Composes {@link useCalendarNavigation} with punch data fetching,
+ * day grouping, and status classification for CalendarMonth.
  *
  * Supports two modes:
- * - **Controlled**: pass `year`/`month` options. Syncs externally (via useEffect).
- * - **Uncontrolled**: omit options. Internal state with prev/next/today navigation.
+ * - **Controlled**: pass `year`/`month` options
+ * - **Uncontrolled**: internal navigation via prev/next/today
  */
 export function useAttendanceCalendar(options: UseAttendanceCalendarOptions = {}) {
-  const { _ } = useLingui();
-  const today = new Date();
+	const { _ } = useLingui();
 
-  // ── Year / Month ───────────────────────────────────────────────────────────
-  const isControlled = options.year != null && options.month != null;
-  const initialYear = options.year ?? today.getFullYear();
-  const initialMonth = options.month ?? today.getMonth() + 1;
+	// ── Navigation ───────────────────────────────────────────────────────────
+	const { year, month, monthLabel, goPrev, goNext, goToday, goPrevYear, goNextYear } = useCalendarNavigation({
+		year: options.year,
+		month: options.month,
+	});
 
-  const [year, setYear] = useState(initialYear);
-  const [month, setMonth] = useState(initialMonth);
+	// Backward compat: userPins (array) → first element
+	const userPin = options.userPin ?? options.userPins?.[0] ?? undefined;
 
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+	// ── Employee filter state ────────────────────────────────────────────────
+	const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+	const effectivePin = userPin || (selectedEmployee || undefined);
 
-  // Sync when external year/month change (controlled mode)
-  useEffect(() => {
-    if (isControlled) {
-      setYear(options.year!);
-      setMonth(options.month!);
-    }
-  }, [isControlled, options.year, options.month]);
+	// ── Data fetching ──────────────────────────────────────────────────────────
+	const since = useMemo(() => {
+		const d = new Date(year, month - 1, 1);
+		d.setDate(d.getDate() - 7);
+		return d.toISOString().split("T")[0];
+	}, [year, month]);
 
-  const userPin = options.userPin || (selectedEmployee || undefined);
+	const until = useMemo(() => {
+		const d = new Date(year, month, 0);
+		d.setDate(d.getDate() + 7);
+		return d.toISOString().split("T")[0];
+	}, [year, month]);
 
-  // ── Data fetching ──────────────────────────────────────────────────────────
-  const since = useMemo(() => {
-    const d = new Date(year, month - 1, 1);
-    d.setDate(d.getDate() - 7);
-    return d.toISOString().split("T")[0];
-  }, [year, month]);
+	const { data } = usePunchData({
+		since,
+		until,
+		...(effectivePin ? { user_pin: effectivePin } : {}),
+		limit: 10000,
+	});
 
-  const until = useMemo(() => {
-    const d = new Date(year, month, 0);
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  }, [year, month]);
+	// ── Day grouping ───────────────────────────────────────────────────────────
+	const punchesByDay = useMemo(() => {
+		const map = new Map<string, Punch[]>();
+		data?.punches.forEach((p) => {
+			const d = new Date(p.timestamp * 1000);
+			const key = isoToDateKey(d);
+			const existing = map.get(key) ?? [];
+			existing.push(p);
+			map.set(key, existing);
+		});
+		return map;
+	}, [data]);
 
-  const { data } = usePunchData({
-    since,
-    until,
-    ...(userPin ? { user_pin: userPin } : {}),
-    limit: 10000,
-  });
+	/** CalendarMonth data map: ISO date → { status, hours }. */
+	const dayStatusMap = useMemo(() => {
+		const map: Record<string, { status: CalendarDayStatus; hours: number | null }> = {};
+		punchesByDay.forEach((punches, key) => {
+			if (effectivePin) {
+				// Single employee: classify individually
+				const { status, hours } = classifyDayFromPunches(punches);
+				map[key] = { status, hours };
+			} else {
+				// All employees: aggregate
+				const agg = aggregateDayStatus(punches);
+				map[key] = { status: agg.status, hours: agg.avgHours };
+			}
+		});
+		return map;
+	}, [punchesByDay, effectivePin]);
 
-  // ── Day grouping ───────────────────────────────────────────────────────────
-  const punchesByDay = useMemo(() => {
-    const map = new Map<string, Punch[]>();
-    data?.punches.forEach((p) => {
-      const d = new Date(p.timestamp * 1000);
-      const key = isoToDateKey(d);
-      const existing = map.get(key) ?? [];
-      existing.push(p);
-      map.set(key, existing);
-    });
-    return map;
-  }, [data]);
+	// ── Per-employee statuses (for mini status bars in All Employees mode) ──
+	const employeeStatusesByDay = useMemo(() => {
+		const map = new Map<string, EmployeeStatusEntry[]>();
+		if (!effectivePin) {
+			punchesByDay.forEach((punches, key) => {
+				// Group punches within this day by employee PIN
+				const byEmployee = new Map<string, Punch[]>();
+				punches.forEach((p) => {
+					const existing = byEmployee.get(p.user_pin) ?? [];
+					existing.push(p);
+					byEmployee.set(p.user_pin, existing);
+				});
+				// Classify each employee
+				const entries: EmployeeStatusEntry[] = [];
+				byEmployee.forEach((empPunches, pin) => {
+					const { status } = classifyDayFromPunches(empPunches);
+					if (status !== "absent" && status !== "weekend") {
+						entries.push({
+							pin,
+							name: empPunches[0]?.employee_name ?? pin,
+							status,
+						});
+					}
+				});
+				if (entries.length > 0) map.set(key, entries);
+			});
+		}
+		return map;
+	}, [punchesByDay, effectivePin]);
 
-  /** CalendarMonth data map: ISO date → { status, hours }. */
-  const dayStatusMap = useMemo(() => {
-    const map: Record<string, { status: CalendarDayStatus; hours: number | null }> = {};
-    punchesByDay.forEach((punches, key) => {
-      if (userPin) {
-        // Single employee: classify individually
-        const { status, hours } = classifyDayFromPunches(punches);
-        map[key] = { status, hours };
-      } else {
-        // All employees: aggregate
-        const agg = aggregateDayStatus(punches);
-        map[key] = { status: agg.status, hours: agg.avgHours };
-      }
-    });
-    return map;
-  }, [punchesByDay, userPin]);
+	// ── Employee options (for filtering UI) ────────────────────────────────────
+	const employeeOptions: EmployeeOption[] = useMemo(() => {
+		const seen = new Set<string>();
+		const opts: EmployeeOption[] = [{ value: "", label: _(msg`All Employees`) }];
+		data?.punches.forEach((p) => {
+			const pin = p.user_pin;
+			if (!seen.has(pin)) {
+				seen.add(pin);
+				opts.push({ value: pin, label: p.employee_name ?? pin });
+			}
+		});
+		return opts;
+	}, [data, _]);
 
-  // ── Employee options ───────────────────────────────────────────────────────
-  const employeeOptions: EmployeeOption[] = useMemo(() => {
-    const seen = new Set<string>();
-    const opts: EmployeeOption[] = [{ value: "", label: _(msg`All Employees`) }];
-    data?.punches.forEach((p) => {
-      const pin = p.user_pin;
-      if (!seen.has(pin)) {
-        seen.add(pin);
-        opts.push({ value: pin, label: p.employee_name ?? pin });
-      }
-    });
-    return opts;
-  }, [data, _]);
-
-  // ── Navigation (uncontrolled mode only) ────────────────────────────────────
-  const goPrev = useCallback(() => {
-    if (isControlled) return;
-    if (month === 1) {
-      setYear((y) => y - 1);
-      setMonth(12);
-    } else {
-      setMonth((m) => m - 1);
-    }
-  }, [month, isControlled]);
-
-  const goNext = useCallback(() => {
-    if (isControlled) return;
-    if (month === 12) {
-      setYear((y) => y + 1);
-      setMonth(1);
-    } else {
-      setMonth((m) => m + 1);
-    }
-  }, [month, isControlled]);
-
-  const goToday = useCallback(() => {
-    const now = new Date();
-    setYear(now.getFullYear());
-    setMonth(now.getMonth() + 1);
-  }, []);
-
-  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-  });
-
-  return {
-    year,
-    month,
-    selectedEmployee,
-    setSelectedEmployee,
-    since,
-    until,
-    data,
-    punchesByDay,
-    dayStatusMap,
-    employeeOptions,
-    monthLabel,
-    goPrev,
-    goNext,
-    goToday,
-  };
+	return {
+		year,
+		month,
+		monthLabel,
+		since,
+		until,
+		data,
+		punchesByDay,
+		dayStatusMap,
+		employeeStatusesByDay,
+		employeeOptions,
+		selectedEmployee,
+		setSelectedEmployee,
+		goPrev,
+		goNext,
+		goToday,
+		goPrevYear,
+		goNextYear,
+	};
 }
