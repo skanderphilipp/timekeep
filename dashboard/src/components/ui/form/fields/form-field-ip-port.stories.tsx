@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Form } from "../form";
@@ -96,8 +97,10 @@ export const WithError: Story = {
       const form = useForm({
         defaultValues: { host: "999.999.999.999", port: 4370 },
       });
-      // Simulate a validation error
-      form.setError("host", { message: "Invalid IP address" });
+      // setError during render causes infinite loop — defer to mount
+      useEffect(() => {
+        form.setError("host", { message: "Invalid IP address" });
+      }, [form]);
 
       return (
         <FormProvider {...form}>
