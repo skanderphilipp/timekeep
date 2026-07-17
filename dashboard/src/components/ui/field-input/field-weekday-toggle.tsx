@@ -106,9 +106,9 @@ export function FieldWeekdayToggle({
       onKeyDown={handleKeyDown}
       className={clsx(styles.fieldWeekdayContainer, className)}
     >
-      <ToggleGroup value={pressedValues} onValueChange={handleToggle} multiple disabled={disabled}>
+      <ToggleGroup value={pressedValues} onValueChange={handleToggle} multiple disabled={disabled} className={styles.weekdayGroup}>
         {dayLabels.map((label, idx) => (
-          <Toggle key={String(idx)} value={String(idx)}>
+          <Toggle key={String(idx)} value={String(idx)} className={styles.weekdayToggle}>
             {label}
           </Toggle>
         ))}

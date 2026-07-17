@@ -56,6 +56,30 @@
   width: 100%;
 }
 
+.weekdayGroup {
+  gap: 2px;
+}
+
+.weekdayToggle {
+  color: var(--ao-font-color-tertiary);
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  min-width: 32px;
+  padding: var(--ao-spacing-0_5) var(--ao-spacing-1);
+  text-transform: uppercase;
+
+  &[aria-pressed="true"] {
+    background: var(--ao-accent-accent3);
+    box-shadow: none;
+    color: var(--ao-accent-accent11);
+    font-weight: var(--ao-font-weight-semibold);
+  }
+
+  &:hover:not([aria-pressed="true"]):not(:disabled) {
+    color: var(--ao-font-color-primary);
+  }
+}
+
 // ── Time Picker ─────────────────────────────────────────────────────
 
 .fieldTimeWrapper {
