@@ -16,6 +16,8 @@ import {
   FieldNumberInput,
   FieldSelectInput,
   FieldMultiSelectInput,
+  FieldTimeInput,
+  FieldWeekdayToggle,
 } from "./index";
 
 /**
@@ -334,6 +336,118 @@ export const MultiSelect = {
           >
             <strong>Current:</strong>{" "}
             {values.length ? values.join(", ") : "none"}
+          </div>
+          <EventLog log={log} />
+        </div>
+      );
+    }
+    return <Demo />;
+  },
+};
+
+// ── Time ──────────────────────────────────────────────────────────
+
+export const Time = {
+  name: "FieldTimeInput",
+  render: () => {
+    function Demo() {
+      const [value, setValue] = useState("09:00");
+      const [log, setLog] = useState<string[]>([]);
+      const addLog = (msg: string) =>
+        setLog((prev) => [...prev.slice(-4), msg]);
+
+      return (
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 8 }}>
+            Click to open popover — pick hour then minute to commit
+          </p>
+          <EditSimulator
+            display={
+              <span style={{ color: "var(--ao-font-color-primary)" }}>
+                {value || "HH:MM"}
+              </span>
+            }
+          >
+            <FieldTimeInput
+              instanceId="story-time"
+              value={value}
+              autoFocus
+              onChange={(v) => addLog(`draft: "${v}"`)}
+              onEnter={(v) => {
+                setValue(v);
+                addLog(`✅ Enter: "${v}"`);
+              }}
+              onEscape={(v) => addLog(`❌ Escape: "${v}"`)}
+              onTab={(v) => addLog(`↹ Tab: "${v}"`)}
+              onClickOutside={(_, v) => addLog(`👆 Outside: "${v}"`)}
+            />
+          </EditSimulator>
+          <EventLog log={log} />
+        </div>
+      );
+    }
+    return <Demo />;
+  },
+};
+
+// ── Weekday Toggle ───────────────────────────────────────────────────
+
+export const WeekdayToggle = {
+  name: "FieldWeekdayToggle",
+  render: () => {
+    function Demo() {
+      const [value, setValue] = useState<boolean[]>([
+        true, true, true, true, true, false, false,
+      ]);
+      const [log, setLog] = useState<string[]>([]);
+
+      return (
+        <div style={{ fontFamily: "var(--ao-font-family)", padding: 16 }}>
+          <p style={{ color: "var(--ao-font-color-secondary)", fontSize: 13, marginBottom: 8 }}>
+            Toggle work days — commits on Enter, reverts on Escape
+          </p>
+          <FieldWeekdayToggle
+            instanceId="story-weekday"
+            value={value}
+            dayLabels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+            onChange={(v) =>
+              setLog((prev) => [
+                ...prev.slice(-4),
+                `Draft: [${v.map((b, i) => (b ? "MTWTFSS"[i] : "·")).join("")}]`,
+              ])
+            }
+            onEnter={(v) => {
+              setValue(v);
+              const activeCount = v.filter((b) => b).length;
+              setLog((prev) => [
+                ...prev.slice(-4),
+                `✅ Enter: ${activeCount} days`,
+              ]);
+            }}
+            onEscape={(_v) =>
+              setLog((prev) => [
+                ...prev.slice(-4),
+                `❌ Escape (reverted)`,
+              ])
+            }
+            onClickOutside={(_, v) =>
+              setLog((prev) => [
+                ...prev.slice(-4),
+                `👆 Outside: ${v.filter((b) => b).length} days`,
+              ])
+            }
+          />
+          <div
+            style={{
+              color: "var(--ao-font-color-tertiary)",
+              fontSize: 12,
+              marginTop: 12,
+            }}
+          >
+            <strong>Current:</strong>{" "}
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+              .filter((_, i) => value[i])
+              .join(", ") || "none"}
           </div>
           <EventLog log={log} />
         </div>
