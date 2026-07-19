@@ -12,7 +12,14 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { useRegisterCommands } from "@/infrastructure/commands";
+import { useToast } from "@/infrastructure/toast/toast";
 import { AppRoute } from "@/lib/navigation";
+import {
+  syncDeviceClock,
+  resyncDevice,
+  deleteDevice,
+  enrollFinger,
+} from "@/lib/api/devices";
 
 /**
  * Registers contextual commands for the device detail page.
@@ -23,6 +30,7 @@ import { AppRoute } from "@/lib/navigation";
 export function useDeviceDetailCommands() {
   const { _ } = useLingui();
   const navigate = useNavigate();
+  const toast = useToast();
   const { sn } = useParams<{ sn: string }>();
 
   if (!sn) return;
@@ -66,59 +74,79 @@ export function useDeviceDetailCommands() {
     {
       id: "device-detail-sync-clock",
       label: _(msg`Sync Clock`),
-      description: _(msg`Synchronize device clock with server`),
+      description: _(msg`Synchronize device clock with server. Runs via SDK if connected, falls back to ADMS.`),
       icon: IconClock,
-      keywords: ["time", "sync", "synchronize"],
+      keywords: ["time", "sync", "synchronize", "ntp"],
       scope: { type: "page", pageId: "devices.detail" },
-      /**
-       * TODO(ENTERPRISE): Call syncDeviceClock API and show toast
-       *
-       * Phase: Production hardening (before tenant onboarding)
-       * Impact: Command reloads page; should call syncDeviceClock(sn) and show
-       *         success/error toast without full page reload.
-       * Fix: Import syncDeviceClock from @/lib/api/devices, call with try/catch,
-       *       use toast notification for result.
-       */
-      action: () => window.location.reload(),
+      action: () => {
+        syncDeviceClock(sn)
+          .then(() => toast.success(_(msg`Clock sync triggered. Device will update on next poll.`)))
+          .catch(() => toast.error(_(msg`Failed to sync device clock.`)));
+      },
     },
     {
       id: "device-detail-resync",
       label: _(msg`Full Re-sync`),
-      description: _(msg`Re-sync all users and records on this device`),
+      description: _(msg`Delete all users from device, then re-upload employee database. Runs asynchronously.`),
       icon: IconCloudUpload,
-      keywords: ["sync", "upload", "pull"],
+      keywords: ["sync", "upload", "pull", "reload"],
+      scope: { type: "page", pageId: "devices.detail" },
+      action: () => {
+        resyncDevice(sn)
+          .then(() => toast.success(_(msg`Re-sync started. Device users will refresh shortly.`)))
+          .catch(() => toast.error(_(msg`Failed to start re-sync.`)));
+      },
+    },
+    {
+      id: "device-detail-enroll-finger",
+      label: _(msg`Enroll Fingerprint`),
+      description: _(msg`Start fingerprint enrollment on this device. Employee must place finger 3 times on scanner.`),
+      icon: IconFingerprint,
+      keywords: ["finger", "biometric", "enroll", "scan"],
       scope: { type: "page", pageId: "devices.detail" },
       /**
-       * TODO(ENTERPRISE): Call resyncDevice API and show toast
+       * Enrollment is a multi-step async process:
+       * 1. This command publishes FingerprintEnrollRequested
+       * 2. Backend handler enables real-time events, starts 3-sample capture
+       * 3. Employee places finger on device (10-30 seconds)
+       * 4. Template downloaded and stored centrally
+       * 5. FingerprintEnrolled event fires
        *
-       * Phase: Production hardening (before tenant onboarding)
-       * Impact: Command reloads page; should call resyncDevice(sn) and show
-       *         success/error toast without full page reload.
-       * Fix: Import resyncDevice from @/lib/api/devices, call with try/catch,
-       *       use toast notification for result.
+       * TODO(ENTERPRISE): Add enrollment progress UI with SSE listener.
+       *
+       * Phase: Production hardening
+       * Impact: User has no feedback after triggering enrollment.
+       * Fix: Subscribe to onboarding SSE or poll device users endpoint.
        */
-      action: () => window.location.reload(),
+      action: () => {
+        const pin = window.prompt(_(msg`Enter employee PIN to enroll:`));
+        if (!pin) return;
+
+        enrollFinger(sn, pin, 0)
+          .then(() =>
+            toast.success(
+              _(msg`Enrollment started. Ask the employee to place their finger on the device three times.`),
+            ),
+          )
+          .catch(() => toast.error(_(msg`Failed to start fingerprint enrollment.`)));
+      },
     },
     {
       id: "device-detail-delete",
       label: _(msg`Delete Device`),
-      description: _(msg`Remove this device from the system`),
+      description: _(msg`Remove this device from the system permanently.`),
       icon: IconTrash,
       keywords: ["remove", "unregister", "delete"],
       scope: { type: "page", pageId: "devices.detail" },
-      /**
-       * TODO(ENTERPRISE): Show confirmation dialog before delete
-       *
-       * Phase: Production hardening (before tenant onboarding)
-       * Impact: Navigates to device list; should show a confirmation dialog
-       *         and call deleteDevice(sn) with error handling.
-       * Fix: Open confirmation modal first, then call deleteDevice(sn),
-       *       navigate to device list on success, show toast on error.
-       */
       action: () => {
-        if (window.confirm(`Delete device ${sn}?`)) {
-          navigate(AppRoute.devices.list);
-        }
+        if (!window.confirm(_(msg`Delete this device? This cannot be undone.`))) return;
+
+        deleteDevice(sn)
+          .then(() => {
+            toast.success(_(msg`Device deleted.`));
+            navigate(AppRoute.devices.list);
+          })
+          .catch(() => toast.error(_(msg`Failed to delete device.`)));
       },
     },
     {

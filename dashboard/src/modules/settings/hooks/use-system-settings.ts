@@ -45,6 +45,7 @@ export function useSystemSettings() {
 
   return {
     form,
+    settingsData: data,
     isLoading,
     isSaving: save.isPending,
     error,

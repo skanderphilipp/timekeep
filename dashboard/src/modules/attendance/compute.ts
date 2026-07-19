@@ -65,12 +65,24 @@ export function classifyDayFromPunches(punches: Punch[]): {
 	const sorted = [...punches].sort((a, b) => a.timestamp - b.timestamp);
 	let hasLate = false;
 
+	// Period start/end statuses — break_out starts a new work period,
+	// break_in ends the current one. overtime_in/out follow the same pattern.
+	const PERIOD_START = new Set(["check_in", "break_out", "overtime_in"]);
+	const PERIOD_END = new Set(["check_out", "break_in", "overtime_out"]);
+
 	for (const p of sorted) {
-		if (p.status === "check_in") {
+		if (PERIOD_START.has(p.status)) {
+			// Close any previously open period
+			if (checkInTime != null) {
+				totalSeconds += p.timestamp - checkInTime;
+			}
 			checkInTime = p.timestamp;
-			const d = new Date(p.timestamp * 1000);
-			if (d.getUTCHours() >= 9) hasLate = true;
-		} else if ((p.status === "check_out" || p.status === "break_out") && checkInTime != null) {
+			// Late detection: only relevant for the first check_in
+			if (p.status === "check_in") {
+				const d = new Date(p.timestamp * 1000);
+				if (d.getHours() >= 9) hasLate = true;
+			}
+		} else if (PERIOD_END.has(p.status) && checkInTime != null) {
 			totalSeconds += p.timestamp - checkInTime;
 			checkInTime = null;
 		}

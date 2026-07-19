@@ -75,6 +75,7 @@ export type QuickStats = {
   currently_present: number;
   late_arrivals: number;
   anomalies_detected: number;
+  work_days: import("@/lib/api").WorkDay[];
 };
 
 /** Fetch dashboard quick stats. Requires Viewer+. */
@@ -110,14 +111,16 @@ export function fetchDevicesHealth(): Promise<DeviceHealthSummary> {
 
 // ── Device Activity ────────────────────────────────────────────────────────
 
-/** Matches the Rust `DeviceActivityResponse` DTO. */
+/** Matches the Rust `DeviceActivityEntry` DTO. */
 export type DeviceActivityEvent = {
   id: string;
-  device_sn: string;
-  timestamp: number;
-  event_type: string;
+  /** ISO-8601 timestamp string. */
+  timestamp: string;
   label: string;
-  detail?: string | null;
+  event_type: string;
+  actor: string;
+  source: string;
+  is_problem: boolean;
 };
 
 /** Paginated activity response. */

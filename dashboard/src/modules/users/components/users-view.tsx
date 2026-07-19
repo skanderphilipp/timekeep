@@ -6,10 +6,10 @@ import { IconPlus, IconTable } from "@tabler/icons-react";
 import { useUsersPage } from "../hooks/use-users-page";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
+import { CreateUserDialog } from "./create-user-dialog";
 import { Section, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { DataListView } from "@/modules/data-renderer";
-import { useOpenRecordInSidePanel } from "@/infrastructure/side-panel/hooks/use-side-panel-navigation";
 import type { DashboardUser } from "@/lib/api";
 
 /**
@@ -23,16 +23,7 @@ export function UsersView() {
   const { _ } = useLingui();
   const page = useUsersPage();
 
-  const openRecord = useOpenRecordInSidePanel();
-
-  const handleCreate = useCallback(() => {
-    openRecord({
-      entityType: "user",
-      title: _(msg`Create User`),
-      isNewRecord: true,
-    });
-  }, [openRecord, _]);
-
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [search, setSearch] = useState("");
 
   // ── Client-side search ──────────────────────────────────────────
@@ -71,7 +62,7 @@ export function UsersView() {
         description={_(msg`Manage dashboard users, roles, and passwords.`)}
         actions={
           !page.query.isLoading && !page.query.error ? (
-            <Button size="sm" icon={<IconPlus size={16} />} onClick={handleCreate}>
+            <Button size="sm" icon={<IconPlus size={16} />} onClick={() => setShowCreateDialog(true)}>
               {_(msg`Add User`)}
             </Button>
           ) : undefined
@@ -118,6 +109,11 @@ export function UsersView() {
         isPending={page.deleteMutation.isPending}
         onCancel={() => page.closeDeleteDialog()}
         onConfirm={page.handleDelete}
+      />
+
+      <CreateUserDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
       />
 
       {page.passwordUser && (

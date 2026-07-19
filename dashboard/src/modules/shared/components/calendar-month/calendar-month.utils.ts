@@ -116,6 +116,4 @@ export function generateDays(
 }
 
 /** Format hours as a short string, e.g. 7.5 → "7.5h". */
-export function formatHours(h: number): string {
-  return `${h.toFixed(1)}h`;
-}
+export { formatDurationHours as formatHours } from "@/lib/format-duration";

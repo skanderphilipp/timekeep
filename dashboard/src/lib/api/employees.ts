@@ -104,21 +104,39 @@ export function deactivateEmployee(id: string): Promise<{ status: string }> {
 
 /** Matches the Rust `WorkDayResponse` DTO. */
 export type WorkDay = {
-  date: number;
+  /** ISO date string (e.g. "2026-07-18"). */
+  date: string;
+  user_pin: string;
   status: string;
-  check_in?: number | null;
+  total_regular_seconds: number;
+  total_break_seconds: number;
+  total_overtime_seconds: number;
+  net_work_seconds: number;
+  is_present_now: boolean;
+  anomaly_count: number;
+  periods: WorkPeriod[];
+};
+
+/** Matches the Rust `WorkPeriodResponse` DTO. */
+export type WorkPeriod = {
+  /** Unix timestamp (seconds) of check-in. */
+  check_in: number;
+  /** Unix timestamp (seconds) of check-out (null = still present). */
   check_out?: number | null;
-  regular_seconds: number;
-  overtime_seconds: number;
-  break_seconds: number;
-  is_anomaly: boolean;
+  /** Duration in seconds. */
+  duration_secs: number;
+  /** Period kind: "regular", "overtime", "break". */
+  kind: string;
 };
 
 /** Matches the Rust `EmployeeWorkDaysResponse` DTO. */
-export type EmployeeWorkDays = {
+export type EmployeeWorkDaysResponse = {
   user_pin: string;
   work_days: WorkDay[];
 };
+
+/** @deprecated Use {@link EmployeeWorkDaysResponse} instead. */
+export type EmployeeWorkDays = EmployeeWorkDaysResponse;
 
 /** Matches the Rust `EmployeeSummaryResponse` DTO. */
 export type EmployeeSummary = {
@@ -130,24 +148,23 @@ export type EmployeeSummary = {
   absent_days: number;
   avg_hours_per_day: number;
   total_overtime_seconds: number;
+  total_regular_seconds: number;
+  work_days: WorkDay[];
 };
 
-/** Matches the Rust `MonthlyTrendPoint` DTO. */
+/** Matches the Rust `MonthlyTrendResponse` DTO. */
 export type MonthlyTrendPoint = {
-  month: string;
-  present_days: number;
-  absent_days: number;
-  late_days: number;
-  avg_hours_per_day: number;
+  year: number;
+  month: number;
+  attendance_pct: number;
 };
 
-/** Matches the Rust `CalendarDay` DTO. */
+/** Matches the Rust `CalendarDayResponse` DTO. */
 export type CalendarDay = {
-  date: number;
-  status: string;
-  check_in?: number | null;
-  check_out?: number | null;
-  regular_seconds: number;
+  date: string;
+  status_code: number;
+  hours?: number | null;
+  is_working_day: boolean;
 };
 
 /** Query params for work-day/list endpoints. */

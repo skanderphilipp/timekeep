@@ -183,11 +183,11 @@ export const REFERENCE_CONFIG: Record<string, Record<string, ReferenceConfig>> =
 			displayField: "device_label",
 		},
 		user_pin: {
-			referenceEntity: "user",
+			referenceEntity: "employee",
 			referenceIdField: "user_pin",
 		},
 		employee_name: {
-			referenceEntity: "user",
+			referenceEntity: "employee",
 			referenceIdField: "user_pin",
 			displayField: "employee_name",
 		},

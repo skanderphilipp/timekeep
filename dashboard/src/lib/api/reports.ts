@@ -25,13 +25,13 @@ export type ReportSummary = {
   /** Absence rate as a percentage (0-100). */
   absence_rate?: number;
   /** Daily hours breakdown with regular + overtime split. */
-  daily_hours?: DailyHoursBreakdown[];
+  daily_hours: DailyHoursBreakdown[];
   /** Weekly total hours. */
-  weekly_hours?: WeeklyHoursBreakdown[];
+  weekly_hours: WeeklyHoursBreakdown[];
   /** Attendance status distribution (full/half/absent). */
-  status_distribution?: AttendanceDistribution[];
+  status_distribution: AttendanceDistribution[];
   /** Per-employee attendance KPIs. */
-  employees?: EmployeeReportKpi[];
+  employees: EmployeeReportKpi[];
 };
 
 /** Daily regular + overtime hours. */

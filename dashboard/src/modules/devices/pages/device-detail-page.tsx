@@ -4,11 +4,6 @@ import { PageShell, PageBar } from "@/components/layout";
 import { RecordDetailRenderer } from "@/modules/record-detail";
 import { useDeviceDetailPage } from "../hooks/use-device-detail-page";
 import { useDeviceDetailCommands } from "../hooks/use-device-detail-commands";
-import {
-  DeviceDetailExtras,
-  DeviceConfigTabContent,
-  DeviceUsersTabContent,
-} from "../components/device-detail-content";
 
 /**
  * Device detail page — thin composite.
@@ -43,33 +38,7 @@ export function DeviceDetailPage() {
         entity="device"
         entityId={page.sn}
         isInSidePanel={false}
-        tabChildren={
-          page.device
-            ? {
-                config: (
-                  <DeviceConfigTabContent
-                    device={page.device}
-                    onRefresh={() => page.refetch()}
-                  />
-                ),
-                users: (
-                  <DeviceUsersTabContent
-                    device={page.device}
-                    onRefresh={() => page.refetch()}
-                  />
-                ),
-              }
-            : undefined
-        }
-      >
-        {page.device && (
-          <DeviceDetailExtras
-            device={page.device}
-            deviceHealth={page.deviceHealth}
-            onRefresh={() => page.refetch()}
-          />
-        )}
-      </RecordDetailRenderer>
+      />
     </PageShell>
   );
 }

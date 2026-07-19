@@ -38,7 +38,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get a single API key by ID (metadata only — no raw key or hash exposed).
+         * @description Requires: Operator+ role.
+         */
+        get: operations["get_api_key"];
         put?: never;
         post?: never;
         /**
@@ -98,6 +102,26 @@ export interface paths {
         };
         /** Return the entity schema for audit logs. */
         get: operations["audit_schema"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a single audit event by ID.
+         * @description Requires: Viewer+ role.
+         */
+        get: operations["get_audit_event"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1032,7 +1056,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get a single integration endpoint by ID.
+         * @description Requires: Viewer+ role.
+         */
+        get: operations["get_endpoint"];
         /**
          * Update an integration endpoint (full replace).
          * @description All fields are optional — omitted fields keep their current values.
@@ -1175,6 +1203,23 @@ export interface paths {
             cookie?: never;
         };
         get: operations["punch_schema"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/punches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single punch by its deduplication ID. */
+        get: operations["get_punch"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1327,7 +1372,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * `GET /api/users/{id}` — Get a single dashboard user by ID.
+         * @description Admin-only.
+         */
+        get: operations["get_user"];
         /**
          * `PUT /api/users/{id}` — Update a dashboard user's role, name, or active status.
          * @description Admin-only. Cannot change username or password (use the password endpoint).
@@ -1707,6 +1756,12 @@ export interface components {
             department_id?: string | null;
             /** @description External ERP reference (Odoo/SAP employee ID). */
             external_id?: string | null;
+            /**
+             * Format: int64
+             * @description Employment start date (Unix timestamp, seconds).
+             *     When provided, attendance computation skips days before this date.
+             */
+            joined_at?: number | null;
             /** @description Display name (e.g. "Ahmed Al-Sabah"). */
             name: string;
             /** @description Device PIN / user identifier on the scanner. */
@@ -2235,6 +2290,12 @@ export interface components {
             department_id?: string | null;
             external_id?: string | null;
             id: string;
+            /**
+             * Format: int64
+             * @description Employment start date (Unix timestamp, seconds).
+             *     `None` means the joining date was not provided.
+             */
+            joined_at?: number | null;
             name: string;
             pin: string;
             /** Format: int64 */
@@ -2928,12 +2989,6 @@ export interface components {
         /** @description Update an existing employee. */
         UpdateEmployeeRequest: {
             /**
-             * @description Whether the employee is currently active (tracked).
-             *
-             *     Set to `false` to deactivate (soft-delete). Punches are preserved.
-             */
-            active?: boolean | null;
-            /**
              * @description New department UUID for cross-entity navigation.
              *
              *     When provided, the department name is resolved and stored as the
@@ -2942,6 +2997,11 @@ export interface components {
             department_id?: string | null;
             /** @description New external ERP reference. */
             external_id?: string | null;
+            /**
+             * Format: int64
+             * @description Updated employment start date (Unix timestamp, seconds).
+             */
+            joined_at?: number | null;
             /** @description New display name. */
             name?: string | null;
         };
@@ -3236,6 +3296,50 @@ export interface operations {
             };
         };
     };
+    get_api_key: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description API key UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description API key metadata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden — Operator+ required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description API key not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     revoke_api_key: {
         parameters: {
             query?: never;
@@ -3391,6 +3495,43 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_audit_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Audit event UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit event details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Audit event not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5928,6 +6069,43 @@ export interface operations {
             };
         };
     };
+    get_endpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Endpoint UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Endpoint details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndpointResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Endpoint not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     update_endpoint: {
         parameters: {
             query?: never;
@@ -6291,6 +6469,43 @@ export interface operations {
             };
         };
     };
+    get_punch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Punch deduplication ID (hex string) */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Punch details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PunchResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Punch not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     report_summary: {
         parameters: {
             query?: {
@@ -6609,6 +6824,50 @@ export interface operations {
             };
             /** @description Forbidden — admin role required */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardUserResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden — admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description User not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

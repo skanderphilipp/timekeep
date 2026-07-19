@@ -5,6 +5,7 @@ declare const classNames: {
   readonly body: "body";
   readonly week: "week";
   readonly dayCell: "dayCell";
+  readonly clickable: "clickable";
   readonly selected: "selected";
   readonly dayNumber: "dayNumber";
   readonly today: "today";

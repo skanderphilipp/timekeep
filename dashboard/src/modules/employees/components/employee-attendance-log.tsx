@@ -24,6 +24,17 @@ function formatTime(ts: number | null | undefined): string {
   return new Date(ts * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+/** Get the first period's check-in timestamp, or null. */
+function firstCheckIn(day: WorkDay): number | null {
+  return day.periods[0]?.check_in ?? null;
+}
+
+/** Get the last period's check-out timestamp, or null. */
+function lastCheckOut(day: WorkDay): number | null {
+  const last = day.periods[day.periods.length - 1];
+  return last?.check_out ?? null;
+}
+
 function useColumns() {
   const { _ } = useLingui();
 
@@ -31,14 +42,14 @@ function useColumns() {
     {
       id: "date",
       header: _(msg`Date`),
-      cell: (day) => <TextCell text={new Date(day.date * 1000).toLocaleDateString()} />,
+      cell: (day) => <TextCell text={new Date(day.date).toLocaleDateString()} />,
       width: "120px",
     },
     {
       id: "status",
       header: _(msg`Status`),
       cell: (day) => {
-        if (day.is_anomaly) return <Badge variant="warning" size="sm">{_(msg`Anomaly`)}</Badge>;
+        if (day.anomaly_count > 0) return <Badge variant="warning" size="sm">{_(msg`Anomaly`)}</Badge>;
         if (day.status === "present") return <Badge variant="success" size="sm">{_(msg`Present`)}</Badge>;
         if (day.status === "absent") return <Badge variant="danger" size="sm">{_(msg`Absent`)}</Badge>;
         if (day.status === "late") return <Badge variant="warning" size="sm">{_(msg`Late`)}</Badge>;
@@ -49,26 +60,26 @@ function useColumns() {
     {
       id: "check_in",
       header: _(msg`Check In`),
-      cell: (day) => <TextCell text={formatTime(day.check_in)} />,
+      cell: (day) => <TextCell text={formatTime(firstCheckIn(day))} />,
       width: "100px",
     },
     {
       id: "check_out",
       header: _(msg`Check Out`),
-      cell: (day) => <TextCell text={formatTime(day.check_out)} />,
+      cell: (day) => <TextCell text={formatTime(lastCheckOut(day))} />,
       width: "100px",
     },
     {
       id: "hours",
       header: _(msg`Hours`),
-      cell: (day) => <TextCell text={formatDuration(day.regular_seconds + day.overtime_seconds)} />,
+      cell: (day) => <TextCell text={formatDuration(day.total_regular_seconds + day.total_overtime_seconds)} />,
       width: "90px",
     },
     {
       id: "overtime",
       header: _(msg`Overtime`),
       cell: (day) => (
-        <TextCell text={day.overtime_seconds > 0 ? formatDuration(day.overtime_seconds) : "—"} />
+        <TextCell text={day.total_overtime_seconds > 0 ? formatDuration(day.total_overtime_seconds) : "—"} />
       ),
       width: "90px",
     },

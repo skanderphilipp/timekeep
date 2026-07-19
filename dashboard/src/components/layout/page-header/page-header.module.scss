@@ -4,6 +4,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--ao-spacing-1);
+
+  /* PageHeader handles its own heading+description spacing via flex gap.
+     Zero out the heading&#x27;s built-in margin-bottom so we don&#x27;t double-space. */
+  & [data-slot="heading"] {
+    margin-bottom: 0;
+  }
 }
 
 .headerWithAction {

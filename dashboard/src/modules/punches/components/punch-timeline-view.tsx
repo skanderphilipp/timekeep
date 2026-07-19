@@ -2,17 +2,27 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 
 import { AttendanceTimelineView } from "@/modules/attendance";
 import type { Punch } from "@/lib/api";
+import type { PunchFilter } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
 type PunchTimelineViewProps = {
 	/** The date to display the timeline for (from the page's date filter). */
 	date: Date | null;
-	/** Raw filter strings from the parent page (syncs timeline with active filters). */
-	filterSince?: string;
-	filterUntil?: string;
 	/** Punches for the current filter context (used to derive employee list). */
 	punches: Punch[];
+	/**
+	 * Additional filter context from the parent page (status, device_sns, search, etc.).
+	 * Propagated to usePunchData so timeline data matches page-level filters.
+	 */
+	filterContext?: Partial<PunchFilter>;
+	/**
+	 * @deprecated Timeline now fetches independently from the date prop.
+	 * Removed in Issue #6 fix. See bug-audit-attendance.md.
+	 */
+	filterSince?: string;
+	/** @deprecated See filterSince. */
+	filterUntil?: string;
 };
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -29,9 +39,8 @@ type PunchTimelineViewProps = {
  */
 export function PunchTimelineView({
 	date,
-	filterSince,
-	filterUntil,
 	punches,
+	filterContext,
 }: PunchTimelineViewProps) {
 	// Default to today when no date filter is set
 	const effectiveDate = useMemo(() => date ?? new Date(), [date]);
@@ -64,9 +73,8 @@ export function PunchTimelineView({
 	return (
 		<AttendanceTimelineView
 			date={timelineDate}
-			filterSince={filterSince}
-			filterUntil={filterUntil}
 			employees={employees.length > 0 ? employees : undefined}
+			filterContext={filterContext}
 			onDateChange={handleDateChange}
 		/>
 	);

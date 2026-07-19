@@ -19,11 +19,12 @@ const punchFilterDefaults: Omit<
 };
 
 /**
- * Infinite scroll punch query — cursor-based infinite loading.
+ * Infinite scroll punch query -- cursor-based infinite loading.
  *
  * Sort state (column + direction) is synced to the URL via useListState.
- * Multi-device (`device_sns`) is managed separately via local state because
- * arrays don't fit the string-only URL filter infrastructure.
+ * Multi-device (`device_sns`) and user PINs (`user_pins`) are managed
+ * via local state because the URL filter infrastructure only supports
+ * flat string values, not arrays.
  *
  * On first load with no date range, defaults to today so the table,
  * timeline, date picker, and filter chips all agree on the active range.
@@ -41,19 +42,26 @@ export function useInfinitePunchQuery() {
   // Multi-device filter managed outside URL sync (arrays not supported by FilterValues)
   const [deviceSns, setDeviceSns] = useState<string[]>([]);
 
-  // ── Default to today on first load ──────────────────────────────────
+  // User PIN filter managed outside URL sync (same reason as device_sns)
+  const [userPins, setUserPins] = useState<string[]>([]);
+
+  // -- Default to today on first load --
 
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!initializedRef.current && !filters.since && !filters.until) {
+    // Mark as initialized immediately, regardless of whether we set a default.
+    // This prevents the today-default from re-triggering after clearFilters().
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    if (!filters.since && !filters.until) {
       const today = toDateString(new Date());
       setFilter({ since: today, until: today });
-      initializedRef.current = true;
     }
   }, [filters.since, filters.until, setFilter]);
 
-  // ── Read device_sns / user_pins from URL on mount (navigation helpers) ──
+  // -- Read device_sns / user_pins from URL on mount (navigation helpers) --
 
   const initializedUrlParamsRef = useRef(false);
   const [searchParams] = useSearchParams();
@@ -67,8 +75,8 @@ export function useInfinitePunchQuery() {
       setDeviceSns(urlDeviceSns.split(",").filter(Boolean));
     }
     const urlUserPins = searchParams.get("punches_user_pins");
-    if (urlUserPins) {
-      setFilter({ user_pins: urlUserPins.split(",").filter(Boolean) } as any);
+    if (urlUserPins && !userPins.length) {
+      setUserPins(urlUserPins.split(",").filter(Boolean));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -77,11 +85,11 @@ export function useInfinitePunchQuery() {
     () => ({
       ...filters,
       device_sns: deviceSns.length > 0 ? deviceSns : undefined,
-      user_pins: undefined,
+      user_pins: userPins.length > 0 ? userPins : undefined,
       sort_by: sort?.column,
       sort_order: sort?.direction,
     }),
-    [filters, deviceSns, sort],
+    [filters, deviceSns, userPins, sort],
   );
 
   const query = useInfinitePunchData(apiFilter);
@@ -96,28 +104,41 @@ export function useInfinitePunchQuery() {
   const handleFilterChange = useCallback(
     (
       patch: Partial<
-        Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "device_sns" | "user_pins">
+        Omit<PunchFilter, "limit" | "offset" | "order_desc" | "cursor" | "sort_by" | "user_pins"> & { user_pins?: string[] }
       >,
-    ) => setFilter(patch),
+    ) => {
+      // Route user_pins to local state (array). URL stores comma-separated string.
+      // Use "in" check so explicit `undefined` (clearing) also hits this branch.
+      if ("user_pins" in patch) {
+        const { user_pins: pins, ...rest } = patch;
+        setUserPins(pins ?? []);
+        setFilter(rest);
+      } else {
+        setFilter(patch);
+      }
+    },
     [setFilter],
   );
 
   const handleClearFilters = useCallback(() => {
     resetFilters();
     setDeviceSns([]);
-    // Re-allow the useEffect to default to today after clearing.
-    initializedRef.current = false;
+    setUserPins([]);
   }, [resetFilters]);
 
   return {
-    filters: { ...filters, device_sns: deviceSns.length > 0 ? deviceSns : undefined, user_pins: undefined } as Omit<
+    filters: {
+      ...filters,
+      device_sns: deviceSns.length > 0 ? deviceSns : undefined,
+      user_pins: userPins.length > 0 ? userPins : undefined,
+    } as Omit<
       PunchFilter,
       "limit" | "offset" | "order_desc" | "cursor" | "sort_by"
     >,
     sortState: sort ? { column: sort.column, direction: sort.direction } : null,
     punches,
     query,
-    hasActiveFilters: hasActiveFilters || deviceSns.length > 0,
+    hasActiveFilters: hasActiveFilters || deviceSns.length > 0 || userPins.length > 0,
     isLoading: query.isLoading,
     isFetchingNextPage: query.isFetchingNextPage,
     hasNextPage: query.hasNextPage,

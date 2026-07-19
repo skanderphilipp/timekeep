@@ -9,6 +9,10 @@ export type SystemSettings = {
   auto_discover: boolean;
   /** Organization-default work policy. Nullable — falls back to hardcoded defaults. */
   work_policy?: WorkPolicy | null;
+  /** Support email shown in the dashboard UI. */
+  support_email: string;
+  /** Workspace/company name shown on the login page. */
+  workspace_name: string;
 };
 
 /** Matches the Rust `UpdateSystemSettingsRequest` DTO. */

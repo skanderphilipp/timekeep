@@ -4,13 +4,7 @@ import { IconCalendar, IconClock, IconClockPlus, IconPercentage } from "@tabler/
 
 import { StatCard, Grid } from "@/components/ui";
 import type { ReportSummary } from "@/lib/api";
-
-/** Format seconds into a human-readable duration string. */
-function formatHours(seconds: number): string {
-  const hours = seconds / 3600;
-  if (hours < 1) return `${Math.round(seconds / 60)}m`;
-  return `${hours.toFixed(1)}h`;
-}
+import { formatDurationSeconds } from "@/lib/format-duration";
 
 type ReportSummaryCardsProps = {
   summary: ReportSummary;
@@ -38,7 +32,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
         layout="horizontal"
         icon={<IconClock size={20} />}
         label={_(msg`Avg Hours`)}
-        value={formatHours(summary.avg_seconds_per_day ?? 0)}
+        value={formatDurationSeconds(summary.avg_seconds_per_day ?? 0)}
         subtitle={_(msg`per day`)}
         color="accent"
       />
@@ -46,7 +40,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
         layout="horizontal"
         icon={<IconClockPlus size={20} />}
         label={_(msg`Overtime`)}
-        value={formatHours(summary.overtime_seconds ?? 0)}
+        value={formatDurationSeconds(summary.overtime_seconds ?? 0)}
         subtitle={_(msg`total`)}
         color="amber"
       />

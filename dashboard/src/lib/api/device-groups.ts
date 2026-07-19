@@ -8,6 +8,8 @@ export type DeviceGroup = {
   name: string;
   description?: string | null;
   device_count?: number | null;
+  /** Department IDs assigned to this group. Empty = all departments. */
+  department_ids: string[];
   created_at: number; // unix epoch seconds
   updated_at: number;
 };
@@ -18,6 +20,8 @@ export type CreateDeviceGroupRequest = {
   name: string;
   /** Optional human-readable description. */
   description?: string | null;
+  /** Department IDs to assign. Empty = all departments. */
+  department_ids?: string[];
 };
 
 /** Matches the Rust `UpdateDeviceGroupRequest` DTO. All fields optional. */
@@ -26,6 +30,8 @@ export type UpdateDeviceGroupRequest = {
   name?: string | null;
   /** New description. */
   description?: string | null;
+  /** New department IDs. Omitted = keep existing. */
+  department_ids?: string[] | null;
 };
 
 /** Matches the Rust `SetDeviceGroupRequest` DTO. */

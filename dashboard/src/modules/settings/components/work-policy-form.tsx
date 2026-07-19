@@ -4,6 +4,7 @@ import { msg } from "@lingui/core/macro";
 
 import { Input, ToggleGroup, Toggle, Text, Badge, Card, Section } from "@/components/ui";
 import type { WorkPolicy as WorkPolicyType } from "@/lib/api";
+import { formatDurationMinutes } from "@/lib/format-duration";
 import styles from "./work-policy-form.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -33,13 +34,6 @@ const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
-}
-
-function formatHours(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -189,14 +183,14 @@ export function WorkPolicyForm({
               <Text variant="caption" color="tertiary">
                 {_(msg`Daily`)}
               </Text>
-              <Text variant="body">{formatHours(dailyMinutes)}</Text>
+              <Text variant="body">{formatDurationMinutes(dailyMinutes)}</Text>
             </div>
             <div>
               <Text variant="caption" color="tertiary">
                 {_(msg`Weekly`)}
               </Text>
               <Text variant="body">
-                {formatHours(weeklyMinutes)} ({workingDayCount}d)
+                {formatDurationMinutes(weeklyMinutes)} ({workingDayCount}d)
               </Text>
             </div>
           </div>

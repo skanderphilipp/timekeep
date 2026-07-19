@@ -5,7 +5,18 @@ import { tableFilterFamilyState } from "../states/atoms/filter-state";
 import type { FilterEntry } from "../types";
 
 /**
- * Hook: table filter state + handlers for a given table instance.
+ * Hook: internal per-table column-header filter state (Jotai atom-based).
+ *
+ * @internal — Used only by {@link DataTableContainer} for column-level filters.
+ * Page-level filters (date range, status, device, search) use the URL-based
+ * {@link useListState} system, NOT this hook. These are two separate filter
+ * systems that serve different purposes:
+ *
+ * - **Table filters** (this hook): column header value filters, ephemeral,
+ *   scoped to a single DataTableContainer instance. Jotai `atomFamily` per instanceId.
+ * - **Page filters** (`useListState` in `@/infrastructure/query-params`):
+ *   date range, status, device_sns, search, URL-synced. Drives data fetching
+ *   for the entire page via `useInfinitePunchQuery`.
  *
  * Automatically cleans up the atom family cache entry on unmount
  * to prevent memory leaks from stale table instances.

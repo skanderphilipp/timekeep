@@ -14,6 +14,7 @@ export function useSettingsPage() {
   const user = useCurrentUser();
   const {
     form,
+    settingsData,
     isLoading: settingsLoading,
     isSaving,
     error: settingsError,
@@ -33,6 +34,7 @@ export function useSettingsPage() {
     health,
     healthLoading,
     healthError,
+    settingsData,
     settingsLoading,
     settingsError,
     isSaving,

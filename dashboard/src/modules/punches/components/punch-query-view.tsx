@@ -118,27 +118,41 @@ export function PunchQueryView() {
 	const renderCustomView = useCallback(
 		(view: ViewType) => {
 			if (view === "timeline") {
+				const timelineFilterCtx: Record<string, unknown> = {};
+				if (page.filters.status) timelineFilterCtx.status = page.filters.status;
+				if (page.filters.device_sns) timelineFilterCtx.device_sns = page.filters.device_sns;
+				if (page.filters.search) timelineFilterCtx.search = page.filters.search;
+				if (page.filters.verify_mode) timelineFilterCtx.verify_mode = page.filters.verify_mode;
+				if (page.filters.anomalies_only) timelineFilterCtx.anomalies_only = page.filters.anomalies_only;
 				return (
 					<PunchTimelineView
 						date={page.dateFrom}
-						filterSince={page.filters.since}
-						filterUntil={page.filters.until}
 						punches={page.punches}
+						filterContext={Object.keys(timelineFilterCtx).length > 0 ? timelineFilterCtx : undefined}
 					/>
 				);
 			}
 			if (view === "calendar") {
 				const today = new Date();
+				const calendarFilterCtx: Record<string, unknown> = {};
+				if (page.filters.status) calendarFilterCtx.status = page.filters.status;
+				if (page.filters.device_sns) calendarFilterCtx.device_sns = page.filters.device_sns;
+				if (page.filters.search) calendarFilterCtx.search = page.filters.search;
+				if (page.filters.verify_mode) calendarFilterCtx.verify_mode = page.filters.verify_mode;
+				if (page.filters.anomalies_only) calendarFilterCtx.anomalies_only = page.filters.anomalies_only;
 				return (
 					<AttendanceCalendarView
 						year={page.dateFrom?.getFullYear() ?? today.getFullYear()}
 						month={(page.dateFrom?.getMonth() ?? today.getMonth()) + 1}
+						filterSince={page.filters.since || undefined}
+						filterUntil={page.filters.until || undefined}
+						filterContext={Object.keys(calendarFilterCtx).length > 0 ? calendarFilterCtx : undefined}
 					/>
 				);
 			}
 			return null;
 		},
-		[page.dateFrom, page.punches, page.isLoading],
+		[page.dateFrom, page.punches, page.isLoading, page.filters],
 	);
 
 	return (

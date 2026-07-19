@@ -23,8 +23,14 @@ export type DeviceSummary = {
   sdk_poll_active: boolean;
   /** Last time the device was seen (Unix timestamp in seconds) */
   last_seen_at?: number | null;
+  /** Last time the SDK poller successfully reached the device (Unix seconds). */
+  sdk_last_poll?: number | null;
   /** Whether this device was auto-registered via ADMS push (vs manually added). */
   auto_registered?: boolean;
+  /** Physical location of the device. */
+  location?: string | null;
+  /** Device vendor key (e.g. "zkteco"). */
+  vendor: string;
 };
 
 /** Full device config (create/update/get detail endpoint). */
@@ -38,6 +44,10 @@ export type DeviceConfig = {
   timezone: string | null;
   /** Device vendor key. Defaults to "zkteco" when not specified. */
   vendor?: DeviceVendorValue | null;
+  /** Physical location of the device. */
+  location?: string | null;
+  /** Per-device poll interval override in seconds. */
+  poll_interval_secs?: number | null;
   /**
    * Device group ID for department-scoped sync.
    * A device belongs to at most one group. Groups control which employees
@@ -240,6 +250,30 @@ export function enrollEmployee(
   return apiPost<{ status: string }>(
     `devices/${encodeURIComponent(deviceSn)}/enrollments`,
     req,
+  ).json();
+}
+
+/**
+ * Trigger fingerprint enrollment on a device.
+ *
+ * This starts the interactive 3-sample capture loop on the physical device.
+ * The employee must place their finger on the scanner. The actual enrollment
+ * runs asynchronously — this endpoint returns immediately with
+ * `{ status: "enrollment_triggered" }`. Monitor progress via:
+ * - SSE stream: `GET /api/onboarding/sessions/{id}/events`
+ * - Or poll `/api/devices/{sn}/users` and check `fingerprint_count`
+ *
+ * Requires an active SDK connection (TCP port 4370). ADMS-only devices
+ * cannot perform interactive fingerprint enrollment.
+ */
+export function enrollFinger(
+  deviceSn: string,
+  userPin: string,
+  fingerIndex: number = 0,
+): Promise<{ status: string }> {
+  return apiPost<{ status: string }>(
+    `devices/${encodeURIComponent(deviceSn)}/users/${encodeURIComponent(userPin)}/enroll-finger`,
+    { finger_index: fingerIndex },
   ).json();
 }
 

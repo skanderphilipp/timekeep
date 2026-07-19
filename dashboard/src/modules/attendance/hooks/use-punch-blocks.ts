@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { addDays } from "date-fns";
 
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
+import type { PunchFilter } from "@/lib/api";
 import { buildBlocks, buildLegendItems } from "../compute";
 import type { TimelineRowData } from "@/modules/shared/components";
 import type { TimelineEmployee } from "../types";
@@ -14,6 +15,11 @@ export type UsePunchBlocksOptions = {
 	/** Optional explicit date range overrides (parent filter sync). */
 	filterSince?: string;
 	filterUntil?: string;
+	/**
+	 * Additional filter context from parent page (status, device_sns, search, etc.).
+	 * Spread into the usePunchData call so timeline data matches page-level filters.
+	 */
+	filterContext?: Partial<PunchFilter>;
 	/** Optional pre-provided employee list (e.g., from parent page). */
 	employees?: TimelineEmployee[];
 	/** Translation function for buildBlocks / buildLegendItems. */
@@ -46,6 +52,7 @@ export function usePunchBlocks({
 	date,
 	filterSince,
 	filterUntil,
+	filterContext,
 	employees,
 	translate,
 }: UsePunchBlocksOptions): UsePunchBlocksResult {
@@ -65,7 +72,7 @@ export function usePunchBlocks({
 	);
 
 	// ── Fetch ──────────────────────────────────────────────────────
-	const { data, isLoading } = usePunchData({ since, until, limit: 5000 });
+	const { data, isLoading } = usePunchData({ since, until, limit: 5000, ...filterContext });
 
 	// ── Group by employee ───────────────────────────────────────────
 	const punchesByEmployee = useMemo(() => {

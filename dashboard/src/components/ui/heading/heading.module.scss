@@ -14,16 +14,19 @@
 .h1 {
   font-size: var(--ao-font-size-2xl);
   font-weight: var(--ao-font-weight-semibold);
+  margin-bottom: var(--ao-spacing-3);
 }
 
 .h2 {
   font-size: var(--ao-font-size-xl);
   font-weight: var(--ao-font-weight-semibold);
+  margin-bottom: var(--ao-spacing-4);
 }
 
 .h3 {
   font-size: var(--ao-font-size-lg);
   font-weight: var(--ao-font-weight-medium);
+  margin-bottom: var(--ao-spacing-2);
 }
 
 // ── Colors ────────────────────────────────────────────────────────────────────

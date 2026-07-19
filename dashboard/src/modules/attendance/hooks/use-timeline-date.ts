@@ -19,16 +19,20 @@ export function useTimelineDate(
 	const [date, setDate] = useState(initialDate);
 
 	const goPrev = useCallback(() => {
-		const prev = subDays(date, 1);
-		setDate(prev);
-		onDateChange?.(prev);
-	}, [date, onDateChange]);
+		setDate((prev) => {
+			const next = subDays(prev, 1);
+			onDateChange?.(next);
+			return next;
+		});
+	}, [onDateChange]);
 
 	const goNext = useCallback(() => {
-		const next = addDays(date, 1);
-		setDate(next);
-		onDateChange?.(next);
-	}, [date, onDateChange]);
+		setDate((prev) => {
+			const next = addDays(prev, 1);
+			onDateChange?.(next);
+			return next;
+		});
+	}, [onDateChange]);
 
 	const goToday = useCallback(() => {
 		const today = new Date();

@@ -29,7 +29,7 @@ export type CreateApiKeyRequest = {
   /** Space-separated permissions (e.g. "read:punches write:punches"). */
   permissions: string;
   /** Number of days until expiration. Omit for no expiration. */
-  expires_in_days?: number;
+  expires_in_days?: number | null;
 };
 
 /** Response returned ONCE when an API key is created — includes the raw key. */

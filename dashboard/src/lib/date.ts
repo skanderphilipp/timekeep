@@ -61,3 +61,31 @@ function formatSingle(date: Date, pattern: string): string {
   const d = String(date.getDate()).padStart(2, "0");
   return pattern.replace("yyyy", String(y)).replace("MM", m).replace("dd", d);
 }
+
+// ── Unix timestamp conversion (API boundary) ────────────────────────────────
+
+/**
+ * Convert a YYYY-MM-DD date string to a Unix timestamp at midnight UTC.
+ *
+ * @param iso — ISO date string (e.g., "2026-07-10"). Returns 0 for empty input.
+ * @returns Unix timestamp in seconds.
+ *
+ * @example toUnixStartOfDay("2026-07-10") // 1752710400
+ */
+export function toUnixStartOfDay(iso: string): number {
+  if (!iso) return 0;
+  return Math.floor(new Date(`${iso}T00:00:00Z`).getTime() / 1000);
+}
+
+/**
+ * Convert a YYYY-MM-DD date string to a Unix timestamp at end of day UTC.
+ *
+ * @param iso — ISO date string (e.g., "2026-07-10"). Returns 0 for empty input.
+ * @returns Unix timestamp in seconds.
+ *
+ * @example toUnixEndOfDay("2026-07-10") // 1752796799
+ */
+export function toUnixEndOfDay(iso: string): number {
+  if (!iso) return 0;
+  return Math.floor(new Date(`${iso}T23:59:59Z`).getTime() / 1000);
+}

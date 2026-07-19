@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDeviceActivity, type DeviceActivityEvent } from "@/lib/api";
+import { fetchDeviceActivity } from "@/lib/api";
 import { QueryKeys } from "@/lib/query-keys";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
@@ -16,7 +16,7 @@ export function useDeviceActivity(deviceSn: string) {
     enabled: deviceSn.length > 0,
     staleTime: 15_000,
     select: (page) => ({
-      events: page.events as DeviceActivityEvent[],
+      events: page.events,
       hasMore: page.has_more,
       nextCursor: page.next_cursor ?? null,
       isEmpty: page.events.length === 0,

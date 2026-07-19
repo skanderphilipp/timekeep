@@ -19,6 +19,17 @@ export type AttendanceCalendarViewProps = {
 	month: number;
 	/** Optional: filter to a single employee PIN. */
 	userPin?: string;
+	/**
+	 * Explicit date range from parent page filter context (Bug 2 fix).
+	 * When provided, overrides the auto-generated ±7 day range.
+	 */
+	filterSince?: string;
+	/** See `filterSince`. */
+	filterUntil?: string;
+	/**
+	 * Additional filter context from parent page (status, device_sns, search, etc.).
+	 */
+	filterContext?: Record<string, unknown>;
 	/** Called when a day cell is clicked. If omitted, defaults to side panel. */
 	onDayClick?: (date: string) => void;
 };
@@ -40,6 +51,9 @@ export function AttendanceCalendarView({
 	year,
 	month,
 	userPin,
+	filterSince,
+	filterUntil,
+	filterContext,
 	onDayClick,
 }: AttendanceCalendarViewProps) {
 	const { _ } = useLingui();
@@ -57,7 +71,7 @@ export function AttendanceCalendarView({
 		goNextYear,
 		year: currentYear,
 		month: currentMonth,
-	} = useAttendanceCalendar({ year, month, userPin });
+	} = useAttendanceCalendar({ year, month, userPin, filterSince, filterUntil, filterContext });
 
 	// ── Day click handler ───────────────────────────────────────────
 	const handleDayClick = useCallback(

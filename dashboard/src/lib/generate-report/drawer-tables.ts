@@ -1,6 +1,7 @@
 import type { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Punch, EmployeeReportKpi } from "@/lib/api";
+import { formatDurationSeconds } from "@/lib/format-duration";
 import { BRAND_DARK, DARK_COLOR, BORDER_COLOR, CARD_BG, RED, MARGIN } from "./constants";
 import type { ReportLabels } from "./types";
 
@@ -89,8 +90,8 @@ export function drawEmployeeKpiTable(
     String(k.days_present),
     String(k.days_absent),
     String(k.days_late),
-    formatHours(k.avg_seconds_per_day),
-    formatHours(k.overtime_seconds),
+    formatDurationSeconds(k.avg_seconds_per_day),
+    formatDurationSeconds(k.overtime_seconds),
     k.anomaly_count > 0 ? String(k.anomaly_count) : "—",
   ]);
 
@@ -143,11 +144,4 @@ export function drawEmployeeKpiTable(
 function capitalizeFirst(s: string): string {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-}
-
-function formatHours(seconds: number): string {
-  if (seconds <= 0) return "0h";
-  const hours = seconds / 3600;
-  if (hours < 1) return `${Math.round(seconds / 60)}m`;
-  return `${hours.toFixed(1)}h`;
 }

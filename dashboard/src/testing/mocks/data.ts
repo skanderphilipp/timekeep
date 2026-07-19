@@ -1,699 +1,248 @@
 /**
- * Rich mock data for Storybook stories and tests.
+ * Test data factories for punch and employee attendance mocks.
  *
- * Every mock object matches the Rust API types exactly (see src/lib/api.ts).
- * Import individual mocks where needed — don't import the barrel.
+ * Every factory produces data shaped EXACTLY like the backend Rust DTOs.
+ * Tests that use realistic data catch shape mismatches (ADR violations)
+ * before they reach users.
  */
 
+import type { Punch, PunchFilter } from "@/lib/api/punches";
 import type {
-  TodaySummary,
-  CurrentlyCheckedIn,
-  DashboardRecentEvent,
-  DashboardDeviceHealth,
-  DashboardHourlyBreakdown,
-  Punch,
-  LoginResponse,
-  DeviceSummary,
-  DeviceConfig,
-  UserProfile,
-  ReportSummary,
-  EmployeeReportKpi,
-  AuditEvent,
-} from "@/lib/api";
-import type { ApiEnvelope } from "@/lib/api-client";
-import { DEFAULT_ZKTECO_PORT } from "@/lib/constants";
+	Employee,
+	WorkDay,
+	WorkPeriod,
+	EmployeeWorkDays,
+	EmployeeSummary,
+	CalendarDay,
+} from "@/lib/api/employees";
+import type { PunchStatusValue } from "@shared/punch-statuses";
 
-// ── Time helpers ──────────────────────────────────────────────────────────────
+// ── Timestamp helpers ────────────────────────────────────────────────────────
 
-const NOW = () => Math.floor(Date.now() / 1000);
-const HOUR = 3600;
-const MINUTE = 60;
-
-// ── Dashboard mocks ───────────────────────────────────────────────────────────
-
-export const MOCK_CHECKED_IN_EMPLOYEES: CurrentlyCheckedIn[] = [
-  {
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    check_in_time: NOW() - 6 * HOUR - 50 * MINUTE,
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    elapsed_seconds: 6 * HOUR + 50 * MINUTE,
-  },
-  {
-    user_pin: "146",
-    employee_name: "Fatima Hassan",
-    check_in_time: NOW() - 6 * HOUR - 37 * MINUTE,
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    elapsed_seconds: 6 * HOUR + 37 * MINUTE,
-  },
-  {
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    check_in_time: NOW() - 6 * HOUR - 30 * MINUTE,
-    device_sn: "BKW8471209384",
-    device_label: "Warehouse B",
-    elapsed_seconds: 6 * HOUR + 30 * MINUTE,
-  },
-  {
-    user_pin: "148",
-    employee_name: "Layla Noor",
-    check_in_time: NOW() - 6 * HOUR - 17 * MINUTE,
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    elapsed_seconds: 6 * HOUR + 17 * MINUTE,
-  },
-  {
-    user_pin: "149",
-    employee_name: "Bilal Mahmoud",
-    check_in_time: NOW() - 5 * HOUR - 45 * MINUTE,
-    device_sn: "OFM9928475623",
-    device_label: "Office Floor",
-    elapsed_seconds: 5 * HOUR + 45 * MINUTE,
-  },
-  {
-    user_pin: "150",
-    employee_name: "Noura Al-Rashid",
-    check_in_time: NOW() - 5 * HOUR - 10 * MINUTE,
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    elapsed_seconds: 5 * HOUR + 10 * MINUTE,
-  },
-  {
-    user_pin: "151",
-    employee_name: "Karim Benali",
-    check_in_time: NOW() - 4 * HOUR - 20 * MINUTE,
-    device_sn: "BKW8471209384",
-    device_label: "Warehouse B",
-    elapsed_seconds: 4 * HOUR + 20 * MINUTE,
-  },
-  {
-    user_pin: "152",
-    employee_name: "Samira Tazi",
-    check_in_time: NOW() - 3 * HOUR - 55 * MINUTE,
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    elapsed_seconds: 3 * HOUR + 55 * MINUTE,
-  },
-];
-
-export const MOCK_RECENT_EVENTS: DashboardRecentEvent[] = [
-  {
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    timestamp: NOW() - 1 * MINUTE,
-    status: "check_in",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    timestamp: NOW() - 17 * MINUTE,
-    status: "check_out",
-    device_sn: "BKW8471209384",
-  },
-  {
-    user_pin: "146",
-    employee_name: "Fatima Hassan",
-    timestamp: NOW() - 30 * MINUTE,
-    status: "check_in",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "148",
-    employee_name: "Layla Noor",
-    timestamp: NOW() - 45 * MINUTE,
-    status: "break_out",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "148",
-    employee_name: "Layla Noor",
-    timestamp: NOW() - 75 * MINUTE,
-    status: "break_in",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "150",
-    employee_name: "Noura Al-Rashid",
-    timestamp: NOW() - 90 * MINUTE,
-    status: "check_in",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "151",
-    employee_name: "Karim Benali",
-    timestamp: NOW() - 120 * MINUTE,
-    status: "check_in",
-    device_sn: "BKW8471209384",
-  },
-  {
-    user_pin: "152",
-    employee_name: "Samira Tazi",
-    timestamp: NOW() - 140 * MINUTE,
-    status: "check_in",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    timestamp: NOW() - 180 * MINUTE,
-    status: "break_out",
-    device_sn: "CQZ7232960836",
-  },
-  {
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    timestamp: NOW() - 210 * MINUTE,
-    status: "break_in",
-    device_sn: "CQZ7232960836",
-  },
-];
-
-export const MOCK_DEVICE_HEALTH: DashboardDeviceHealth[] = [
-  {
-    serial_number: "CQZ7232960836",
-    label: "Main Gate",
-    online: true,
-    adms_active: true,
-    sdk_poll_active: true,
-    last_seen_at: NOW() - 30,
-    record_count: 45230,
-  },
-  {
-    serial_number: "BKW8471209384",
-    label: "Warehouse B",
-    online: true,
-    adms_active: true,
-    sdk_poll_active: true,
-    last_seen_at: NOW() - 60,
-    record_count: 28100,
-  },
-  {
-    serial_number: "OFM9928475623",
-    label: "Office Floor",
-    online: false,
-    adms_active: false,
-    sdk_poll_active: false,
-    last_seen_at: NOW() - 3600,
-    record_count: 12200,
-  },
-];
-
-export const MOCK_HOURLY_BREAKDOWN: DashboardHourlyBreakdown[] = [
-  { hour: 5, count: 1 },
-  { hour: 6, count: 8 },
-  { hour: 7, count: 22 },
-  { hour: 8, count: 15 },
-  { hour: 9, count: 4 },
-  { hour: 10, count: 2 },
-];
-
-export const MOCK_TODAY_SUMMARY: TodaySummary = {
-  date: NOW(),
-  present: 42,
-  absent: 8,
-  late: 3,
-  on_time: 39,
-  total_employees: 50,
-  total_punches: 84,
-  check_ins: 42,
-  check_outs: 42,
-  last_punch_at: NOW() - MINUTE,
-  currently_checked_in: MOCK_CHECKED_IN_EMPLOYEES,
-  recent_events: MOCK_RECENT_EVENTS,
-  device_health: MOCK_DEVICE_HEALTH,
-  hourly_breakdown: MOCK_HOURLY_BREAKDOWN,
-};
-
-/** Empty dashboard — no employees, no devices, no punches. */
-export const MOCK_TODAY_SUMMARY_EMPTY: TodaySummary = {
-  date: NOW(),
-  present: 0,
-  absent: 0,
-  late: 0,
-  on_time: 0,
-  total_employees: 0,
-  total_punches: 0,
-  check_ins: 0,
-  check_outs: 0,
-  last_punch_at: null,
-  currently_checked_in: [],
-  recent_events: [],
-  device_health: [],
-  hourly_breakdown: [],
-};
-
-/** All devices offline edge case. */
-export const MOCK_TODAY_SUMMARY_DEVICES_OFFLINE: TodaySummary = {
-  ...MOCK_TODAY_SUMMARY,
-  device_health: MOCK_DEVICE_HEALTH.map((d) => ({
-    ...d,
-    online: false,
-    adms_active: false,
-    sdk_poll_active: false,
-  })),
-};
-
-/** No employees checked in right now. */
-export const MOCK_TODAY_SUMMARY_NO_CHECKED_IN: TodaySummary = {
-  ...MOCK_TODAY_SUMMARY,
-  currently_checked_in: [],
-};
-
-// ── Punch mocks ───────────────────────────────────────────────────────────────
-
-export const MOCK_PUNCHES: Punch[] = [
-  {
-    id: "a1b2c3d4-20260711-143122-CQZ7232960836-145-0-15-0",
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    timestamp: NOW() - 1 * MINUTE,
-    status: "check_in",
-    verify_mode: "face",
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    is_anomaly: false,
-    anomaly_type: null,
-  },
-  {
-    id: "e5f6g7h8-20260711-141500-BKW8471209384-147-1-15-0",
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    timestamp: NOW() - 17 * MINUTE,
-    status: "check_out",
-    verify_mode: "card",
-    device_sn: "BKW8471209384",
-    device_label: "Warehouse B",
-    is_anomaly: true,
-    anomaly_type: "orphaned_check_out",
-  },
-  {
-    id: "i9j0k1l2-20260711-090200-CQZ7232960836-147-0-15-0",
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    timestamp: NOW() - 5 * HOUR - 30 * MINUTE,
-    status: "check_in",
-    verify_mode: "fingerprint",
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    is_anomaly: true,
-    anomaly_type: "duplicate_check_in",
-  },
-  {
-    id: "m3n4o5p6-20260711-084530-CQZ7232960836-147-0-15-0",
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    timestamp: NOW() - 5 * HOUR - 47 * MINUTE,
-    status: "check_in",
-    verify_mode: "fingerprint",
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    is_anomaly: false,
-    anomaly_type: null,
-  },
-  {
-    id: "q7r8s9t0-20260711-075500-CQZ7232960836-146-0-15-0",
-    user_pin: "146",
-    employee_name: "Fatima Hassan",
-    timestamp: NOW() - 6 * HOUR - 37 * MINUTE,
-    status: "check_in",
-    verify_mode: "fingerprint",
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    is_anomaly: false,
-    anomaly_type: null,
-  },
-  {
-    id: "u1v2w3x4-20260711-074215-CQZ7232960836-145-0-15-0",
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    timestamp: NOW() - 6 * HOUR - 50 * MINUTE,
-    status: "check_in",
-    verify_mode: "face",
-    device_sn: "CQZ7232960836",
-    device_label: "Main Gate",
-    is_anomaly: false,
-    anomaly_type: null,
-  },
-];
-
-export const MOCK_PUNCHES_ONLY_ANOMALIES: Punch[] = MOCK_PUNCHES.filter((p) => p.is_anomaly);
-
-export const MOCK_PUNCHES_EMPTY: Punch[] = [];
-
-// ── Employee mocks ────────────────────────────────────────────────────────────
-
-/** Hours to seconds helper. */
-function hoursToSeconds(h: number): number {
-  return Math.round(h * 3600);
+/** Unix timestamp for a date string like "2026-07-15". Returns seconds. */
+export function dateToTimestamp(dateStr: string, hours = 8, minutes = 0): number {
+	const d = new Date(`${dateStr}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00Z`);
+	return Math.floor(d.getTime() / 1000);
 }
 
-export const MOCK_EMPLOYEE_KPIS: EmployeeReportKpi[] = [
-  {
-    user_pin: "146",
-    employee_name: "Fatima Hassan",
-    days_present: 22,
-    days_absent: 0,
-    days_late: 0,
-    avg_seconds_per_day: hoursToSeconds(8.1),
-    overtime_seconds: 0,
-    anomaly_count: 0,
-  },
-  {
-    user_pin: "145",
-    employee_name: "Ahmed Al-Sabah",
-    days_present: 21,
-    days_absent: 1,
-    days_late: 2,
-    avg_seconds_per_day: hoursToSeconds(8.3),
-    overtime_seconds: hoursToSeconds(2.5),
-    anomaly_count: 0,
-  },
-  {
-    user_pin: "148",
-    employee_name: "Layla Noor",
-    days_present: 20,
-    days_absent: 2,
-    days_late: 1,
-    avg_seconds_per_day: hoursToSeconds(8.5),
-    overtime_seconds: hoursToSeconds(4.0),
-    anomaly_count: 0,
-  },
-  {
-    user_pin: "147",
-    employee_name: "Omar Khalid",
-    days_present: 18,
-    days_absent: 4,
-    days_late: 5,
-    avg_seconds_per_day: hoursToSeconds(7.8),
-    overtime_seconds: hoursToSeconds(1.0),
-    anomaly_count: 2,
-  },
-  {
-    user_pin: "149",
-    employee_name: "Bilal Mahmoud",
-    days_present: 22,
-    days_absent: 0,
-    days_late: 0,
-    avg_seconds_per_day: hoursToSeconds(8.0),
-    overtime_seconds: 0,
-    anomaly_count: 0,
-  },
-];
-
-// ── Report mocks ──────────────────────────────────────────────────────────────
-
-/** Helper to create a unix timestamp for a July 2026 date at midnight UTC. */
-function julyDate(day: number): number {
-  return Math.floor(new Date(`2026-07-${String(day).padStart(2, "0")}T00:00:00Z`).getTime() / 1000);
+/** Generate an ISO date string offset from a base date. */
+export function isoDateOffset(base: string, days: number): string {
+	const d = new Date(base);
+	d.setDate(d.getDate() + days);
+	return d.toISOString().split("T")[0]!;
 }
 
-export const MOCK_REPORT_SUMMARY: ReportSummary = {
-  date_from: julyDate(1),
-  date_to: julyDate(12),
-  total_punches: 550,
-  check_ins: 220,
-  check_outs: 210,
-  break_outs: 55,
-  break_ins: 50,
-  overtime_ins: 8,
-  overtime_outs: 7,
-  unique_users: 50,
-  daily_breakdown: [
-    { date: julyDate(1), count: 48 },
-    { date: julyDate(2), count: 50 },
-    { date: julyDate(3), count: 46 },
-    { date: julyDate(4), count: 48 },
-    { date: julyDate(5), count: 52 },
-    { date: julyDate(8), count: 44 },
-    { date: julyDate(9), count: 46 },
-    { date: julyDate(10), count: 50 },
-    { date: julyDate(11), count: 48 },
-    { date: julyDate(12), count: 42 },
-  ],
-  work_days: 22,
-  avg_seconds_per_day: hoursToSeconds(8.2),
-  overtime_seconds: hoursToSeconds(12.5),
-  absence_rate: 4.2,
-  daily_hours: [
-    {
-      date: julyDate(1),
-      regular_seconds: hoursToSeconds(8.0),
-      overtime_seconds: hoursToSeconds(0.5),
-    },
-    { date: julyDate(2), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    {
-      date: julyDate(3),
-      regular_seconds: hoursToSeconds(7.5),
-      overtime_seconds: hoursToSeconds(1.0),
-    },
-    {
-      date: julyDate(4),
-      regular_seconds: hoursToSeconds(8.0),
-      overtime_seconds: hoursToSeconds(0.5),
-    },
-    { date: julyDate(5), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    {
-      date: julyDate(8),
-      regular_seconds: hoursToSeconds(7.5),
-      overtime_seconds: hoursToSeconds(0.8),
-    },
-    {
-      date: julyDate(9),
-      regular_seconds: hoursToSeconds(8.0),
-      overtime_seconds: hoursToSeconds(0.2),
-    },
-    { date: julyDate(10), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    { date: julyDate(11), regular_seconds: hoursToSeconds(8.0), overtime_seconds: 0 },
-    {
-      date: julyDate(12),
-      regular_seconds: hoursToSeconds(7.8),
-      overtime_seconds: hoursToSeconds(0.5),
-    },
-  ],
-  weekly_hours: [
-    { week: 27, year: 2026, total_seconds: 280 * 3600 },
-    { week: 28, year: 2026, total_seconds: 295 * 3600 },
-    { week: 29, year: 2026, total_seconds: 310 * 3600 },
-  ],
-  status_distribution: [
-    { status: "full", count: 195, percentage: 78 },
-    { status: "half", count: 30, percentage: 12 },
-    { status: "absent", count: 25, percentage: 10 },
-  ],
-  employees: MOCK_EMPLOYEE_KPIS,
-};
+// ── Punch factory ────────────────────────────────────────────────────────────
 
-// ── Auth / Profile mocks ──────────────────────────────────────────────────────
-
-export const MOCK_USER_PROFILE: UserProfile = {
-  username: "admin",
-  role: "admin",
-  permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
-};
-
-export const MOCK_LOGIN_RESPONSE: LoginResponse = {
-  token: "msw-mock-jwt-token",
-  expires_in: 86400,
-  token_type: "Bearer",
-  username: "admin",
-  role: "admin",
-  permissions: "read:punches write:punches read:devices write:devices manage:users manage:commands",
-};
-
-// ── Device mocks ──────────────────────────────────────────────────────────────
-
-export const MOCK_DEVICES: DeviceConfig[] = [
-  {
-    serial_number: "CQZ7232960836",
-    label: "Main Gate",
-    host: "192.168.1.100",
-    port: DEFAULT_ZKTECO_PORT,
-    comm_key: 0,
-    push_enabled: true,
-    timezone: "Asia/Riyadh",
-  },
-  {
-    serial_number: "BKW8471209384",
-    label: "Warehouse B",
-    host: "192.168.1.101",
-    port: DEFAULT_ZKTECO_PORT,
-    comm_key: 0,
-    push_enabled: true,
-    timezone: "Asia/Riyadh",
-  },
-  {
-    serial_number: "OFM9928475623",
-    label: "Office Floor",
-    host: "192.168.1.102",
-    port: DEFAULT_ZKTECO_PORT,
-    comm_key: 0,
-    push_enabled: false,
-    timezone: "Asia/Riyadh",
-  },
-];
-
-export const MOCK_DEVICE_SUMMARIES: DeviceSummary[] = MOCK_DEVICES.map((d) => ({
-  serial_number: d.serial_number,
-  label: d.label,
-  host: d.host,
-  port: d.port,
-  push_enabled: d.push_enabled,
-  connection_status: d.serial_number === "OFM9928475623" ? "offline" : "online",
-  adms_active: d.serial_number !== "OFM9928475623",
-  sdk_poll_active: d.serial_number !== "OFM9928475623",
-  last_seen_at: d.serial_number === "OFM9928475623" ? NOW() - 3600 : NOW() - 30,
-}));
-
-// ── Audit mocks ──────────────────────────────────────────────────────────────
-
-const NOW_SECONDS = () => Math.floor(Date.now() / 1000);
-const ts = (offsetSeconds: number) => NOW_SECONDS() + offsetSeconds;
-
-export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
-  {
-    id: "audit-001",
-    timestamp: ts(-60),
-    actor: "admin",
-    action: "device.add",
-    resource: "/api/devices",
-    detail: { serial_number: "CQZ7232960836", label: "Main Gate" },
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-002",
-    timestamp: ts(-180),
-    actor: "admin",
-    action: "punch.correct",
-    resource: "/api/punches/correct",
-    detail: { user_pin: "145", status: "check_out" },
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-003",
-    timestamp: ts(-300),
-    actor: "operator_ahmed",
-    action: "user.enroll",
-    resource: "/api/devices/CQZ7232960836/users",
-    detail: { user_pin: "203", device_sn: "CQZ7232960836" },
-    ip_address: "192.168.1.20",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-004",
-    timestamp: ts(-420),
-    actor: "admin",
-    action: "api_key.create",
-    resource: "/api/api-keys",
-    detail: { name: "Odoo Integration", permissions: "read:punches" },
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-005",
-    timestamp: ts(-600),
-    actor: "operator_ahmed",
-    action: "device.sync",
-    resource: "/api/devices/BKW8471209384/sync",
-    detail: { device_sn: "BKW8471209384" },
-    ip_address: "192.168.1.20",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-006",
-    timestamp: ts(-900),
-    actor: "operator_fatima",
-    action: "device.command",
-    resource: "/api/devices/OFM9928475623/commands",
-    detail: { command: "RESTART", device_sn: "OFM9928475623" },
-    ip_address: "192.168.1.30",
-    status: "failure",
-    error_message: "Device OFM9928475623 is offline — command queued for retry",
-  },
-  {
-    id: "audit-007",
-    timestamp: ts(-1200),
-    actor: "admin",
-    action: "settings.update",
-    resource: "/api/settings",
-    detail: { poll_interval_secs: 30 },
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-008",
-    timestamp: ts(-1800),
-    actor: "admin",
-    action: "auth.login",
-    resource: "/api/auth/login",
-    detail: null,
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-009",
-    timestamp: ts(-2400),
-    actor: "operator_ahmed",
-    action: "employee.create",
-    resource: "/api/employees",
-    detail: { employee_name: "Khalid Al-Otaibi", pin: "301" },
-    ip_address: "192.168.1.20",
-    status: "success",
-    error_message: null,
-  },
-  {
-    id: "audit-010",
-    timestamp: ts(-3600),
-    actor: "admin",
-    action: "device.remove",
-    resource: "/api/devices/OLD0123456789",
-    detail: { serial_number: "OLD0123456789" },
-    ip_address: "192.168.1.10",
-    status: "success",
-    error_message: null,
-  },
-];
-
-export const MOCK_AUDIT_EVENTS_EMPTY: AuditEvent[] = [];
-
-// ── Envelope helpers ──────────────────────────────────────────────────────────
-
-export function envelope<T>(
-  data: T,
-  meta?: { has_more: boolean; next_cursor?: string | null; total?: number | null } | null,
-): ApiEnvelope<T> {
-  return { data, meta: meta ?? null, error: null };
+export function makePunch(overrides: Partial<Punch> = {}): Punch {
+	return {
+		id: `punch-${Math.random().toString(36).slice(2, 10)}`,
+		user_pin: "1001",
+		timestamp: dateToTimestamp("2026-07-15", 8, 0),
+		status: "check_in" as PunchStatusValue,
+		verify_mode: "fingerprint",
+		device_sn: "DEV-001",
+		device_label: "Main Entrance",
+		employee_name: "Alice Test",
+		is_anomaly: false,
+		anomaly_type: null,
+		...overrides,
+	};
 }
+
+/** Create a realistic check_in + check_out pair for a single employee on a single day. */
+export function makeWorkDayPunches(
+	pin: string,
+	name: string,
+	dateStr: string,
+	checkInHour = 8,
+	checkOutHour = 17,
+): Punch[] {
+	const checkIn = makePunch({
+		user_pin: pin,
+		employee_name: name,
+		timestamp: dateToTimestamp(dateStr, checkInHour, 0),
+		status: "check_in" as PunchStatusValue,
+	});
+
+	const checkOut = makePunch({
+		user_pin: pin,
+		employee_name: name,
+		timestamp: dateToTimestamp(dateStr, checkOutHour, 0),
+		status: "check_out" as PunchStatusValue,
+	});
+
+	return [checkIn, checkOut];
+}
+
+/** Create punches for multiple employees over a date range. */
+export function makeManyEmployeePunches(
+	employees: { pin: string; name: string }[],
+	dates: string[],
+): Punch[] {
+	const punches: Punch[] = [];
+	for (const emp of employees) {
+		for (const date of dates) {
+			punches.push(...makeWorkDayPunches(emp.pin, emp.name, date));
+		}
+	}
+	return punches;
+}
+
+// ── Cursor pagination helper ─────────────────────────────────────────────────
+
+export function makeCursorPage(
+	punches: Punch[],
+	hasMore = false,
+	nextCursor?: string,
+): { punches: Punch[]; has_more: boolean; next_cursor: string | null } {
+	return {
+		punches,
+		has_more: hasMore,
+		next_cursor: nextCursor ?? null,
+	};
+}
+
+// ── WorkDay / WorkPeriod factories ───────────────────────────────────────────
+
+export function makeWorkPeriod(overrides: Partial<WorkPeriod> = {}): WorkPeriod {
+	return {
+		check_in: dateToTimestamp("2026-07-15", 8, 0),
+		check_out: dateToTimestamp("2026-07-15", 17, 0),
+		duration_secs: 9 * 3600,
+		kind: "regular",
+		...overrides,
+	};
+}
+
+export function makeWorkDay(overrides: Partial<WorkDay> = {}): WorkDay {
+	const date = overrides.date ?? "2026-07-15";
+	return {
+		date,
+		user_pin: "1001",
+		status: "present",
+		total_regular_seconds: 8 * 3600,
+		total_break_seconds: 1800,
+		total_overtime_seconds: 0,
+		net_work_seconds: 8 * 3600,
+		is_present_now: false,
+		anomaly_count: 0,
+		periods: [makeWorkPeriod({ check_in: dateToTimestamp(date, 8, 0), check_out: dateToTimestamp(date, 17, 0) })],
+		...overrides,
+	};
+}
+
+export function makeWorkDays(
+	pin: string,
+	dates: string[],
+	opts: { status?: string; anomalyCount?: number } = {},
+): EmployeeWorkDays {
+	const work_days = dates.map((date) =>
+		makeWorkDay({
+			date,
+			user_pin: pin,
+			status: opts.status ?? "present",
+			anomaly_count: opts.anomalyCount ?? 0,
+		}),
+	);
+	return { user_pin: pin, work_days };
+}
+
+export function makeEmployeeSummary(overrides: Partial<EmployeeSummary> = {}): EmployeeSummary {
+	return {
+		user_pin: "1001",
+		total_days: 22,
+		present_days: 18,
+		late_days: 2,
+		half_days: 1,
+		absent_days: 1,
+		avg_hours_per_day: 7.8,
+		total_overtime_seconds: 7200,
+		total_regular_seconds: 158400,
+		work_days: [
+			makeWorkDay({ date: "2026-07-01" }),
+			makeWorkDay({ date: "2026-07-02" }),
+			makeWorkDay({ date: "2026-07-03", status: "late" }),
+		],
+		...overrides,
+	};
+}
+
+export function makeCalendarDay(overrides: Partial<CalendarDay> = {}): CalendarDay {
+	return {
+		date: "2026-07-15",
+		status_code: 1, // present
+		hours: 8,
+		is_working_day: true,
+		...overrides,
+	};
+}
+
+// ── Employee factory ─────────────────────────────────────────────────────────
+
+export function makeEmployee(overrides: Partial<Employee> = {}): Employee {
+	return {
+		id: `emp-${Math.random().toString(36).slice(2, 8)}`,
+		pin: "1001",
+		name: "Alice Test",
+		department_id: "dept-engineering",
+		department: "Engineering",
+		external_id: null,
+		active: true,
+		created_at: dateToTimestamp("2026-01-01"),
+		updated_at: dateToTimestamp("2026-07-01"),
+		...overrides,
+	};
+}
+
+// ── Filter factory ───────────────────────────────────────────────────────────
+
+export function makePunchFilter(overrides: Partial<PunchFilter> = {}): PunchFilter {
+	return {
+		since: "2026-07-01",
+		until: "2026-07-15",
+		limit: 20,
+		...overrides,
+	};
+}
+
+// ── Test assertion helpers ────────────────────────────────────────────────────
 
 /**
- * Quick-access: todaySummary with full data (for Primary story).
- * Use `envelope(todaySummary)` to get the full ApiEnvelope.
+ * Assert that a mocked function was called with specific filter parameters.
+ *
+ * Useful for verifying filter propagation through hooks that call usePunchData.
+ * Only checks the keys present in `expected` — ignores other keys in the actual call.
+ *
+ * @example
+ * ```ts
+ * assertPunchFilterCall(vi.mocked(usePunchData), { status: "check_in", device_sns: ["DEV-001"] });
+ * ```
  */
-export const todaySummary = MOCK_TODAY_SUMMARY;
-export const todaySummaryEmpty = MOCK_TODAY_SUMMARY_EMPTY;
-export const todaySummaryDevicesOffline = MOCK_TODAY_SUMMARY_DEVICES_OFFLINE;
-export const todaySummaryNoCheckedIn = MOCK_TODAY_SUMMARY_NO_CHECKED_IN;
-export const checkedInEmployees = MOCK_CHECKED_IN_EMPLOYEES;
-export const recentEvents = MOCK_RECENT_EVENTS;
-export const deviceHealth = MOCK_DEVICE_HEALTH;
-export const hourlyBreakdown = MOCK_HOURLY_BREAKDOWN;
-export const punches = MOCK_PUNCHES;
-export const punchesAnomalies = MOCK_PUNCHES_ONLY_ANOMALIES;
-export const punchesEmpty = MOCK_PUNCHES_EMPTY;
-export const employeeKpis = MOCK_EMPLOYEE_KPIS;
-export const reportSummary = MOCK_REPORT_SUMMARY;
-export const devices = MOCK_DEVICES;
-export const deviceSummaries = MOCK_DEVICE_SUMMARIES;
-export const auditEvents = MOCK_AUDIT_EVENTS;
-export const auditEventsEmpty = MOCK_AUDIT_EVENTS_EMPTY;
+export function assertPunchFilterCall(
+	mockFn: { mock: { calls: Array<[unknown]> } },
+	expected: Partial<PunchFilter>,
+) {
+	const calls = mockFn.mock.calls;
+	if (calls.length === 0) {
+		throw new Error("assertPunchFilterCall: mock function was never called");
+	}
+	const lastCall = calls[calls.length - 1]?.[0] as Record<string, unknown> | undefined;
+	if (!lastCall) {
+		throw new Error("assertPunchFilterCall: last call has no arguments");
+	}
+	for (const [key, value] of Object.entries(expected)) {
+		if (!(key in lastCall)) {
+			throw new Error(
+				`assertPunchFilterCall: expected key "${key}" not found in filter call. ` +
+				`Got keys: ${Object.keys(lastCall).join(", ")}`,
+			);
+		}
+		if (JSON.stringify(lastCall[key]) !== JSON.stringify(value)) {
+			throw new Error(
+				`assertPunchFilterCall: key "${key}" mismatch. ` +
+				`Expected: ${JSON.stringify(value)}, Got: ${JSON.stringify(lastCall[key])}`,
+			);
+		}
+	}
+}

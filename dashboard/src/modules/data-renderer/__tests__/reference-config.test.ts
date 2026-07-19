@@ -46,13 +46,13 @@ describe("REFERENCE_CONFIG architecture", () => {
     expect(REFERENCE_CONFIG.punch.device_sn.displayField).toBe("device_label");
   });
 
-  it("punch.user_pin navigates to user", () => {
-    expect(REFERENCE_CONFIG.punch.user_pin.referenceEntity).toBe("user");
+  it("punch.user_pin navigates to employee via user_pin", () => {
+    expect(REFERENCE_CONFIG.punch.user_pin.referenceEntity).toBe("employee");
     expect(REFERENCE_CONFIG.punch.user_pin.referenceIdField).toBe("user_pin");
   });
 
-  it("punch.employee_name navigates to user via user_pin", () => {
-    expect(REFERENCE_CONFIG.punch.employee_name.referenceEntity).toBe("user");
+  it("punch.employee_name navigates to employee via user_pin", () => {
+    expect(REFERENCE_CONFIG.punch.employee_name.referenceEntity).toBe("employee");
     expect(REFERENCE_CONFIG.punch.employee_name.referenceIdField).toBe("user_pin");
     expect(REFERENCE_CONFIG.punch.employee_name.displayField).toBe("employee_name");
   });

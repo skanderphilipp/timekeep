@@ -25,6 +25,8 @@ export const systemSettingsState = createState<SystemSettings>({
   defaultValue: {
     poll_interval_secs: DEFAULT_POLL_INTERVAL_SECS,
     auto_discover: false,
+    support_email: "",
+    workspace_name: "",
   },
 });
 

@@ -170,6 +170,7 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
     connection_status: "offline",
     adms_active: false,
     sdk_poll_active: false,
+    vendor: "zkteco",
   }));
 
   return [

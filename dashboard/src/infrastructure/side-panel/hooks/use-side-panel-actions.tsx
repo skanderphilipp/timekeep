@@ -8,8 +8,14 @@ import { useOpenInMainView } from "./use-open-in-main-view";
 import { useSidePanelNavigation } from "./use-side-panel-navigation";
 
 /**
- * Extra-verbose header action, currently "open in main view".
- * Twenty reference: `SidePanelTopBarRightCornerIcon`
+ * Side panel header actions.
+ *
+ * Entity-specific actions (Sync, Delete, etc.) are now rendered by
+ * {@link RecordDetailActions} inside the side panel content — not here.
+ * This hook only provides the "Open in main view" header action.
+ *
+ * Twenty reference:
+ *   `SidePanelTopBarRightCornerIcon` — header actions
  */
 export function useSidePanelActions() {
   const { _ } = useLingui();
@@ -35,10 +41,5 @@ export function useSidePanelActions() {
     );
   }, [isDetailView, canOpenInMainView, openInMainView, _]);
 
-  // Footer: inline editing is the mechanism for modifying records.
-  // There is no explicit "Edit" button — all editable fields are
-  // click-to-edit on the record detail page (Twenty pattern).
-  const editButton = null;
-
-  return { headerActions, editButton } as const;
+  return { headerActions } as const;
 }

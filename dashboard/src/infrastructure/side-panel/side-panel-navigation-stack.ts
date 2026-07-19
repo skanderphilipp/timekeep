@@ -75,3 +75,19 @@ export const clearSidePanelStackAtom = atom(null, (_get, set) => {
   set(sidePanelStackAtom, []);
   set(sidePanelActiveIndexAtom, 0);
 });
+
+/** Replace the entityId of the currently active entry (used after create). */
+export const replaceActiveEntityIdAtom = atom(
+  null,
+  (get, set, update: { entityId: string; title?: string }) => {
+    const stack = get(sidePanelStackAtom);
+    const index = get(sidePanelActiveIndexAtom);
+    if (index >= stack.length) return;
+    const entry = stack[index];
+    if (!entry) return;
+    const updated = { ...entry, entityId: update.entityId, title: update.title ?? entry.title };
+    const next = [...stack];
+    next[index] = updated;
+    set(sidePanelStackAtom, next);
+  },
+);

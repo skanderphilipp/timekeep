@@ -11,6 +11,7 @@ import { usePunchBlocks } from "../hooks/use-punch-blocks";
 import { EmployeeAttendanceSummary } from "./employee-attendance-summary";
 import { TimelineToolbar } from "./timeline-toolbar";
 import type { TimelineEmployee } from "../types";
+import type { PunchFilter } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,11 @@ export type TimelineViewProps = {
 	/** Optional: explicit date range from parent filters. */
 	filterSince?: string;
 	filterUntil?: string;
+	/**
+	 * Additional filter context (status, device_sns, search) from parent page.
+	 * Spread into usePunchData so timeline data matches page-level filters.
+	 */
+	filterContext?: Partial<PunchFilter>;
 	employees?: TimelineEmployee[];
 	/** Called when the user navigates to a different day. */
 	onDateChange?: (date: Date) => void;
@@ -43,6 +49,7 @@ export function AttendanceTimelineView({
 	date: initialDate,
 	filterSince,
 	filterUntil,
+	filterContext,
 	employees,
 	onDateChange,
 	className,
@@ -81,6 +88,7 @@ export function AttendanceTimelineView({
 			date,
 			filterSince,
 			filterUntil,
+			filterContext,
 			employees,
 			translate,
 		});

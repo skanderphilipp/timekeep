@@ -3,6 +3,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
+import type { PunchFilter } from "@/lib/api";
 import { classifyDayFromPunches, aggregateDayStatus, type CalendarDayStatus } from "../compute";
 import { useCalendarNavigation } from "./use-calendar-navigation";
 import type { EmployeeStatusEntry } from "../components/mini-status-bars";
@@ -23,6 +24,18 @@ export type UseAttendanceCalendarOptions = {
 	userPin?: string;
 	/** @deprecated Use `userPin` instead. Kept for backward compat. */
 	userPins?: string[];
+	/**
+	 * Explicit date range from parent page filter context (Bug 2 fix).
+	 * When provided, overrides the auto-generated ±7 day range.
+	 */
+	filterSince?: string;
+	/** See `filterSince`. */
+	filterUntil?: string;
+	/**
+	 * Additional filter context from parent page (status, device_sns, search, etc.).
+	 * Spread into the usePunchData call so calendar data matches page-level filters.
+	 */
+	filterContext?: Partial<PunchFilter>;
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -64,21 +77,24 @@ export function useAttendanceCalendar(options: UseAttendanceCalendarOptions = {}
 
 	// ── Data fetching ──────────────────────────────────────────────────────────
 	const since = useMemo(() => {
+		if (options.filterSince) return options.filterSince;
 		const d = new Date(year, month - 1, 1);
 		d.setDate(d.getDate() - 7);
-		return d.toISOString().split("T")[0];
-	}, [year, month]);
+		return isoToDateKey(d);
+	}, [year, month, options.filterSince]);
 
 	const until = useMemo(() => {
+		if (options.filterUntil) return options.filterUntil;
 		const d = new Date(year, month, 0);
 		d.setDate(d.getDate() + 7);
-		return d.toISOString().split("T")[0];
-	}, [year, month]);
+		return isoToDateKey(d);
+	}, [year, month, options.filterUntil]);
 
 	const { data } = usePunchData({
 		since,
 		until,
-		...(effectivePin ? { user_pin: effectivePin } : {}),
+		...(effectivePin ? { user_pins: [effectivePin] } : {}),
+		...options.filterContext,
 		limit: 10000,
 	});
 

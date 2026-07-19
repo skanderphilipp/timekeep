@@ -1,5 +1,6 @@
 import type { jsPDF } from "jspdf";
 import type { ReportSummary } from "@/lib/api";
+import { formatDurationSeconds } from "@/lib/format-duration";
 import { BRAND_COLOR, DARK_COLOR, LIGHT_GRAY, BORDER_COLOR, WHITE, AMBER, RED, MARGIN, CONTENT_WIDTH } from "./constants";
 import { drawSectionHeader } from "./drawer-layout";
 import type { ReportLabels } from "./types";
@@ -32,13 +33,13 @@ export function drawSummaryKpiCards(
     },
     {
       label: labels.avgHours,
-      value: formatHours(summary.avg_seconds_per_day ?? 0),
+      value: formatDurationSeconds(summary.avg_seconds_per_day ?? 0),
       subtitle: labels.perDay,
       accent: BRAND_COLOR,
     },
     {
       label: labels.overtime,
-      value: formatHours(summary.overtime_seconds ?? 0),
+      value: formatDurationSeconds(summary.overtime_seconds ?? 0),
       subtitle: labels.total,
       accent: AMBER,
     },
@@ -131,11 +132,4 @@ export function drawQuickStats(
   return startY + rowHeight + 6;
 }
 
-// ── Helper ────────────────────────────────────────────────────────────────────
 
-function formatHours(seconds: number): string {
-  if (seconds <= 0) return "0h";
-  const hours = seconds / 3600;
-  if (hours < 1) return `${Math.round(seconds / 60)}m`;
-  return `${hours.toFixed(1)}h`;
-}

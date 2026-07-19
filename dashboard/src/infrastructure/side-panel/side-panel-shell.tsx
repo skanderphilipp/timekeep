@@ -56,8 +56,9 @@ export function SidePanelShell() {
   const isOpen = legacyOpen || hasStackEntries;
   const title = hasStackEntries ? (activeEntry?.title ?? "") : (legacyTitle ?? "");
 
-  // Entity-aware header + footer actions
-  const { headerActions, editButton } = useSidePanelActions();
+  // Header actions (entity-aware footer actions are rendered
+  // by RecordDetailActions inside the side panel content).
+  const { headerActions } = useSidePanelActions();
 
   // Clear sub-pages (wizard steps) when the navigation entry changes
   const prevInstanceIdRef = useRef<string | null>(null);
@@ -91,7 +92,6 @@ export function SidePanelShell() {
       onClose={handleClose}
       title={title}
       headerActions={headerActions}
-      footerActions={editButton}
     >
       <Suspense fallback={<Spinner />}>{content}</Suspense>
     </SidePanel>

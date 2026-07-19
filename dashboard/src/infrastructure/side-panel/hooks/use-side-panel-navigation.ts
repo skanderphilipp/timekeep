@@ -6,6 +6,7 @@ import {
   pushSidePanelAtom,
   popSidePanelAtom,
   clearSidePanelStackAtom,
+  replaceActiveEntityIdAtom,
   sidePanelStackAtom,
   sidePanelActiveEntryAtom,
 } from "../side-panel-navigation-stack";
@@ -20,6 +21,7 @@ export function useSidePanelNavigation() {
   const push = useSetAtom(pushSidePanelAtom);
   const pop = useSetAtom(popSidePanelAtom);
   const clear = useSetAtom(clearSidePanelStackAtom);
+  const replaceActiveEntityId = useSetAtom(replaceActiveEntityIdAtom);
   const stack = useAtomValue(sidePanelStackAtom);
   const activeEntry = useAtomValue(sidePanelActiveEntryAtom);
 
@@ -47,6 +49,7 @@ export function useSidePanelNavigation() {
     pushEntry,
     goBack,
     close,
+    replaceActiveEntityId,
   };
 }
 

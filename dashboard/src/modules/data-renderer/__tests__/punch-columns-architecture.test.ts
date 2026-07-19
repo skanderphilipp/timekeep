@@ -35,21 +35,21 @@ describe("createPunchColumns (hardcoded fallback)", () => {
     expect(meta.format).toBe("iso");
   });
 
-  it("user_pin column has type 'reference' → user", () => {
+  it("user_pin column has type 'reference' → employee", () => {
     const col = columns.find((c: any) => c.id === "user_pin")!;
     expect(col).toBeDefined();
     expect(col.type).toBe("reference");
     const meta = col.metadata as ReferenceFieldMetadata;
-    expect(meta.referenceEntity).toBe("user");
+    expect(meta.referenceEntity).toBe("employee");
     expect(meta.referenceIdField).toBe("user_pin");
   });
 
-  it("employee_name column has type 'reference' → user (via user_pin)", () => {
+  it("employee_name column has type 'reference' → employee (via user_pin)", () => {
     const col = columns.find((c: any) => c.id === "employee_name")!;
     expect(col).toBeDefined();
     expect(col.type).toBe("reference");
     const meta = col.metadata as ReferenceFieldMetadata;
-    expect(meta.referenceEntity).toBe("user");
+    expect(meta.referenceEntity).toBe("employee");
     expect(meta.referenceIdField).toBe("user_pin");
     expect(meta.displayField).toBe("employee_name");
   });

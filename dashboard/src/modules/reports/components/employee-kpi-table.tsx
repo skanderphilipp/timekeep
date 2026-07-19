@@ -2,15 +2,17 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
 // oxlint-disable-next-line bentech/require-data-list-view -- KPI sub-table inside reports, not a standalone list page
-import { Chart, DataTable, TextCell, DurationCell } from "@/components/ui";
+import { Chart, DataTable, TextCell } from "@/components/ui";
 import type { DataTableColumn } from "@/components/ui";
 import type { EmployeeReportKpi } from "@/lib/api";
+import { formatDurationSeconds } from "@/lib/format-duration";
 
 /**
  * Employee KPI table — attendance performance per employee.
  *
  * Shows each employee's presence, absence, late days, average hours,
- * and overtime. Uses DataTable with DurationCell for time values.
+ * and overtime. Time values use formatDurationSeconds for consistency
+ * with the summary cards (hours, not minutes).
  */
 export function EmployeeKpiTable({ data }: { data: EmployeeReportKpi[] }) {
   const { _ } = useLingui();
@@ -42,9 +44,7 @@ export function EmployeeKpiTable({ data }: { data: EmployeeReportKpi[] }) {
     {
       id: "avg_hours",
       header: _(msg`Avg/Day`),
-      cell: (row) => (
-        <DurationCell minutes={Math.round(row.avg_seconds_per_day / 60)} humanized={false} />
-      ),
+      cell: (row) => <TextCell text={formatDurationSeconds(row.avg_seconds_per_day)} />,
       width: "90px",
     },
     {
@@ -52,7 +52,7 @@ export function EmployeeKpiTable({ data }: { data: EmployeeReportKpi[] }) {
       header: _(msg`OT`),
       cell: (row) =>
         row.overtime_seconds > 0 ? (
-          <DurationCell minutes={Math.round(row.overtime_seconds / 60)} humanized={false} />
+          <TextCell text={formatDurationSeconds(row.overtime_seconds)} />
         ) : (
           <TextCell text="—" />
         ),

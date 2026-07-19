@@ -106,6 +106,7 @@ function DayCell({
         statusClass,
         !day.isCurrentMonth && styles.otherMonth,
         isSelected && styles.selected,
+        onClick && styles.clickable,
       )}
       onClick={handleClick}
       onKeyDown={onClick ? handleKeyDown : undefined}

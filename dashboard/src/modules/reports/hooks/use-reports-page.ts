@@ -10,11 +10,10 @@ import { useReportCharts } from "./use-report-charts";
 import { fetchPunches } from "@/lib/api";
 import { clientConfigState } from "@/infrastructure/state";
 import { APP_NAME } from "@/lib/constants";
+import { toUnixStartOfDay, toUnixEndOfDay } from "@/lib/date";
 import type { ActiveFilter } from "@/components/ui";
 
 const reportFilterDefaults = { date_from: "", date_to: "" };
-
-
 
 const PDF_CHART_SELECTORS = [
   '[data-pdf-chart="punch-type-distribution"]',
@@ -23,16 +22,6 @@ const PDF_CHART_SELECTORS = [
   '[data-pdf-chart="weekly-hours"]',
   '[data-pdf-chart="daily-work-hours"]',
 ];
-
-function isoToUnixStart(iso: string): number {
-  if (!iso) return 0;
-  return Math.floor(new Date(`${iso}T00:00:00Z`).getTime() / 1000);
-}
-
-function isoToUnixEnd(iso: string): number {
-  if (!iso) return 0;
-  return Math.floor(new Date(`${iso}T23:59:59Z`).getTime() / 1000);
-}
 
 export function useReportsPage() {
   const { _ } = useLingui();
@@ -44,8 +33,8 @@ export function useReportsPage() {
 
   const apiFilter = useMemo(() => {
     const f: { date_from?: number; date_to?: number } = {};
-    if (filters.date_from) f.date_from = isoToUnixStart(filters.date_from);
-    if (filters.date_to) f.date_to = isoToUnixEnd(filters.date_to);
+    if (filters.date_from) f.date_from = toUnixStartOfDay(filters.date_from);
+    if (filters.date_to) f.date_to = toUnixEndOfDay(filters.date_to);
     return f;
   }, [filters.date_from, filters.date_to]);
 

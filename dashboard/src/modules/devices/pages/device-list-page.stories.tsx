@@ -17,6 +17,7 @@ const MOCK_DEVICES: DeviceSummary[] = [
     connection_status: "online",
     adms_active: true,
     sdk_poll_active: true,
+    vendor: "zkteco",
   },
   {
     serial_number: "BIO8865123472",
@@ -27,6 +28,7 @@ const MOCK_DEVICES: DeviceSummary[] = [
     connection_status: "offline",
     adms_active: false,
     sdk_poll_active: false,
+    vendor: "zkteco",
   },
   {
     serial_number: "SPD4456789012",
@@ -37,6 +39,7 @@ const MOCK_DEVICES: DeviceSummary[] = [
     connection_status: "online",
     adms_active: true,
     sdk_poll_active: true,
+    vendor: "zkteco",
   },
 ];
 

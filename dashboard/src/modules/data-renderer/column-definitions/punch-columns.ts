@@ -66,7 +66,7 @@ export function createPunchColumns(_: T): ColumnDefinition[] {
       metadata: {
         fieldName: "user_pin",
         isSortable: true,
-        referenceEntity: "user",
+        referenceEntity: "employee",
         referenceIdField: "user_pin",
       } as ReferenceFieldMetadata,
       isVisible: true,
@@ -81,7 +81,7 @@ export function createPunchColumns(_: T): ColumnDefinition[] {
       metadata: {
         fieldName: "employee_name",
         isSortable: false,
-        referenceEntity: "user",
+        referenceEntity: "employee",
         referenceIdField: "user_pin",
         displayField: "employee_name",
       } as ReferenceFieldMetadata,
