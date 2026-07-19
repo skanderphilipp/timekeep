@@ -9,7 +9,7 @@ import type { TextFieldMetadata } from "@/modules/data-renderer";
 import type { EditableCellEditProps } from "@/components/ui";
 import { useRecordDetailContext } from "../states/record-detail-context";
 import { useRecordInlineEdit } from "../hooks/use-record-inline-edit";
-import type { DetailViewConfig } from "../types";
+import type { DetailViewConfig } from "../entity-definitions/types";
 import styles from "./record-detail.module.scss";
 
 type RecordDetailHeaderProps = {
@@ -19,7 +19,7 @@ type RecordDetailHeaderProps = {
 
 export function RecordDetailHeader({ record, config }: RecordDetailHeaderProps) {
   const { _ } = useLingui();
-  const { entityType, entityId, isInSidePanel } = useRecordDetailContext();
+  const { entityType, entityId } = useRecordDetailContext();
   const editMutation = useRecordInlineEdit(entityType);
 
   const nameValue = String(record[config.nameField] ?? "");
@@ -60,9 +60,7 @@ export function RecordDetailHeader({ record, config }: RecordDetailHeaderProps) 
       ? String(record.status) === "active"
       : undefined;
 
-  const headerClass = isInSidePanel
-    ? `${styles.headerRow} ${styles.headerRowSidePanel}`
-    : `${styles.headerRow} ${styles.headerRowMain}`;
+  const headerClass = styles.headerRow;
 
   return (
     <Section data-slot="record-detail-header" className={headerClass}>
@@ -81,7 +79,7 @@ export function RecordDetailHeader({ record, config }: RecordDetailHeaderProps) 
             role="button"
             aria-label={_(msg`Edit name`)}
           >
-            <Heading level={isInSidePanel ? "h3" : "h2"}>{v}</Heading>
+            <Heading level="h2">{v}</Heading>
           </span>
         )}
         renderEdit={renderNameEdit}

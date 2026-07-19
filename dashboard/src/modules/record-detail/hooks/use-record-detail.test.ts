@@ -9,7 +9,6 @@ import { useRecordDetail } from "./use-record-detail";
 
 vi.mock("@/lib/api/employees", () => ({
   fetchEmployee: vi.fn(),
-  fetchEmployees: vi.fn(),
 }));
 
 vi.mock("@/lib/api/departments", () => ({
@@ -36,13 +35,18 @@ vi.mock("@/lib/api/integrations", () => ({
   fetchEndpoint: vi.fn(),
 }));
 
-import { fetchEmployee, fetchEmployees } from "@/lib/api/employees";
+vi.mock("@/lib/api/users", () => ({
+  fetchUser: vi.fn(),
+}));
+
+import { fetchEmployee } from "@/lib/api/employees";
 import { fetchDepartment } from "@/lib/api/departments";
 import { fetchDeviceDetail } from "@/lib/api/devices";
 import { fetchPunch } from "@/lib/api/punches";
 import { fetchApiKey } from "@/lib/api/apikeys";
 import { fetchAuditEvent } from "@/lib/api/audit";
 import { fetchEndpoint } from "@/lib/api/integrations";
+import { fetchUser } from "@/lib/api/users";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -191,20 +195,19 @@ describe("useRecordDetail", () => {
     expect(fetchEmployee).not.toHaveBeenCalled();
   });
 
-  it("fetches user by PIN via employee lookup", async () => {
-    const mockEmployees = [
-      { id: "e1", pin: "1001", name: "Alice" },
-      { id: "e2", pin: "2002", name: "Bob" },
-    ];
-    vi.mocked(fetchEmployees).mockResolvedValue(mockEmployees as never);
+  it("fetches dashboard user by ID", async () => {
+    const mockUser = { id: "u1", username: "admin", display_name: "Admin", role: "admin" };
+    vi.mocked(fetchUser).mockResolvedValue(mockUser as never);
 
     const { result } = renderHook(
-      () => useRecordDetail("user", "1001"),
+      () => useRecordDetail("user", "u1"),
       { wrapper: makeWrapper() },
     );
 
     await waitFor(() => {
-      expect(result.current.data).toEqual(mockEmployees[0]);
+      expect(result.current.data).toEqual(mockUser);
     });
+
+    expect(fetchUser).toHaveBeenCalledWith("u1");
   });
 });

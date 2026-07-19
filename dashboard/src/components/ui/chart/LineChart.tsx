@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { ResponsiveLine } from "@nivo/line";
 
 import { useChartTheme } from "./use-chart-theme";
@@ -11,6 +12,16 @@ export type LineDef = {
   areaFill?: number;
 };
 
+/** Data passed to the tooltip render prop. */
+export type LinePointTooltipData = {
+  x: string | number;
+  y: number;
+  /** The line definition's dataKey (e.g., "hours", "regular"). */
+  dataKey: string;
+  /** The line definition's display name, if set. */
+  name?: string;
+};
+
 export type LineChartProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>[];
@@ -18,6 +29,14 @@ export type LineChartProps = {
   xKey: string;
   height?: number;
   grid?: boolean;
+  /** Label for the value (y) axis. */
+  yLabel?: string;
+  /** Enable hover/focus interactivity. Default true. */
+  interactive?: boolean;
+  /** Enable mount/unmount animations. Default true. */
+  animate?: boolean;
+  /** Custom tooltip renderer. Called for each point on hover via crosshair. */
+  tooltip?: (point: LinePointTooltipData) => ReactNode;
   /**
    * Called when a data point is clicked.
    * Receives the original data row.
@@ -42,6 +61,10 @@ export function LineChart({
   xKey,
   height = 300,
   grid = false,
+  yLabel,
+  interactive = true,
+  animate = true,
+  tooltip,
   onClick,
 }: LineChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
@@ -63,7 +86,11 @@ export function LineChart({
         enableGridX={grid}
         enableGridY={grid}
         axisBottom={{ tickSize: 0, tickPadding: 6 }}
-        axisLeft={{ tickSize: 0, tickPadding: 6 }}
+        axisLeft={{
+          tickSize: 0,
+          tickPadding: 6,
+          ...(yLabel ? { legend: yLabel, legendOffset: -40, legendPosition: "middle" } : {}),
+        }}
         enablePoints={hasDots}
         pointSize={6}
         pointColor={{ from: "color" }}
@@ -72,10 +99,11 @@ export function LineChart({
         useMesh={true}
         enableArea={hasArea}
         areaOpacity={0.15}
-        animate={false}
+        animate={animate}
+        motionConfig="gentle"
         lineWidth={2}
         // ── Interaction ────────────────────────────────────────
-        isInteractive={!!onClick || true}
+        isInteractive={interactive}
         onClick={(point) => {
           if (!onClick) return;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,6 +112,27 @@ export function LineChart({
           const row = data.find((d) => String(d[xKey]) === String(xVal));
           if (row) onClick(row);
         }}
+        // ── Crosshair tooltip ──────────────────────────────────
+        enableSlices="x"
+        sliceTooltip={
+          tooltip
+            ? ({ slice }) => {
+                const points = slice.points.map((p) => {
+                  const lineDef = lines.find(
+                    (l) => (l.name ?? l.dataKey) === p.seriesId,
+                  );
+                  return tooltip({
+                    x: p.data.x as string | number,
+                    y: p.data.y as number,
+                    dataKey: lineDef?.dataKey ?? p.seriesId.toString(),
+                    name: lineDef?.name,
+                  });
+                });
+                // Render all lines' values for this x-position
+                return <div>{points}</div>;
+              }
+            : undefined
+        }
       />
     </div>
   );

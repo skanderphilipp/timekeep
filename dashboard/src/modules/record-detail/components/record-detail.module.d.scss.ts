@@ -6,6 +6,7 @@ declare const classNames: {
   readonly sectionTitle: "sectionTitle";
   readonly sectionTitleMain: "sectionTitleMain";
   readonly actionsRow: "actionsRow";
+  readonly sidePanelActions: "sidePanelActions";
   readonly statesShell: "statesShell";
   readonly emptyState: "emptyState";
   readonly emptyTitle: "emptyTitle";

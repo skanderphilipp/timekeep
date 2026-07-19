@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
-import { DETAIL_VIEW_CONFIGS } from "./types";
-import type { DetailTabConfig, DetailViewConfig, DetailFieldConfig } from "./types";
+import { ENTITY_DEFINITIONS } from "./entity-definitions";
+import type { DetailTabConfig, DetailViewConfig, DetailFieldConfig } from "./entity-definitions/types";
 
 /**
  * Architecture tests for the record-detail tab system.
@@ -80,8 +80,11 @@ describe("resolveFieldValue", () => {
 
 // ── Config architecture tests ──────────────────────────────────────────────
 
-describe("DETAIL_VIEW_CONFIGS tab architecture", () => {
-  const configs = DETAIL_VIEW_CONFIGS;
+describe("ENTITY_DEFINITIONS detailConfig architecture", () => {
+  const configs: Record<string, DetailViewConfig> = {};
+  for (const [entity, def] of Object.entries(ENTITY_DEFINITIONS)) {
+    configs[entity] = def.detailConfig;
+  }
 
   it("every entity config has a nameField", () => {
     for (const [entity, config] of Object.entries(configs)) {
@@ -142,20 +145,20 @@ describe("DETAIL_VIEW_CONFIGS tab architecture", () => {
     }
   });
 
-  it("device has 3 tabs: info, config, users", () => {
+  it("device has 4 tabs: info, users, config, activity", () => {
     const device = configs.device as DetailViewConfig;
     expect(device.tabs).toBeDefined();
-    expect(device.tabs!.length).toBe(3);
+    expect(device.tabs!.length).toBe(4);
 
     const tabKeys = device.tabs!.map((t: DetailTabConfig) => t.key);
-    expect(tabKeys).toEqual(["info", "config", "users"]);
+    expect(tabKeys).toEqual(["info", "users", "config", "activity"]);
 
     // Info tab has declarative sections (Connection, Hardware, Status, Capacity)
     const infoTab = device.tabs!.find((t: DetailTabConfig) => t.key === "info");
     expect(infoTab!.sections.length).toBe(4);
     expect(infoTab!.sections[0].title).toBe("Connection");
     expect(infoTab!.sections[1].title).toBe("Hardware");
-    expect(infoTab!.sections[2].title).toBe("Status");
+    expect(infoTab!.sections[2].title).toBe("Connection Status");
     expect(infoTab!.sections[3].title).toBe("Capacity");
 
     // Config and Users tabs have empty sections (tabChildren provides content)
@@ -178,13 +181,24 @@ describe("DETAIL_VIEW_CONFIGS tab architecture", () => {
     const detailsTab = dept.tabs!.find((t: DetailTabConfig) => t.key === "details");
     expect(detailsTab!.sections[0].title).toBe("Overview");
 
-    // Work Policy tab has Schedule section with nested work_policy fields
+    // Work Policy tab has Overview (FK) + Schedule (nested policy fields)
     const policyTab = dept.tabs!.find((t: DetailTabConfig) => t.key === "policy");
-    const policyFields = policyTab!.sections[0].fields;
-    expect(policyFields.length).toBeGreaterThan(0);
+    expect(policyTab!.sections.length).toBe(2);
+
+    // The FK reference field (work_policy_title) is in the Overview section
+    const overviewSection = policyTab!.sections.find((s) => s.title === "Overview");
+    expect(overviewSection).toBeDefined();
+    expect(overviewSection!.fields.length).toBe(1);
+    expect(overviewSection!.fields[0].fieldId).toBe("work_policy_title");
+
+    // The nested work_policy.* fields are in the Schedule section
+    const scheduleSection = policyTab!.sections.find((s) => s.title === "Schedule");
+    expect(scheduleSection).toBeDefined();
+    const scheduleFields = scheduleSection!.fields;
+    expect(scheduleFields.length).toBeGreaterThan(0);
 
     // Verify nested field paths use dot notation
-    const fieldIds = policyFields.map((f: DetailFieldConfig) => f.fieldId);
+    const fieldIds = scheduleFields.map((f: DetailFieldConfig) => f.fieldId);
     expect(fieldIds.every((id: string) => id.startsWith("work_policy."))).toBe(true);
   });
 

@@ -9,10 +9,10 @@ import { FieldContext, type FieldContextValue } from "@/modules/data-renderer/co
 import { FieldDisplay } from "@/modules/data-renderer/field-displays";
 import { FieldEdit } from "@/modules/data-renderer/field-inputs";
 import type { ReferenceFieldMetadata } from "@/modules/data-renderer";
-import { useRecordDetailContext } from "../states/record-detail-context";
+import { useRecordDetailContext, useCreateContext } from "../states/record-detail-context";
 import { useRecordInlineEdit } from "../hooks/use-record-inline-edit";
 import { useRecordNavigation } from "../hooks/use-record-navigation";
-import type { DetailFieldConfig, DetailSectionConfig, DetailViewConfig } from "../types";
+import type { DetailFieldConfig, DetailSectionConfig, DetailViewConfig } from "../entity-definitions/types";
 import styles from "./record-detail.module.scss";
 
 type RecordDetailFieldsProps = {
@@ -63,14 +63,28 @@ export function RecordDetailFields({
 }: RecordDetailFieldsProps) {
   const { _ } = useLingui();
   const { entityType, entityId, isInSidePanel } = useRecordDetailContext();
+  const createCtx = useCreateContext();
+  const isCreating = createCtx !== null;
   const editMutation = useRecordInlineEdit(entityType);
   const { navigateToEntity } = useRecordNavigation();
 
+  // In create mode, merge accumulated edits into the record so the display
+  // reflects values the user has already entered and persisted.
+  const effectiveRecord = isCreating
+    ? { ...record, ...createCtx.accumulatedData.current }
+    : record;
+
   const handlePersist = useCallback(
     (fieldId: string, value: unknown) => {
-      editMutation.mutate({ rowId: entityId, field: fieldId, value });
+      if (isCreating) {
+        // Create mode: accumulate field edits for batch save
+        createCtx.accumulateField(fieldId, value);
+      } else {
+        // Edit mode: inline update via mutation
+        editMutation.mutate({ rowId: entityId, field: fieldId, value });
+      }
     },
-    [editMutation, entityId],
+    [isCreating, createCtx, editMutation, entityId],
   );
 
   const handleNavigate = useCallback(
@@ -82,18 +96,26 @@ export function RecordDetailFields({
 
   const renderFieldValue = useCallback(
     (field: DetailFieldConfig) => {
-      const rawValue = resolveFieldValue(record, field.fieldId) ?? "";
-
       let resolvedEntityId: string | undefined;
       let referenceIdField: string | undefined;
       let isLoadingOptions = false;
+
+      /**
+       * For reference fields, the display value should come from `displayField`
+       * if set, otherwise fall back to `fieldId`. This ensures we show the
+       * resolved name (e.g., "Standard 9-5") instead of the raw FK UUID.
+       */
+      let displayFieldId = field.fieldId;
       if (field.type === "reference") {
         const meta = field.metadata as ReferenceFieldMetadata;
-        const idRaw = resolveFieldValue(record, meta.referenceIdField);
+        displayFieldId = meta.displayField ?? field.fieldId;
+        const idRaw = resolveFieldValue(effectiveRecord, meta.referenceIdField);
         resolvedEntityId = idRaw ? String(idRaw) : undefined;
         referenceIdField = meta.referenceIdField;
         isLoadingOptions = field._isLoadingOptions ?? false;
       }
+      const rawValue = resolveFieldValue(effectiveRecord, displayFieldId) ?? "";
+
       const displayCtx: FieldContextValue = {
         fieldDefinition: { fieldId: field.fieldId, label: field.label, type: field.type, metadata: field.metadata },
         value: rawValue,
@@ -103,7 +125,11 @@ export function RecordDetailFields({
         isLoadingOptions,
       };
 
-      const displayNode = (
+      const isEmptyRef = field.type === "reference" && !rawValue;
+
+      const displayNode = isEmptyRef ? (
+        <span>{EM_DASH}</span>
+      ) : (
         <FieldContext.Provider value={displayCtx}>
           <FieldDisplay />
         </FieldContext.Provider>
@@ -120,7 +146,7 @@ export function RecordDetailFields({
        * `{ department_id: "uuid" }` rather than `{ department: "Engineering" }`.
        */
       const editValue = referenceIdField
-        ? (resolveFieldValue(record, referenceIdField) ?? "")
+        ? (resolveFieldValue(effectiveRecord, referenceIdField) ?? "")
         : rawValue;
 
       const editCtx: FieldContextValue = { ...displayCtx, viewMode: "edit" };
@@ -156,7 +182,7 @@ export function RecordDetailFields({
         />
       );
     },
-    [entityType, entityId, record, handlePersist, handleNavigate, _],
+    [entityType, entityId, effectiveRecord, handlePersist, handleNavigate, _],
   );
 
   // ── Shared section renderer (used by both flat and tab mode) ──────────
@@ -248,6 +274,9 @@ export function RecordDetailFields({
       <Section data-slot="record-detail-fields">
         {renderKpis(kpiData)}
 
+        {/* Children rendered BEFORE tabs — status bars, health summaries, etc. */}
+        {children}
+
         <Tabs
           defaultValue={defaultTab}
           orientation={isInSidePanel ? "vertical" : "horizontal"}
@@ -262,10 +291,7 @@ export function RecordDetailFields({
               {tabChildren?.[tabConfig.key]}
             </TabPanel>
           ))}
-        >
-          {/* Children placed inside Tabs as extra panels (legacy support) */}
-          {children}
-        </Tabs>
+        />
       </Section>
     );
   }

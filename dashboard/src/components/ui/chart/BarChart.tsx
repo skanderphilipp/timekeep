@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { ResponsiveBar } from "@nivo/bar";
 import type { BarDatum } from "@nivo/bar";
 
@@ -11,6 +12,16 @@ export type BarDef = {
   stackId?: string;
 };
 
+/** Data passed to the tooltip render prop. */
+export type BarTooltipData = {
+  label: string;
+  value: number;
+  /** The bar definition's dataKey (e.g., "value", "count"). */
+  dataKey: string;
+  /** The bar definition's display name, if set. */
+  name?: string;
+};
+
 export type BarChartProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>[];
@@ -19,6 +30,14 @@ export type BarChartProps = {
   height?: number;
   layout?: "vertical" | "horizontal";
   grid?: boolean;
+  /** Label for the value (y) axis. */
+  yLabel?: string;
+  /** Enable hover/focus interactivity. Default true. */
+  interactive?: boolean;
+  /** Enable mount/unmount animations. Default true. */
+  animate?: boolean;
+  /** Custom tooltip renderer. */
+  tooltip?: (bar: BarTooltipData) => ReactNode;
   /**
    * Called when a bar is clicked.
    * The callback receives the raw bar data item from the data array.
@@ -40,6 +59,10 @@ export function BarChart({
   height = 300,
   layout = "vertical",
   grid = false,
+  yLabel,
+  interactive = true,
+  animate = true,
+  tooltip,
   onClick,
 }: BarChartProps) {
   const { categorical, nivo, resolveColor } = useChartTheme();
@@ -63,12 +86,17 @@ export function BarChart({
         enableGridX={grid}
         enableGridY={grid}
         axisBottom={{ tickSize: 0, tickPadding: 6 }}
-        axisLeft={{ tickSize: 0, tickPadding: 6 }}
+        axisLeft={{
+          tickSize: 0,
+          tickPadding: 6,
+          ...(yLabel ? { legend: yLabel, legendOffset: -40, legendPosition: "middle" } : {}),
+        }}
         borderRadius={4}
         enableLabel={false}
-        animate={false}
+        animate={animate}
+        motionConfig="gentle"
         // ── Interaction ────────────────────────────────────────
-        isInteractive={!!onClick}
+        isInteractive={interactive}
         onClick={(bar) => {
           if (!onClick) return;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,6 +104,23 @@ export function BarChart({
           const row = data.find((d) => String(d[xKey]) === String(indexValue));
           if (row) onClick(row);
         }}
+        // ── Tooltip ────────────────────────────────────────────
+        tooltip={
+          tooltip
+            ? (bar) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const b = bar as any;
+                const barIndex = Number(b.index);
+                const barDef = bars[barIndex];
+                return tooltip({
+                  label: String(b.indexValue ?? ""),
+                  value: Number(b.formattedValue ?? 0),
+                  dataKey: barDef?.dataKey ?? "",
+                  name: barDef?.name,
+                });
+              }
+            : undefined
+        }
       />
     </div>
   );

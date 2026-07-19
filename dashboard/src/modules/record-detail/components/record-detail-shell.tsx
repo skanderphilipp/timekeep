@@ -3,17 +3,15 @@ import { useRecordDetailContext } from "../states/record-detail-context";
 import { Section, Card, ListLoading } from "@/components/ui";
 import styles from "./record-detail.module.scss";
 
+/**
+ * Shell that wraps all detail view content.
+ *
+ * Always uses a Card for consistent layout in both main panel and side panel.
+ * CSS custom properties handle any spacing differences between contexts.
+ *
+ * Architecture: timekeep/.notes/architecture/record-detail-enterprise-plan.md
+ */
 export function RecordDetailShell({ children }: { children: ReactNode }) {
-  const { isInSidePanel } = useRecordDetailContext();
-
-  if (isInSidePanel) {
-    return (
-      <Section data-slot="record-detail-shell" className={styles.shell}>
-        {children}
-      </Section>
-    );
-  }
-
   return (
     <Section>
       <Card>
@@ -24,14 +22,6 @@ export function RecordDetailShell({ children }: { children: ReactNode }) {
 }
 
 export function RecordDetailLoading() {
-  const { isInSidePanel } = useRecordDetailContext();
-  if (isInSidePanel) {
-    return (
-      <Section data-slot="record-detail-loading" className={styles.statesShell}>
-        <ListLoading />
-      </Section>
-    );
-  }
   return <ListLoading />;
 }
 

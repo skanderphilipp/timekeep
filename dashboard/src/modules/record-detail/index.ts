@@ -17,8 +17,10 @@
 export {
   RecordDetailProvider,
   useRecordDetailContext,
+  CreateProvider,
+  useCreateContext,
 } from "./states/record-detail-context";
-export type { RecordDetailContextValue } from "./states/record-detail-context";
+export type { RecordDetailContextValue, CreateContextValue } from "./states/record-detail-context";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 export { useRecordDetail } from "./hooks/use-record-detail";
@@ -35,14 +37,15 @@ export { RecordDetailStates } from "./components/record-detail-states";
 export { RecordDetailActions } from "./components/record-detail-actions";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export { DETAIL_VIEW_CONFIGS } from "./types";
 export type {
   DetailFieldConfig,
   DetailSectionConfig,
   DetailTabConfig,
   KpiConfig,
   DetailViewConfig,
-} from "./types";
+  RecordAction,
+  ActionPlacement,
+} from "./entity-definitions/types";
 
 // Re-export types used by consumers of the detail view config
 export type {

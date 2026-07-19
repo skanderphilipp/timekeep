@@ -44,6 +44,14 @@
   flex-wrap: wrap;
 }
 
+.sidePanelActions {
+  padding: var(--ao-spacing-2) var(--ao-spacing-4);
+  border-top: 1px solid var(--ao-border-color);
+  display: flex;
+  gap: var(--ao-spacing-2);
+  flex-wrap: wrap;
+}
+
 // ── States ────────────────────────────────────────────────────────────────
 
 .statesShell {

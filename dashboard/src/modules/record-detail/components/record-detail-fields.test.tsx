@@ -4,7 +4,7 @@ import { createRenderWrapper } from "@/testing/render-with-providers";
 
 import { RecordDetailProvider } from "../states/record-detail-context";
 import { RecordDetailFields } from "./record-detail-fields";
-import type { DetailViewConfig } from "../types";
+import type { DetailViewConfig } from "../entity-definitions/types";
 
 // ── Test setup ──────────────────────────────────────────────────────────────
 
@@ -23,14 +23,12 @@ function renderFields(
     record?: Record<string, unknown>;
     kpiData?: Record<string, unknown> | null;
     tabChildren?: Record<string, React.ReactNode>;
-    isInSidePanel?: boolean;
   } = {},
 ) {
   const {
     record = {},
     kpiData = null,
     tabChildren,
-    isInSidePanel = false,
   } = overrides;
 
   return render(
@@ -38,7 +36,7 @@ function renderFields(
       value={{
         entityType: "device",
         entityId: "SN-001",
-        isInSidePanel,
+        isInSidePanel: false,
       }}
     >
       <RecordDetailFields
@@ -258,7 +256,7 @@ describe("RecordDetailFields — tab rendering", () => {
     expect(screen.queryByTestId("config-content")).toBeNull();
   });
 
-  it("renders legacy children inside Tabs as extra panels", () => {
+  it("renders children above Tabs (not inside)", () => {
     render(
       <RecordDetailProvider
         value={{ entityType: "device", entityId: "SN-001", isInSidePanel: false }}
@@ -267,14 +265,26 @@ describe("RecordDetailFields — tab rendering", () => {
           record={{ host: "host1" }}
           config={makeTabConfig()}
         >
-          <div data-testid="extra-content">Extra Content Below Tabs</div>
+          <div data-testid="extra-content">Status Bar Above Tabs</div>
         </RecordDetailFields>
       </RecordDetailProvider>,
     );
 
-    // Legacy children are placed inside Tabs as extra panels — they render
+    // Children render above tabs (ADR-008: status bars, health summaries)
     expect(screen.getByTestId("extra-content")).toBeDefined();
-    expect(screen.getByText("Extra Content Below Tabs")).toBeDefined();
+    expect(screen.getByText("Status Bar Above Tabs")).toBeDefined();
+
+    // Verify children appear BEFORE the tabs element in DOM order
+    const fieldsContainer = document.querySelector('[data-slot="record-detail-fields"]');
+    const extraEl = screen.getByTestId("extra-content");
+    const tabsEl = document.querySelector('[data-slot="tabs"]');
+    expect(fieldsContainer).toBeDefined();
+    expect(tabsEl).toBeDefined();
+    // extra-content should appear before tabs in the DOM
+    if (extraEl && tabsEl) {
+      const position = extraEl.compareDocumentPosition(tabsEl);
+      expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -284,7 +294,6 @@ describe("RecordDetailFields — tab rendering", () => {
   it("renders tabs in side panel mode", () => {
     renderFields(makeTabConfig(), {
       record: { host: "192.168.1.1" },
-      isInSidePanel: true,
     });
 
     // Tabs should still be rendered in side panel
@@ -298,7 +307,6 @@ describe("RecordDetailFields — tab rendering", () => {
   it("renders tab sections with DetailGrid in side panel mode", () => {
     renderFields(makeTabConfig(), {
       record: { host: "10.0.0.1" },
-      isInSidePanel: true,
     });
 
     // Side panel uses DetailGrid, not MetadataGrid

@@ -2,6 +2,7 @@ import { ResponsiveCalendar, type CalendarTooltipProps } from "@nivo/calendar";
 
 import { useChartTheme } from "./use-chart-theme";
 import { chartTooltipStyle } from "./chart-tooltip-style";
+import { formatDurationHours } from "@/lib/format-duration";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -49,11 +50,6 @@ function formatDay(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y!, m! - 1, d!);
   return date.toLocaleDateString("en", { month: "short", day: "numeric" });
-}
-
-function formatHours(hours: number | null): string {
-  if (hours == null) return "—";
-  return `${hours.toFixed(1)}h`;
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -126,7 +122,7 @@ export function CalendarChart({ data, from, to, height = 300, onClick }: Calenda
             <div style={tooltipStyle}>
               <strong>{formatDay(iso)}</strong>
               <br />
-              {formatHours(hours)}
+              {formatDurationHours(hours)}
               {" · "}
               {label}
             </div>

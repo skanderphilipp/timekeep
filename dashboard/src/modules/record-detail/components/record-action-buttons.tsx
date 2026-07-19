@@ -4,7 +4,7 @@ import { msg } from "@lingui/core/macro";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import type { ActionPlacement, RecordAction } from "../types";
+import type { ActionPlacement, RecordAction } from "../entity-definitions/types";
 import styles from "./record-detail.module.scss";
 
 type RecordActionButtonsProps = {
