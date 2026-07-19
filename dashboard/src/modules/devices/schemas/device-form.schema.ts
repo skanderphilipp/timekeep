@@ -4,7 +4,9 @@ import type { I18n } from "@lingui/core";
 
 import { MIN_PORT, MAX_PORT, DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import type { FormSchemaDefinition } from "@/lib/form-field-meta";
-import type { DeviceVendorValue } from "@shared/device-vendors";
+
+/** Known device vendor values (mirrors @shared/device-vendors). */
+const VENDOR_VALUES = ["zkteco", "suprema", "anviz", "hikvision"] as const;
 
 /**
  * Creates a Zod validation schema for the device add/edit form.
@@ -36,9 +38,7 @@ export function createDeviceFormSchema(_: I18n["_"]) {
       .min(0, _(msg`Comm key must be non-negative`))
       .default(0),
     push_enabled: z.boolean().default(true),
-    vendor: z
-      .string()
-      .default("zkteco" satisfies DeviceVendorValue),
+    vendor: z.enum(VENDOR_VALUES).default("zkteco"),
     timezone: z.string().nullable().default(null),
   });
 }

@@ -2,7 +2,6 @@ import { apiGet, apiPost, apiPut, apiDelete } from "./client";
 import type { FacetGroup } from "./client";
 import { API_SCAN_TIMEOUT_MS } from "../constants";
 import type { DeviceStatusValue } from "@shared/device-statuses";
-import type { DeviceVendorValue } from "@shared/device-vendors";
 import type { DeviceCommandValue } from "@shared/device-commands";
 import type { EntitySchema } from "@/types/metadata";
 
@@ -42,8 +41,8 @@ export type DeviceConfig = {
   comm_key: number;
   push_enabled: boolean;
   timezone: string | null;
-  /** Device vendor key. Defaults to "zkteco" when not specified. */
-  vendor?: DeviceVendorValue | null;
+  /** Device vendor key (e.g. "zkteco"). Required for provisioning. */
+  vendor: string;
   /** Physical location of the device. */
   location?: string | null;
   /** Per-device poll interval override in seconds. */
