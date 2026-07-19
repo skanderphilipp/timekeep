@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { useSetAtom } from "jotai";
-import { IconSearch, IconArrowRight } from "@tabler/icons-react";
+import { IconSearch, IconArrowRight, IconPencil } from "@tabler/icons-react";
 
 import { Button, Input, Banner, Spinner, Section, StatusDot, Text } from "@/components/ui";
 import { useSidePanelSubPage } from "@/infrastructure/side-panel/hooks/use-side-panel-sub-page";
@@ -34,7 +34,7 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
   const setScanResults = useSetAtom(wizardScanResultsAtom);
   const setSelectedDevice = useSetAtom(wizardSelectedDeviceAtom);
 
-  const [subnet, setSubnet] = useState("192.168.1.0/24");
+  const [subnet, setSubnet] = useState("192.168.100");
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<DiscoveredDevice[] | null>(null);
@@ -73,9 +73,10 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
         className={styles.inputWrapper}
         value={subnet}
         onChange={(e) => setSubnet((e.target as HTMLInputElement).value)}
-        placeholder={_(msg`192.168.1.0/24`)}
+        placeholder={_(msg`192.168.100`)}
       />
 
+      {/* ── Scan Button ─────────────────────────────────────────────────── */}
       <Button
         variant="primary"
         fullWidth
@@ -86,6 +87,25 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
       >
         {scanning ? _(msg`Scanning…`) : _(msg`Scan Network`)}
       </Button>
+
+      {/* ── Register Manually ──────────────────────────────────────────── */}
+      <Button
+        variant="secondary"
+        fullWidth
+        onClick={() => {
+          setSelectedDevice(null);
+          pushStep("configure", _(msg`Configure Device`));
+        }}
+        icon={<IconPencil size={16} />}
+      >
+        {_(msg`Register Manually`)}
+      </Button>
+
+      {!scanning && !results && !error && (
+        <Banner variant="neutral">
+          {_(msg`Enter a subnet like "192.168.100" and click Scan, or use Register Manually to enter device details directly.`)}
+        </Banner>
+      )}
 
       {/* ── Error ───────────────────────────────────────────────────────── */}
       {error && <Banner className={styles.errorWrapper} variant="danger">{error}</Banner>}

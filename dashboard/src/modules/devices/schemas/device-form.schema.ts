@@ -25,8 +25,7 @@ export function createDeviceFormSchema(_: I18n["_"]) {
     label: z.string().optional().default(""),
     host: z
       .string({ message: _(msg`Host is required`) })
-      .min(1, _(msg`Host is required`))
-      .regex(IPV4_REGEX, _(msg`Must be a valid IPv4 address (e.g., 192.168.1.100)`)),
+      .min(1, _(msg`Host is required`)),
     port: z
       .number({ message: _(msg`Port is required`) })
       .int()
@@ -72,7 +71,7 @@ export function createDeviceFormDef(_: I18n["_"]) {
       },
       host: {
         label: _(msg`Host & Port`),
-        description: _(msg`IP address and port of the scanner (e.g., 192.168.1.100:4370)`),
+        description: _(msg`IP address or hostname and port (e.g., 192.168.100.74:4370, 127.0.0.1:4371)`),
         placeholder: _(msg`192.168.1.100:4370`),
         widget: "ip-port",
         composite: ["host", "port"],
@@ -86,7 +85,7 @@ export function createDeviceFormDef(_: I18n["_"]) {
       },
       push_enabled: {
         label: _(msg`Push Enabled`),
-        description: _(msg`Receive real-time punch events`),
+        description: _(msg`ADMS push mode (auto-receive punches). Disable for SDK pull mode (poll device directly).`),
         section: "push",
       },
       // timezone: schema-only field, not rendered in the form
