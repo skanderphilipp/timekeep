@@ -58,6 +58,7 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
         port: DEFAULT_ZKTECO_PORT,
         comm_key: 0,
         push_enabled: true,
+        vendor: "zkteco",
         timezone: null,
       });
       reset();
@@ -87,6 +88,7 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
           port: DEFAULT_ZKTECO_PORT,
           comm_key: 0,
           push_enabled: true,
+          vendor: "zkteco",
           timezone: null,
         });
         added++;

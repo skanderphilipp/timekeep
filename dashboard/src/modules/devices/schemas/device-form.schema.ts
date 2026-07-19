@@ -4,9 +4,7 @@ import type { I18n } from "@lingui/core";
 
 import { MIN_PORT, MAX_PORT, DEFAULT_ZKTECO_PORT } from "@/lib/constants";
 import type { FormSchemaDefinition } from "@/lib/form-field-meta";
-
-/** IPv4 address regex (no leading zeros). */
-const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+import type { DeviceVendorValue } from "@shared/device-vendors";
 
 /**
  * Creates a Zod validation schema for the device add/edit form.
@@ -38,6 +36,9 @@ export function createDeviceFormSchema(_: I18n["_"]) {
       .min(0, _(msg`Comm key must be non-negative`))
       .default(0),
     push_enabled: z.boolean().default(true),
+    vendor: z
+      .string()
+      .default("zkteco" satisfies DeviceVendorValue),
     timezone: z.string().nullable().default(null),
   });
 }
@@ -72,15 +73,21 @@ export function createDeviceFormDef(_: I18n["_"]) {
       host: {
         label: _(msg`Host & Port`),
         description: _(msg`IP address or hostname and port (e.g., 192.168.100.74:4370, 127.0.0.1:4371)`),
-        placeholder: _(msg`192.168.1.100:4370`),
+        placeholder: _(msg`192.168.100.74:4370`),
         widget: "ip-port",
         composite: ["host", "port"],
         section: "connection",
       },
       comm_key: {
         label: _(msg`Comm Key`),
-        description: _(msg`Communication key (0 = default)`),
+        description: _(msg`Communication key (0 = default, 1995 for some devices)`),
         placeholder: _(msg`0`),
+        section: "connection",
+      },
+      vendor: {
+        label: _(msg`Vendor`),
+        description: _(msg`Device manufacturer. Defaults to ZKTeco.`),
+        placeholder: _(msg`zkteco`),
         section: "connection",
       },
       push_enabled: {
@@ -99,7 +106,7 @@ export function createDeviceFormDef(_: I18n["_"]) {
       {
         key: "connection",
         title: _(msg`Connection`),
-        description: _(msg`Network address and protocol settings for the ZKTeco scanner.`),
+        description: _(msg`Network address, protocol settings, and vendor for the scanner.`),
       },
       {
         key: "push",

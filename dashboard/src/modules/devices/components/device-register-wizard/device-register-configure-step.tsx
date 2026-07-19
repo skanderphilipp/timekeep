@@ -56,6 +56,7 @@ export function DeviceRegisterConfigureStep({
       port: DEFAULT_ZKTECO_PORT,
       comm_key: 0,
       push_enabled: true,
+      vendor: "zkteco",
       timezone: null,
     },
   });
@@ -75,6 +76,7 @@ export function DeviceRegisterConfigureStep({
         port: values.port,
         comm_key: values.comm_key,
         push_enabled: values.push_enabled,
+        vendor: values.vendor,
       });
       pushStep("test", _(msg`Test & Register`));
     },
