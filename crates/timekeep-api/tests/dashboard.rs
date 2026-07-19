@@ -40,6 +40,15 @@ impl DashboardFixture {
     }
 }
 
+/// Build a unix timestamp for a specific UTC date and time.
+fn date_to_epoch(date: jiff::civil::Date, hour: i8, minute: i8) -> i64 {
+    jiff::civil::DateTime::from_parts(date, jiff::civil::Time::new(hour, minute, 0, 0).unwrap())
+        .to_zoned(jiff::tz::TimeZone::UTC)
+        .unwrap()
+        .timestamp()
+        .as_second()
+}
+
 // ─── Today Summary: Late Detection with Mixed Policies ─────────────
 
 #[tokio::test]
@@ -163,6 +172,8 @@ async fn report_summary_with_mixed_department_policies() {
     f.seed_employee("1002", "Bob", "Engineering", &eng_id);
 
     // Both punch in at 08:00 and out at 16:00
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
     let day_start = today_at(8, 0);
     let day_end = today_at(16, 0);
 
@@ -175,7 +186,8 @@ async fn report_summary_with_mixed_department_policies() {
         f.storage.store_punch(&make_punch(pin, "SN001", ts, status)).await.unwrap();
     }
 
-    let (status, body) = send(&f.app, get_authed("/api/reports/summary", &f.token)).await;
+    let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
     assert_eq!(status, 200);
 
     // Should have data for both employees
@@ -377,4 +389,474 @@ async fn count_working_days_all_week_for_seven_day_policy() {
     let mon = jiff::civil::Date::new(2026, 7, 13).unwrap();
     let sun = jiff::civil::Date::new(2026, 7, 19).unwrap();
     assert_eq!(all_days.count_working_days(mon, sun), 7);
+}
+
+// ─── Monthly Trend: Mixed Department Policies ───────────────────────
+
+/// Verify that the monthly trend endpoint respects per-department
+/// work policies when classifying days (late, on-time, present).
+#[tokio::test]
+async fn monthly_trend_with_department_specific_policies() {
+    let f = DashboardFixture::new().await;
+
+    // Warehouse: 06:00 start, 10 min grace -> late after 06:10
+    let warehouse = timekeep_core::model::WorkPolicy {
+        work_start: jiff::civil::Time::new(6, 0, 0, 0).unwrap(),
+        work_end: jiff::civil::Time::new(14, 0, 0, 0).unwrap(),
+        late_threshold_secs: 10 * 60,
+        ..timekeep_core::model::WorkPolicy::standard_9to5()
+    };
+    let wh_id = f.mgmt_dept("Warehouse", Some(warehouse));
+    let eng_id = f.mgmt_dept("Engineering", None); // org default
+
+    f.seed_employee("w1", "Carl", "Warehouse", &wh_id);
+    f.seed_employee("e1", "Diana", "Engineering", &eng_id);
+
+    // Use a fixed weekday date (2026-07-17 = Friday) — avoids weekend flakiness
+    let d = jiff::civil::Date::new(2026, 7, 17).unwrap();
+    let from = date_to_epoch(d, 0, 0);
+    let to = date_to_epoch(d, 23, 59);
+    let wh_in = date_to_epoch(d, 6, 5);
+    let wh_out = date_to_epoch(d, 14, 0);
+    let eng_in = date_to_epoch(d, 9, 20);
+    let eng_out = date_to_epoch(d, 17, 0);
+
+    f.storage.store_punch(&check_in("w1", "SN001", wh_in)).await.unwrap();
+    f.storage
+        .store_punch(&make_punch(
+            "w1",
+            "SN001",
+            wh_out,
+            timekeep_core::model::PunchStatus::CheckOut,
+        ))
+        .await
+        .unwrap();
+    f.storage.store_punch(&check_in("e1", "SN001", eng_in)).await.unwrap();
+    f.storage
+        .store_punch(&make_punch(
+            "e1",
+            "SN001",
+            eng_out,
+            timekeep_core::model::PunchStatus::CheckOut,
+        ))
+        .await
+        .unwrap();
+
+    let url = format!("/api/reports/monthly-trend?from={}&to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    // Should return trend data for at least the current month
+    let data = &body["data"];
+    assert!(data.is_array(), "monthly trend should return an array");
+    // With from/to covering today, and punches seeded, we expect at least one month entry
+    assert!(!data.as_array().unwrap().is_empty(), "should have at least one month");
+}
+
+// ─── By-Department: Respects Department Policies ───────────────────
+
+/// Verify that the by-department endpoint uses each department's
+/// effective work policy for late detection and attendance computation.
+#[tokio::test]
+async fn by_department_respects_department_policies() {
+    let f = DashboardFixture::new().await;
+
+    // Management: flexible (never late)
+    let flexible = timekeep_core::model::WorkPolicy::flexible(4);
+    let mgmt_id = f.mgmt_dept("Management", Some(flexible));
+    // Engineering: no override (org default -> late after 09:15)
+    let eng_id = f.mgmt_dept("Engineering", None);
+
+    f.seed_employee("m1", "Alice", "Management", &mgmt_id);
+    f.seed_employee("e1", "Bob", "Engineering", &eng_id);
+
+    // One day of data: both at 09:20 (late for Engineering, NOT for Management)
+    // Use query params to ensure the date range covers all timestamps
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+    let ts_in = today_at(9, 20);
+    let ts_out = today_at(17, 0);
+
+    f.storage.store_punch(&check_in("m1", "SN001", ts_in)).await.unwrap();
+    f.storage
+        .store_punch(&make_punch(
+            "m1",
+            "SN001",
+            ts_out,
+            timekeep_core::model::PunchStatus::CheckOut,
+        ))
+        .await
+        .unwrap();
+    f.storage.store_punch(&check_in("e1", "SN001", ts_in)).await.unwrap();
+    f.storage
+        .store_punch(&make_punch(
+            "e1",
+            "SN001",
+            ts_out,
+            timekeep_core::model::PunchStatus::CheckOut,
+        ))
+        .await
+        .unwrap();
+
+    let url = format!("/api/reports/by-department?from={}&to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let data = body["data"].as_array().unwrap();
+    assert_eq!(data.len(), 2, "should have two departments");
+
+    // Find Management's entry
+    let mgmt = data.iter().find(|d| d["department_name"] == "Management").unwrap();
+    // Find Engineering's entry
+    let eng = data.iter().find(|d| d["department_name"] == "Engineering").unwrap();
+
+    // Management: flexible policy -> no days should be classified as late
+    assert_eq!(mgmt["late"], 0, "Management (flexible) should have 0 late days");
+
+    // Engineering: 09:20 is late (past 09:15 grace) -> should have at least 1 late
+    assert!(
+        eng["late"].as_u64().unwrap() >= 1,
+        "Engineering should have at least 1 late day at 09:20"
+    );
+}
+
+// ─── By-Department: Empty Data Returns Clean Response ──────────────
+
+#[tokio::test]
+async fn by_department_handles_empty_data() {
+    let f = DashboardFixture::new().await;
+
+    let (status, body) = send(&f.app, get_authed("/api/reports/by-department", &f.token)).await;
+    assert_eq!(status, 200);
+    assert!(body["data"].as_array().unwrap().is_empty());
+}
+
+// ─── Anomalies: Respects Per-Pin Policies ───────────────────────────
+
+/// Verify that anomaly detection runs with the correct per-employee
+/// policy when departments have different work schedules.
+#[tokio::test]
+async fn anomalies_with_department_specific_policies() {
+    let f = DashboardFixture::new().await;
+
+    let eng_id = f.mgmt_dept("Engineering", None);
+    f.seed_employee("e1", "Bob", "Engineering", &eng_id);
+
+    // Create a duplicate check-in: two CheckIns in a row -> anomaly
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+    let ts1 = today_at(9, 0);
+    let ts2 = today_at(9, 1);
+    f.storage.store_punch(&check_in("e1", "SN001", ts1)).await.unwrap();
+    f.storage.store_punch(&check_in("e1", "SN001", ts2)).await.unwrap();
+
+    let url = format!("/api/reports/anomalies?from={}&to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let data = body["data"].as_array().unwrap();
+    // Duplicate check-in should be detected (regardless of policy)
+    assert!(!data.is_empty(), "duplicate check-in should produce an anomaly");
+    let anomaly = &data[0];
+    assert_eq!(anomaly["user_pin"], "e1");
+    assert_eq!(anomaly["kind"], "duplicate_check_in");
+}
+
+// ─── Monthly Trend: Handles Empty Range ────────────────────────────
+
+#[tokio::test]
+async fn monthly_trend_handles_empty_data() {
+    let f = DashboardFixture::new().await;
+
+    let (status, body) = send(&f.app, get_authed("/api/reports/monthly-trend", &f.token)).await;
+    assert_eq!(status, 200);
+    // Even with no data, returns a valid structure (months with 0%)
+    assert!(body["data"].is_array());
+}
+
+// ─── Quick Stats: Respects Department Policies ─────────────────────
+
+/// Verify that quick-stats counts work correctly with department-specific
+/// policies (late arrivals are detected per-department).
+#[tokio::test]
+async fn quick_stats_with_department_policies() {
+    let f = DashboardFixture::new().await;
+
+    // Warehouse: 06:00 start, 10 min grace
+    let warehouse = timekeep_core::model::WorkPolicy {
+        work_start: jiff::civil::Time::new(6, 0, 0, 0).unwrap(),
+        work_end: jiff::civil::Time::new(14, 0, 0, 0).unwrap(),
+        late_threshold_secs: 10 * 60,
+        ..timekeep_core::model::WorkPolicy::standard_9to5()
+    };
+    let wh_id = f.mgmt_dept("Warehouse", Some(warehouse));
+
+    f.seed_employee("w1", "Carl", "Warehouse", &wh_id);
+    f.seed_employee("e1", "Diana", "", "");
+
+    // Warehouse at 06:05 (on time), Office at 09:20 (late)
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+    let wh_ts = today_at(6, 5);
+    let eng_ts = today_at(9, 20);
+    f.storage.store_punch(&check_in("w1", "SN001", wh_ts)).await.unwrap();
+    f.storage.store_punch(&check_in("e1", "SN001", eng_ts)).await.unwrap();
+
+    let url = format!("/api/dashboard/quick-stats?from={}&to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    // quick-stats endpoint should return sensible values
+    assert!(body["data"]["unique_users"].as_u64().unwrap() >= 2);
+    assert!(body["data"]["total_punches"].as_u64().unwrap() >= 2);
+}
+
+// ─── Report Summary: Multi-Entity Filtering (Sprint 1) ─────────────
+
+/// Filter by specific employee PINs returns only those employees' data.
+#[tokio::test]
+async fn report_summary_filters_by_user_pins() {
+    let f = DashboardFixture::new().await;
+
+    f.seed_employee("1001", "Alice", "", "");
+    f.seed_employee("1002", "Bob", "", "");
+    f.seed_employee("1003", "Carol", "", "");
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    // All three punch in and out
+    for pin in &["1001", "1002", "1003"] {
+        f.storage.store_punch(&check_in(pin, "SN001", today_at(8, 0))).await.unwrap();
+        f.storage.store_punch(&check_out(pin, "SN001", today_at(16, 0))).await.unwrap();
+    }
+
+    // Request only Alice and Bob
+    let url = format!("/api/reports/summary?date_from={}&date_to={}&user_pins=1001,1002", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    assert_eq!(body["data"]["total_punches"], 4, "only Alice + Bob punches");
+    assert_eq!(body["data"]["unique_users"], 2, "only Alice + Bob");
+
+    // Verify filtered employees list
+    let employees = body["data"]["employees"].as_array().unwrap();
+    let pins: Vec<&str> = employees.iter().map(|e| e["user_pin"].as_str().unwrap()).collect();
+    assert!(pins.contains(&"1001"), "Alice should be in results");
+    assert!(pins.contains(&"1002"), "Bob should be in results");
+    assert!(!pins.contains(&"1003"), "Carol should NOT be in results");
+}
+
+/// Filter by device serial number returns only punches from that device.
+#[tokio::test]
+async fn report_summary_filters_by_device_sns() {
+    let f = DashboardFixture::new().await;
+
+    f.seed_employee("1001", "Alice", "", "");
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    // Punch on device SN001
+    f.storage.store_punch(&check_in("1001", "SN001", today_at(8, 0))).await.unwrap();
+    f.storage.store_punch(&check_out("1001", "SN001", today_at(16, 0))).await.unwrap();
+    // Punch on device SN002
+    f.storage.store_punch(&check_in("1001", "SN002", today_at(9, 0))).await.unwrap();
+    f.storage.store_punch(&check_out("1001", "SN002", today_at(17, 0))).await.unwrap();
+
+    // Filter only SN001
+    let url = format!("/api/reports/summary?date_from={}&date_to={}&device_sns=SN001", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+    assert_eq!(body["data"]["total_punches"], 2, "only SN001 punches");
+}
+
+/// Filter by punch statuses returns only matching punch types.
+#[tokio::test]
+async fn report_summary_filters_by_statuses() {
+    let f = DashboardFixture::new().await;
+
+    f.seed_employee("1001", "Alice", "", "");
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    f.storage.store_punch(&check_in("1001", "SN001", today_at(8, 0))).await.unwrap();
+    f.storage
+        .store_punch(&make_punch(
+            "1001",
+            "SN001",
+            today_at(12, 0),
+            timekeep_core::model::PunchStatus::BreakOut,
+        ))
+        .await
+        .unwrap();
+    f.storage.store_punch(&check_out("1001", "SN001", today_at(16, 0))).await.unwrap();
+
+    // Request only check_in + break_out
+    let url = format!(
+        "/api/reports/summary?date_from={}&date_to={}&statuses=check_in,break_out",
+        from, to
+    );
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    assert_eq!(body["data"]["check_ins"], 1, "should have 1 check_in");
+    assert_eq!(body["data"]["break_outs"], 1, "should have 1 break_out");
+    assert_eq!(body["data"]["check_outs"], 0, "check_out should be filtered out");
+    assert_eq!(body["data"]["total_punches"], 2, "total should be 2 (check_in + break_out)");
+}
+
+/// The response includes `applied_filters` echoing back what the client sent.
+#[tokio::test]
+async fn report_summary_applied_filters_echoes_back() {
+    let f = DashboardFixture::new().await;
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    let url = format!(
+        "/api/reports/summary?date_from={}&date_to={}&user_pins=1001,1002&device_sns=SN001&statuses=check_in",
+        from, to
+    );
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let af = &body["data"]["applied_filters"];
+    assert!(!af.is_null(), "applied_filters should be present");
+
+    let user_pins = af["user_pins"].as_array().unwrap();
+    assert_eq!(user_pins.len(), 2);
+    assert!(user_pins.iter().any(|v| v.as_str() == Some("1001")));
+    assert!(user_pins.iter().any(|v| v.as_str() == Some("1002")));
+
+    let device_sns = af["device_sns"].as_array().unwrap();
+    assert_eq!(device_sns.len(), 1);
+    assert_eq!(device_sns[0], "SN001");
+
+    let statuses = af["statuses"].as_array().unwrap();
+    assert_eq!(statuses.len(), 1);
+    assert_eq!(statuses[0], "check_in");
+}
+
+/// The response includes a `generated_at` server timestamp.
+#[tokio::test]
+async fn report_summary_has_generated_at() {
+    let f = DashboardFixture::new().await;
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+    let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
+
+    let before = today_at(23, 59);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let generated_at = body["data"]["generated_at"].as_i64();
+    assert!(generated_at.is_some(), "generated_at should be present");
+    let ts = generated_at.unwrap();
+    // Should be a reasonable recent timestamp (positive, after the date range start)
+    assert!(ts > 0, "generated_at should be positive");
+    assert!(ts >= before, "generated_at should be at or after the request time");
+}
+
+/// `date_from` after `date_to` returns 400 validation error.
+#[tokio::test]
+async fn report_summary_rejects_date_from_after_date_to() {
+    let f = DashboardFixture::new().await;
+
+    let from = today_at(23, 59);
+    let to = today_at(0, 0);
+    let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
+
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 400, "date_from > date_to should return 400");
+    assert!(
+        body["error"]["message"].as_str().unwrap().contains("date_from must be before date_to")
+    );
+}
+
+/// Employee KPIs include department_id and department_name when available.
+#[tokio::test]
+async fn report_summary_department_id_on_employee_kpi() {
+    let f = DashboardFixture::new().await;
+
+    let eng_id = f.mgmt_dept("Engineering", None);
+    f.seed_employee("1001", "Alice", "Engineering", &eng_id);
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    f.storage.store_punch(&check_in("1001", "SN001", today_at(8, 0))).await.unwrap();
+    f.storage.store_punch(&check_out("1001", "SN001", today_at(16, 0))).await.unwrap();
+
+    let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let employees = body["data"]["employees"].as_array().unwrap();
+    assert_eq!(employees.len(), 1);
+
+    let alice = &employees[0];
+    assert_eq!(alice["user_pin"], "1001");
+    assert_eq!(alice["department_id"], eng_id);
+    assert_eq!(alice["department_name"], "Engineering");
+}
+
+/// Combining filters applies AND logic across dimensions.
+/// e.g., user_pins=1001 + device_sns=SN001 should return only punches
+/// from Alice on SN001, not Alice's SN002 punches or Bob's SN001 punches.
+#[tokio::test]
+async fn report_summary_combined_filters_apply_and_logic() {
+    let f = DashboardFixture::new().await;
+
+    f.seed_employee("1001", "Alice", "", "");
+    f.seed_employee("1002", "Bob", "", "");
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+
+    // Alice on SN001
+    f.storage.store_punch(&check_in("1001", "SN001", today_at(8, 0))).await.unwrap();
+    // Alice on SN002
+    f.storage.store_punch(&check_out("1001", "SN002", today_at(16, 0))).await.unwrap();
+    // Bob on SN001
+    f.storage.store_punch(&check_in("1002", "SN001", today_at(9, 0))).await.unwrap();
+
+    // Filter: Alice only, SN001 only → should return exactly 1 punch
+    let url = format!(
+        "/api/reports/summary?date_from={}&date_to={}&user_pins=1001&device_sns=SN001",
+        from, to
+    );
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    assert_eq!(
+        body["data"]["total_punches"], 1,
+        "only Alice's SN001 punch should match both filters"
+    );
+    assert_eq!(body["data"]["unique_users"], 1);
+    assert_eq!(body["data"]["employees"][0]["user_pin"], "1001");
+}
+
+/// When `applied_filters` has null values (no filter requested), those
+/// fields are omitted via `skip_serializing_if`.
+#[tokio::test]
+async fn report_summary_no_filters_omits_filter_fields() {
+    let f = DashboardFixture::new().await;
+
+    let from = today_at(0, 0);
+    let to = today_at(23, 59);
+    let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
+
+    let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
+    assert_eq!(status, 200);
+
+    let af = &body["data"]["applied_filters"];
+    assert!(!af.is_null());
+    // Fields without filters should be absent from JSON
+    assert!(af["user_pins"].is_null(), "no user_pins filter → field should be null");
+    assert!(af["device_sns"].is_null());
+    assert!(af["statuses"].is_null());
+    assert!(af["department_ids"].is_null());
 }

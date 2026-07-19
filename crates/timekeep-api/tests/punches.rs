@@ -274,7 +274,6 @@ async fn verify_mode_names_are_correct() {
     assert_eq!(VerifyMode::Palm.name(), "Palm Vein");
 }
 
-
 // ─── Punch Filter (user_pins / device_sns via CSV) ────────────────
 
 /// Helper: seed N punches with different PINs on the same device.
@@ -298,10 +297,7 @@ async fn filter_by_single_user_pin() {
     let token = login_as_admin(&app).await;
     seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?user_pins=145", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?user_pins=145", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 1, "should return only pin 145");
@@ -314,16 +310,12 @@ async fn filter_by_multiple_user_pins_csv() {
     let token = login_as_admin(&app).await;
     seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?user_pins=145,147", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?user_pins=145,147", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 2, "should return pins 145 and 147");
-    let returned_pins: Vec<&str> = punches.iter()
-        .map(|p| p["user_pin"].as_str().unwrap())
-        .collect();
+    let returned_pins: Vec<&str> =
+        punches.iter().map(|p| p["user_pin"].as_str().unwrap()).collect();
     assert!(returned_pins.contains(&"145"));
     assert!(returned_pins.contains(&"147"));
 }
@@ -334,10 +326,7 @@ async fn filter_by_user_pin_no_matches() {
     let token = login_as_admin(&app).await;
     seed_punches(&app, &token, &["145", "146"], "SN001").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?user_pins=999", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?user_pins=999", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert!(punches.is_empty(), "no punches should match PIN 999");
@@ -350,10 +339,7 @@ async fn filter_by_single_device_sn() {
     seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
     seed_punches(&app, &token, &["147"], "DEV-B").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?device_sns=DEV-A", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?device_sns=DEV-A", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 2, "should return only DEV-A punches");
@@ -369,10 +355,8 @@ async fn filter_by_multiple_device_sns_csv() {
     seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
     seed_punches(&app, &token, &["147"], "DEV-B").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?device_sns=DEV-A,DEV-B", &token),
-    ).await;
+    let (status, body) =
+        send(&app, get_authed("/api/punches?device_sns=DEV-A,DEV-B", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 3, "should return punches from both devices");
@@ -385,10 +369,8 @@ async fn filter_combined_device_and_user_pin() {
     seed_punches(&app, &token, &["145", "146"], "DEV-A").await;
     seed_punches(&app, &token, &["145"], "DEV-B").await;
 
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?device_sns=DEV-A&user_pins=145", &token),
-    ).await;
+    let (status, body) =
+        send(&app, get_authed("/api/punches?device_sns=DEV-A&user_pins=145", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 1);
@@ -403,10 +385,7 @@ async fn filter_by_user_pins_with_spaces_in_csv() {
     seed_punches(&app, &token, &["145", "146", "147"], "SN001").await;
 
     // Test that spaces around commas are trimmed
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?user_pins=145,%20147", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?user_pins=145,%20147", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 2, "spaces should be trimmed");
@@ -431,10 +410,7 @@ async fn filter_by_empty_user_pins_returns_all() {
     seed_punches(&app, &token, &["145", "146"], "SN001").await;
 
     // Empty string value — split produces empty vec, treated as no filter
-    let (status, body) = send(
-        &app,
-        get_authed("/api/punches?user_pins=", &token),
-    ).await;
+    let (status, body) = send(&app, get_authed("/api/punches?user_pins=", &token)).await;
     assert_eq!(status, 200);
     let punches = body["data"]["punches"].as_array().unwrap();
     assert_eq!(punches.len(), 2, "empty filter should return all punches");

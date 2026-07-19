@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use std::sync::{Arc, Mutex as StdMutex};
 
 use axum::Router;
+use timekeep_api::RouterConfig;
 use timekeep_api::app_state::DeviceConnectionState;
 use timekeep_core::events::EventBus;
 use timekeep_core::model::{
@@ -115,7 +116,11 @@ impl Storage for FakeStorage {
                         return false;
                     }
                 }
-                if let Some(ref status) = filter.status {
+                if let Some(ref statuses) = filter.statuses {
+                    if !statuses.is_empty() && !statuses.iter().any(|s| s == &p.status) {
+                        return false;
+                    }
+                } else if let Some(ref status) = filter.status {
                     if p.status != *status {
                         return false;
                     }
@@ -124,6 +129,9 @@ impl Storage for FakeStorage {
                     if p.verify_mode != *mode {
                         return false;
                     }
+                }
+                if filter.anomalies_only.unwrap_or(false) && !p.is_anomaly {
+                    return false;
                 }
                 true
             })
@@ -135,7 +143,8 @@ impl Storage for FakeStorage {
                 timekeep_core::SortOrder::Desc => b.timestamp.cmp(&a.timestamp),
             });
         }
-        let limit = filter.params.limit.min(10_000) as usize;
+        let max_limit = if filter.unlimited { timekeep_core::REPORT_MAX_ROWS } else { 10_000 };
+        let limit = filter.params.limit.min(max_limit) as usize;
         result.truncate(limit);
         Ok(result)
     }
@@ -639,6 +648,9 @@ impl timekeep_core::traits::employee_store::EmployeeStore for FakeEmployeeStore 
             .filter(|e| e.department_id.as_deref() == Some(department_id) && e.active)
             .count() as u64)
     }
+    async fn count_active_employees(&self) -> Result<u64, timekeep_core::Error> {
+        Ok(self.employees.lock().unwrap().iter().filter(|e| e.active).count() as u64)
+    }
     async fn create_enrollment(
         &self,
         _: &timekeep_core::model::DeviceEnrollment,
@@ -682,15 +694,16 @@ impl timekeep_core::traits::employee_store::EmployeeStore for FakeEmployeeStore 
 pub fn test_app() -> (Router, Arc<FakeStorage>) {
     let storage = Arc::new(FakeStorage::new());
     let storage_clone = storage.clone();
-    let router = timekeep_api::management_router(
-        EventBus::default(),
-        storage as Arc<dyn Storage>,
-        None,
-        None,
-        DeviceConnectionState::default(),
-        Arc::new(timekeep_core::ProviderRegistry::new()),
-        EngineHealth::default(),
-    );
+    let router = timekeep_api::management_router(RouterConfig {
+        event_bus: EventBus::default(),
+        storage: storage as Arc<dyn Storage>,
+        employees: None,
+        onboarding: None,
+        search: None,
+        device_state: DeviceConnectionState::default(),
+        provider_registry: Arc::new(timekeep_core::ProviderRegistry::new()),
+        engine_health: EngineHealth::default(),
+    });
     (router, storage_clone)
 }
 
@@ -699,15 +712,16 @@ pub fn test_app_with_employees(
     storage: Arc<FakeStorage>,
     employees: Arc<FakeEmployeeStore>,
 ) -> Router {
-    timekeep_api::management_router(
-        EventBus::default(),
-        storage as Arc<dyn Storage>,
-        Some(employees as Arc<dyn timekeep_core::traits::employee_store::EmployeeStore>),
-        None,
-        DeviceConnectionState::default(),
-        Arc::new(timekeep_core::ProviderRegistry::new()),
-        EngineHealth::default(),
-    )
+    timekeep_api::management_router(RouterConfig {
+        event_bus: EventBus::default(),
+        storage: storage as Arc<dyn Storage>,
+        employees: Some(employees as Arc<dyn timekeep_core::traits::employee_store::EmployeeStore>),
+        onboarding: None,
+        search: None,
+        device_state: DeviceConnectionState::default(),
+        provider_registry: Arc::new(timekeep_core::ProviderRegistry::new()),
+        engine_health: EngineHealth::default(),
+    })
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -746,12 +760,17 @@ pub fn make_punch(
         device_sn: device_sn.into(),
         user_pin: pin.into(),
         timestamp: ts,
+        local_time: None,
+        time_offset_secs: None,
+        timezone_name: None,
         status,
         verify_mode: timekeep_core::model::VerifyMode::Fingerprint,
         work_code: None,
         sub_status: None,
         employee_name: None,
         device_label: None,
+        is_anomaly: false,
+        anomaly_type: None,
         raw_data: None,
     };
     p.id = p.generate_deduplication_id();
