@@ -41,6 +41,7 @@ const DEFAULT_DEVICES: DeviceConfig[] = [
     port: DEFAULT_ZKTECO_PORT,
     comm_key: 0,
     push_enabled: true,
+    vendor: "zkteco",
     timezone: "Asia/Riyadh",
   },
 ];
@@ -239,6 +240,7 @@ export function createHandlers(opts: HandlerOptions = {}): HttpHandler[] {
         port: body.port ?? DEFAULT_ZKTECO_PORT,
         comm_key: body.comm_key ?? 0,
         push_enabled: body.push_enabled ?? true,
+        vendor: body.vendor ?? "zkteco",
         timezone: body.timezone ?? null,
       };
       return HttpResponse.json(envelope(created), { status: 201 });
