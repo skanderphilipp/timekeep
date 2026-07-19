@@ -1,0 +1,26 @@
+declare const classNames: {
+  readonly wizard: "wizard";
+  readonly title: "title";
+  readonly info: "info";
+  readonly infoRow: "infoRow";
+  readonly label: "label";
+  readonly value: "value";
+  readonly valuePin: "valuePin";
+  readonly hint: "hint";
+  readonly statusBox: "statusBox";
+  readonly spinner: "spinner";
+  readonly pulse: "pulse";
+  readonly instruction: "instruction";
+  readonly samples: "samples";
+  readonly sampleDot: "sampleDot";
+  readonly sampleNum: "sampleNum";
+  readonly successIcon: "successIcon";
+  readonly successText: "successText";
+  readonly templateInfo: "templateInfo";
+  readonly syncHint: "syncHint";
+  readonly failIcon: "failIcon";
+  readonly failText: "failText";
+  readonly failReason: "failReason";
+  readonly actions: "actions";
+};
+export = classNames;

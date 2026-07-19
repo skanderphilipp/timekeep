@@ -1,0 +1,210 @@
+.wizard {
+  padding: var(--ao-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-space-4);
+}
+
+.title {
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-semibold);
+  margin: 0;
+}
+
+/* ── Employee/Device Info ────────────────────────────── */
+
+.info {
+  background: var(--ao-color-surface-secondary);
+  border-radius: var(--ao-radius-md);
+  padding: var(--ao-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-space-2);
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: var(--ao-font-size-sm);
+  color: var(--ao-color-text-secondary);
+}
+
+.value {
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+}
+
+.valuePin {
+  font-size: var(--ao-font-size-lg);
+  font-weight: var(--ao-font-weight-bold);
+  font-family: monospace;
+  letter-spacing: 0.1em;
+}
+
+/* ── Manual fallback hint ────────────────────────────── */
+
+.hint {
+  font-size: var(--ao-font-size-xs);
+  color: var(--ao-color-text-tertiary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Status box ──────────────────────────────────────── */
+
+.statusBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-space-3);
+  padding: var(--ao-space-6) var(--ao-space-4);
+  border-radius: var(--ao-radius-md);
+  text-align: center;
+
+  &[data-status="connecting"] {
+    background: var(--ao-color-surface-secondary);
+  }
+
+  &[data-status="waiting"] {
+    background: var(--ao-color-surface-secondary);
+  }
+
+  &[data-status="enrolled"] {
+    background: var(--ao-color-success-surface, #ecfdf5);
+  }
+
+  &[data-status="failed"] {
+    background: var(--ao-color-error-surface, #fef2f2);
+  }
+
+  &[data-status="disconnected"] {
+    background: var(--ao-color-warning-surface, #fffbeb);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+  color: var(--ao-color-primary);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.instruction {
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-medium);
+  margin: 0;
+}
+
+/* ── Sample dots ─────────────────────────────────────── */
+
+.samples {
+  display: flex;
+  gap: var(--ao-space-3);
+  margin-top: var(--ao-space-2);
+}
+
+.sampleDot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ao-font-size-sm);
+  font-weight: var(--ao-font-weight-bold);
+  border: 2px solid var(--ao-color-border);
+  transition: all 0.3s ease;
+
+  &[data-state="pending"] {
+    background: transparent;
+    border-style: dashed;
+    color: var(--ao-color-text-tertiary);
+  }
+
+  &[data-state="good"] {
+    background: var(--ao-color-success);
+    border-color: var(--ao-color-success);
+    color: white;
+  }
+
+  &[data-state="retry"] {
+    background: var(--ao-color-warning);
+    border-color: var(--ao-color-warning);
+    color: white;
+  }
+}
+
+.sampleNum {
+  position: absolute;
+  top: -18px;
+  font-size: var(--ao-font-size-xs);
+  color: var(--ao-color-text-tertiary);
+}
+
+/* ── Success / Failure states ────────────────────────── */
+
+.successIcon {
+  color: var(--ao-color-success);
+}
+
+.successText {
+  font-size: var(--ao-font-size-base);
+  font-weight: var(--ao-font-weight-semibold);
+  margin: 0;
+  color: var(--ao-color-success-text, #065f46);
+}
+
+.templateInfo {
+  font-size: var(--ao-font-size-xs);
+  color: var(--ao-color-text-secondary);
+  margin: 0;
+}
+
+.syncHint {
+  font-size: var(--ao-font-size-sm);
+  color: var(--ao-color-text-secondary);
+  margin: 0;
+}
+
+.failIcon {
+  color: var(--ao-color-error);
+}
+
+.failText {
+  font-size: var(--ao-font-size-base);
+  font-weight: var(--ao-font-weight-semibold);
+  margin: 0;
+  color: var(--ao-color-error-text, #991b1b);
+}
+
+.failReason {
+  font-size: var(--ao-font-size-xs);
+  color: var(--ao-color-text-secondary);
+  margin: 0;
+}
+
+/* ── Action buttons ──────────────────────────────────── */
+
+.actions {
+  display: flex;
+  gap: var(--ao-space-2);
+  justify-content: flex-end;
+  padding-top: var(--ao-space-2);
+  border-top: 1px solid var(--ao-color-border);
+}
