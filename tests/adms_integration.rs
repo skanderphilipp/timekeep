@@ -92,12 +92,17 @@ fn parse_attlog_line(line: &str, device_sn: &str) -> Option<AttendancePunch> {
         device_sn: device_sn.to_string(),
         user_pin: user_pin.to_string(),
         timestamp: ts,
+        local_time: None,
+        time_offset_secs: None,
+        timezone_name: None,
         status,
         verify_mode,
         work_code: fields.get("WorkCode").map(|s| s.to_string()),
         sub_status: None,
         employee_name: None,
         device_label: None,
+        is_anomaly: false,
+        anomaly_type: None,
         raw_data: Some(line.to_string()),
     };
     punch.id = punch.generate_deduplication_id();
@@ -105,6 +110,7 @@ fn parse_attlog_line(line: &str, device_sn: &str) -> Option<AttendancePunch> {
     Some(punch)
 }
 
+/// Parse an ISO 8601 datetime
 /// Parse an ISO 8601 datetime like "2026-07-10T08:30:00" into a `jiff::Timestamp`.
 ///
 /// Uses `jiff::civil::DateTime::new()` for construction, which is the idiomatic

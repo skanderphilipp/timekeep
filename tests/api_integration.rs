@@ -4,7 +4,7 @@ use axum::body::Body;
 use serde_json::{Value, json};
 use std::sync::Arc;
 use timekeep_api::app_state::DeviceConnectionState;
-use timekeep_api::{integration_router, management_router};
+use timekeep_api::{RouterConfig, integration_router, management_router};
 use timekeep_core::ProviderRegistry;
 use timekeep_core::events::EventBus;
 use timekeep_core::model::AttendancePunch;
@@ -15,15 +15,16 @@ use timekeep_engine::health::EngineHealth;
 use timekeep_storage_sqlite::SqliteStorage;
 
 fn mgmt_router(storage: Arc<dyn Storage>) -> axum::Router {
-    management_router(
-        EventBus::default(),
+    management_router(RouterConfig {
+        event_bus: EventBus::default(),
         storage,
-        Some(Arc::new(NoopEmployeeRepo)),
-        None,
-        DeviceConnectionState::default(),
-        Arc::new(ProviderRegistry::new()),
-        EngineHealth::default(),
-    )
+        employees: Some(Arc::new(NoopEmployeeRepo)),
+        onboarding: None,
+        search: None,
+        device_state: DeviceConnectionState::default(),
+        provider_registry: Arc::new(ProviderRegistry::new()),
+        engine_health: EngineHealth::default(),
+    })
 }
 
 /// Helper: create an in-memory SQLite storage for testing.
@@ -44,12 +45,17 @@ fn make_punch(
         device_sn: device_sn.to_string(),
         user_pin: user_pin.to_string(),
         timestamp: ts,
+        local_time: None,
+        time_offset_secs: None,
+        timezone_name: None,
         status,
         verify_mode: VerifyMode::Fingerprint,
         work_code: None,
         sub_status: None,
         employee_name: None,
         device_label: None,
+        is_anomaly: false,
+        anomaly_type: None,
         raw_data: None,
     };
     punch.id = punch.generate_deduplication_id();
@@ -261,15 +267,16 @@ async fn test_end_to_end_punch_correction() {
 #[tokio::test]
 async fn test_integration_health_requires_api_key() {
     let storage = memory_storage().await;
-    let router = integration_router(
-        EventBus::default(),
+    let router = integration_router(RouterConfig {
+        event_bus: EventBus::default(),
         storage,
-        Some(Arc::new(NoopEmployeeRepo)),
-        None,
-        DeviceConnectionState::default(),
-        Arc::new(ProviderRegistry::new()),
-        EngineHealth::default(),
-    );
+        employees: Some(Arc::new(NoopEmployeeRepo)),
+        onboarding: None,
+        search: None,
+        device_state: DeviceConnectionState::default(),
+        provider_registry: Arc::new(ProviderRegistry::new()),
+        engine_health: EngineHealth::default(),
+    });
 
     // Integration health is behind API key middleware — requires auth
     let req = axum::http::Request::get("/api/v1/health").body(Body::empty()).unwrap();
@@ -280,15 +287,16 @@ async fn test_integration_health_requires_api_key() {
 #[tokio::test]
 async fn test_integration_punches_requires_api_key() {
     let storage = memory_storage().await;
-    let router = integration_router(
-        EventBus::default(),
+    let router = integration_router(RouterConfig {
+        event_bus: EventBus::default(),
         storage,
-        Some(Arc::new(NoopEmployeeRepo)),
-        None,
-        DeviceConnectionState::default(),
-        Arc::new(ProviderRegistry::new()),
-        EngineHealth::default(),
-    );
+        employees: Some(Arc::new(NoopEmployeeRepo)),
+        onboarding: None,
+        search: None,
+        device_state: DeviceConnectionState::default(),
+        provider_registry: Arc::new(ProviderRegistry::new()),
+        engine_health: EngineHealth::default(),
+    });
 
     let req = axum::http::Request::get("/api/v1/punches").body(Body::empty()).unwrap();
     let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();

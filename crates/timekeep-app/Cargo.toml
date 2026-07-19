@@ -27,14 +27,14 @@ jiff = { workspace = true }
 serde_json = { workspace = true }
 serde = { workspace = true }
 uuid = { workspace = true }
-clap = { version = "4", features = ["derive"], optional = true }
+clap = { version = "4", features = ["derive"] }
 rand = { version = "0.8", optional = true }
 rand_distr = { workspace = true, optional = true }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], optional = true }
 
 [features]
 default = []
-seed = ["dep:clap", "dep:rand", "dep:rand_distr", "dep:sqlx"]
+seed = ["dep:rand", "dep:rand_distr", "dep:sqlx"]
 
 [[bin]]
 name = "seed"
