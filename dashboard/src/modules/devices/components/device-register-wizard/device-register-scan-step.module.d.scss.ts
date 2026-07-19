@@ -1,5 +1,6 @@
 declare const classNames: {
   readonly inputWrapper: "inputWrapper";
+  readonly actions: "actions";
   readonly errorWrapper: "errorWrapper";
   readonly spinnerWrapper: "spinnerWrapper";
   readonly resultsContainer: "resultsContainer";

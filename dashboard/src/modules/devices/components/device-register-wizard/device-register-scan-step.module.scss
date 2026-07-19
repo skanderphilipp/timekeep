@@ -4,6 +4,12 @@
   margin-bottom: var(--ao-spacing-4);
 }
 
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao-spacing-3);
+}
+
 .errorWrapper {
   margin-top: var(--ao-spacing-3);
 }

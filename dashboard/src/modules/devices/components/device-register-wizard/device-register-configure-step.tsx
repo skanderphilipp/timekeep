@@ -83,7 +83,7 @@ export function DeviceRegisterConfigureStep({
 
   return (
     <Section className={styles.container}>
-      <Form id="configure-form" onSubmit={form.handleSubmit(handleSubmit)}>
+      <Form id="side-panel-form" onSubmit={form.handleSubmit(handleSubmit)}>
         <SchemaForm formSchema={formDef} form={form} />
       </Form>
     </Section>

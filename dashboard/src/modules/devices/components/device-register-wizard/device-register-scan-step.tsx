@@ -4,7 +4,16 @@ import { msg } from "@lingui/core/macro";
 import { useSetAtom } from "jotai";
 import { IconSearch, IconArrowRight, IconPencil } from "@tabler/icons-react";
 
-import { Button, Input, Banner, Spinner, Section, StatusDot, Text } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Banner,
+  Spinner,
+  Section,
+  StatusDot,
+  Text,
+  Separator,
+} from "@/components/ui";
 import { useSidePanelSubPage } from "@/infrastructure/side-panel/hooks/use-side-panel-sub-page";
 import { scanNetwork, type DiscoveredDevice } from "@/lib/api";
 import {
@@ -22,10 +31,12 @@ type DeviceRegisterScanStepProps = {
 /**
  * Step 1: Network Scan.
  *
- * The user enters a subnet (e.g., "192.168.1.0/24"), clicks scan,
- * and selects a discovered ZKTeco device from the results table.
+ * Two paths to add a device:
+ * 1. Enter a subnet and click **Scan Network** to auto-discover devices.
+ * 2. Click **Register Manually** to skip discovery and enter details directly.
+ *
  * Selected device data is stored in {@link wizardSelectedDeviceAtom}
- * for the next step.
+ * for the configure step.
  */
 export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScanStepProps) {
   const { _ } = useLingui();
@@ -47,7 +58,11 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
       setResults(response.devices);
       setScanResults(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : _(msg`Scan failed. Check the subnet and try again.`));
+      setError(
+        err instanceof Error
+          ? err.message
+          : _(msg`Scan failed. Check the subnet and try again.`),
+      );
       setResults(null);
     } finally {
       setScanning(false);
@@ -57,14 +72,18 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
   const handleSelectDevice = useCallback(
     (device: DiscoveredDevice) => {
       setSelectedDevice(device);
-      pushStep(
-        "configure",
-        _(msg`Configure Device`),
-        { ip: device.ip_address ?? "", serial: device.serial_number ?? "" }
-      );
+      pushStep("configure", _(msg`Configure Device`), {
+        ip: device.ip_address ?? "",
+        serial: device.serial_number ?? "",
+      });
     },
     [setSelectedDevice, pushStep, _],
   );
+
+  const handleManualRegister = useCallback(() => {
+    setSelectedDevice(null);
+    pushStep("configure", _(msg`Configure Device`));
+  }, [setSelectedDevice, pushStep, _]);
 
   return (
     <Section>
@@ -74,41 +93,40 @@ export function DeviceRegisterScanStep({ onClose: _onClose }: DeviceRegisterScan
         value={subnet}
         onChange={(e) => setSubnet((e.target as HTMLInputElement).value)}
         placeholder={_(msg`192.168.100`)}
+        helperText={_(msg`Enter a subnet to scan for ZKTeco devices.`)}
       />
 
-      {/* ── Scan Button ─────────────────────────────────────────────────── */}
-      <Button
-        variant="primary"
-        fullWidth
-        onClick={handleScan}
-        disabled={scanning || !subnet.trim()}
-        icon={scanning ? undefined : <IconSearch size={16} />}
-        loading={scanning}
-      >
-        {scanning ? _(msg`Scanning…`) : _(msg`Scan Network`)}
-      </Button>
+      {/* ── Scan & Manual Actions ───────────────────────────────────────── */}
+      <div className={styles.actions}>
+        <Button
+          variant="primary"
+          fullWidth
+          onClick={handleScan}
+          disabled={scanning || !subnet.trim()}
+          icon={scanning ? undefined : <IconSearch size={16} />}
+          loading={scanning}
+        >
+          {scanning ? _(msg`Scanning…`) : _(msg`Scan Network`)}
+        </Button>
 
-      {/* ── Register Manually ──────────────────────────────────────────── */}
-      <Button
-        variant="secondary"
-        fullWidth
-        onClick={() => {
-          setSelectedDevice(null);
-          pushStep("configure", _(msg`Configure Device`));
-        }}
-        icon={<IconPencil size={16} />}
-      >
-        {_(msg`Register Manually`)}
-      </Button>
+        <Separator label={_(msg`or`)} />
 
-      {!scanning && !results && !error && (
-        <Banner variant="neutral">
-          {_(msg`Enter a subnet like "192.168.100" and click Scan, or use Register Manually to enter device details directly.`)}
-        </Banner>
-      )}
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={handleManualRegister}
+          icon={<IconPencil size={16} />}
+        >
+          {_(msg`Register Manually`)}
+        </Button>
+      </div>
 
       {/* ── Error ───────────────────────────────────────────────────────── */}
-      {error && <Banner className={styles.errorWrapper} variant="danger">{error}</Banner>}
+      {error && (
+        <Banner className={styles.errorWrapper} variant="danger">
+          {error}
+        </Banner>
+      )}
 
       {/* ── Scanning spinner ────────────────────────────────────────────── */}
       {scanning && (
