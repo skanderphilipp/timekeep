@@ -504,6 +504,8 @@ mod tests {
             sub_status: None,
             employee_name: name.map(String::from),
             device_label: Some("Front Gate".to_string()),
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         punch.id = punch.generate_deduplication_id();

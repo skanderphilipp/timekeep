@@ -13,12 +13,17 @@ pub(super) struct PunchRow {
     device_sn: String,
     user_pin: String,
     timestamp: String,
+    local_time: Option<String>,
+    time_offset_secs: Option<i32>,
+    timezone_name: Option<String>,
     status: i32,
     verify_mode: Option<i32>,
     work_code: Option<String>,
     raw_data: Option<String>,
     employee_name: Option<String>,
     device_label: Option<String>,
+    is_anomaly: Option<bool>,
+    anomaly_type: Option<String>,
 }
 
 impl PunchRow {
@@ -30,11 +35,19 @@ impl PunchRow {
         let timestamp = jiff::Timestamp::from_second(ts)
             .map_err(|e| Error::storage(format!("timestamp from second: {e}")))?;
 
+        let local_time = self
+            .local_time
+            .and_then(|s| s.parse::<i64>().ok())
+            .and_then(|secs| jiff::Timestamp::from_second(secs).ok());
+
         Ok(AttendancePunch {
             id: self.id,
             device_sn: self.device_sn,
             user_pin: self.user_pin,
             timestamp,
+            local_time,
+            time_offset_secs: self.time_offset_secs,
+            timezone_name: self.timezone_name,
             status: timekeep_core::PunchStatus::try_from(self.status)
                 .unwrap_or(timekeep_core::PunchStatus::CheckIn),
             verify_mode: self
@@ -45,6 +58,8 @@ impl PunchRow {
             sub_status: None,
             employee_name: self.employee_name,
             device_label: self.device_label,
+            is_anomaly: self.is_anomaly.unwrap_or(false),
+            anomaly_type: self.anomaly_type,
             raw_data: self.raw_data,
         })
     }
@@ -109,8 +124,7 @@ impl PostgresStorage {
             builder.push_bind(*verify_mode as i32);
         }
         if context.anomalies_only.unwrap_or(false) {
-            builder
-                .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+            builder.push(" AND p.is_anomaly = TRUE");
         }
         // Also apply generic filters
         self.pg_push_generic_filters(builder, context, "p");
@@ -281,7 +295,8 @@ impl PostgresStorage {
 
     pub(super) async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
         let row = sqlx::query_as::<_, PunchRow>(
-            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.local_time, p.time_offset_secs, p.timezone_name, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    p.is_anomaly, p.anomaly_type,
                     COALESCE(e.name, u.name) as employee_name,
                     d.label as device_label
              FROM attendance_punches p
@@ -304,18 +319,23 @@ impl PostgresStorage {
 
         sqlx::query(
             "INSERT INTO attendance_punches
-             (id, device_sn, user_pin, timestamp, status, verify_mode, work_code, raw_data)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             (id, device_sn, user_pin, timestamp, local_time, time_offset_secs, timezone_name, status, verify_mode, work_code, raw_data, is_anomaly, anomaly_type)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
              ON CONFLICT (id) DO NOTHING",
         )
         .bind(&dedup_id)
         .bind(&punch.device_sn)
         .bind(&punch.user_pin)
         .bind(&ts)
+        .bind(punch.local_time.map(|t| t.as_second().to_string()))
+        .bind(punch.time_offset_secs)
+        .bind(&punch.timezone_name)
         .bind(punch.status as i32)
         .bind(punch.verify_mode as i32)
         .bind(&punch.work_code)
         .bind(&punch.raw_data)
+        .bind(punch.is_anomaly)
+        .bind(&punch.anomaly_type)
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("insert punch: {e}")))?;
@@ -337,18 +357,23 @@ impl PostgresStorage {
             let ts = punch.timestamp.as_second().to_string();
             let result = sqlx::query(
                 "INSERT INTO attendance_punches
-                 (id, device_sn, user_pin, timestamp, status, verify_mode, work_code, raw_data)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                 (id, device_sn, user_pin, timestamp, local_time, time_offset_secs, timezone_name, status, verify_mode, work_code, raw_data, is_anomaly, anomaly_type)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                  ON CONFLICT (id) DO NOTHING",
             )
             .bind(&dedup_id)
             .bind(&punch.device_sn)
             .bind(&punch.user_pin)
             .bind(&ts)
+            .bind(punch.local_time.map(|t| t.as_second().to_string()))
+            .bind(punch.time_offset_secs)
+            .bind(&punch.timezone_name)
             .bind(punch.status as i32)
             .bind(punch.verify_mode as i32)
             .bind(&punch.work_code)
             .bind(&punch.raw_data)
+            .bind(punch.is_anomaly)
+            .bind(&punch.anomaly_type)
             .execute(&mut *tx)
             .await
             .map_err(|e| Error::storage(format!("batch insert punch: {e}")))?;
@@ -365,7 +390,8 @@ impl PostgresStorage {
         filter: &PunchFilter,
     ) -> Result<Vec<AttendancePunch>, Error> {
         let mut builder = QueryBuilder::<sqlx::Postgres>::new(
-            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.local_time, p.time_offset_secs, p.timezone_name, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    p.is_anomaly, p.anomaly_type,
                     COALESCE(e.name, u.name) as employee_name,
                     d.label as device_label
              FROM attendance_punches p
@@ -404,7 +430,16 @@ impl PostgresStorage {
             builder.push(" AND p.timestamp <= ");
             builder.push_bind(until.as_second().to_string());
         }
-        if let Some(status) = &filter.status {
+        if let Some(statuses) = &filter.statuses
+            && !statuses.is_empty()
+        {
+            builder.push(" AND p.status IN (");
+            let mut separated = builder.separated(", ");
+            for s in statuses {
+                separated.push_bind(*s as i32);
+            }
+            separated.push_unseparated(")");
+        } else if let Some(status) = &filter.status {
             builder.push(" AND p.status = ");
             builder.push_bind(*status as i32);
         }
@@ -413,8 +448,7 @@ impl PostgresStorage {
             builder.push_bind(*verify_mode as i32);
         }
         if filter.anomalies_only.unwrap_or(false) {
-            builder
-                .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+            builder.push(" AND p.is_anomaly = TRUE");
         }
         // ── Batch ID lookup (used by Tantivy search cross-reference) ──
         if let Some(ids) = &filter.ids {
@@ -482,7 +516,11 @@ impl PostgresStorage {
             " ORDER BY {sort_col} {tiebreaker_dir}, {tiebreaker_sql} {tiebreaker_dir}"
         ));
 
-        let limit = filter.params.clamped_limit();
+        let limit = if filter.unlimited {
+            filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
+        } else {
+            filter.params.clamped_limit()
+        };
         builder.push(" LIMIT ");
         builder.push_bind(limit as i64);
 
@@ -582,12 +620,17 @@ mod tests {
             device_sn: device_sn.to_string(),
             user_pin: pin.to_string(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         punch.id = punch.generate_deduplication_id();

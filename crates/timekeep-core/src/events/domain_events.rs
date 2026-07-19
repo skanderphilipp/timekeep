@@ -1,4 +1,6 @@
-use crate::model::{AttendancePunch, Device, DeviceProbe, EmployeeId, OperationLog, User};
+use crate::model::{
+    AttendancePunch, Device, DeviceProbe, EmployeeId, OnboardingType, OperationLog, User,
+};
 
 /// A domain event emitted by the engine when something significant happens.
 ///
@@ -9,16 +11,27 @@ use crate::model::{AttendancePunch, Device, DeviceProbe, EmployeeId, OperationLo
 #[allow(clippy::large_enum_variant)]
 pub enum DomainEvent {
     /// A new attendance punch was received from a device.
-    PunchReceived { punch: AttendancePunch },
+    PunchReceived {
+        punch: AttendancePunch,
+    },
 
     /// Multiple punches were received in a batch.
-    PunchesBatchReceived { device_sn: String, count: usize },
+    PunchesBatchReceived {
+        device_sn: String,
+        count: usize,
+    },
 
     /// A device has come online (first heartbeat after being offline).
-    DeviceOnline { device_sn: String, device_info: Device },
+    DeviceOnline {
+        device_sn: String,
+        device_info: Device,
+    },
 
     /// A device has not been heard from within the configured threshold.
-    DeviceOffline { device_sn: String, last_seen: jiff::Timestamp },
+    DeviceOffline {
+        device_sn: String,
+        last_seen: jiff::Timestamp,
+    },
 
     /// A device's storage is nearly full (over a configurable threshold).
     DeviceStorageWarning {
@@ -29,94 +42,176 @@ pub enum DomainEvent {
     },
 
     /// The engine has started.
-    EngineStarted { device_count: usize },
+    EngineStarted {
+        device_count: usize,
+    },
 
     /// The engine is shutting down.
     EngineStopping,
 
     /// A new device was added to the configuration.
-    DeviceRegistered { device_sn: String },
+    DeviceRegistered {
+        device_sn: String,
+    },
 
     /// A device was removed from the configuration.
-    DeviceRemoved { device_sn: String },
+    DeviceRemoved {
+        device_sn: String,
+    },
 
     /// A request to create or update a user on a specific device.
-    UserSetRequested { device_sn: String, user: User },
+    UserSetRequested {
+        device_sn: String,
+        user: User,
+    },
 
     /// A request to delete a user from a specific device.
-    UserDeleteRequested { device_sn: String, user_sn: u16 },
+    UserDeleteRequested {
+        device_sn: String,
+        user_sn: u16,
+    },
 
     /// Request to push an employee to all devices they are enrolled on.
-    EmployeeSyncRequested { employee_pin: String },
+    EmployeeSyncRequested {
+        employee_pin: String,
+    },
 
     /// Request to remove an employee from all devices.
-    EmployeeRemoveRequested { employee_pin: String },
+    EmployeeRemoveRequested {
+        employee_pin: String,
+    },
 
     /// Request to copy all users from one device to another.
-    DeviceToDeviceSyncRequested { source_sn: String, target_sn: String },
+    DeviceToDeviceSyncRequested {
+        source_sn: String,
+        target_sn: String,
+    },
 
     /// Request a full device re-sync (delete all users, re-upload from employee DB).
-    DeviceResyncRequested { device_sn: String },
+    DeviceResyncRequested {
+        device_sn: String,
+    },
 
     /// Bulk user sync completed for a device.
-    UsersBulkSynced { device_sn: String, pushed: u32, deleted: u32, failed: u32, duration_ms: u64 },
+    UsersBulkSynced {
+        device_sn: String,
+        pushed: u32,
+        deleted: u32,
+        failed: u32,
+        duration_ms: u64,
+    },
 
     /// Device pushed its complete user list via ADMS (USERINFO table).
     /// The handler should upsert these into the local device-users store.
-    DeviceUsersReceived { device_sn: String, users: Vec<User> },
+    DeviceUsersReceived {
+        device_sn: String,
+        users: Vec<User>,
+    },
 
     /// A specific user sync to a device failed.
-    UserSyncFailed { device_sn: String, employee_pin: String, error: String },
+    UserSyncFailed {
+        device_sn: String,
+        employee_pin: String,
+        error: String,
+    },
 
     /// An operation log entry was received from a device.
-    OperationLogReceived { log: OperationLog },
+    OperationLogReceived {
+        log: OperationLog,
+    },
 
     /// A request to send a command to a device via ADMS command queue.
-    DeviceCommandEnqueueRequested { device_sn: String, command: String },
+    DeviceCommandEnqueueRequested {
+        device_sn: String,
+        command: String,
+    },
 
     // ── NEW: Device lifecycle events ──────────────────────────
     /// A device was probed and identified (step 1 of provisioning).
-    DeviceDiscovered { probe: DeviceProbe },
+    DeviceDiscovered {
+        probe: DeviceProbe,
+    },
 
     /// A device completed provisioning and is now active.
-    DeviceProvisioned { device_sn: String, provider: String },
+    DeviceProvisioned {
+        device_sn: String,
+        provider: String,
+    },
 
     /// A device completed a successful sync cycle.
-    DeviceSyncCompleted { device_sn: String, records_synced: u32, duration_ms: u64 },
+    DeviceSyncCompleted {
+        device_sn: String,
+        records_synced: u32,
+        duration_ms: u64,
+    },
 
     /// A device sync failed.
-    DeviceSyncFailed { device_sn: String, error: String, records_synced: u32 },
+    DeviceSyncFailed {
+        device_sn: String,
+        error: String,
+        records_synced: u32,
+    },
 
     /// Device configuration was changed via the API.
-    DeviceConfigChanged { device_sn: String, changed_fields: Vec<String> },
+    DeviceConfigChanged {
+        device_sn: String,
+        changed_fields: Vec<String>,
+    },
 
     /// Device firmware was updated (reported by the device).
-    DeviceFirmwareUpdated { device_sn: String, old_version: String, new_version: String },
+    DeviceFirmwareUpdated {
+        device_sn: String,
+        old_version: String,
+        new_version: String,
+    },
 
     /// Enriched device metadata received (platform, firmware, MAC, capacity).
-    DeviceInfoUpdated { device: Device },
+    DeviceInfoUpdated {
+        device: Device,
+    },
 
     // ── Employee lifecycle events ─────────────────────────────
     /// A new employee was registered in the system.
-    EmployeeCreated { pin: String, name: String },
+    EmployeeCreated {
+        pin: String,
+        name: String,
+    },
     /// An existing employee was updated (name, department, external_id changed).
-    EmployeeUpdated { id: String, name: String, pin: String },
+    EmployeeUpdated {
+        id: String,
+        name: String,
+        pin: String,
+    },
     /// An employee was deactivated (soft-delete).
-    EmployeeDeactivated { pin: String },
+    EmployeeDeactivated {
+        pin: String,
+    },
     /// An employee was enrolled on a specific device.
-    EmployeeEnrolled { pin: String, device_sn: String },
+    EmployeeEnrolled {
+        pin: String,
+        device_sn: String,
+    },
 
     // ── Dashboard user events ─────────────────────────────────
     /// A dashboard user was created (by admin or during setup).
-    DashboardUserCreated { username: String, role: String },
+    DashboardUserCreated {
+        username: String,
+        role: String,
+    },
     /// A dashboard user was deleted.
-    DashboardUserDeleted { username: String },
+    DashboardUserDeleted {
+        username: String,
+    },
 
     // ── System lifecycle events ───────────────────────────────
     /// Initial setup was completed (first admin created).
-    SetupCompleted { admin_username: String },
+    SetupCompleted {
+        admin_username: String,
+    },
     /// System settings were changed.
-    SettingsChanged { changed_fields: Vec<String> },
+    SettingsChanged {
+        changed_fields: Vec<String>,
+    },
 
     // ── Fingerprint Template Transfer events ───────────────────
     /// Request to transfer fingerprint templates between devices.
@@ -136,15 +231,27 @@ pub enum DomainEvent {
 
     // ── Department lifecycle events ───────────────────────────
     /// A new department was created.
-    DepartmentCreated { id: String, name: String },
+    DepartmentCreated {
+        id: String,
+        name: String,
+    },
     /// A department was updated (name or policy changed).
-    DepartmentUpdated { id: String, name: String },
+    DepartmentUpdated {
+        id: String,
+        name: String,
+    },
     /// A department was deleted.
-    DepartmentDeleted { id: String },
+    DepartmentDeleted {
+        id: String,
+    },
 
     // ── Device group sync events ─────────────────────────────
     /// Admin requested a group-level sync (all devices in a group).
-    GroupSyncRequested { group_id: String, department_id: Option<String>, triggered_by: String },
+    GroupSyncRequested {
+        group_id: String,
+        department_id: Option<String>,
+        triggered_by: String,
+    },
     /// A group sync completed with aggregate results.
     GroupSyncCompleted {
         group_id: String,
@@ -153,6 +260,90 @@ pub enum DomainEvent {
         total_deleted: u32,
         total_failed: u32,
         duration_ms: u64,
+    },
+
+    // ── Onboarding workflow events ────────────────────────────
+    OnboardingSessionCreated {
+        session_id: String,
+        session_type: OnboardingType,
+        entity_id: Option<String>,
+    },
+    OnboardingSessionStepAdvanced {
+        session_id: String,
+        from_step: String,
+        to_step: String,
+    },
+    OnboardingSessionStepFailed {
+        session_id: String,
+        step: String,
+        error: String,
+    },
+    OnboardingSessionCancelled {
+        session_id: String,
+    },
+    OnboardingSessionCompleted {
+        session_id: String,
+        session_type: OnboardingType,
+        entity_id: String,
+    },
+
+    // ── Fingerprint enrollment events ────────────────────────
+    FingerprintEnrollRequested {
+        device_sn: String,
+        user_pin: String,
+        finger_index: u8,
+    },
+    /// Live progress during fingerprint enrollment (SSE-streamed).
+    FingerprintEnrollProgress {
+        device_sn: String,
+        user_pin: String,
+        finger_index: u8,
+        sample: u8,
+        score: u8,
+        status: String,
+        template_size: Option<usize>,
+    },
+    FingerprintEnrolled {
+        device_sn: String,
+        user_pin: String,
+        finger_index: u8,
+        template_size: usize,
+    },
+    FingerprintEnrollFailed {
+        device_sn: String,
+        user_pin: String,
+        finger_index: u8,
+        reason: String,
+    },
+    FingerprintTemplateBackedUp {
+        device_sn: String,
+        user_pin: String,
+        finger_index: u8,
+        storage_location: String,
+    },
+
+    // ── Device onboarding events ─────────────────────────────
+    DeviceConnectionTested {
+        device_sn: String,
+        host: String,
+        port: u16,
+        success: bool,
+    },
+    DeviceConfigured {
+        config: crate::model::DeviceConfig,
+    },
+    DeviceClockSynced {
+        device_sn: String,
+        drift_seconds: i64,
+    },
+    DeviceUsersPulled {
+        device_sn: String,
+        user_count: u32,
+    },
+    DeviceEmployeesPushed {
+        device_sn: String,
+        pushed: u32,
+        failed: u32,
     },
 }
 
@@ -202,6 +393,21 @@ impl DomainEvent {
             Self::DepartmentDeleted { .. } => "department_deleted",
             Self::GroupSyncRequested { .. } => "group_sync_requested",
             Self::GroupSyncCompleted { .. } => "group_sync_completed",
+            Self::OnboardingSessionCreated { .. } => "onboarding_session_created",
+            Self::OnboardingSessionStepAdvanced { .. } => "onboarding_session_step_advanced",
+            Self::OnboardingSessionStepFailed { .. } => "onboarding_session_step_failed",
+            Self::OnboardingSessionCancelled { .. } => "onboarding_session_cancelled",
+            Self::OnboardingSessionCompleted { .. } => "onboarding_session_completed",
+            Self::FingerprintEnrollRequested { .. } => "fingerprint_enroll_requested",
+            Self::FingerprintEnrollProgress { .. } => "fingerprint_enroll_progress",
+            Self::FingerprintEnrolled { .. } => "fingerprint_enrolled",
+            Self::FingerprintEnrollFailed { .. } => "fingerprint_enroll_failed",
+            Self::FingerprintTemplateBackedUp { .. } => "fingerprint_template_backed_up",
+            Self::DeviceConnectionTested { .. } => "device_connection_tested",
+            Self::DeviceConfigured { .. } => "device_configured",
+            Self::DeviceClockSynced { .. } => "device_clock_synced",
+            Self::DeviceUsersPulled { .. } => "device_users_pulled",
+            Self::DeviceEmployeesPushed { .. } => "device_employees_pushed",
         }
     }
 
@@ -250,6 +456,21 @@ impl DomainEvent {
             | Self::DepartmentDeleted { .. }
             | Self::GroupSyncRequested { .. }
             | Self::GroupSyncCompleted { .. } => None,
+            Self::OnboardingSessionCreated { .. }
+            | Self::OnboardingSessionStepAdvanced { .. }
+            | Self::OnboardingSessionStepFailed { .. }
+            | Self::OnboardingSessionCancelled { .. }
+            | Self::OnboardingSessionCompleted { .. } => None,
+            Self::FingerprintEnrollRequested { device_sn, .. }
+            | Self::FingerprintEnrollProgress { device_sn, .. }
+            | Self::FingerprintEnrolled { device_sn, .. }
+            | Self::FingerprintEnrollFailed { device_sn, .. }
+            | Self::FingerprintTemplateBackedUp { device_sn, .. }
+            | Self::DeviceConnectionTested { device_sn, .. }
+            | Self::DeviceClockSynced { device_sn, .. }
+            | Self::DeviceUsersPulled { device_sn, .. }
+            | Self::DeviceEmployeesPushed { device_sn, .. } => Some(device_sn),
+            Self::DeviceConfigured { config } => Some(&config.serial_number),
         }
     }
 }
@@ -273,12 +494,17 @@ mod tests {
                     device_sn: "SN001".into(),
                     user_pin: "145".into(),
                     timestamp: jiff::Timestamp::from_second(1752129600).unwrap(),
+                    local_time: None,
+                    time_offset_secs: None,
+                    timezone_name: None,
                     status: PunchStatus::CheckIn,
                     verify_mode: VerifyMode::Fingerprint,
                     work_code: None,
                     sub_status: None,
                     employee_name: None,
                     device_label: None,
+                    is_anomaly: false,
+                    anomaly_type: None,
                     raw_data: None,
                 },
             },
@@ -389,12 +615,17 @@ mod tests {
             device_sn: "SN001".into(),
             user_pin: "145".into(),
             timestamp: jiff::Timestamp::from_second(1752129600).unwrap(),
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status: PunchStatus::CheckIn,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
 
@@ -442,6 +673,34 @@ mod tests {
         );
     }
 
+    /// FingerprintEnrollProgress extracts device_sn and has correct event_type.
+    #[test]
+    fn test_fingerprint_enroll_progress() {
+        let evt = DomainEvent::FingerprintEnrollProgress {
+            device_sn: "SN001".into(),
+            user_pin: "145".into(),
+            finger_index: 0,
+            sample: 2,
+            score: 100,
+            status: "good".into(),
+            template_size: None,
+        };
+        assert_eq!(evt.device_sn(), Some("SN001"));
+        assert_eq!(evt.event_type(), "fingerprint_enroll_progress");
+
+        let enrolled = DomainEvent::FingerprintEnrollProgress {
+            device_sn: "SN001".into(),
+            user_pin: "145".into(),
+            finger_index: 0,
+            sample: 3,
+            score: 100,
+            status: "enrolled".into(),
+            template_size: Some(1024),
+        };
+        assert_eq!(enrolled.event_type(), "fingerprint_enroll_progress");
+        assert_eq!(enrolled.device_sn(), Some("SN001"));
+    }
+
     /// PunchReceived specifically carries the punch's device_sn.
     #[test]
     fn test_punch_received_has_device_sn() {
@@ -450,12 +709,17 @@ mod tests {
             device_sn: "SN001".into(),
             user_pin: "145".into(),
             timestamp: jiff::Timestamp::from_second(1752129600).unwrap(),
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status: PunchStatus::CheckIn,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         let event = DomainEvent::PunchReceived { punch };

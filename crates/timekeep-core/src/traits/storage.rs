@@ -276,6 +276,14 @@ pub trait Storage: Send + Sync {
         Ok(()) // default: silently drop (non-critical path)
     }
 
+    /// Get a single audit event by ID.
+    async fn get_audit_event(
+        &self,
+        _id: &str,
+    ) -> Result<Option<crate::model::audit::AuditEvent>, Error> {
+        Err(Error::storage("audit event storage not implemented for this backend"))
+    }
+
     /// Query audit logs with filter, sort, and pagination.
     async fn query_audit_logs(
         &self,

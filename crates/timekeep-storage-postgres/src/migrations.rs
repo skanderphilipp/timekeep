@@ -628,6 +628,98 @@ impl PostgresStorage {
         .await
         .map_err(|e| Error::storage(format!("idx_dashboard_users_username: {e}")))?;
 
+        // ── v15: Onboarding sessions + audit trail ─────────────────
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS onboarding_sessions (
+                id TEXT PRIMARY KEY,
+                session_type TEXT NOT NULL,
+                current_step TEXT NOT NULL,
+                step_index INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'in_progress',
+                entity_id TEXT,
+                step_data JSONB NOT NULL DEFAULT '{}',
+                error_message TEXT,
+                compensating JSONB NOT NULL DEFAULT '[]',
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("onboarding_sessions table: {e}")))?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_status ON onboarding_sessions(status);",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("idx_onboarding_sessions_status: {e}")))?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_entity ON onboarding_sessions(entity_id);",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("idx_onboarding_sessions_entity: {e}")))?;
+
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS onboarding_session_logs (
+                id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL REFERENCES onboarding_sessions(id),
+                step_name TEXT NOT NULL,
+                action TEXT NOT NULL,
+                detail_json JSONB,
+                duration_ms BIGINT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("onboarding_session_logs table: {e}")))?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_onboarding_logs_session ON onboarding_session_logs(session_id);",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("idx_onboarding_logs_session: {e}")))?;
+
+        // ── v21: Anomaly flags on punches (Frappe HRMS pattern) ──────
+        sqlx::query(
+            "ALTER TABLE attendance_punches ADD COLUMN IF NOT EXISTS is_anomaly BOOLEAN NOT NULL DEFAULT FALSE",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("attendance_punches is_anomaly column: {e}")))?;
+
+        sqlx::query("ALTER TABLE attendance_punches ADD COLUMN IF NOT EXISTS anomaly_type TEXT")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("attendance_punches anomaly_type column: {e}")))?;
+
+        // ── v22: Timezone context on punches + employee joining date ──
+        sqlx::query("ALTER TABLE attendance_punches ADD COLUMN IF NOT EXISTS local_time TEXT")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("attendance_punches local_time column: {e}")))?;
+
+        sqlx::query(
+            "ALTER TABLE attendance_punches ADD COLUMN IF NOT EXISTS time_offset_secs INTEGER",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("attendance_punches time_offset_secs column: {e}")))?;
+
+        sqlx::query("ALTER TABLE attendance_punches ADD COLUMN IF NOT EXISTS timezone_name TEXT")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("attendance_punches timezone_name column: {e}")))?;
+
+        sqlx::query("ALTER TABLE employees ADD COLUMN IF NOT EXISTS joined_at BIGINT")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("employees joined_at column: {e}")))?;
+
         Ok(())
     }
 }

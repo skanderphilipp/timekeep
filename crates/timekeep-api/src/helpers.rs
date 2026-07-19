@@ -56,6 +56,14 @@ pub fn resolve_date_range(
     (Some(since), Some(until))
 }
 
+/// Parse a comma-separated value string into a Vec.
+/// Returns None for `None` or empty input.
+pub fn split_csv(input: &Option<String>) -> Option<Vec<String>> {
+    input.as_ref().map(|s| {
+        s.split(',').map(|part| part.trim().to_string()).filter(|p| !p.is_empty()).collect()
+    })
+}
+
 /// Collect unique user PINs from a slice of punches.
 ///
 /// Returns a `HashSet<&str>` of all distinct PINs present in the data.
@@ -87,5 +95,3 @@ pub fn collect_employee_names(
     }
     names
 }
-
-

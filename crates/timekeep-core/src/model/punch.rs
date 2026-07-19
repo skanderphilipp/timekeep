@@ -20,6 +20,25 @@ pub struct AttendancePunch {
     /// When the punch occurred (device-local, normalized to UTC).
     pub timestamp: Timestamp,
 
+    /// Wall-clock time at the punch location (for shift compliance, overtime rules).
+    ///
+    /// Derived from `timestamp` + `time_offset_secs`. This is what you see on
+    /// the wall when the employee punches — essential for answering "was this late?"
+    /// in the correct timezone.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub local_time: Option<Timestamp>,
+
+    /// UTC offset in seconds at punch time (e.g., +14400 for Dubai = UTC+4).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub time_offset_secs: Option<i32>,
+
+    /// IANA timezone name (e.g., "Asia/Dubai", "Europe/London").
+    ///
+    /// Needed because offsets change with DST — you need the zone to reconstruct
+    /// the correct local time for reporting across DST transitions.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub timezone_name: Option<String>,
+
     /// Check-in vs check-out
     pub status: PunchStatus,
 
@@ -41,6 +60,19 @@ pub struct AttendancePunch {
     /// Not part of the punch's core identity — purely a read-model enrichment.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub device_label: Option<String>,
+
+    /// Whether this punch has been flagged as anomalous by the pairing algorithm.
+    ///
+    /// Set to `true` after `AttendanceCalculator` detects an anomaly involving this punch.
+    /// Persisted so the `anomalies_only` query filter works via a simple column check
+    /// rather than a separate join table (following the Frappe HRMS pattern).
+    #[serde(default)]
+    pub is_anomaly: bool,
+
+    /// Human-readable anomaly kind (e.g. "missing_check_out", "duplicate_check_in").
+    /// Only meaningful when `is_anomaly` is `true`.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub anomaly_type: Option<String>,
 
     /// Raw data as received from the device (for audit trail).
     #[serde(skip)]
@@ -214,12 +246,17 @@ mod tests {
             device_sn: device.into(),
             user_pin: pin.into(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status: PunchStatus::CheckIn,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         p.id = p.generate_deduplication_id();

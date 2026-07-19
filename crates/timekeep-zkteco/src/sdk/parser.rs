@@ -50,12 +50,17 @@ pub fn parse_attendance_record(data: &[u8], device_sn: &str) -> Option<Attendanc
         device_sn: device_sn.to_string(),
         user_pin: pin,
         timestamp,
+        local_time: None,
+        time_offset_secs: None,
+        timezone_name: None,
         status,
         verify_mode,
         work_code: None,
         sub_status: None,
         employee_name: None,
         device_label: None,
+        is_anomaly: false,
+        anomaly_type: None,
         raw_data: Some(format!("{data:02X?}")),
     };
 

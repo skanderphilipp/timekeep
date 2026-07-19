@@ -11,10 +11,12 @@ use crate::dto::{
 };
 use crate::request::{CorrectPunchRequest, FacetFilterParams, PunchListQuery};
 use crate::response::{ApiEnvelope, AppError, PageMeta};
+use crate::routes::dashboard::resolve_policies_for_pins;
 use timekeep_core::PUNCH_SCHEMA;
 use timekeep_core::PunchFilter;
 use timekeep_core::events::DomainEvent;
 use timekeep_core::query::cursor::{Cursor, CursorValue};
+use timekeep_core::services::attendance_calculator::AttendanceCalculator;
 
 /// Get a single punch by its deduplication ID.
 #[utoipa::path(
@@ -70,9 +72,42 @@ pub(crate) async fn query_punches_mgmt(
     }
 
     // ── Legacy SQL path ─────────────────────────────────────────
+    let anomalies_only = q.anomalies_only.as_deref() == Some("true");
     let filter = build_punch_filter(&q);
     let is_cursor = filter.cursor_after.is_some();
-    let punches = state.storage.query_punches(&filter).await?;
+
+    // When filtering by anomalies, we cannot rely on the SQL `is_anomaly`
+    // column alone because anomaly flags are computed in-memory during
+    // pairing and not pre-persisted. Fetch all punches matching the other
+    // criteria, then compute anomalies and filter in the app layer.
+    let punches = if anomalies_only {
+        // Build a filter without anomalies_only so SQL returns all candidates
+        let mut broad_filter = filter.clone();
+        broad_filter.anomalies_only = None;
+        let mut punches = state.storage.query_punches(&broad_filter).await?;
+
+        // Compute per-employee work days to detect anomalies
+        let org_policy = crate::helpers::org_work_policy(&*state.storage).await;
+        let unique_pins = crate::helpers::unique_pins(&punches);
+        let policy_map = resolve_policies_for_pins(
+            &*state.storage,
+            state.employees.as_deref(),
+            &unique_pins,
+            &org_policy,
+        )
+        .await;
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_policy);
+
+        // Mark anomalous punches in-place
+        AttendanceCalculator::annotate_punches_with_anomalies(&work_days, &mut punches);
+
+        // Keep only punches flagged as anomalous
+        punches.retain(|p| p.is_anomaly);
+        punches
+    } else {
+        state.storage.query_punches(&filter).await?
+    };
 
     let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
     let has_more = responses.len() >= q.params.limit as usize;
@@ -156,15 +191,11 @@ async fn query_punches_via_search(
     )
 }
 
-
 /// Split a comma-separated string into a Vec, trimming whitespace.
 /// Returns None for empty input.
 fn split_csv(input: &Option<String>) -> Option<Vec<String>> {
     input.as_ref().map(|s| {
-        s.split(',')
-            .map(|part| part.trim().to_string())
-            .filter(|p| !p.is_empty())
-            .collect()
+        s.split(',').map(|part| part.trim().to_string()).filter(|p| !p.is_empty()).collect()
     })
 }
 
@@ -201,10 +232,12 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         since,
         until,
         status,
+        statuses: None,
         verify_mode,
         anomalies_only,
         ids: None,
         cursor_after,
+        unlimited: false,
     }
 }
 
@@ -344,12 +377,17 @@ pub(crate) async fn correct_punch(
         device_sn: body.device_sn.clone(),
         user_pin: body.user_pin.clone(),
         timestamp: ts,
+        local_time: None,
+        time_offset_secs: None,
+        timezone_name: None,
         status,
         verify_mode: timekeep_core::VerifyMode::Password,
         work_code: None,
         sub_status: None,
         employee_name: None,
         device_label: None,
+        is_anomaly: false,
+        anomaly_type: None,
         raw_data: Some(format!("manual_correction: pin={} status={:?}", body.user_pin, status)),
     };
     punch.id = punch.generate_deduplication_id();

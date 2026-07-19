@@ -60,6 +60,23 @@ pub enum Anomaly {
     },
 }
 
+impl Anomaly {
+    /// Return a short, machine-readable kind string for this anomaly.
+    ///
+    /// These values are persisted in the `anomaly_type` column on punches
+    /// so that the `anomalies_only` query filter can work without a separate table.
+    /// Mirror of the mapping in `AnomalyResponse::from_anomaly`.
+    pub fn kind(&self) -> &str {
+        match self {
+            Anomaly::OrphanedCheckOut { .. } => "orphaned_check_out",
+            Anomaly::DuplicateCheckIn { .. } => "duplicate_check_in",
+            Anomaly::MissingCheckOut { .. } => "missing_check_out",
+            Anomaly::UnusualHours { .. } => "unusual_hours",
+            Anomaly::BuddyPunchCandidate { .. } => "buddy_punch",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

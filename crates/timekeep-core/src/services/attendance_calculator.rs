@@ -49,6 +49,61 @@ impl AttendanceCalculator {
         work_days
     }
 
+    /// Compute `WorkDay` aggregates respecting per-employee work policies.
+    ///
+    /// Unlike [`compute_work_days`] which applies a single policy to all punches,
+    /// this method resolves each employee's effective policy via `per_pin_policies`
+    /// (falling back to `org_default`). It groups punches by policy fingerprint,
+    /// computes work days per group, and merges the results.
+    ///
+    /// This is the preferred entry point for org-wide report handlers that need
+    /// correct late detection, overtime, and working-day classification when
+    /// departments have different work schedules.
+    pub fn compute_work_days_per_pin(
+        punches: &[AttendancePunch],
+        per_pin_policies: &std::collections::HashMap<String, WorkPolicy>,
+        org_default: &WorkPolicy,
+    ) -> Vec<WorkDay> {
+        use std::collections::HashMap;
+
+        // Group punches by policy fingerprint so each group gets the correct policy
+        let mut policy_groups: HashMap<String, (Vec<&AttendancePunch>, &WorkPolicy)> =
+            HashMap::new();
+
+        for p in punches {
+            let effective = per_pin_policies.get(&p.user_pin).unwrap_or(org_default);
+            let key = Self::policy_fingerprint(effective);
+            let entry = policy_groups.entry(key.clone()).or_insert_with(|| (Vec::new(), effective));
+            entry.0.push(p);
+        }
+
+        let mut all_work_days: Vec<WorkDay> = Vec::new();
+        for (_key, (group_punches, policy)) in policy_groups {
+            let cloned: Vec<AttendancePunch> = group_punches.iter().map(|&p| p.clone()).collect();
+            all_work_days.extend(Self::compute_work_days(&cloned, policy));
+        }
+
+        all_work_days.sort_by(|a, b| a.date.cmp(&b.date).then_with(|| a.user_pin.cmp(&b.user_pin)));
+
+        all_work_days
+    }
+
+    /// Deterministic string key for a work policy, used to group punches
+    /// that share the same effective policy.
+    fn policy_fingerprint(policy: &WorkPolicy) -> String {
+        format!(
+            "{:02}:{:02}-{:02}:{:02}-{}-{}-{}-{:?}",
+            policy.work_start.hour(),
+            policy.work_start.minute(),
+            policy.work_end.hour(),
+            policy.work_end.minute(),
+            policy.late_threshold_secs,
+            policy.min_seconds_for_present,
+            policy.daily_overtime_after_secs,
+            policy.working_days,
+        )
+    }
+
     /// Compute a single `WorkDay` for one user on one date.
     pub fn compute_work_day(
         punches: &[AttendancePunch],
@@ -476,6 +531,61 @@ impl AttendanceCalculator {
         }
     }
 
+    /// Annotate punches in-place with anomaly flags from computed work days.
+    ///
+    /// After calling [`compute_work_days`] or [`compute_work_days_per_pin`],
+    /// call this to persist which punches are anomalous. Matching is done by
+    /// (user_pin, timestamp) — each anomaly variant carries the timestamps of
+    /// the punches it applies to.
+    ///
+    /// This is the bridge between the in-memory anomaly computation and the
+    /// persisted `is_anomaly` / `anomaly_type` columns used by the
+    /// `anomalies_only` query filter.
+    pub fn annotate_punches_with_anomalies(work_days: &[WorkDay], punches: &mut [AttendancePunch]) {
+        // Build an index: (user_pin, timestamp_secs) -> mutable reference to punch
+        let mut index: std::collections::HashMap<(String, i64), &mut AttendancePunch> =
+            std::collections::HashMap::new();
+        for punch in punches.iter_mut() {
+            let ts = punch.timestamp.as_second();
+            index.insert((punch.user_pin.clone(), ts), punch);
+        }
+
+        for wd in work_days {
+            for anomaly in &wd.anomalies {
+                let kind = anomaly.kind().to_string();
+                match anomaly {
+                    Anomaly::OrphanedCheckOut { timestamp } => {
+                        let key = (wd.user_pin.clone(), timestamp.as_second());
+                        if let Some(punch) = index.get_mut(&key) {
+                            punch.is_anomaly = true;
+                            punch.anomaly_type = Some(kind);
+                        }
+                    },
+                    Anomaly::DuplicateCheckIn { first, second } => {
+                        for ts in [first, second] {
+                            let key = (wd.user_pin.clone(), ts.as_second());
+                            if let Some(punch) = index.get_mut(&key) {
+                                punch.is_anomaly = true;
+                                punch.anomaly_type = Some(kind.clone());
+                            }
+                        }
+                    },
+                    Anomaly::MissingCheckOut { check_in } => {
+                        let key = (wd.user_pin.clone(), check_in.as_second());
+                        if let Some(punch) = index.get_mut(&key) {
+                            punch.is_anomaly = true;
+                            punch.anomaly_type = Some(kind);
+                        }
+                    },
+                    // These anomalies don't point to a specific punch timestamp,
+                    // so they can't be marked on individual punches. They still
+                    // appear in the WorkDay's anomaly list for API consumers.
+                    Anomaly::UnusualHours { .. } | Anomaly::BuddyPunchCandidate { .. } => {},
+                }
+            }
+        }
+    }
+
     // ── Private ────────────────────────────────────────────────────
 
     fn punch_date_utc(punch: &AttendancePunch) -> Option<Date> {
@@ -623,12 +733,17 @@ mod tests {
             device_sn: "DEV001".into(),
             user_pin: pin.into(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         p.id = p.generate_deduplication_id();
@@ -1484,5 +1599,149 @@ mod tests {
         assert_eq!(dist.absent_days, 4);
         // Total = 5 working days, weekends (Sat/Sun) excluded entirely.
         assert_eq!(dist.total_employee_days(), 5);
+    }
+
+    // ── compute_work_days_per_pin tests ──────────────────────────────
+
+    /// Verify that compute_work_days_per_pin respects per-employee policies
+    /// when employees belong to departments with different schedules.
+    #[test]
+    fn compute_work_days_per_pin_respects_per_pin_policies() {
+        let d = date_2026_07_10();
+
+        // Warehouse: 06:00 start, 10 min grace → late after 06:10
+        let warehouse = WorkPolicy {
+            work_start: jiff::civil::Time::new(6, 0, 0, 0).unwrap(),
+            work_end: jiff::civil::Time::new(14, 0, 0, 0).unwrap(),
+            late_threshold_secs: 10 * 60,
+            ..WorkPolicy::standard_9to5()
+        };
+        let office = WorkPolicy::standard_9to5(); // 09:00 start, 15 min grace
+
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("wh".to_string(), warehouse.clone()), ("ofc".to_string(), office.clone())].into();
+
+        // Warehouse employee punches at 06:05 (ON TIME for warehouse)
+        // Office employee punches at 09:20 (LATE for office — past 09:15 grace)
+        let punches = vec![
+            punch_at("wh", d, time(6, 5, 0), PunchStatus::CheckIn),
+            punch_at("wh", d, time(14, 0, 0), PunchStatus::CheckOut),
+            punch_at("ofc", d, time(9, 20, 0), PunchStatus::CheckIn),
+            punch_at("ofc", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &office);
+
+        assert_eq!(work_days.len(), 2);
+
+        let wh_day = work_days.iter().find(|w| w.user_pin == "wh").unwrap();
+        let ofc_day = work_days.iter().find(|w| w.user_pin == "ofc").unwrap();
+
+        // Warehouse employee at 06:05 should be ON TIME (within 10-min grace from 06:00)
+        assert_eq!(wh_day.status, DayStatus::Present, "warehouse should be on time");
+
+        // Office employee at 09:20 should be LATE (past 09:15 grace)
+        assert_eq!(ofc_day.status, DayStatus::Late, "office should be late");
+    }
+
+    /// Verify that pins not found in the per-pin map fall back to org_default.
+    #[test]
+    fn compute_work_days_per_pin_falls_back_to_org_default() {
+        let d = date_2026_07_10();
+
+        let office = WorkPolicy::standard_9to5();
+        // Empty per-pin map → all use org default
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            std::collections::HashMap::new();
+
+        let punches = vec![
+            punch_at("145", d, time(9, 20, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &office);
+
+        assert_eq!(work_days.len(), 1);
+        // 09:20 is late for standard 9-to-5 (past 09:15 grace)
+        assert_eq!(work_days[0].status, DayStatus::Late);
+    }
+
+    /// Verify that mixed policies produce correct day status based on
+    /// different `min_seconds_for_present` thresholds.
+    /// A short-shift policy (2h minimum, ends at 12:00) classifies 3h as full day,
+    /// while standard policy (4h minimum) classifies it as half day.
+    #[test]
+    fn compute_work_days_per_pin_min_seconds_differs_by_policy() {
+        let d = date_2026_07_10();
+
+        // Short-shift: ends at 12:00, only 2h needed for full-day status
+        let short_shift = WorkPolicy {
+            work_start: jiff::civil::Time::new(9, 0, 0, 0).unwrap(),
+            work_end: jiff::civil::Time::new(12, 0, 0, 0).unwrap(),
+            min_seconds_for_present: 2 * 3600,
+            ..WorkPolicy::standard_9to5()
+        };
+        let standard = WorkPolicy::standard_9to5(); // 4h needed for full-day
+
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("short".to_string(), short_shift.clone()), ("std".to_string(), standard.clone())]
+                .into();
+
+        // Both employees punch only 3h
+        let punches = vec![
+            punch_at("short", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("short", d, time(12, 0, 0), PunchStatus::CheckOut),
+            punch_at("std", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("std", d, time(12, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &standard);
+
+        assert_eq!(work_days.len(), 2);
+
+        let short_day = work_days.iter().find(|w| w.user_pin == "short").unwrap();
+        let std_day = work_days.iter().find(|w| w.user_pin == "std").unwrap();
+
+        // 3h >= 2h minimum -> full day (ends at 12:00, no early-leave trigger)
+        assert_eq!(short_day.status, DayStatus::Present, "3h should be full day with 2h minimum");
+
+        // 3h < 4h minimum -> half day for standard employee
+        assert_eq!(std_day.status, DayStatus::HalfDay, "3h should be half day with 4h minimum");
+    }
+
+    /// Verify that empty input produces empty output (no panic).
+    #[test]
+    fn compute_work_days_per_pin_empty_punches() {
+        let policy = WorkPolicy::standard_9to5();
+        let per_pin = std::collections::HashMap::new();
+
+        let work_days = AttendanceCalculator::compute_work_days_per_pin(&[], &per_pin, &policy);
+
+        assert!(work_days.is_empty());
+    }
+
+    /// Verify that the method produces anomaly-laden work days correctly.
+    /// Anomalies are detected during pairing — this test ensures they survive
+    /// the per-pin grouping.
+    #[test]
+    fn compute_work_days_per_pin_preserves_anomalies() {
+        let d = date_2026_07_10();
+        let policy = WorkPolicy::standard_9to5();
+        let per_pin = std::collections::HashMap::new();
+
+        // Duplicate check-in SHOULD produce an anomaly
+        let punches = vec![
+            punch_at("145", d, time(9, 0, 0), PunchStatus::CheckIn),
+            punch_at("145", d, time(9, 1, 0), PunchStatus::CheckIn),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &policy);
+
+        assert_eq!(work_days.len(), 1);
+        assert!(!work_days[0].anomalies.is_empty(), "duplicate check-in should produce anomaly");
     }
 }

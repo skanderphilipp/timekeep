@@ -214,6 +214,12 @@ pub(crate) async fn create_employee(
         timekeep_core::Employee::new(&body.pin, &body.name, department_name, body.external_id);
     employee.department_id = department_id;
 
+    if let Some(joined_at_secs) = body.joined_at {
+        if let Ok(ts) = jiff::Timestamp::from_second(joined_at_secs) {
+            employee.set_joined_at(ts);
+        }
+    }
+
     employees(&state)?.create_employee(&employee).await.map_err(|e| {
         if e.to_string().contains("UNIQUE") {
             AppError::duplicate(format!("PIN '{}' already exists", body.pin))
@@ -430,6 +436,11 @@ pub(crate) async fn update_employee(
     }
     if let Some(ext_id) = body.external_id {
         employee.external_id = Some(ext_id);
+    }
+    if let Some(joined_at_secs) = body.joined_at {
+        if let Ok(ts) = jiff::Timestamp::from_second(joined_at_secs) {
+            employee.set_joined_at(ts);
+        }
     }
     repo.update_employee(&employee).await?;
 

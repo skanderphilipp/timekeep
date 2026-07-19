@@ -80,6 +80,11 @@ impl FieldSelector {
     pub fn len(&self) -> usize {
         self.0.as_ref().map_or(0, |s| s.len())
     }
+
+    /// Whether this selector has no fields (wildcard, no restriction).
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 /// Convenience: parse from `Option<String>` (the shape coming off `ListParams.fields`).

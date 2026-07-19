@@ -13,12 +13,17 @@ pub(super) struct PunchRow {
     device_sn: String,
     user_pin: String,
     timestamp: String,
+    local_time: Option<String>,
+    time_offset_secs: Option<i32>,
+    timezone_name: Option<String>,
     status: i32,
     verify_mode: Option<i32>,
     work_code: Option<String>,
     raw_data: Option<String>,
     employee_name: Option<String>,
     device_label: Option<String>,
+    is_anomaly: Option<bool>,
+    anomaly_type: Option<String>,
 }
 
 impl PunchRow {
@@ -30,11 +35,19 @@ impl PunchRow {
         let timestamp = jiff::Timestamp::from_second(ts)
             .map_err(|e| Error::storage(format!("timestamp from second: {e}")))?;
 
+        let local_time = self
+            .local_time
+            .and_then(|s| s.parse::<i64>().ok())
+            .and_then(|secs| jiff::Timestamp::from_second(secs).ok());
+
         Ok(AttendancePunch {
             id: self.id,
             device_sn: self.device_sn,
             user_pin: self.user_pin,
             timestamp,
+            local_time,
+            time_offset_secs: self.time_offset_secs,
+            timezone_name: self.timezone_name,
             status: timekeep_core::PunchStatus::try_from(self.status)
                 .unwrap_or(timekeep_core::PunchStatus::CheckIn),
             verify_mode: self
@@ -45,6 +58,8 @@ impl PunchRow {
             sub_status: None,
             employee_name: self.employee_name,
             device_label: self.device_label,
+            is_anomaly: self.is_anomaly.unwrap_or(false),
+            anomaly_type: self.anomaly_type,
             raw_data: self.raw_data,
         })
     }
@@ -109,8 +124,7 @@ impl SqliteStorage {
             builder.push_bind(*verify_mode as i32);
         }
         if context.anomalies_only.unwrap_or(false) {
-            builder
-                .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+            builder.push(" AND p.is_anomaly = 1");
         }
         // Also apply generic filters (e.g., from other entities that share punch context)
         self.push_generic_filters(builder, context, "p");
@@ -267,7 +281,7 @@ impl SqliteStorage {
             "SELECT p.user_pin as value, COALESCE(e.name, u.name, p.user_pin) as label, CAST(COUNT(*) AS INTEGER) as count
              FROM attendance_punches p
              LEFT JOIN employees e ON e.pin = p.user_pin
-             LEFT JOIN users u ON u.pin = p.user_pin
+             LEFT JOIN users u ON u.pin = p.user_pin AND u.device_sn = p.device_sn
              WHERE 1=1",
         );
 
@@ -311,11 +325,12 @@ impl SqliteStorage {
 
     pub(super) async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error> {
         let row = sqlx::query_as::<_, PunchRow>(
-            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.local_time, p.time_offset_secs, p.timezone_name, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    p.is_anomaly, p.anomaly_type,
                     COALESCE(e.name, u.name) as employee_name,
                     d.label as device_label
              FROM attendance_punches p
-             LEFT JOIN users u ON u.pin = p.user_pin
+             LEFT JOIN users u ON u.pin = p.user_pin AND u.device_sn = p.device_sn
              LEFT JOIN employees e ON e.pin = p.user_pin
              LEFT JOIN devices d ON d.serial_number = p.device_sn
              WHERE p.id = ?",
@@ -333,17 +348,22 @@ impl SqliteStorage {
 
         sqlx::query(
             "INSERT OR IGNORE INTO attendance_punches
-             (id, device_sn, user_pin, timestamp, status, verify_mode, work_code, raw_data)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+             (id, device_sn, user_pin, timestamp, local_time, time_offset_secs, timezone_name, status, verify_mode, work_code, raw_data, is_anomaly, anomaly_type)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&dedup_id)
         .bind(&punch.device_sn)
         .bind(&punch.user_pin)
         .bind(punch.timestamp.as_second().to_string())
+        .bind(punch.local_time.map(|t| t.as_second().to_string()))
+        .bind(punch.time_offset_secs)
+        .bind(&punch.timezone_name)
         .bind(punch.status as i32)
         .bind(punch.verify_mode as i32)
         .bind(&punch.work_code)
         .bind(&punch.raw_data)
+        .bind(punch.is_anomaly)
+        .bind(&punch.anomaly_type)
         .execute(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("insert punch: {e}")))?;
@@ -360,17 +380,22 @@ impl SqliteStorage {
             let dedup_id = punch.generate_deduplication_id();
             let result = sqlx::query(
                 "INSERT OR IGNORE INTO attendance_punches
-                 (id, device_sn, user_pin, timestamp, status, verify_mode, work_code, raw_data)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                 (id, device_sn, user_pin, timestamp, local_time, time_offset_secs, timezone_name, status, verify_mode, work_code, raw_data, is_anomaly, anomaly_type)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             )
             .bind(&dedup_id)
             .bind(&punch.device_sn)
             .bind(&punch.user_pin)
             .bind(punch.timestamp.as_second().to_string())
+            .bind(punch.local_time.map(|t| t.as_second().to_string()))
+            .bind(punch.time_offset_secs)
+            .bind(&punch.timezone_name)
             .bind(punch.status as i32)
             .bind(punch.verify_mode as i32)
             .bind(&punch.work_code)
             .bind(&punch.raw_data)
+            .bind(punch.is_anomaly)
+            .bind(&punch.anomaly_type)
             .execute(&mut *tx)
             .await
             .map_err(|e| Error::storage(format!("batch insert punch: {e}")))?;
@@ -387,11 +412,12 @@ impl SqliteStorage {
         filter: &PunchFilter,
     ) -> Result<Vec<AttendancePunch>, Error> {
         let mut builder = QueryBuilder::<sqlx::Sqlite>::new(
-            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.status, p.verify_mode, p.work_code, p.raw_data,
+            "SELECT p.id, p.device_sn, p.user_pin, p.timestamp, p.local_time, p.time_offset_secs, p.timezone_name, p.status, p.verify_mode, p.work_code, p.raw_data,
+                    p.is_anomaly, p.anomaly_type,
                     COALESCE(e.name, u.name) as employee_name,
                     d.label as device_label
              FROM attendance_punches p
-             LEFT JOIN users u ON u.pin = p.user_pin
+             LEFT JOIN users u ON u.pin = p.user_pin AND u.device_sn = p.device_sn
              LEFT JOIN employees e ON e.pin = p.user_pin
              LEFT JOIN devices d ON d.serial_number = p.device_sn
              WHERE 1=1",
@@ -427,7 +453,16 @@ impl SqliteStorage {
             builder.push(" AND p.timestamp <= ");
             builder.push_bind(until.as_second().to_string());
         }
-        if let Some(status) = &filter.status {
+        if let Some(statuses) = &filter.statuses
+            && !statuses.is_empty()
+        {
+            builder.push(" AND p.status IN (");
+            let mut separated = builder.separated(", ");
+            for s in statuses {
+                separated.push_bind(*s as i32);
+            }
+            separated.push_unseparated(")");
+        } else if let Some(status) = &filter.status {
             builder.push(" AND p.status = ");
             builder.push_bind(*status as i32);
         }
@@ -436,8 +471,7 @@ impl SqliteStorage {
             builder.push_bind(*verify_mode as i32);
         }
         if filter.anomalies_only.unwrap_or(false) {
-            builder
-                .push(" AND EXISTS (SELECT 1 FROM attendance_anomalies a WHERE a.punch_id = p.id)");
+            builder.push(" AND p.is_anomaly = 1");
         }
         // ── Batch ID lookup (used by Tantivy search cross-reference) ──
         if let Some(ids) = &filter.ids {
@@ -506,7 +540,11 @@ impl SqliteStorage {
             " ORDER BY {sort_col} {tiebreaker_dir}, {tiebreaker_sql} {tiebreaker_dir}"
         ));
 
-        let limit = filter.params.clamped_limit();
+        let limit = if filter.unlimited {
+            filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
+        } else {
+            filter.params.clamped_limit()
+        };
         builder.push(" LIMIT ");
         builder.push_bind(limit as i64);
 
@@ -612,12 +650,17 @@ pub(crate) mod tests {
             device_sn: device_sn.to_string(),
             user_pin: pin.to_string(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode: VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         punch.id = punch.generate_deduplication_id();
@@ -1155,8 +1198,11 @@ pub(crate) mod tests {
                 ..Default::default()
             };
 
-            let filter =
-                PunchFilter { params, device_sns: Some(vec!["SN001".into()]), ..Default::default() };
+            let filter = PunchFilter {
+                params,
+                device_sns: Some(vec!["SN001".into()]),
+                ..Default::default()
+            };
             let results = storage.query_punches(&filter).await.unwrap();
 
             if results.is_empty() {
@@ -1317,5 +1363,148 @@ pub(crate) mod tests {
         let storage = crate::test_storage().await;
         let found = storage.get_punch("nonexistent-id").await.expect("should query");
         assert!(found.is_none());
+    }
+
+    // ─── Unlimited mode + statuses filter (report aggregation) ──────
+
+    /// When `unlimited = true`, the 200-row pagination clamp is bypassed.
+    /// Reports need full date-range scans for correct aggregates.
+    #[tokio::test]
+    async fn test_unlimited_flag_bypasses_200_row_clamp() {
+        let storage = crate::test_storage().await;
+
+        // Store 250 punches (more than the 200 clamp)
+        for i in 0..250 {
+            storage
+                .store_punch(&test_punch(
+                    &format!("pin{i}"),
+                    "SN001",
+                    1_752_129_600 + i as i64,
+                    PunchStatus::CheckIn,
+                ))
+                .await
+                .unwrap();
+        }
+
+        // With unlimited=true, all 250 should be returned
+        let filter = PunchFilter {
+            params: timekeep_core::ListParams { limit: 10_000, ..Default::default() },
+            unlimited: true,
+            ..Default::default()
+        };
+        let results = storage.query_punches(&filter).await.unwrap();
+        assert_eq!(
+            results.len(),
+            250,
+            "unlimited=true should return all 250 punches, not clamp to 200"
+        );
+    }
+
+    /// When `unlimited = false` (paginated list endpoint), the 200 clamp applies.
+    #[tokio::test]
+    async fn test_unlimited_flag_false_still_clamps_to_200() {
+        let storage = crate::test_storage().await;
+
+        for i in 0..250 {
+            storage
+                .store_punch(&test_punch(
+                    &format!("pin{i}"),
+                    "SN001",
+                    1_752_129_600 + i as i64,
+                    PunchStatus::CheckIn,
+                ))
+                .await
+                .unwrap();
+        }
+
+        // With unlimited=false, should clamp to 200
+        let filter = PunchFilter {
+            params: timekeep_core::ListParams { limit: 10_000, ..Default::default() },
+            unlimited: false,
+            ..Default::default()
+        };
+        let results = storage.query_punches(&filter).await.unwrap();
+        assert_eq!(results.len(), 200, "unlimited=false should clamp to 200 via clamped_limit()");
+    }
+
+    /// Multi-status filter returns punches matching any of the given statuses.
+    #[tokio::test]
+    async fn test_query_statuses_filter_matches_any() {
+        let storage = crate::test_storage().await;
+
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_129_600, PunchStatus::CheckIn))
+            .await
+            .unwrap();
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_130_000, PunchStatus::BreakOut))
+            .await
+            .unwrap();
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_130_300, PunchStatus::BreakIn))
+            .await
+            .unwrap();
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_131_000, PunchStatus::CheckOut))
+            .await
+            .unwrap();
+
+        // Filter for check_in OR break_out
+        let filter = PunchFilter {
+            statuses: Some(vec![PunchStatus::CheckIn, PunchStatus::BreakOut]),
+            ..Default::default()
+        };
+        let results = storage.query_punches(&filter).await.unwrap();
+        assert_eq!(results.len(), 2, "should return check_in + break_out punches");
+
+        let statuses: Vec<PunchStatus> = results.iter().map(|p| p.status).collect();
+        assert!(statuses.contains(&PunchStatus::CheckIn));
+        assert!(statuses.contains(&PunchStatus::BreakOut));
+        assert!(!statuses.contains(&PunchStatus::BreakIn));
+        assert!(!statuses.contains(&PunchStatus::CheckOut));
+    }
+
+    /// When `statuses` is present, it takes precedence over single `status`.
+    #[tokio::test]
+    async fn test_query_statuses_takes_precedence_over_single_status() {
+        let storage = crate::test_storage().await;
+
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_129_600, PunchStatus::CheckIn))
+            .await
+            .unwrap();
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_130_000, PunchStatus::CheckOut))
+            .await
+            .unwrap();
+
+        // Set BOTH status and statuses — statuses should win
+        let filter = PunchFilter {
+            status: Some(PunchStatus::CheckIn), // should be ignored
+            statuses: Some(vec![PunchStatus::CheckOut]),
+            ..Default::default()
+        };
+        let results = storage.query_punches(&filter).await.unwrap();
+        assert_eq!(results.len(), 1, "statuses should take precedence over status");
+        assert_eq!(results[0].status, PunchStatus::CheckOut);
+    }
+
+    /// Empty `statuses` vec is treated the same as no filter.
+    #[tokio::test]
+    async fn test_query_statuses_empty_returns_all() {
+        let storage = crate::test_storage().await;
+
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_129_600, PunchStatus::CheckIn))
+            .await
+            .unwrap();
+        storage
+            .store_punch(&test_punch("101", "SN001", 1_752_130_000, PunchStatus::CheckOut))
+            .await
+            .unwrap();
+
+        let filter = PunchFilter { statuses: Some(vec![]), ..Default::default() };
+        let results = storage.query_punches(&filter).await.unwrap();
+        assert_eq!(results.len(), 2, "empty statuses vec should not filter anything");
     }
 }

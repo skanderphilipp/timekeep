@@ -572,12 +572,17 @@ mod tests {
             device_sn: "TEST".into(),
             user_pin: pin.to_string(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode: timekeep_core::VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         punch.id = punch.generate_deduplication_id();

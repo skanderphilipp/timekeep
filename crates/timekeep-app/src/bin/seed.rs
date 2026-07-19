@@ -247,13 +247,27 @@ fn generate_day_punches(
         punches.push(make_punch(employee, device, ot_out_sec, PunchKind::OvertimeOut, verify));
     }
 
-    // ── Odd-hour / weekend punch (anomaly) ──────────────────────
+    // ── Suspicious off-hours punch (anomaly) ────────────────────
+    //
+    // A CheckIn outside 06:00–22:00 is genuinely suspicious
+    // (late-night / early-morning badge swipe). Mid-day anomaly
+    // CheckIns are excluded because they make no business sense
+    // (e.g., a "CheckIn" between OvertimeIn and OvertimeOut).
     if rng.gen_bool(anomaly_rate) {
-        let odd_time = day_start_sec + rng.gen_range(0..24 * 3600);
-        // Only add if it doesn't collide with existing times (±5 min buffer)
-        let has_collision = punches.iter().any(|p| (p.timestamp_sec - odd_time).abs() < 300);
+        // Pick a random time outside normal working hours (00:00–05:59 or 22:00–23:59)
+        let hour = if rng.gen_bool(0.5) {
+            rng.gen_range(0..6) // early morning
+        } else {
+            rng.gen_range(22..24) // late night
+        };
+        let minute = rng.gen_range(0..60);
+        let second = rng.gen_range(0..60);
+        let odd_time = day_start_sec + hour as i64 * 3600 + minute as i64 * 60 + second as i64;
+
+        // Avoid collisions with existing punches (±30 min buffer)
+        let has_collision = punches.iter().any(|p| (p.timestamp_sec - odd_time).abs() < 1800);
         if !has_collision {
-            punches.push(make_punch(employee, device, odd_time, PunchKind::CheckIn, 3)); // password verify → suspicious
+            punches.push(make_punch(employee, device, odd_time, PunchKind::CheckIn, 0)); // ZKTeco: Password=0 → suspicious
         }
     }
 
@@ -289,7 +303,15 @@ fn make_punch(
 
 fn pick_verify_mode(rng: &mut impl Rng) -> i32 {
     // Weighted: fingerprint (50%), face (25%), card (15%), password (10%)
-    let choices = [(0, 50), (1, 25), (2, 15), (3, 10)];
+    //
+    // Uses ZKTeco-standard protocol codes (must match timekeep_core::VerifyMode):
+    //   Password = 0, Fingerprint = 1, Card = 4, Face = 15
+    let choices = [
+        (1, 50),  // Fingerprint = 50%
+        (15, 25), // Face = 25%
+        (4, 15),  // Card = 15%
+        (0, 10),  // Password = 10%
+    ];
     let dist = WeightedIndex::new(choices.iter().map(|&(_, w)| w)).unwrap();
     choices[dist.sample(rng)].0
 }

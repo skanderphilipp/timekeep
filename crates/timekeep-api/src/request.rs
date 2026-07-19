@@ -304,6 +304,25 @@ pub struct ReportSummaryQuery {
     /// Unix timestamp (seconds) — end of date range (inclusive).
     /// Defaults to end of today.
     pub date_to: Option<i64>,
+
+    /// Filter by employee PINs (comma-separated, OR logic).
+    /// Example: `user_pins=1001,1002`
+    #[param(value_type = String)]
+    pub user_pins: Option<String>,
+
+    /// Filter by department UUIDs (comma-separated, OR logic).
+    /// Resolves to employee PINs via the employee repository.
+    #[param(value_type = String)]
+    pub department_ids: Option<String>,
+
+    /// Filter by device serial numbers (comma-separated, OR logic).
+    #[param(value_type = String)]
+    pub device_sns: Option<String>,
+
+    /// Filter by punch statuses (comma-separated, OR logic).
+    /// Valid: check_in, check_out, break_out, break_in, overtime_in, overtime_out.
+    #[param(value_type = String)]
+    pub statuses: Option<String>,
 }
 
 /// Query parameters for audit log listing.
@@ -580,6 +599,10 @@ pub struct CreateEmployeeRequest {
     /// External ERP reference (Odoo/SAP employee ID).
     #[serde(default)]
     pub external_id: Option<String>,
+    /// Employment start date (Unix timestamp, seconds).
+    /// When provided, attendance computation skips days before this date.
+    #[serde(default)]
+    pub joined_at: Option<i64>,
 }
 
 /// Create a new department with optional work policy.
@@ -755,6 +778,9 @@ pub struct UpdateEmployeeRequest {
     /// New external ERP reference.
     #[serde(default)]
     pub external_id: Option<String>,
+    /// Updated employment start date (Unix timestamp, seconds).
+    #[serde(default)]
+    pub joined_at: Option<i64>,
 }
 
 /// Query parameters for listing employees with optional filtering.
@@ -860,4 +886,65 @@ pub struct GenericFacetParams {
     pub department: Option<String>,
     /// Context filter: employee active status ("true" or "false").
     pub active: Option<String>,
+}
+
+// ─── Onboarding ────────────────────────────────────────────────────
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateEmployeeOnboardingRequest {
+    pub employee_name: String,
+    pub employee_pin: String,
+    #[serde(default)]
+    pub department_id: Option<String>,
+    #[serde(default)]
+    pub external_id: Option<String>,
+    #[serde(default)]
+    pub work_policy_id: Option<String>,
+    #[serde(default)]
+    pub target_device_sns: Vec<String>,
+    #[serde(default)]
+    pub biometric_types: Vec<String>,
+    #[serde(default)]
+    pub finger_index: Option<u8>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateDeviceOnboardingRequest {
+    pub host: String,
+    #[serde(default = "default_port")]
+    pub port: u16,
+    #[serde(default)]
+    pub serial_number: Option<String>,
+    #[serde(default)]
+    pub label: Option<String>,
+    #[serde(default)]
+    pub location: Option<String>,
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub comm_key: u32,
+    #[serde(default)]
+    pub timezone: Option<String>,
+    #[serde(default)]
+    pub vendor: Option<String>,
+    #[serde(default = "default_true")]
+    pub push_enabled: bool,
+}
+
+#[derive(Debug, Deserialize, IntoParams)]
+pub struct OnboardingSessionListQuery {
+    pub status: Option<String>,
+    #[serde(rename = "type")]
+    pub session_type: Option<String>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct EnrollFingerRequest {
+    #[serde(default)]
+    pub finger_index: u8,
+}
+
+#[derive(Debug, Deserialize, IntoParams)]
+pub struct MissingEnrollmentsQuery {
+    pub department_id: Option<String>,
 }

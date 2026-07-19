@@ -65,12 +65,17 @@ pub fn parse_attendance(body: &str, device_sn: &str) -> Vec<AttendancePunch> {
             device_sn: device_sn.to_string(),
             user_pin,
             timestamp,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode,
             work_code,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: Some(line.to_string()),
         };
 

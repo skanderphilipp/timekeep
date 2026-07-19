@@ -83,6 +83,16 @@ pub struct Employee {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_id: Option<String>,
 
+    /// When this person was hired / joined the organization.
+    ///
+    /// Used to validate that attendance records are not created before
+    /// the employee's start date (Frappe HRMS pattern). Attendance computation
+    /// and reporting skip days before this date.
+    /// `None` means the joining date was not provided — treated as
+    /// "always employed" for backward compatibility.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub joined_at: Option<Timestamp>,
+
     /// Whether this employee is currently active (tracked).
     pub active: bool,
 
@@ -109,10 +119,17 @@ impl Employee {
             department_id: None,
             department,
             external_id,
+            joined_at: None,
             active: true,
             created_at: now,
             updated_at: now,
         }
+    }
+
+    /// Set the employment start date.
+    pub fn set_joined_at(&mut self, joined_at: Timestamp) {
+        self.joined_at = Some(joined_at);
+        self.updated_at = Timestamp::now();
     }
 
     /// Assign or clear the department for this employee.
@@ -188,6 +205,7 @@ mod tests {
             department_id: None,
             department: None,
             external_id: None,
+            joined_at: None,
             active: true,
             created_at: Timestamp::now(),
             updated_at: Timestamp::now(),
@@ -204,6 +222,7 @@ mod tests {
             department_id: None,
             department: None,
             external_id: None,
+            joined_at: None,
             active: true,
             created_at: Timestamp::now(),
             updated_at: Timestamp::now(),

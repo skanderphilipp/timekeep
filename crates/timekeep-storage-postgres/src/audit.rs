@@ -211,6 +211,48 @@ impl PostgresStorage {
         Ok(())
     }
 
+    pub(super) async fn get_audit_event(
+        &self,
+        id: &str,
+    ) -> Result<Option<timekeep_core::AuditEvent>, Error> {
+        #[derive(sqlx::FromRow)]
+        struct Row {
+            id: String,
+            timestamp: i64,
+            actor: String,
+            action: String,
+            resource: String,
+            detail_json: Option<serde_json::Value>,
+            ip_address: Option<String>,
+            status: String,
+            error_message: Option<String>,
+        }
+
+        let row: Option<Row> = sqlx::query_as(
+            "SELECT id, timestamp, actor, action, resource, detail_json, ip_address, status, error_message
+             FROM audit_logs WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("get audit event: {e}")))?;
+
+        match row {
+            Some(r) => Ok(Some(timekeep_core::AuditEvent {
+                id: r.id,
+                timestamp: r.timestamp,
+                actor: r.actor,
+                action: r.action,
+                resource: r.resource,
+                detail: r.detail_json,
+                ip_address: r.ip_address,
+                status: r.status,
+                error_message: r.error_message,
+            })),
+            None => Ok(None),
+        }
+    }
+
     pub(super) async fn query_audit_logs(
         &self,
         filter: &timekeep_core::AuditFilter,

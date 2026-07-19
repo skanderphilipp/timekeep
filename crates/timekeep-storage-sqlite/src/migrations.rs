@@ -358,6 +358,73 @@ pub(crate) const MIGRATIONS: &[(i64, &str)] = &[
         19,
         "ALTER TABLE device_groups ADD COLUMN department_ids TEXT NOT NULL DEFAULT ''",
     ),
+    // ── v20: Onboarding sessions + audit trail ───────────────
+    (
+        20,
+        "CREATE TABLE IF NOT EXISTS onboarding_sessions (
+            id TEXT PRIMARY KEY,
+            session_type TEXT NOT NULL,
+            current_step TEXT NOT NULL,
+            step_index INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'in_progress',
+            entity_id TEXT,
+            step_data TEXT NOT NULL DEFAULT '{}',
+            error_message TEXT,
+            compensating TEXT NOT NULL DEFAULT '[]',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )",
+    ),
+    (
+        20,
+        "CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_status ON onboarding_sessions(status)",
+    ),
+    (
+        20,
+        "CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_entity ON onboarding_sessions(entity_id)",
+    ),
+    (
+        20,
+        "CREATE TABLE IF NOT EXISTS onboarding_session_logs (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL REFERENCES onboarding_sessions(id),
+            step_name TEXT NOT NULL,
+            action TEXT NOT NULL,
+            detail_json TEXT,
+            duration_ms INTEGER,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )",
+    ),
+    (
+        20,
+        "CREATE INDEX IF NOT EXISTS idx_onboarding_logs_session ON onboarding_session_logs(session_id)",
+    ),
+    // ── v21: Anomaly flags on punches (Frappe HRMS pattern) ──────
+    (
+        21,
+        "ALTER TABLE attendance_punches ADD COLUMN is_anomaly INTEGER NOT NULL DEFAULT 0",
+    ),
+    (
+        21,
+        "ALTER TABLE attendance_punches ADD COLUMN anomaly_type TEXT",
+    ),
+    // ── v22: Timezone context on punches + employee joining date ──
+    (
+        22,
+        "ALTER TABLE attendance_punches ADD COLUMN local_time TEXT",
+    ),
+    (
+        22,
+        "ALTER TABLE attendance_punches ADD COLUMN time_offset_secs INTEGER",
+    ),
+    (
+        22,
+        "ALTER TABLE attendance_punches ADD COLUMN timezone_name TEXT",
+    ),
+    (
+        22,
+        "ALTER TABLE employees ADD COLUMN joined_at TEXT",
+    ),
 ];
 
 impl SqliteStorage {

@@ -50,6 +50,37 @@ pub(crate) async fn list_api_keys(
     crate::response::build_sparse_envelope(responses, PageMeta::with_total(total), &params.fields)
 }
 
+/// Get a single API key by ID (metadata only — no raw key or hash exposed).
+///
+/// Requires: Operator+ role.
+#[utoipa::path(
+    get,
+    path = "/api/api-keys/{id}",
+    tag = "API Keys",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "API key UUID"),
+    ),
+    responses(
+        (status = 200, description = "API key metadata", body = ApiKeyResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Operator+ required"),
+        (status = 404, description = "API key not found"),
+    )
+)]
+pub(crate) async fn get_api_key(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<ApiEnvelope<ApiKeyResponse>>, AppError> {
+    let keys = state.storage.list_api_keys().await?;
+    let key = keys
+        .into_iter()
+        .find(|k| k.id == id)
+        .ok_or_else(|| AppError::not_found(format!("api key '{id}' not found")))?;
+
+    Ok(Json(ApiEnvelope::success(ApiKeyResponse::from(&key))))
+}
+
 /// Create a new API key for an integration partner.
 ///
 /// The raw key is returned ONCE in the response. It is not stored in
@@ -192,10 +223,12 @@ pub(crate) async fn export_punches(
         since: params.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: params.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status: None,
+        statuses: None,
         verify_mode: None,
         anomalies_only: None,
         ids: None,
         cursor_after: None,
+        unlimited: false,
         params: timekeep_core::ListParams {
             sort_by: Some("timestamp".into()),
             sort_order: params.sort_order.unwrap_or(timekeep_core::SortOrder::Desc),
@@ -384,6 +417,36 @@ pub(crate) async fn list_endpoints(
     };
 
     crate::response::build_sparse_envelope(responses, meta, &__fields)
+}
+
+/// Get a single integration endpoint by ID.
+///
+/// Requires: Viewer+ role.
+#[utoipa::path(
+    get,
+    path = "/api/endpoints/{id}",
+    tag = "Integration Endpoints",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Endpoint UUID"),
+    ),
+    responses(
+        (status = 200, description = "Endpoint details", body = EndpointResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Endpoint not found"),
+    )
+)]
+pub(crate) async fn get_endpoint(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<ApiEnvelope<EndpointResponse>>, AppError> {
+    let all = state.storage.list_endpoints().await?;
+    let endpoint = all
+        .into_iter()
+        .find(|e| e.id == id)
+        .ok_or_else(|| AppError::not_found(format!("endpoint '{id}' not found")))?;
+
+    Ok(Json(ApiEnvelope::success(EndpointResponse::from(&endpoint))))
 }
 
 /// Create a new integration endpoint.
@@ -674,6 +737,36 @@ pub(crate) async fn query_audit(
     };
 
     crate::response::build_sparse_envelope(items, meta, &__fields)
+}
+
+/// Get a single audit event by ID.
+///
+/// Requires: Viewer+ role.
+#[utoipa::path(
+    get,
+    path = "/api/audit/{id}",
+    tag = "Audit",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "Audit event UUID"),
+    ),
+    responses(
+        (status = 200, description = "Audit event details", body = AuditEventResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Audit event not found"),
+    )
+)]
+pub(crate) async fn get_audit_event(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<ApiEnvelope<AuditEventResponse>>, AppError> {
+    let event = state
+        .storage
+        .get_audit_event(&id)
+        .await?
+        .ok_or_else(|| AppError::not_found(format!("audit event '{id}' not found")))?;
+
+    Ok(Json(ApiEnvelope::success(AuditEventResponse::from(&event))))
 }
 
 /// Return the entity schema for audit logs.

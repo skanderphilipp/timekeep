@@ -28,6 +28,7 @@ pub(super) struct EmployeeRow {
     department: Option<String>,
     department_id: Option<String>,
     external_id: Option<String>,
+    joined_at: Option<i64>,
     active: i32,
     created_at: i64,
     updated_at: i64,
@@ -39,6 +40,7 @@ impl EmployeeRow {
             .unwrap_or_else(|_| jiff::Timestamp::now());
         let updated_at = jiff::Timestamp::from_second(self.updated_at)
             .unwrap_or_else(|_| jiff::Timestamp::now());
+        let joined_at = self.joined_at.and_then(|secs| jiff::Timestamp::from_second(secs).ok());
 
         timekeep_core::Employee {
             id: timekeep_core::EmployeeId::from(self.id),
@@ -47,6 +49,7 @@ impl EmployeeRow {
             department_id: self.department_id,
             department: self.department,
             external_id: self.external_id,
+            joined_at,
             active: self.active != 0,
             created_at,
             updated_at,
@@ -105,8 +108,8 @@ impl PostgresStorage {
         employee: &timekeep_core::Employee,
     ) -> Result<(), Error> {
         sqlx::query(
-            "INSERT INTO employees (id, pin, name, department, department_id, external_id, active, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            "INSERT INTO employees (id, pin, name, department, department_id, external_id, joined_at, active, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         )
         .bind(employee.id.to_string())
         .bind(&employee.pin)
@@ -114,6 +117,7 @@ impl PostgresStorage {
         .bind(&employee.department)
         .bind(&employee.department_id)
         .bind(&employee.external_id)
+        .bind(employee.joined_at.map(|t| t.as_second()))
         .bind(employee.active as i32)
         .bind(employee.created_at.as_second())
         .bind(employee.updated_at.as_second())
@@ -128,7 +132,7 @@ impl PostgresStorage {
         id: &timekeep_core::EmployeeId,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, joined_at, active, created_at, updated_at
              FROM employees WHERE id = $1",
         )
         .bind(id.to_string())
@@ -143,7 +147,7 @@ impl PostgresStorage {
         pin: &str,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, joined_at, active, created_at, updated_at
              FROM employees WHERE pin = $1",
         )
         .bind(pin)
@@ -158,7 +162,7 @@ impl PostgresStorage {
         external_id: &str,
     ) -> Result<Option<timekeep_core::Employee>, Error> {
         let row = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, joined_at, active, created_at, updated_at
              FROM employees WHERE external_id = $1",
         )
         .bind(external_id)
@@ -179,7 +183,7 @@ impl PostgresStorage {
         let search_pattern = timekeep_core::sanitize_search(search);
 
         let rows = sqlx::query_as::<_, EmployeeRow>(
-            "SELECT id, pin, name, department, department_id, external_id, active, created_at, updated_at
+            "SELECT id, pin, name, department, department_id, external_id, joined_at, active, created_at, updated_at
              FROM employees
              WHERE (pin LIKE $1 ESCAPE '\\' OR name LIKE $2 ESCAPE '\\')
              ORDER BY name ASC
@@ -257,6 +261,15 @@ impl PostgresStorage {
         .fetch_one(&self.pool)
         .await
         .map_err(|e| Error::storage(format!("count employees in department: {e}")))?;
+
+        Ok(count as u64)
+    }
+
+    pub(super) async fn count_active_employees(&self) -> Result<u64, Error> {
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM employees WHERE active = TRUE")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| Error::storage(format!("count active employees: {e}")))?;
 
         Ok(count as u64)
     }

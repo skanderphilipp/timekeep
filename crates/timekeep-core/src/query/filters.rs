@@ -10,6 +10,11 @@ use crate::query::cursor::Cursor;
 use crate::query::{ListParams, SortOrder};
 
 /// Filters for querying attendance punches.
+/// Maximum rows returned when `unlimited` is true.
+/// Report aggregation needs all punches in the date range; 100k is a generous
+/// safety cap to prevent OOM on multi-year queries.
+pub const REPORT_MAX_ROWS: u32 = 100_000;
+
 #[derive(Debug, Clone)]
 pub struct PunchFilter {
     /// Shared search/sort/page params.
@@ -26,6 +31,9 @@ pub struct PunchFilter {
     pub until: Option<jiff::Timestamp>,
     /// Filter by punch status (check_in, check_out, …).
     pub status: Option<PunchStatus>,
+    /// Filter by punch statuses (OR logic, supports multiple).
+    /// When both `status` and `statuses` are set, `statuses` takes precedence.
+    pub statuses: Option<Vec<PunchStatus>>,
     /// Filter by verification method (fingerprint, face, …).
     pub verify_mode: Option<VerifyMode>,
     /// When `true`, return only punches flagged as anomalous.
@@ -44,6 +52,11 @@ pub struct PunchFilter {
     ///
     /// Set by the API route handler after decoding `params.cursor`.
     pub cursor_after: Option<Cursor>,
+
+    /// When `true`, bypass the 200-row `clamped_limit` for report aggregation.
+    /// Still capped at `REPORT_MAX_ROWS` (100k) as a safety net.
+    /// Set by report/aggregation endpoints that need full date-range scans.
+    pub unlimited: bool,
 }
 
 impl Default for PunchFilter {
@@ -63,6 +76,8 @@ impl Default for PunchFilter {
             anomalies_only: None,
             ids: None,
             cursor_after: None,
+            statuses: None,
+            unlimited: false,
         }
     }
 }

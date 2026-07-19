@@ -74,6 +74,26 @@ const CMD_DELETE_USER: u16 = 18;
 #[allow(dead_code)]
 const CMD_OPLOG_RRQ: u16 = 0x22;
 const CMD_DEL_FPTEMP: u16 = 0x86; // 134 — delete single fingerprint template
+const CMD_DELETE_USERTEMP: u16 = 19;
+#[allow(dead_code)]
+const CMD_USERTEMP_RRQ: u16 = 9;
+#[allow(dead_code)]
+const CMD_ATTLOG_RRQ: u16 = 13;
+const CMD_CLEAR_OPLOG: u16 = 33;
+const CMD_CLEAR_ADMIN: u16 = 20;
+const CMD_UNLOCK: u16 = 31;
+const CMD_CLEAR_DATA: u16 = 52;
+const CMD_ENABLE_CLOCK: u16 = 57;
+const CMD_STATE_RRQ: u16 = 64;
+const CMD_VERIFY_WRQ: u16 = 79;
+const CMD_VERIFY_RRQ: u16 = 80;
+const CMD_POWEROFF: u16 = 1005;
+#[allow(dead_code)]
+const CMD_GET_PLATFORM: u16 = 1103;
+#[allow(dead_code)]
+const CMD_GET_MAC: u16 = 1104;
+#[allow(dead_code)]
+const CMD_GET_DEVICE_NAME: u16 = 1107;
 
 /// Default ticks value for comm key scramble (matches ZKTeco default).
 const DEFAULT_TICKS: u8 = 50;
@@ -945,6 +965,18 @@ impl ZkConnection {
         Ok(())
     }
 
+    /// Delete all fingerprint templates for a user.
+    ///
+    /// Payload: user_sn (2B LE) + 0x00 (1B)
+    pub async fn delete_all_user_templates(&mut self, user_sn: u16) -> Result<(), Error> {
+        let mut payload = user_sn.to_le_bytes().to_vec();
+        payload.push(0x00);
+        self.send_command(CMD_DELETE_USERTEMP, payload).await?;
+        self.send_command(CMD_REFRESH_DATA, vec![]).await?;
+        tracing::info!(user_sn, "all fingerprint templates deleted for user");
+        Ok(())
+    }
+
     /// Get attendance records since an optional timestamp.
     ///
     /// The ZKTeco data exchange protocol always returns the full attendance
@@ -1084,6 +1116,16 @@ impl ZkConnection {
         Ok(count)
     }
 
+    /// Clear operation logs from the device.
+    pub async fn clear_operation_logs(&mut self) -> Result<(), Error> {
+        self.send_command(CMD_DISABLE_DEVICE, vec![]).await?;
+        self.send_command(CMD_CLEAR_OPLOG, vec![]).await?;
+        self.send_command(CMD_REFRESH_DATA, vec![]).await?;
+        self.send_command(CMD_ENABLE_DEVICE, vec![]).await?;
+        tracing::info!("operation logs cleared from device");
+        Ok(())
+    }
+
     /// Read a device configuration option by name.
     ///
     /// Sends CMD_OPTIONS_RRQ with the option name (null-terminated).
@@ -1106,6 +1148,56 @@ impl ZkConnection {
         Ok(())
     }
 
+    /// Get the current device operational state.
+    ///
+    /// Returns the state in the `session_id` field of the ACK_OK reply.
+    pub async fn get_device_state(&self) -> Result<DeviceState, Error> {
+        let response = self.send_and_receive(CMD_STATE_RRQ, vec![]).await?;
+        if response.reply_code != CMD_ACK_OK {
+            return Err(Error::device("failed to get device state"));
+        }
+        Ok(DeviceState::from_u16(response.packet.session_id))
+    }
+
+    /// Detect the device's card/RF capability.
+    ///
+    /// Returns: 0 = no RF, 1 = RF only, 2 = RF + fingerprint
+    pub async fn get_card_function(&self) -> Result<u8, Error> {
+        let is_rf_only = self.get_string_param("~IsOnlyRFMachine").await.unwrap_or_default();
+        let rf_card_on = self.get_string_param("~RFCardOn").await.unwrap_or_default();
+        Ok(match (is_rf_only.as_str(), rf_card_on.as_str()) {
+            ("0", "0") => 0,
+            ("1", _) => 1,
+            ("0", "1") => 2,
+            _ => 0,
+        })
+    }
+
+    /// Get the OEM vendor name from the device.
+    pub async fn get_oem_vendor(&self) -> Result<String, Error> {
+        self.get_string_param("~OEMVendor").await
+    }
+
+    /// Get the device production date/time string.
+    pub async fn get_product_time(&self) -> Result<String, Error> {
+        self.get_string_param("~ProductTime").await
+    }
+
+    /// Get the device platform name.
+    pub async fn get_platform(&self) -> Result<String, Error> {
+        self.get_string_param("~Platform").await
+    }
+
+    /// Get the device MAC address.
+    pub async fn get_mac_address(&self) -> Result<String, Error> {
+        self.get_string_param("MAC").await
+    }
+
+    /// Get the device product name.
+    pub async fn get_device_name(&self) -> Result<String, Error> {
+        self.get_string_param("~DeviceName").await
+    }
+
     /// Enable the device (allow new punches).
     pub async fn enable_device(&mut self) -> Result<(), Error> {
         self.send_command(CMD_ENABLE_DEVICE, vec![]).await?;
@@ -1122,6 +1214,30 @@ impl ZkConnection {
     pub async fn restart(&mut self) -> Result<(), Error> {
         self.send_command(CMD_RESTART, vec![]).await?;
         tracing::info!(host = %self.host, "device restart command sent");
+        Ok(())
+    }
+
+    /// Power off the device. No ACK expected — the device shuts down.
+    pub async fn poweroff(&mut self) -> Result<(), Error> {
+        let _ = self.send_command(CMD_POWEROFF, vec![]).await;
+        self.stream = None;
+        tracing::info!(host = %self.host, "device poweroff command sent");
+        Ok(())
+    }
+
+    /// Disable the device for a specified duration, after which it auto-re-enables.
+    ///
+    /// The timeout is sent as a 4-byte LE u32. The device will automatically
+    /// re-enable after this many seconds.
+    pub async fn disable_device_with_timeout(&mut self, timeout_secs: u32) -> Result<(), Error> {
+        self.send_command(CMD_DISABLE_DEVICE, timeout_secs.to_le_bytes().to_vec()).await?;
+        tracing::info!(timeout_secs, "device disabled with timeout");
+        Ok(())
+    }
+
+    /// Toggle the clock dots on the device screen.
+    pub async fn toggle_clock(&mut self) -> Result<(), Error> {
+        self.send_command(CMD_ENABLE_CLOCK, vec![]).await?;
         Ok(())
     }
 
@@ -1272,6 +1388,66 @@ impl ZkConnection {
     /// Check whether real-time events have been enabled.
     pub fn is_realtime_enabled(&self) -> bool {
         self.realtime_enabled
+    }
+
+    // ─── Data Management ───────────────────────────────────────────
+
+    /// Remove admin privileges from all users (set everyone to common user).
+    pub async fn clear_admins(&mut self) -> Result<(), Error> {
+        self.send_command(CMD_CLEAR_ADMIN, vec![]).await?;
+        tracing::info!("all admin privileges cleared");
+        Ok(())
+    }
+
+    /// Selectively clear data on the device by type code.
+    ///
+    /// Type codes: 1=attendance, 2=fingerprint templates, 3=none, 4=operation logs, 5=user info.
+    pub async fn clear_data(&mut self, data_type: u8) -> Result<(), Error> {
+        self.send_command(CMD_DISABLE_DEVICE, vec![]).await?;
+        self.send_command(CMD_CLEAR_DATA, vec![data_type]).await?;
+        self.send_command(CMD_REFRESH_DATA, vec![]).await?;
+        self.send_command(CMD_ENABLE_DEVICE, vec![]).await?;
+        tracing::info!(data_type, "device data cleared by type");
+        Ok(())
+    }
+
+    /// Unlock the door relay for the specified duration in seconds.
+    pub async fn unlock_door(&mut self, delay_secs: u32) -> Result<(), Error> {
+        self.send_command(CMD_UNLOCK, delay_secs.to_le_bytes().to_vec()).await?;
+        tracing::info!(delay_secs, "door unlock command sent");
+        Ok(())
+    }
+
+    /// Get the verification style for a user.
+    ///
+    /// Payload: user_sn (2B LE). Reply: 24-byte structure with verify mode at byte 2.
+    pub async fn get_user_verify_style(&self, user_sn: u16) -> Result<VerifyStyle, Error> {
+        let payload = user_sn.to_le_bytes().to_vec();
+        let response = self.send_and_receive(CMD_VERIFY_RRQ, payload).await?;
+        if response.reply_code != CMD_ACK_OK || response.packet.data.len() < 3 {
+            return Err(Error::device("failed to get user verify style"));
+        }
+        Ok(VerifyStyle::from_u8(response.packet.data[2]))
+    }
+
+    /// Set the verification style for a user.
+    ///
+    /// Payload is 24 bytes: user_sn (2B LE) + reserved (21B zeros) + verify_style (1B).
+    /// Followed by CMD_REFRESH_DATA to apply the change.
+    pub async fn set_user_verify_style(
+        &mut self,
+        user_sn: u16,
+        style: VerifyStyle,
+    ) -> Result<(), Error> {
+        let mut payload = Vec::with_capacity(24);
+        payload.extend_from_slice(&user_sn.to_le_bytes());
+        // 21 bytes of zeros (reserved)
+        payload.resize(23, 0);
+        payload.push(style as u8);
+        self.send_command(CMD_VERIFY_WRQ, payload).await?;
+        self.send_command(CMD_REFRESH_DATA, vec![]).await?;
+        tracing::info!(user_sn, ?style, "user verify style updated");
+        Ok(())
     }
 
     // ─── Enrollment Workflow ───────────────────────────────────────
@@ -1446,6 +1622,81 @@ pub struct DeviceSizes {
     pub remaining_record: u32,
     pub face_count: u32,
     pub face_capacity: u32,
+}
+
+/// Current operational state of the device.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeviceState {
+    Waiting,
+    FpRegistration,
+    FpIdentification,
+    Menu,
+    Busy,
+    WaitingForCardWrite,
+    Unknown(u16),
+}
+
+impl DeviceState {
+    fn from_u16(v: u16) -> Self {
+        match v {
+            0 => Self::Waiting,
+            1 => Self::FpRegistration,
+            2 => Self::FpIdentification,
+            3 => Self::Menu,
+            4 => Self::Busy,
+            5 => Self::WaitingForCardWrite,
+            n => Self::Unknown(n),
+        }
+    }
+}
+
+/// User verification style (fingerprint, PIN, card, password combinations).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum VerifyStyle {
+    GroupDefault = 0x00,
+    FpPwRfOr = 0x80,
+    FpOnly = 0x81,
+    PinOnly = 0x82,
+    PwOnly = 0x83,
+    RfOnly = 0x84,
+    FpPwOr = 0x85,
+    FpRfOr = 0x86,
+    PwRfOr = 0x87,
+    PinAndFp = 0x88,
+    FpAndPw = 0x89,
+    FpAndRf = 0x8A,
+    PwAndRf = 0x8B,
+    FpPwRfAnd = 0x8C,
+    PinFpPwAnd = 0x8D,
+    FpRfAndPin = 0x8E,
+}
+
+impl VerifyStyle {
+    fn from_u8(v: u8) -> Self {
+        match v {
+            0x00 => Self::GroupDefault,
+            0x80 => Self::FpPwRfOr,
+            0x81 => Self::FpOnly,
+            0x82 => Self::PinOnly,
+            0x83 => Self::PwOnly,
+            0x84 => Self::RfOnly,
+            0x85 => Self::FpPwOr,
+            0x86 => Self::FpRfOr,
+            0x87 => Self::PwRfOr,
+            0x88 => Self::PinAndFp,
+            0x89 => Self::FpAndPw,
+            0x8A => Self::FpAndRf,
+            0x8B => Self::PwAndRf,
+            0x8C => Self::FpPwRfAnd,
+            0x8D => Self::PinFpPwAnd,
+            0x8E => Self::FpRfAndPin,
+            n => {
+                tracing::warn!(raw = n, "unknown verify style, defaulting to GroupDefault");
+                Self::GroupDefault
+            },
+        }
+    }
 }
 
 #[cfg(test)]

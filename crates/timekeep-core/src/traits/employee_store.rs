@@ -47,12 +47,12 @@ pub trait EmployeeStore: Send + Sync {
         filter: &EmployeeFilter,
     ) -> Result<ListResult<Employee>, Error> {
         let mut result = self.list_employees(&filter.params).await?;
-        if let Some(ref dept_ids) = filter.department_ids {
-            if !dept_ids.is_empty() {
-                result.items.retain(|e| {
-                    e.department_id.as_deref().is_some_and(|id| dept_ids.iter().any(|d| d == id))
-                });
-            }
+        if let Some(ref dept_ids) = filter.department_ids
+            && !dept_ids.is_empty()
+        {
+            result.items.retain(|e| {
+                e.department_id.as_deref().is_some_and(|id| dept_ids.iter().any(|d| d == id))
+            });
         }
         if let Some(active) = filter.active {
             result.items.retain(|e| e.active == active);
@@ -74,6 +74,19 @@ pub trait EmployeeStore: Send + Sync {
     /// in memory. Storage backends SHOULD override this for SQL-level counting.
     async fn count_employees_in_department(&self, _department_id: &str) -> Result<u64, Error> {
         Ok(0)
+    }
+
+    /// Count all active employees.
+    ///
+    /// Returns the total number of active employees across all departments.
+    /// Default implementation loads all employees via `list_employees` and counts
+    /// in memory. Storage backends MUST override this with `SELECT COUNT(*)`
+    /// for correctness at scale.
+    async fn count_active_employees(&self) -> Result<u64, Error> {
+        let result = self
+            .list_employees(&crate::query::ListParams { limit: 100_000, ..Default::default() })
+            .await?;
+        Ok(result.items.len() as u64)
     }
 
     // ── Device Enrollments ────────────────────────────────────────────

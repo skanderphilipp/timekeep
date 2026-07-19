@@ -118,6 +118,45 @@ pub(crate) async fn list_users(
     crate::response::build_sparse_envelope(users, meta, &__fields)
 }
 
+// ─── Get user by ID (Admin) ──────────────────────────────────────────
+
+/// `GET /api/users/{id}` — Get a single dashboard user by ID.
+///
+/// Admin-only.
+#[utoipa::path(
+    get,
+    path = "/api/users/{id}",
+    tag = "Users",
+    security(("bearer_auth" = [])),
+    params(
+        ("id" = String, Path, description = "User UUID"),
+    ),
+    responses(
+        (status = 200, description = "User found", body = DashboardUserResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — admin role required"),
+        (status = 404, description = "User not found"),
+    )
+)]
+pub(crate) async fn get_user(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<ApiEnvelope<DashboardUserResponse>>, crate::response::AppError> {
+    let all_users = state
+        .storage
+        .list_dashboard_users(&timekeep_core::ListParams { limit: 1000, ..Default::default() })
+        .await
+        .map_err(|e| crate::response::AppError::Internal(format!("failed to fetch users: {e}")))?;
+
+    let user = all_users
+        .items
+        .into_iter()
+        .find(|u| u.id == id)
+        .ok_or_else(|| crate::response::AppError::NotFound(format!("user '{id}' not found")))?;
+
+    Ok(Json(ApiEnvelope::success(DashboardUserResponse::from(&user))))
+}
+
 // ─── Create user (Admin) ─────────────────────────────────────────────
 
 /// `POST /api/users` — Create a new dashboard user.

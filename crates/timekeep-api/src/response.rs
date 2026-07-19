@@ -365,6 +365,12 @@ pub struct EmployeeReportKpi {
     pub user_pin: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub employee_name: Option<String>,
+    /// Department UUID (set when employee→department mapping is available).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub department_id: Option<String>,
+    /// Department display name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub department_name: Option<String>,
     /// Number of days present (full or half day).
     pub days_present: u32,
     /// Number of days absent (no check-in on a working day).
@@ -377,6 +383,20 @@ pub struct EmployeeReportKpi {
     pub overtime_seconds: i64,
     /// Count of anomalies in the period.
     pub anomaly_count: u32,
+}
+
+/// Echo of the filter parameters sent by the client.
+/// Allows the frontend to render active filter chips.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct AppliedFilters {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_pins: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device_sns: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub statuses: Option<Vec<String>>,
 }
 
 /// Aggregated punch summary for a date range.
@@ -415,6 +435,13 @@ pub struct ReportSummaryResponse {
 
     // Legacy — keep for backward compatibility
     pub daily_breakdown: Vec<DailyBreakdown>,
+
+    /// Echo of the applied filters (for UI filter chips).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub applied_filters: Option<AppliedFilters>,
+
+    /// Server timestamp when this report was generated (unix seconds).
+    pub generated_at: i64,
 }
 
 // Domain -> Response DTO mappings
@@ -468,6 +495,8 @@ impl From<&timekeep_core::EmployeeKpi> for EmployeeReportKpi {
         Self {
             user_pin: ek.user_pin.clone(),
             employee_name: None,
+            department_id: None,
+            department_name: None,
             days_present: ek.days_present,
             days_absent: ek.days_absent,
             days_late: ek.days_late,
@@ -612,9 +641,8 @@ pub fn build_sparse_envelope<T: serde::Serialize + utoipa::ToSchema>(
         return Ok(Json(ApiEnvelope::paginated(data, meta)).into_response());
     }
 
-    let raw = serde_json::to_value(&data).map_err(|e| {
-        AppError::Internal(format!("serialization failed: {e}"))
-    })?;
+    let raw = serde_json::to_value(&data)
+        .map_err(|e| AppError::Internal(format!("serialization failed: {e}")))?;
     let filtered = filter_json_keys(raw, &selector);
 
     let envelope = serde_json::json!({
@@ -651,7 +679,7 @@ fn filter_json_keys_inner(
                 .map(|(k, v)| (k, filter_json_keys_inner(v, selector, false)))
                 .collect();
             serde_json::Value::Object(filtered)
-        }
+        },
         serde_json::Value::Object(map) => {
             let filtered: serde_json::Map<String, serde_json::Value> = map
                 .into_iter()
@@ -659,12 +687,10 @@ fn filter_json_keys_inner(
                 .map(|(k, v)| (k, filter_json_keys_inner(v, selector, false)))
                 .collect();
             serde_json::Value::Object(filtered)
-        }
-        serde_json::Value::Array(items) => {
-            serde_json::Value::Array(
-                items.into_iter().map(|v| filter_json_keys_inner(v, selector, false)).collect(),
-            )
-        }
+        },
+        serde_json::Value::Array(items) => serde_json::Value::Array(
+            items.into_iter().map(|v| filter_json_keys_inner(v, selector, false)).collect(),
+        ),
         scalar => scalar,
     }
 }

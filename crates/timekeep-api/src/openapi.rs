@@ -80,6 +80,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
         // ── Punches (Management) ──
         crate::routes::punches::query_punches_mgmt,
+        crate::routes::punches::get_punch,
         crate::routes::punches::correct_punch,
         crate::routes::punches::punch_schema,
         crate::routes::punches::punch_filters,
@@ -108,11 +109,13 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
         // ── API Keys ──
         crate::management::list_api_keys,
+        crate::management::get_api_key,
         crate::management::create_api_key,
         crate::management::revoke_api_key,
 
         // ── Integration Endpoints ──
         crate::management::list_endpoints,
+        crate::management::get_endpoint,
         crate::management::create_endpoint,
         crate::management::update_endpoint,
         crate::management::delete_endpoint,
@@ -123,6 +126,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 
         // ── Audit ──
         crate::management::query_audit,
+        crate::management::get_audit_event,
         crate::management::audit_schema,
         crate::management::audit_filters,
 
@@ -132,6 +136,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Dashboard User Management ──
         crate::users::list_users,
         crate::users::create_user,
+        crate::users::get_user,
         crate::users::update_user,
         crate::users::delete_user,
         crate::users::change_password,

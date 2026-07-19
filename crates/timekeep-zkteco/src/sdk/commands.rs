@@ -84,6 +84,8 @@ pub enum Command {
     RegEvent = 500,
     /// Unlock door relay
     Unlock = 31,
+    /// Start identity verification
+    StartVerify = 60,
     /// Start fingerprint enrollment
     StartEnroll = 61,
     /// Cancel capture / enrollment

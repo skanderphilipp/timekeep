@@ -94,6 +94,22 @@ impl SqliteStorage {
         Ok(())
     }
 
+    pub(super) async fn get_audit_event(
+        &self,
+        id: &str,
+    ) -> Result<Option<timekeep_core::AuditEvent>, Error> {
+        let row: Option<AuditRow> = sqlx::query_as(
+            "SELECT id, timestamp, actor, action, resource, detail_json, ip_address, status, error_message
+             FROM audit_logs WHERE id = ?",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| Error::storage(format!("get audit event: {e}")))?;
+
+        row.map(|r| r.into_audit_event()).transpose()
+    }
+
     pub(super) async fn query_audit_logs(
         &self,
         filter: &timekeep_core::AuditFilter,
