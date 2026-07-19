@@ -3,8 +3,11 @@
 //! All configuration is read once at startup via `load()`.
 //! The returned `AppConfig` is immutable and shared by reference
 //! to every subsystem that needs it.
+//!
+//! CLI args (e.g., `--db`) take priority over environment variables.
 
-/// Canonical application configuration, loaded from environment variables.
+/// Canonical application configuration, loaded from environment variables
+/// with optional CLI overrides.
 ///
 /// Every field has a sensible default so the application can start
 /// in development without any env vars set.
@@ -21,13 +24,26 @@ pub(crate) struct AppConfig {
     pub adms_port: u16,
 }
 
+/// CLI overrides for configuration that can also come from env vars.
+///
+/// Every field is optional; when `None`, the env var or default is used.
+pub(crate) struct CliOverrides {
+    pub db_path: Option<String>,
+}
+
 /// Read all environment variables and return a validated `AppConfig`.
 ///
 /// Calls `validate_config` internally so callers don't need to
 /// remember to validate separately.
-pub(crate) fn load() -> AppConfig {
+///
+/// `cli` allows the binary entry-point to override config values
+/// from command-line flags (e.g., `--db dev.db`).
+pub(crate) fn load(cli: CliOverrides) -> AppConfig {
     // Determine the default search index path alongside the DB
-    let db_path = std::env::var("TIMEKEEP_DB_PATH").unwrap_or_else(|_| "timekeep.db".to_string());
+    let db_path = cli
+        .db_path
+        .or_else(|| std::env::var("TIMEKEEP_DB_PATH").ok())
+        .unwrap_or_else(|| "dev.db".to_string());
     let default_search_path = std::path::Path::new(&db_path)
         .parent()
         .unwrap_or(std::path::Path::new("."))

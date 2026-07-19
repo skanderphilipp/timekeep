@@ -13,6 +13,7 @@ pub mod device_users;
 pub mod employees;
 pub mod endpoints;
 pub mod migrations;
+pub mod onboarding;
 pub mod outbox;
 pub mod punch;
 pub mod settings;
@@ -24,7 +25,7 @@ use timekeep_core::{
     ApiKey as CoreApiKey, AuditEvent, AuditFilter, DashboardUser, DeviceEvent, DeviceEventFilter,
     DeviceGroup, EndpointFilter, Error, FacetQuery, IntegrationEndpoint, ListParams, ListResult,
     PendingDelivery, ProviderInfo, PunchFilter, SystemSettings,
-    model::{AttendancePunch, Department, Device, DeviceConfig},
+    model::{AttendancePunch, Department, Device, DeviceConfig, WorkPolicyTemplate},
     traits::Storage,
 };
 
@@ -256,6 +257,9 @@ impl Storage for SqliteStorage {
     async fn record_audit(&self, event: &AuditEvent) -> Result<(), Error> {
         self.record_audit(event).await
     }
+    async fn get_audit_event(&self, id: &str) -> Result<Option<AuditEvent>, Error> {
+        self.get_audit_event(id).await
+    }
     async fn query_audit_logs(
         &self,
         filter: &AuditFilter,
@@ -377,6 +381,32 @@ impl Storage for SqliteStorage {
     ) -> Result<(), Error> {
         self.set_device_group(device_sn, group_id).await
     }
+
+    // work_policy_templates.rs
+    async fn list_work_policy_templates(&self) -> Result<Vec<WorkPolicyTemplate>, Error> {
+        self.list_work_policy_templates().await
+    }
+    async fn get_work_policy_template(
+        &self,
+        id: &str,
+    ) -> Result<Option<WorkPolicyTemplate>, Error> {
+        self.get_work_policy_template(id).await
+    }
+    async fn get_work_policy_template_by_title(
+        &self,
+        title: &str,
+    ) -> Result<Option<WorkPolicyTemplate>, Error> {
+        self.get_work_policy_template_by_title(title).await
+    }
+    async fn create_work_policy_template(&self, tpl: &WorkPolicyTemplate) -> Result<(), Error> {
+        self.create_work_policy_template(tpl).await
+    }
+    async fn update_work_policy_template(&self, tpl: &WorkPolicyTemplate) -> Result<(), Error> {
+        self.update_work_policy_template(tpl).await
+    }
+    async fn delete_work_policy_template(&self, id: &str) -> Result<(), Error> {
+        self.delete_work_policy_template(id).await
+    }
 }
 
 // ── EmployeeStore trait implementation ────────────────────────────
@@ -418,6 +448,9 @@ impl timekeep_core::EmployeeStore for SqliteStorage {
     }
     async fn count_employees_in_department(&self, department_id: &str) -> Result<u64, Error> {
         self.count_employees_in_department(department_id).await
+    }
+    async fn count_active_employees(&self) -> Result<u64, Error> {
+        self.count_active_employees().await
     }
     async fn create_enrollment(
         &self,
@@ -503,7 +536,70 @@ impl timekeep_core::DeviceGroupStore for SqliteStorage {
     }
 }
 
-#[cfg(test)]
+// ── OnboardingSessionStore trait implementation ─────────────────────
+
+#[async_trait]
+impl timekeep_core::OnboardingSessionStore for SqliteStorage {
+    async fn create_session(
+        &self,
+        session: &timekeep_core::OnboardingSession,
+    ) -> Result<(), Error> {
+        self.create_session(session).await
+    }
+    async fn get_session(
+        &self,
+        id: &str,
+    ) -> Result<Option<timekeep_core::OnboardingSession>, Error> {
+        self.get_session(id).await
+    }
+    async fn update_session(
+        &self,
+        session: &timekeep_core::OnboardingSession,
+    ) -> Result<(), Error> {
+        self.update_session(session).await
+    }
+    async fn list_sessions(
+        &self,
+        status: Option<timekeep_core::OnboardingStatus>,
+        session_type: Option<timekeep_core::OnboardingType>,
+    ) -> Result<Vec<timekeep_core::OnboardingSession>, Error> {
+        self.list_sessions(status, session_type).await
+    }
+    async fn cancel_session(&self, id: &str) -> Result<(), Error> {
+        self.cancel_session(id).await
+    }
+    async fn list_abandoned_sessions(
+        &self,
+        older_than_secs: u64,
+    ) -> Result<Vec<timekeep_core::OnboardingSession>, Error> {
+        self.list_abandoned_sessions(older_than_secs).await
+    }
+    async fn time_out_session(&self, id: &str) -> Result<(), Error> {
+        self.time_out_session(id).await
+    }
+    async fn delete_session(&self, id: &str) -> Result<(), Error> {
+        self.delete_session(id).await
+    }
+    async fn count_sessions(
+        &self,
+        status: Option<timekeep_core::OnboardingStatus>,
+    ) -> Result<u64, Error> {
+        self.count_sessions(status).await
+    }
+    async fn record_step_log(
+        &self,
+        log: &timekeep_core::OnboardingSessionLog,
+    ) -> Result<(), Error> {
+        self.record_step_log(log).await
+    }
+    async fn get_step_logs(
+        &self,
+        session_id: &str,
+    ) -> Result<Vec<timekeep_core::OnboardingSessionLog>, Error> {
+        self.get_step_logs(session_id).await
+    }
+}
+
 pub(crate) async fn test_storage() -> SqliteStorage {
     SqliteStorage::new(":memory:").await.expect("should create in-memory storage")
 }

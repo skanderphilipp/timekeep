@@ -60,6 +60,11 @@ pub use model::{
     device_event::{DeviceEvent, DeviceEventType},
     employee::{Employee, EmployeeId},
     enrollment::{BiometricType, DeviceEnrollment, FingerprintTemplate},
+    onboarding::{
+        DeviceFingerStatus, DeviceStepData, EmployeeStepData, FingerEnrollStatus,
+        OnboardingSession, OnboardingSessionLog, OnboardingStatus, OnboardingStepAction,
+        OnboardingType, device_steps, employee_steps,
+    },
     oplog::{OperationLog, OperationType},
     pending_delivery::PendingDelivery,
     provider::{DeviceProbe, ProviderCapabilities, ProviderInfo},
@@ -81,7 +86,7 @@ pub use facet::{
 pub use query::cursor::{Cursor, CursorValue, decode_cursor, encode_cursor, encode_offset_cursor};
 pub use query::field_selector::{FieldSelector, IncludeDirective};
 pub use query::filters::{
-    DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter,
+    DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter, REPORT_MAX_ROWS,
 };
 pub use query::schema::{
     AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEPARTMENT_SCHEMA, DEVICE_SCHEMA, EMPLOYEE_SCHEMA,
@@ -93,8 +98,8 @@ pub use query::{ListParams, ListResult, SortOrder, sanitize_search};
 pub use traits::{
     ApiKeyStore, AuditLogStore, BiometricDevice, ConfigProvider, DashboardUserStore,
     DepartmentStore, DeviceConfigStore, DeviceGroupStore, DeviceInfoStore, DeviceProvider,
-    DeviceUserStore, Distributor, EmployeeStore, EndpointStore, OutboxStore, PunchStore,
-    SearchStore, SettingsStore, Storage,
+    DeviceUserStore, Distributor, EmployeeStore, EndpointStore, OnboardingSessionStore,
+    OutboxStore, PunchStore, SearchStore, SettingsStore, Storage,
 };
 
 pub use events::{DomainEvent, EventBus};

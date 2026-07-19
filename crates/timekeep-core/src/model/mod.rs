@@ -9,6 +9,7 @@ pub mod device_group;
 pub mod employee;
 pub mod enrollment;
 pub mod iam;
+pub mod onboarding;
 pub mod oplog;
 pub mod pending_delivery;
 pub mod provider;
@@ -35,6 +36,11 @@ pub use device_group::{DeviceGroup, DeviceGroupId};
 pub use employee::{Employee, EmployeeId};
 pub use enrollment::{BiometricType, DeviceEnrollment, FingerprintTemplate};
 pub use iam::{ApiKey, PermissionSet, Role};
+pub use onboarding::{
+    DeviceFingerStatus, DeviceStepData, EmployeeStepData, FingerEnrollStatus, OnboardingSession,
+    OnboardingSessionLog, OnboardingStatus, OnboardingStepAction, OnboardingType, device_steps,
+    employee_steps,
+};
 pub use oplog::{OperationLog, OperationType};
 pub use pending_delivery::{
     BACKOFF_SECONDS, DeadLetterDelivery, MAX_DELIVERY_ATTEMPTS, PendingDelivery,

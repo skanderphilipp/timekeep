@@ -16,6 +16,7 @@ pub mod device;
 pub mod device_users;
 pub mod employees;
 pub mod migrations;
+pub mod onboarding;
 pub mod outbox;
 pub mod punch;
 pub mod settings;
@@ -251,6 +252,9 @@ impl Storage for PostgresStorage {
     async fn record_audit(&self, event: &timekeep_core::AuditEvent) -> Result<(), Error> {
         self.record_audit(event).await
     }
+    async fn get_audit_event(&self, id: &str) -> Result<Option<timekeep_core::AuditEvent>, Error> {
+        self.get_audit_event(id).await
+    }
     async fn query_audit_logs(
         &self,
         filter: &timekeep_core::AuditFilter,
@@ -386,6 +390,9 @@ impl timekeep_core::EmployeeStore for PostgresStorage {
     }
     async fn count_employees_in_department(&self, department_id: &str) -> Result<u64, Error> {
         self.count_employees_in_department(department_id).await
+    }
+    async fn count_active_employees(&self) -> Result<u64, Error> {
+        self.count_active_employees().await
     }
     async fn create_enrollment(
         &self,

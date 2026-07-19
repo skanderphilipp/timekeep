@@ -21,6 +21,7 @@ use axum::{
     http::{StatusCode, Uri, header},
     response::{IntoResponse, Response},
 };
+use clap::Parser;
 use rust_embed::RustEmbed;
 use timekeep_core::BiometricDevice;
 use tokio::sync::Mutex;
@@ -74,13 +75,30 @@ async fn serve_dashboard(uri: Uri) -> impl IntoResponse {
     }
 }
 
+/// CLI arguments for the timekeep server binary.
+///
+/// All flags are optional; when omitted, environment variables
+/// or sensible defaults are used instead.
+#[derive(Parser)]
+#[command(name = "timekeep", about = "Device Data Collection & Attendance Management")]
+struct Args {
+    /// SQLite database path (e.g., `dev.db` or `sqlite://dev.db`).
+    ///
+    /// The `sqlite://` prefix is stripped automatically so both forms work.
+    /// Overrides `TIMEKEEP_DB_PATH` env var. Ignored for Postgres backends.
+    #[arg(long, value_name = "PATH")]
+    db: Option<String>,
+}
+
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+
     // OpenTelemetry must be initialised **before** the subscriber so the
     // OTLP layer can be composed into the registry.
     timekeep_engine::telemetry::init_telemetry();
 
-    if let Err(e) = try_main().await {
+    if let Err(e) = try_main(args).await {
         // Print the full error chain for operators
         tracing::error!(error = %e, "timekeep failed to start");
         eprint!("Fatal: {e}");
@@ -94,8 +112,17 @@ async fn main() {
     }
 }
 
-async fn try_main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = config::load();
+async fn try_main(args: Args) -> Result<(), Box<dyn std::error::Error>> {
+    // Normalise the --db value: strip sqlite:// or sqlite: prefix so the
+    // config layer gets a plain path (SqliteStorage::new does its own stripping).
+    let db_path_override = args.db.map(|raw| {
+        raw.strip_prefix("sqlite://")
+            .or_else(|| raw.strip_prefix("sqlite:"))
+            .unwrap_or(&raw)
+            .to_string()
+    });
+
+    let config = config::load(config::CliOverrides { db_path: db_path_override });
     let deps = wiring::wire(&config).await?;
     start_server(deps, &config).await
 }
@@ -112,6 +139,7 @@ async fn start_server(
     let wiring::AppDependencies {
         storage,
         employees,
+        onboarding,
         search,
         engine,
         provider_registry,
@@ -124,25 +152,27 @@ async fn start_server(
     } = deps;
 
     // ─── API Servers ────────────────────────────────────────────────
-    let management_router = timekeep_api::management_router(
-        event_bus.clone(),
-        storage.clone(),
-        employees.clone(),
-        search.clone(),
-        device_state.clone(),
-        provider_registry.clone(),
-        engine_health.clone(),
-    )
+    let management_router = timekeep_api::management_router(timekeep_api::RouterConfig {
+        event_bus: event_bus.clone(),
+        storage: storage.clone(),
+        employees: employees.clone(),
+        onboarding: onboarding.clone(),
+        search: search.clone(),
+        device_state: device_state.clone(),
+        provider_registry: provider_registry.clone(),
+        engine_health: engine_health.clone(),
+    })
     .fallback(serve_dashboard);
-    let integration_router = timekeep_api::integration_router(
-        event_bus.clone(),
-        storage.clone(),
-        employees.clone(),
-        search.clone(),
-        device_state.clone(),
-        provider_registry.clone(),
-        engine_health.clone(),
-    );
+    let integration_router = timekeep_api::integration_router(timekeep_api::RouterConfig {
+        event_bus: event_bus.clone(),
+        storage: storage.clone(),
+        employees: employees.clone(),
+        onboarding: onboarding.clone(),
+        search: search.clone(),
+        device_state: device_state.clone(),
+        provider_registry: provider_registry.clone(),
+        engine_health: engine_health.clone(),
+    });
 
     let mgmt_listener =
         tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.management_port)).await?;

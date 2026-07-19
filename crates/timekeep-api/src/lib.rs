@@ -92,15 +92,35 @@ fn get_prometheus()
 
 // ─── Router builders ────────────────────────────────────────────────
 
-pub fn management_router(
-    event_bus: EventBus,
-    storage: Arc<dyn Storage>,
-    employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
-    search: Option<Arc<dyn timekeep_core::SearchStore>>,
-    device_state: DeviceConnectionState,
-    provider_registry: Arc<ProviderRegistry>,
-    engine_health: EngineHealth,
-) -> Router {
+/// Bundled dependencies for building API routers.
+///
+/// All infrastructure concerns (storage, event bus, providers, health)
+/// are collected here so that `management_router` and `integration_router`
+/// accept a single struct instead of 8 individual parameters.
+pub struct RouterConfig {
+    pub event_bus: EventBus,
+    pub storage: Arc<dyn Storage>,
+    pub employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    pub onboarding: Option<Arc<dyn timekeep_core::OnboardingSessionStore>>,
+    pub search: Option<Arc<dyn timekeep_core::SearchStore>>,
+    pub device_state: DeviceConnectionState,
+    pub provider_registry: Arc<ProviderRegistry>,
+    pub engine_health: EngineHealth,
+}
+
+pub fn management_router(config: RouterConfig) -> Router {
+    let RouterConfig {
+        event_bus,
+        storage,
+        employees,
+        onboarding,
+        search,
+        device_state,
+        provider_registry,
+        engine_health,
+        // Secrets are read from env inside the router (12-factor app)
+    } = config;
+
     let jwt_secret =
         std::env::var("TIMEKEEP_JWT_SECRET").unwrap_or_else(|_| "dev-secret-change-me".into());
     let admin_user = std::env::var("TIMEKEEP_ADMIN_USER").unwrap_or_else(|_| "admin".into());
@@ -117,6 +137,7 @@ pub fn management_router(
         event_bus,
         storage,
         employees,
+        onboarding,
         search,
         jwt_secret: jwt_secret.clone(),
         admin_user: admin_user.clone(),
@@ -152,9 +173,12 @@ pub fn management_router(
         .route("/api/auth/me", get(users::whoami))
         .route("/api/dashboard/today", get(routes::dashboard::today_summary))
         .route("/api/reports/summary", get(routes::dashboard::report_summary))
-        .route("/api/punches", get(routes::punches::query_punches_mgmt))
+        .route("/api/reports/monthly-trend", get(routes::dashboard::monthly_trend))
+        .route("/api/reports/by-department", get(routes::dashboard::department_attendance))
+        .route("/api/reports/anomalies", get(routes::dashboard::list_anomalies))
         .route("/api/punches/schema", get(routes::punches::punch_schema))
         .route("/api/punches/filters", get(routes::punches::punch_filters))
+        .route("/api/punches", get(routes::punches::query_punches_mgmt))
         .route("/api/punches/{id}", get(routes::punches::get_punch))
         .route("/api/devices/schema", get(routes::devices::device_schema))
         .route("/api/devices/filters", get(routes::devices::device_filters))
@@ -162,6 +186,7 @@ pub fn management_router(
         .route("/api/endpoints", get(management::list_endpoints))
         .route("/api/settings", get(management::get_settings))
         .route("/api/audit", get(management::query_audit))
+        .route("/api/audit/{id}", get(management::get_audit_event))
         .route("/api/audit/schema", get(management::audit_schema))
         .route("/api/audit/filters", get(management::audit_filters))
         .route("/api/users/{id}/password", put(users::change_password))
@@ -189,7 +214,9 @@ pub fn management_router(
         .route("/api/device-groups/{id}", get(routes::device_groups::get_group))
         .route("/api/device-groups/{id}/devices", get(routes::device_groups::list_devices_in_group))
         // Enhanced dashboard quick stats
-        .route("/api/dashboard/quick-stats", get(employees::dashboard_quick_stats));
+        .route("/api/dashboard/quick-stats", get(employees::dashboard_quick_stats))
+        // Onboarding session events (SSE stream — viewer can watch progress)
+        .route("/api/onboarding/{id}/events", get(routes::onboarding::session_events));
 
     // Operator: write punches, manage users, view API keys
     let operator_routes = Router::new()
@@ -201,6 +228,8 @@ pub fn management_router(
             delete(routes::device_users::delete_user_from_device),
         )
         .route("/api/devices/{sn}/commands", post(routes::device_users::enqueue_device_command))
+        // Live device users (synced fallback until SDK live query is available)
+        .route("/api/devices/{sn}/live-users", get(routes::onboarding::get_live_users))
         // Operator can list API keys (read-only view of integration partners)
         .route("/api/api-keys", get(management::list_api_keys))
         .layer(axum_mw::from_fn(auth::require_operator));
@@ -217,17 +246,25 @@ pub fn management_router(
             put(routes::devices::update_device).delete(routes::devices::remove_device),
         )
         .route("/api/api-keys", post(management::create_api_key))
-        .route("/api/api-keys/{id}", delete(management::revoke_api_key))
+        .route(
+            "/api/api-keys/{id}",
+            get(management::get_api_key).delete(management::revoke_api_key),
+        )
         .route("/api/exports/punches", get(management::export_punches))
         .route("/api/endpoints", post(management::create_endpoint))
         .route(
             "/api/endpoints/{id}",
-            put(management::update_endpoint).delete(management::delete_endpoint),
+            get(management::get_endpoint)
+                .put(management::update_endpoint)
+                .delete(management::delete_endpoint),
         )
         .route("/api/settings", put(management::update_settings))
         // Dashboard user management
         .route("/api/users", get(users::list_users).post(users::create_user))
-        .route("/api/users/{id}", put(users::update_user).delete(users::delete_user))
+        .route(
+            "/api/users/{id}",
+            get(users::get_user).put(users::update_user).delete(users::delete_user),
+        )
         // Employee management
         .route("/api/employees", post(employees::create_employee))
         .route(
@@ -255,9 +292,27 @@ pub fn management_router(
             put(routes::device_groups::update_group).delete(routes::device_groups::delete_group),
         )
         .route("/api/devices/{sn}/group", put(routes::device_groups::set_device_group))
+        // Onboarding wizard (admin only — guides new customers through setup)
+        .route("/api/onboarding/employee", post(routes::onboarding::create_employee_onboarding))
+        .route("/api/onboarding/device", post(routes::onboarding::create_device_onboarding))
+        .route("/api/onboarding/{id}", get(routes::onboarding::get_session))
+        .route("/api/onboarding/{id}/advance", post(routes::onboarding::advance_session))
+        .route("/api/onboarding/{id}/cancel", post(routes::onboarding::cancel_session))
+        .route("/api/onboarding/{id}/retry", post(routes::onboarding::retry_session))
+        .route("/api/onboarding", get(routes::onboarding::list_sessions))
         // Device enrollment
         .route("/api/devices/{sn}/enrollments", post(employees::enroll_employee))
         .route("/api/devices/{sn}/enrollments", get(employees::list_device_enrollments))
+        // Fingerprint enrollment during onboarding wizard
+        .route(
+            "/api/devices/{sn}/users/{pin}/enroll-finger",
+            post(routes::onboarding::enroll_finger),
+        )
+        // Enrollment SSE progress stream
+        .route(
+            "/api/devices/{sn}/enrollment-events",
+            get(routes::onboarding::enrollment_events),
+        )
         // Device user sync operations
         .route("/api/devices/{sn}/sync-clock", post(routes::device_users::sync_device_clock))
         .route("/api/devices/{sn}/restart", post(routes::device_users::restart_device))
@@ -313,15 +368,23 @@ pub fn management_router(
         .with_state(state)
 }
 
-pub fn integration_router(
-    event_bus: EventBus,
-    storage: Arc<dyn Storage>,
-    employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
-    _search: Option<Arc<dyn timekeep_core::SearchStore>>,
-    device_state: DeviceConnectionState,
-    provider_registry: Arc<ProviderRegistry>,
-    engine_health: EngineHealth,
-) -> Router {
+///
+/// TODO(ENTERPRISE): Replace 8-param signature with a RouterConfig struct (same as management_router).
+/// Phase: API stabilisation (pre-v1.0).
+/// Impact: Adding new dependencies requires signature changes in 3+ call sites.
+#[allow(clippy::too_many_arguments)]
+pub fn integration_router(config: RouterConfig) -> Router {
+    let RouterConfig {
+        event_bus,
+        storage,
+        employees,
+        onboarding,
+        search: _search,
+        device_state,
+        provider_registry,
+        engine_health,
+    } = config;
+
     let api_key = std::env::var("TIMEKEEP_API_KEY").unwrap_or_default();
     let (prometheus_layer, metric_handle) = get_prometheus();
 
@@ -329,6 +392,7 @@ pub fn integration_router(
         event_bus,
         storage,
         employees,
+        onboarding,
         search: None,
         jwt_secret: String::new(),
         admin_user: String::new(),
@@ -600,6 +664,7 @@ mod tests {
             event_bus: EventBus::default(),
             storage: Arc::new(FakeStorage::new()),
             employees: None,
+            onboarding: None,
             search: None,
             jwt_secret: "test-jwt".into(),
             admin_user: "admin".into(),
@@ -863,15 +928,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_integration_api_key_blocks() {
-        let app = integration_router(
-            EventBus::default(),
-            Arc::new(FakeStorage::new()),
-            None,
-            None,
-            DeviceConnectionState::default(),
-            Arc::new(timekeep_core::ProviderRegistry::new()),
-            EngineHealth::default(),
-        );
+        let app = integration_router(RouterConfig {
+            event_bus: EventBus::default(),
+            storage: Arc::new(FakeStorage::new()),
+            employees: None,
+            onboarding: None,
+            search: None,
+            device_state: DeviceConnectionState::default(),
+            provider_registry: Arc::new(timekeep_core::ProviderRegistry::new()),
+            engine_health: EngineHealth::default(),
+        });
 
         let req =
             axum::http::Request::get("/api/v1/punches").body(axum::body::Body::empty()).unwrap();
@@ -901,6 +967,7 @@ mod tests {
             event_bus: EventBus::default(),
             storage: storage.clone(),
             employees: None,
+            onboarding: None,
             search: None,
             jwt_secret: String::new(),
             admin_user: String::new(),
@@ -1018,6 +1085,9 @@ mod tests {
             // Dashboard
             .route("/api/dashboard/today", get(routes::dashboard::today_summary))
             .route("/api/reports/summary", get(routes::dashboard::report_summary))
+            .route("/api/reports/monthly-trend", get(routes::dashboard::monthly_trend))
+            .route("/api/reports/by-department", get(routes::dashboard::department_attendance))
+            .route("/api/reports/anomalies", get(routes::dashboard::list_anomalies))
             .route("/api/punches", get(routes::punches::query_punches_mgmt))
             .route("/api/punches/correct", post(routes::punches::correct_punch))
             .layer(axum_mw::from_fn_with_state(state.clone(), auth::require_jwt));
@@ -1231,6 +1301,9 @@ mod tests {
                 .filter(|e| e.department_id.as_deref() == Some(department_id) && e.active)
                 .count() as u64)
         }
+        async fn count_active_employees(&self) -> Result<u64, timekeep_core::Error> {
+            Ok(self.employees.lock().unwrap().iter().filter(|e| e.active).count() as u64)
+        }
         async fn create_enrollment(
             &self,
             _enrollment: &timekeep_core::DeviceEnrollment,
@@ -1275,6 +1348,7 @@ mod tests {
             event_bus: EventBus::default(),
             storage: storage as Arc<dyn Storage>,
             employees: Some(employees as Arc<dyn timekeep_core::EmployeeStore>),
+            onboarding: None,
             search: None,
             jwt_secret: "test-jwt".into(),
             admin_user: "admin".into(),
@@ -1291,6 +1365,9 @@ mod tests {
         let protected = Router::new()
             .route("/api/dashboard/today", get(routes::dashboard::today_summary))
             .route("/api/reports/summary", get(routes::dashboard::report_summary))
+            .route("/api/reports/monthly-trend", get(routes::dashboard::monthly_trend))
+            .route("/api/reports/by-department", get(routes::dashboard::department_attendance))
+            .route("/api/reports/anomalies", get(routes::dashboard::list_anomalies))
             .route("/api/punches", get(routes::punches::query_punches_mgmt))
             .route("/api/punches/correct", post(routes::punches::correct_punch))
             .route(
@@ -1321,12 +1398,17 @@ mod tests {
             device_sn: device_sn.into(),
             user_pin: pin.into(),
             timestamp: ts,
+            local_time: None,
+            time_offset_secs: None,
+            timezone_name: None,
             status,
             verify_mode: timekeep_core::VerifyMode::Fingerprint,
             work_code: None,
             sub_status: None,
             employee_name: None,
             device_label: None,
+            is_anomaly: false,
+            anomaly_type: None,
             raw_data: None,
         };
         p.id = p.generate_deduplication_id();
@@ -2202,5 +2284,491 @@ mod tests {
         assert!(device.get("host").is_some());
         assert!(device.get("port").is_none(), "port should be absent");
         assert!(device.get("vendor").is_none(), "vendor should be absent");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Onboarding Wizard API Tests
+    // ═══════════════════════════════════════════════════════════════
+
+    /// Fake onboarding store backed by in-memory HashMap.
+    struct FakeOnboardingStore {
+        sessions: StdMutex<std::collections::HashMap<String, timekeep_core::OnboardingSession>>,
+        logs: StdMutex<std::collections::HashMap<String, Vec<timekeep_core::OnboardingSessionLog>>>,
+    }
+
+    impl FakeOnboardingStore {
+        fn new() -> Self {
+            Self {
+                sessions: StdMutex::new(std::collections::HashMap::new()),
+                logs: StdMutex::new(std::collections::HashMap::new()),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl timekeep_core::OnboardingSessionStore for FakeOnboardingStore {
+        async fn create_session(
+            &self,
+            session: &timekeep_core::OnboardingSession,
+        ) -> Result<(), timekeep_core::Error> {
+            self.sessions.lock().unwrap().insert(session.id.clone(), session.clone());
+            Ok(())
+        }
+
+        async fn get_session(
+            &self,
+            id: &str,
+        ) -> Result<Option<timekeep_core::OnboardingSession>, timekeep_core::Error> {
+            Ok(self.sessions.lock().unwrap().get(id).cloned())
+        }
+
+        async fn update_session(
+            &self,
+            session: &timekeep_core::OnboardingSession,
+        ) -> Result<(), timekeep_core::Error> {
+            self.sessions.lock().unwrap().insert(session.id.clone(), session.clone());
+            Ok(())
+        }
+
+        async fn list_sessions(
+            &self,
+            status: Option<timekeep_core::OnboardingStatus>,
+            session_type: Option<timekeep_core::OnboardingType>,
+        ) -> Result<Vec<timekeep_core::OnboardingSession>, timekeep_core::Error> {
+            let sessions = self.sessions.lock().unwrap();
+            let mut result: Vec<_> = sessions
+                .values()
+                .filter(|s| {
+                    status.as_ref().map_or(true, |st| s.status == *st)
+                        && session_type.as_ref().map_or(true, |t| s.session_type == *t)
+                })
+                .cloned()
+                .collect();
+            result.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+            Ok(result)
+        }
+
+        async fn cancel_session(&self, id: &str) -> Result<(), timekeep_core::Error> {
+            if let Some(s) = self.sessions.lock().unwrap().get_mut(id) {
+                s.status = timekeep_core::OnboardingStatus::Cancelled;
+                s.updated_at = jiff::Timestamp::now();
+            }
+            Ok(())
+        }
+
+        async fn list_abandoned_sessions(
+            &self,
+            _older_than_secs: u64,
+        ) -> Result<Vec<timekeep_core::OnboardingSession>, timekeep_core::Error> {
+            Ok(vec![])
+        }
+
+        async fn time_out_session(&self, id: &str) -> Result<(), timekeep_core::Error> {
+            if let Some(s) = self.sessions.lock().unwrap().get_mut(id) {
+                s.status = timekeep_core::OnboardingStatus::TimedOut;
+                s.updated_at = jiff::Timestamp::now();
+            }
+            Ok(())
+        }
+
+        async fn delete_session(&self, id: &str) -> Result<(), timekeep_core::Error> {
+            self.sessions.lock().unwrap().remove(id);
+            self.logs.lock().unwrap().remove(id);
+            Ok(())
+        }
+
+        async fn count_sessions(
+            &self,
+            status: Option<timekeep_core::OnboardingStatus>,
+        ) -> Result<u64, timekeep_core::Error> {
+            let sessions = self.sessions.lock().unwrap();
+            let count = sessions
+                .values()
+                .filter(|s| status.as_ref().map_or(true, |st| s.status == *st))
+                .count();
+            Ok(count as u64)
+        }
+
+        async fn record_step_log(
+            &self,
+            log: &timekeep_core::OnboardingSessionLog,
+        ) -> Result<(), timekeep_core::Error> {
+            self.logs.lock().unwrap().entry(log.session_id.clone()).or_default().push(log.clone());
+            Ok(())
+        }
+
+        async fn get_step_logs(
+            &self,
+            session_id: &str,
+        ) -> Result<Vec<timekeep_core::OnboardingSessionLog>, timekeep_core::Error> {
+            Ok(self.logs.lock().unwrap().get(session_id).cloned().unwrap_or_default())
+        }
+    }
+
+    /// Create a test AppState with the fake onboarding store.
+    fn onboarding_test_state(onboarding: Arc<FakeOnboardingStore>) -> AppState {
+        let mut state = test_state();
+        state.onboarding = Some(onboarding as Arc<dyn timekeep_core::OnboardingSessionStore>);
+        state
+    }
+
+    /// Create a test router for onboarding endpoints (no auth required).
+    fn onboarding_test_router(state: AppState) -> Router {
+        let (pl, _mh) = get_prometheus();
+        Router::new()
+            .route("/api/onboarding/employee", post(routes::onboarding::create_employee_onboarding))
+            .route("/api/onboarding/device", post(routes::onboarding::create_device_onboarding))
+            .route("/api/onboarding/{id}", get(routes::onboarding::get_session))
+            .route("/api/onboarding/{id}/advance", post(routes::onboarding::advance_session))
+            .route("/api/onboarding/{id}/cancel", post(routes::onboarding::cancel_session))
+            .route("/api/onboarding/{id}/retry", post(routes::onboarding::retry_session))
+            .route("/api/onboarding", get(routes::onboarding::list_sessions))
+            .layer(pl)
+            .with_state(state)
+    }
+
+    // ── Create session tests ────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_create_employee_onboarding_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        let req = axum::http::Request::post("/api/onboarding/employee")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "employee_name": "Test Employee",
+                    "employee_pin": "1001",
+                    "department_id": "dept-1",
+                    "target_device_sns": ["DEV001"],
+                    "biometric_types": ["fingerprint"],
+                    "finger_index": 1
+                })
+                .to_string(),
+            ))
+            .unwrap();
+
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 201);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let data = &v["data"];
+        assert_eq!(data["session_type"], "employee");
+        assert_eq!(data["status"], "in_progress");
+        assert_eq!(data["current_step"], "created");
+        assert_eq!(data["total_steps"], 6);
+        assert!(data["session_id"].as_str().is_some());
+    }
+
+    #[tokio::test]
+    async fn test_create_device_onboarding_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        let req = axum::http::Request::post("/api/onboarding/device")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "host": "192.168.1.100",
+                    "port": 4370,
+                    "serial_number": "DEV001",
+                    "label": "Test Device",
+                    "vendor": "zkteco"
+                })
+                .to_string(),
+            ))
+            .unwrap();
+
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 201);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["session_type"], "device");
+        assert_eq!(v["data"]["total_steps"], 7);
+    }
+
+    // ── Get session test ────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_get_onboarding_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // First create a session
+        let req = axum::http::Request::post("/api/onboarding/employee")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "employee_name": "Test",
+                    "employee_pin": "1001",
+                    "target_device_sns": ["DEV001"],
+                    "biometric_types": ["fingerprint"],
+                    "finger_index": 1
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let session_id = v["data"]["session_id"].as_str().unwrap().to_string();
+
+        // Now get it
+        let req = axum::http::Request::get(format!("/api/onboarding/{session_id}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["session_id"], session_id);
+        assert!(v["data"]["steps"].as_array().is_some());
+    }
+
+    #[tokio::test]
+    async fn test_get_nonexistent_session_returns_404() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store);
+        let router = onboarding_test_router(state);
+
+        let req = axum::http::Request::get("/api/onboarding/nonexistent-id")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 404);
+    }
+
+    // ── Cancel session test ─────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_cancel_onboarding_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // Create a session
+        let req = axum::http::Request::post("/api/onboarding/employee")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "employee_name": "Test",
+                    "employee_pin": "1001",
+                    "target_device_sns": ["DEV001"],
+                    "biometric_types": ["fingerprint"],
+                    "finger_index": 1
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let session_id = v["data"]["session_id"].as_str().unwrap().to_string();
+
+        // Cancel it
+        let req = axum::http::Request::post(format!("/api/onboarding/{session_id}/cancel"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+
+        // Verify state
+        let req = axum::http::Request::get(format!("/api/onboarding/{session_id}"))
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["status"], "cancelled");
+    }
+
+    #[tokio::test]
+    async fn test_cannot_cancel_terminal_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // Create a session and mark it completed
+        let session = timekeep_core::OnboardingSession::new(
+            "sess-completed".into(),
+            timekeep_core::OnboardingType::Employee,
+            None,
+            serde_json::json!({}),
+        );
+        store.create_session(&session).await.unwrap();
+        // Manually set completed
+        let mut s = store.get_session("sess-completed").await.unwrap().unwrap();
+        s.status = timekeep_core::OnboardingStatus::Completed;
+        store.update_session(&s).await.unwrap();
+
+        let req = axum::http::Request::post("/api/onboarding/sess-completed/cancel")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 400); // Bad request — can't cancel completed
+    }
+
+    // ── List sessions test ──────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_list_onboarding_sessions() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // Create two sessions
+        for i in 0..2 {
+            let req = axum::http::Request::post("/api/onboarding/employee")
+                .header("Content-Type", "application/json")
+                .body(axum::body::Body::from(
+                    serde_json::json!({
+                        "employee_name": format!("Employee {i}"),
+                        "employee_pin": format!("100{i}"),
+                        "target_device_sns": ["DEV001"],
+                        "biometric_types": ["fingerprint"],
+                        "finger_index": 1
+                    })
+                    .to_string(),
+                ))
+                .unwrap();
+            let _ = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+        }
+
+        let req =
+            axum::http::Request::get("/api/onboarding").body(axum::body::Body::empty()).unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let data = v["data"].as_array().unwrap();
+        assert_eq!(data.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_list_sessions_with_status_filter() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // Create one session
+        let req = axum::http::Request::post("/api/onboarding/employee")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "employee_name": "Test",
+                    "employee_pin": "1001",
+                    "target_device_sns": ["DEV001"],
+                    "biometric_types": ["fingerprint"],
+                    "finger_index": 1
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let _ = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+
+        // Filter by completed — should be empty
+        let req = axum::http::Request::get("/api/onboarding?status=completed")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let data = v["data"].as_array().unwrap();
+        assert_eq!(data.len(), 0);
+    }
+
+    // ── Retry test ──────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_retry_failed_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        // Create a failed session
+        let session = timekeep_core::OnboardingSession::new(
+            "sess-failed".into(),
+            timekeep_core::OnboardingType::Employee,
+            None,
+            serde_json::json!({}),
+        );
+        store.create_session(&session).await.unwrap();
+        let mut s = store.get_session("sess-failed").await.unwrap().unwrap();
+        s.status = timekeep_core::OnboardingStatus::Failed;
+        s.error_message = Some("Test error".into());
+        store.update_session(&s).await.unwrap();
+
+        let req = axum::http::Request::post("/api/onboarding/sess-failed/retry")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router.clone(), req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+
+        // Verify reset
+        let req = axum::http::Request::get("/api/onboarding/sess-failed")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["status"], "in_progress");
+        assert!(v["data"]["error_message"].is_null());
+    }
+
+    #[tokio::test]
+    async fn test_cannot_retry_in_progress_session() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store.clone());
+        let router = onboarding_test_router(state);
+
+        let session = timekeep_core::OnboardingSession::new(
+            "sess-active".into(),
+            timekeep_core::OnboardingType::Employee,
+            None,
+            serde_json::json!({}),
+        );
+        store.create_session(&session).await.unwrap();
+
+        let req = axum::http::Request::post("/api/onboarding/sess-active/retry")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 400);
+    }
+
+    // ── Enroll finger test ──────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_enroll_finger_endpoint() {
+        let store = Arc::new(FakeOnboardingStore::new());
+        let state = onboarding_test_state(store);
+        let (pl, _mh) = get_prometheus();
+        let router = Router::new()
+            .route(
+                "/api/devices/{sn}/users/{pin}/enroll-finger",
+                post(routes::onboarding::enroll_finger),
+            )
+            .layer(pl)
+            .with_state(state);
+
+        let req = axum::http::Request::post("/api/devices/DEV001/users/1001/enroll-finger")
+            .header("Content-Type", "application/json")
+            .body(axum::body::Body::from(serde_json::json!({"finger_index": 1}).to_string()))
+            .unwrap();
+
+        let resp = tower::ServiceExt::oneshot(router, req).await.unwrap();
+        assert_eq!(resp.status(), 200);
+
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["status"], "enrollment_triggered");
     }
 }

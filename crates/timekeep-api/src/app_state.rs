@@ -76,6 +76,7 @@ pub struct AppState {
     pub event_bus: EventBus,
     pub storage: Arc<dyn Storage>,
     pub employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    pub onboarding: Option<Arc<dyn timekeep_core::OnboardingSessionStore>>,
     pub search: Option<Arc<dyn timekeep_core::SearchStore>>,
     pub jwt_secret: String,
     pub admin_user: String,

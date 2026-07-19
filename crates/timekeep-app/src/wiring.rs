@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use timekeep::enrollment;
 use timekeep::fingerprint_transfer;
 use timekeep::outbox_worker;
 use timekeep::sync::sync_users_to_storage;
@@ -33,6 +34,7 @@ use crate::config::AppConfig;
 pub(crate) struct AppDependencies {
     pub storage: Arc<dyn Storage>,
     pub employees: Option<Arc<dyn timekeep_core::EmployeeStore>>,
+    pub onboarding: Option<Arc<dyn timekeep_core::OnboardingSessionStore>>,
     pub search: Option<Arc<dyn timekeep_core::SearchStore>>,
     pub engine: Engine,
     pub provider_registry: Arc<timekeep_core::ProviderRegistry>,
@@ -60,6 +62,7 @@ pub(crate) async fn wire(
 
     let storage: Arc<dyn Storage>;
     let employees: Option<Arc<dyn timekeep_core::EmployeeStore>>;
+    let onboarding: Option<Arc<dyn timekeep_core::OnboardingSessionStore>>;
 
     match db_backend.as_str() {
         "postgres" => {
@@ -67,14 +70,16 @@ pub(crate) async fn wire(
             tracing::info!("using PostgreSQL storage backend");
             let pg = Arc::new(timekeep_storage_postgres::PostgresStorage::new(db_url).await?);
             storage = pg.clone() as Arc<dyn Storage>;
-            employees = Some(pg as Arc<dyn timekeep_core::EmployeeStore>);
+            employees = Some(pg.clone() as Arc<dyn timekeep_core::EmployeeStore>);
+            onboarding = Some(pg as Arc<dyn timekeep_core::OnboardingSessionStore>);
         },
         _ => {
             let db_path = &config.db_path;
             tracing::info!(path = %db_path, "using SQLite storage backend (WAL mode)");
             let sqlite = Arc::new(timekeep_storage_sqlite::SqliteStorage::new(db_path).await?);
             storage = sqlite.clone() as Arc<dyn Storage>;
-            employees = Some(sqlite as Arc<dyn timekeep_core::EmployeeStore>);
+            employees = Some(sqlite.clone() as Arc<dyn timekeep_core::EmployeeStore>);
+            onboarding = Some(sqlite as Arc<dyn timekeep_core::OnboardingSessionStore>);
         },
     };
 
@@ -319,12 +324,17 @@ pub(crate) async fn wire(
                                             device_sn: sn.clone(),
                                             user_pin,
                                             timestamp,
+                                            local_time: None,
+                                            time_offset_secs: None,
+                                            timezone_name: None,
                                             status: timekeep_core::PunchStatus::CheckIn,
                                             verify_mode,
                                             work_code: None,
                                             sub_status: None,
                                             employee_name: None,
                                             device_label: None,
+                                            is_anomaly: false,
+                                            anomaly_type: None,
                                             raw_data: None,
                                         };
                                         punch.id = punch.generate_deduplication_id();
@@ -1098,6 +1108,18 @@ pub(crate) async fn wire(
                     )
                     .await;
                 },
+                // ── Fingerprint Enrollment ──
+                DomainEvent::FingerprintEnrollRequested { device_sn, user_pin, finger_index } => {
+                    enrollment::handle_enroll_request(
+                        device_sn.clone(),
+                        user_pin.clone(),
+                        *finger_index,
+                        registry.clone(),
+                        emp_repo.clone(),
+                        handler_event_bus.clone(),
+                    )
+                    .await;
+                },
                 _ => {},
             }
         }
@@ -1201,6 +1223,7 @@ pub(crate) async fn wire(
     Ok(AppDependencies {
         storage,
         employees,
+        onboarding,
         search,
         engine,
         provider_registry,

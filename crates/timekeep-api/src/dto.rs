@@ -656,8 +656,8 @@ impl From<&AttendancePunch> for PunchResponse {
             device_label: p.device_label.clone(),
             work_code: p.work_code.clone(),
             employee_name: p.employee_name.clone(),
-            is_anomaly: false,
-            anomaly_type: None,
+            is_anomaly: p.is_anomaly,
+            anomaly_type: p.anomaly_type.clone(),
         }
     }
 }
@@ -1147,6 +1147,10 @@ pub struct EmployeeResponse {
     pub department: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_id: Option<String>,
+    /// Employment start date (Unix timestamp, seconds).
+    /// `None` means the joining date was not provided.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub joined_at: Option<i64>,
     pub active: bool,
     pub created_at: i64,
     pub updated_at: i64,
@@ -1161,6 +1165,7 @@ impl From<&timekeep_core::Employee> for EmployeeResponse {
             department_id: e.department_id.clone(),
             department: e.department.clone(),
             external_id: e.external_id.clone(),
+            joined_at: e.joined_at.map(|t| t.as_second()),
             active: e.active,
             created_at: e.created_at.as_second(),
             updated_at: e.updated_at.as_second(),
@@ -1430,4 +1435,161 @@ impl DeviceActivityEntry {
             _ => format!("{action}: {resource}"),
         }
     }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Onboarding Wizard Response DTOs
+// ═══════════════════════════════════════════════════════════════
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OnboardingSessionCreatedResponse {
+    pub session_id: String,
+    pub session_type: String,
+    pub current_step: String,
+    pub step_index: usize,
+    pub total_steps: usize,
+    pub status: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OnboardingSessionResponse {
+    pub session_id: String,
+    pub session_type: String,
+    pub current_step: String,
+    pub step_index: usize,
+    pub total_steps: usize,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub step_data: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<Vec<OnboardingStepLogResponse>>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OnboardingStepLogResponse {
+    pub step_name: String,
+    pub action: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<u64>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OnboardingAdvanceResponse {
+    pub session_id: String,
+    pub current_step: String,
+    pub step_index: usize,
+    pub total_steps: usize,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub step_result: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_step: Option<NextStepInfo>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct NextStepInfo {
+    pub name: String,
+    pub description: String,
+    pub requires_interaction: bool,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct OnboardingSessionSummary {
+    pub session_id: String,
+    pub session_type: String,
+    pub current_step: String,
+    pub step_index: usize,
+    pub total_steps: usize,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_label: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_message: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+// ── Report response types ────────────────────────────────────────────
+
+/// A detected attendance anomaly.
+#[derive(Debug, Clone, serde::Serialize, utoipa::ToSchema)]
+pub struct AnomalyResponse {
+    /// The employee PIN affected.
+    pub user_pin: String,
+    /// The date of the anomaly (ISO-8601).
+    pub date: String,
+    /// The anomaly type: "orphaned_check_out", "duplicate_check_in", etc.
+    pub kind: String,
+    /// Human-readable description.
+    pub description: String,
+    /// Unix timestamp (seconds) of the relevant punch.
+    pub timestamp: i64,
+}
+
+impl AnomalyResponse {
+    /// Build a response from a core anomaly and contextual info.
+    pub fn from_anomaly(anomaly: &timekeep_core::Anomaly, user_pin: &str, date: &str) -> Self {
+        let (kind, description, timestamp) = match anomaly {
+            timekeep_core::Anomaly::OrphanedCheckOut { timestamp: ts } => (
+                "orphaned_check_out",
+                "Check-out without a preceding check-in".into(),
+                ts.as_second(),
+            ),
+            timekeep_core::Anomaly::DuplicateCheckIn { first: _, second } => (
+                "duplicate_check_in",
+                "Two check-ins in a row without a check-out between them".into(),
+                second.as_second(),
+            ),
+            timekeep_core::Anomaly::MissingCheckOut { check_in } => (
+                "missing_check_out",
+                "Check-in was never followed by a check-out".into(),
+                check_in.as_second(),
+            ),
+            timekeep_core::Anomaly::UnusualHours { total_seconds: _, reason } => {
+                ("unusual_hours", reason.clone(), 0)
+            },
+            timekeep_core::Anomaly::BuddyPunchCandidate {
+                first_device: _,
+                second_device: _,
+                within_seconds: _,
+            } => ("buddy_punch", "Possible buddy-punch detected".into(), 0),
+        };
+        Self {
+            user_pin: user_pin.to_string(),
+            date: date.to_string(),
+            kind: kind.into(),
+            description,
+            timestamp,
+        }
+    }
+}
+
+/// Per-department attendance summary.
+#[derive(Debug, Clone, serde::Serialize, utoipa::ToSchema)]
+pub struct DepartmentAttendanceResponse {
+    /// Department ID.
+    pub department_id: String,
+    /// Department name.
+    pub department_name: String,
+    /// Number of unique employees with punches in the period.
+    pub present: u64,
+    /// Number of days classified as late.
+    pub late: u64,
+    /// Total regular work seconds.
+    pub total_regular_seconds: i64,
+    /// Total overtime seconds.
+    pub total_overtime_seconds: i64,
+    /// Attendance rate (0.0—100.0).
+    pub attendance_pct: f64,
 }
