@@ -15,6 +15,8 @@ import type {
 	EmployeeSummary,
 	CalendarDay,
 } from "@/lib/api/employees";
+import type { TodaySummary } from "@/lib/api/dashboard";
+import type { AuditEvent } from "@/lib/api/audit";
 import type { PunchStatusValue } from "@shared/punch-statuses";
 
 // ── Timestamp helpers ────────────────────────────────────────────────────────
@@ -246,3 +248,52 @@ export function assertPunchFilterCall(
 		}
 	}
 }
+
+// ── Pre-built mock data (for Storybook stories) ────────────────────────────
+
+const NOW = Math.floor(Date.now() / 1000);
+
+/** Rich audit log with 10 events across multiple actors/actions. */
+export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
+	{ id: "audit-001", timestamp: NOW - 60, actor: "admin", action: "device.add", resource: "/api/devices", detail: { serial_number: "TEST001" }, ip_address: "192.168.1.10", status: "success", error_message: null },
+	{ id: "audit-002", timestamp: NOW - 180, actor: "admin", action: "punch.correct", resource: "/api/punches/correct", detail: { user_pin: "145" }, ip_address: "192.168.1.10", status: "success", error_message: null },
+	{ id: "audit-003", timestamp: NOW - 300, actor: "scheduler", action: "device.sync", resource: "/api/devices/sync", detail: null, ip_address: null, status: "success", error_message: null },
+	{ id: "audit-004", timestamp: NOW - 420, actor: "admin", action: "user.create", resource: "/api/users", detail: { username: "operator1" }, ip_address: "192.168.1.10", status: "success", error_message: null },
+	{ id: "audit-005", timestamp: NOW - 540, actor: "anonymous", action: "login.failed", resource: "/api/auth/login", detail: null, ip_address: "10.0.0.5", status: "failure", error_message: "invalid credentials" },
+	{ id: "audit-006", timestamp: NOW - 600, actor: "operator1", action: "device.config", resource: "/api/devices/TEST001", detail: { host: "192.168.1.101" }, ip_address: "192.168.1.20", status: "success", error_message: null },
+	{ id: "audit-007", timestamp: NOW - 720, actor: "admin", action: "report.export", resource: "/api/reports/export", detail: { format: "pdf" }, ip_address: "192.168.1.10", status: "success", error_message: null },
+	{ id: "audit-008", timestamp: NOW - 840, actor: "scheduler", action: "punch.import", resource: "/api/punches/import", detail: { count: 42 }, ip_address: null, status: "success", error_message: null },
+	{ id: "audit-009", timestamp: NOW - 960, actor: "admin", action: "employee.update", resource: "/api/employees/145", detail: { name: "Ahmed" }, ip_address: "192.168.1.10", status: "success", error_message: null },
+	{ id: "audit-010", timestamp: NOW - 1080, actor: "operator1", action: "device.scan", resource: "/api/devices/scan", detail: { subnet: "192.168.1.0/24" }, ip_address: "192.168.1.20", status: "success", error_message: null },
+];
+
+/** Empty audit log. */
+export const MOCK_AUDIT_EVENTS_EMPTY: AuditEvent[] = [];
+
+/** Dashboard today summary with data (42 present, 8 absent, 3 late). */
+export const todaySummary: TodaySummary = {
+	date: NOW,
+	present: 42,
+	absent: 8,
+	late: 3,
+	on_time: 39,
+	total_employees: 50,
+	total_punches: 84,
+	check_ins: 42,
+	check_outs: 42,
+	last_punch_at: NOW,
+};
+
+/** Dashboard today summary — empty (no punches today). */
+export const todaySummaryEmpty: TodaySummary = {
+	date: NOW,
+	present: 0,
+	absent: 0,
+	late: 0,
+	on_time: 0,
+	total_employees: 50,
+	total_punches: 0,
+	check_ins: 0,
+	check_outs: 0,
+	last_punch_at: null,
+};

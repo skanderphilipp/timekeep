@@ -175,7 +175,6 @@ describe("displayField resolution for reference fields (RED)", () => {
     // { fieldId: "work_policy_title", displayField: "work_policy_title",
     //   referenceIdField: "work_policy_id" }
     const fieldId = "work_policy_title";
-    const referenceIdField = "work_policy_id";
     const displayField = "work_policy_title";
 
     // CURRENT behaviour: resolveFieldValue(record, fieldId)
@@ -238,7 +237,6 @@ describe("displayField resolution for reference fields (RED)", () => {
 
     const fieldId = "department";
     const referenceIdField = "department_id";
-    const displayField = "department";
 
     const displayValue = resolveFieldValue(employeeRecord, fieldId);
     expect(displayValue).toBe("Engineering");

@@ -185,7 +185,7 @@ describe("useCalendarNavigation", () => {
 
 		it("Bug 5 FIX: goToday persists after parent re-render", () => {
 			const { result, rerender } = renderHook(
-				({ year, month }) => useCalendarNavigation({ year: 2020, month: 3 }),
+				({ year: _year, month: _month }) => useCalendarNavigation({ year: 2020, month: 3 }),
 				{ initialProps: { year: 2020, month: 3 } },
 			);
 

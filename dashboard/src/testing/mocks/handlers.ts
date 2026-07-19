@@ -155,8 +155,7 @@ export const handlers = [
 	// Employee work days
 	// ═══════════════════════════════════════════════════════════════════
 
-	http.get("/api/employees/:pin/work-days", ({ params, request }) => {
-		const pin = params.pin as string;
+	http.get("/api/employees/:pin/work-days", ({ request }) => {
 		const url = new URL(request.url);
 		const fromRaw = url.searchParams.get("from");
 		const toRaw = url.searchParams.get("to");
@@ -205,8 +204,7 @@ export const handlers = [
 	// Employee summary
 	// ═══════════════════════════════════════════════════════════════════
 
-	http.get("/api/employees/:pin/summary", ({ params, request }) => {
-		const pin = params.pin as string;
+	http.get("/api/employees/:pin/summary", ({ request }) => {
 		const url = new URL(request.url);
 		const fromRaw = url.searchParams.get("from");
 		const toRaw = url.searchParams.get("to");
@@ -246,8 +244,7 @@ export const handlers = [
 	// Employee calendar
 	// ═══════════════════════════════════════════════════════════════════
 
-	http.get("/api/employees/:pin/calendar", ({ params, request }) => {
-		const pin = params.pin as string;
+	http.get("/api/employees/:pin/calendar", ({ request }) => {
 		const url = new URL(request.url);
 		const fromRaw = url.searchParams.get("from");
 		const toRaw = url.searchParams.get("to");

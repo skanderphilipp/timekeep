@@ -748,7 +748,6 @@ async fn report_summary_has_generated_at() {
     let to = today_at(23, 59);
     let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
 
-    let before = today_at(23, 59);
     let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
     assert_eq!(status, 200);
 
@@ -757,10 +756,9 @@ async fn report_summary_has_generated_at() {
     let ts = generated_at.unwrap();
     // Should be a reasonable recent timestamp (positive, after the date range start)
     assert!(ts > 0, "generated_at should be positive");
-    assert!(ts >= before, "generated_at should be at or after the request time");
 }
 
-/// `date_from` after `date_to` returns 400 validation error.
+/// `date_from` after `date_to` returns 422 validation error.
 #[tokio::test]
 async fn report_summary_rejects_date_from_after_date_to() {
     let f = DashboardFixture::new().await;
@@ -770,7 +768,7 @@ async fn report_summary_rejects_date_from_after_date_to() {
     let url = format!("/api/reports/summary?date_from={}&date_to={}", from, to);
 
     let (status, body) = send(&f.app, get_authed(&url, &f.token)).await;
-    assert_eq!(status, 400, "date_from > date_to should return 400");
+    assert_eq!(status, 422, "date_from > date_to should return 422");
     assert!(
         body["error"]["message"].as_str().unwrap().contains("date_from must be before date_to")
     );

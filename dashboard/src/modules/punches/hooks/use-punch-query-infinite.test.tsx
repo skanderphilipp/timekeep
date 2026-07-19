@@ -209,7 +209,7 @@ describe("useInfinitePunchQuery", () => {
 		});
 
 		it("returns true when local device_sns has values", () => {
-			const { result } = renderHook(() => useInfinitePunchQuery(), {
+			renderHook(() => useInfinitePunchQuery(), {
 				wrapper: makeWrapper("/?punches_device_sns=DEV-001"),
 			});
 

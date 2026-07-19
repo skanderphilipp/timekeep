@@ -100,7 +100,7 @@ describe("PunchQueryView", () => {
 
 	describe("Bug 2: view switching filter isolation", () => {
 		it("renders calendar view when calendar tab is selected", async () => {
-			const { container } = render(<PunchQueryView />, { wrapper: makeWrapper() });
+			render(<PunchQueryView />, { wrapper: makeWrapper() });
 
 			await waitFor(() => {
 				expect(screen.getByText("Calendar")).toBeInTheDocument();
