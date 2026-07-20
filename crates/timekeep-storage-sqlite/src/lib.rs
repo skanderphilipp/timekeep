@@ -600,6 +600,7 @@ impl timekeep_core::OnboardingSessionStore for SqliteStorage {
     }
 }
 
+#[cfg(test)]
 pub(crate) async fn test_storage() -> SqliteStorage {
     SqliteStorage::new(":memory:").await.expect("should create in-memory storage")
 }

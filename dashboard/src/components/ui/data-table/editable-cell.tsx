@@ -41,7 +41,7 @@ export type EditableCellProps<TValue = unknown> = {
 /**
  * EditableCell — toggles between display and edit mode for a single table cell.
  *
- * Twenty-aligned styling via SCSS module (no inline styles).
+ * Styling via SCSS module (no inline styles).
  * Features: hover background with border-radius, animated pencil icon,
  * empty state placeholder, "just start typing" keyboard support.
  */

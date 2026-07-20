@@ -303,6 +303,20 @@ impl From<&timekeep_core::model::WorkPolicy> for WorkPolicyResponse {
     }
 }
 
+impl WorkPolicyResponse {
+    /// Build a `WorkPolicyResponse` from a `WorkPolicyTemplate` (FK resolution path).
+    pub fn from_template(t: &timekeep_core::model::WorkPolicyTemplate) -> Self {
+        Self {
+            work_start: format!("{:02}:{:02}", t.work_start.hour(), t.work_start.minute()),
+            work_end: format!("{:02}:{:02}", t.work_end.hour(), t.work_end.minute()),
+            late_threshold_minutes: t.late_threshold_secs / 60,
+            min_hours_for_full_day: t.min_seconds_for_present as f64 / 3600.0,
+            daily_overtime_after_hours: t.daily_overtime_after_secs as f64 / 3600.0,
+            working_days: t.working_days,
+        }
+    }
+}
+
 impl From<&timekeep_core::SystemSettings> for SystemSettingsResponse {
     fn from(s: &timekeep_core::SystemSettings) -> Self {
         Self {

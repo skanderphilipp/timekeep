@@ -5,7 +5,7 @@
  * are excluded so "just start typing" only opens the editor
  * when the user actually types a character.
  *
- * Ported from Twenty's `isNonTextWritingKey.ts`.
+ * Ported from `isNonTextWritingKey.ts`.
  */
 const NON_TEXT_KEYS = new Set([
   "Enter", "Tab", "Shift", "Escape",

@@ -119,7 +119,7 @@ function makeWrapper() {
 const DEVICE_FIXTURE = {
   serial_number: "DEV-001", label: "Test Device",
   host: "10.0.0.1", port: 4370, status: "online",
-  group_id: "group-uuid-1", comm_key: 0, push_enabled: true, timezone: null,
+  group_id: "group-uuid-1", group_name: "Entrance", comm_key: 0, push_enabled: true, timezone: null,
   vendor: "zkteco",
   user_count: 10, user_capacity: 100,
   record_count: 500, record_capacity: 10000, record_usage_pct: 5,
@@ -159,9 +159,9 @@ describe("RecordDetailRenderer FK references", () => {
       expect(screen.getByText("Group")).toBeTruthy();
     });
 
-    // Verify the field shows the value
+    // Verify the field shows the group name (not the raw UUID)
     await waitFor(() => {
-      expect(screen.getByText("group-uuid-1")).toBeTruthy();
+      expect(screen.getByText("Entrance")).toBeTruthy();
     });
 
     // The key assertion: fetchDeviceGroups MUST have been called.

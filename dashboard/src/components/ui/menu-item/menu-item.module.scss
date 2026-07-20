@@ -1,10 +1,10 @@
 @use "@/styles/mixins" as *;
 
-// ── Twenty UI Alignment — MenuItem ────────────────────────────────────────
+// ── MenuItem ───────────────────────────────────────────────────────────────
 // Unified menu item supporting both button and link modes.
 // See SCSS-VISUAL-STANDARDS.md §6.6. Key changes:
 //   1. border-radius: concentric (calc(md - spacing-1))
-//   2. Hover bg: transparent-light (Twenty pattern)
+//   2. Hover bg: transparent-light
 //   3. Disabled: explicit color, no opacity
 //   4. Transition: duration(fast)
 

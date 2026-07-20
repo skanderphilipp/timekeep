@@ -7,10 +7,6 @@
  *
  * Architecture: follow ADR-008
  *   timekeep/.notes/architecture/adr/008-record-detail-unification.md
- *
- * Twenty reference:
- *   twenty-front/src/modules/object-record/record-show/components/PageLayoutRecordPageRenderer.tsx
- *   twenty-front/src/modules/ui/layout/contexts/LayoutRenderingContext.tsx
  */
 
 // ── Context ────────────────────────────────────────────────────────────────────

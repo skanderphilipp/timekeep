@@ -26,7 +26,7 @@ type ResizablePanelGapProps = {
  * Uses negative margin to create a grab area wider than the visual gap,
  * so the handle is easy to hit even when panels are flush.
  *
- * Ported from Twenty's `ResizablePanelGap`.
+ * Ported from `ResizablePanelGap`.
  */
 export function ResizablePanelGap({
   side,

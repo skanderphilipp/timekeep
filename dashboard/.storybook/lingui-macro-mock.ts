@@ -10,8 +10,7 @@
  * to this mock. The i18n catalog is already loaded in .storybook/preview.tsx,
  * so `_()` lookups work against the real messages.
  *
- * Pattern borrowed from Twenty's test suite:
- * packages/twenty-website/test/lingui-macro-mock.ts
+ * Pattern borrowed from test suite.
  */
 import type { MessageDescriptor } from "@lingui/core";
 

@@ -1,3 +1,4 @@
+# ── Allowed terms in documentation ──────────────────────────────────
 doc-valid-idents = [
     "ZKTeco",
     "ZKTeco's",
@@ -9,3 +10,31 @@ doc-valid-idents = [
     "NaN",
     "..",
 ]
+
+# ── Function length (Rule 1: ≤ 80 lines) ──────────────────────────
+# Default: 100. We use 80 to catch functions that should be split.
+too-many-lines-threshold = 80
+
+# ── Constructor arguments (Rule 5: ≤ 7 args) ──────────────────────
+# Default: 7. Kept at default — functions with 8+ args need a builder.
+too-many-arguments-threshold = 7
+
+# ── Enum variant size (Rule 4 support) ─────────────────────────────
+# Default: 200. Variants larger than this may benefit from boxing.
+enum-variant-size-threshold = 200
+
+# ── Cognitive complexity (Rule 9: max nesting depth 3) ─────────────
+# Default: 25. We use 15 — functions scoring 15+ have deep nesting,
+# many branches, or complex control flow. Most well-structured
+# functions score <10.
+# 
+# How nesting maps to complexity:
+#   Each nesting level (if-in-if)     → +1 per level
+#   Each && / || in condition         → +1
+#   Each match arm beyond first       → +1 per arm
+#   Loop (for, while, loop)           → +1
+#   continue / break inside loop      → +1
+#
+# A function with 3-deep nesting, 2 match arms, a loop → ~8.
+# A function with 4-deep nesting, 4 match arms, 2 loops → ~15 (threshold).
+cognitive-complexity-threshold = 15

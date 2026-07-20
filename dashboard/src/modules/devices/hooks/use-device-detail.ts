@@ -21,6 +21,7 @@ export function useDeviceDetail(sn: string) {
     queryKey: QueryKeys.devices.detailEnriched(sn),
     queryFn: () => fetchDeviceDetail(sn),
     enabled: !!sn,
+    refetchInterval: 15_000, // 15s — pick up connection status changes
   });
 
   const healthQuery = useQuery({

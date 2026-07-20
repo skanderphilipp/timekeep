@@ -7,7 +7,7 @@ import type { FormDateFieldDef } from "@/components/ui/form/form-field-def";
  * Date form field — self-contained DatePicker, no FormField wrapper.
  *
  * DatePicker handles its own label, error, helper text, calendar popup,
- * presets, and clear button. Twenty-aligned.
+   * presets, and clear button.
  */
 export function FormFieldDate({
   field,

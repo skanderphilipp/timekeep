@@ -1,4 +1,6 @@
 import { clsx } from "clsx";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 
 import type { CalendarDayStatus } from "@/modules/shared/components";
 
@@ -10,67 +12,76 @@ export type EmployeeStatusEntry = {
 	pin: string;
 	name: string;
 	status: CalendarDayStatus;
+	/** Hours worked. Shown alongside status for additional context. */
+	hours?: number | null;
 };
 
 export type MiniStatusBarsProps = {
 	/** Per-employee status entries for this day. */
 	statuses: EmployeeStatusEntry[];
-	/** Maximum number of bars to render before showing overflow count. */
-	maxBars?: number;
-	/** Compact mode — fewer bars, smaller overflow. */
-	compact?: boolean;
 };
 
-// ── Status → bar color ─────────────────────────────────────────────────────────
+// ── Status formatting ──────────────────────────────────────────────────────────
 
-const BAR_COLOR: Record<CalendarDayStatus, string> = {
-	full: styles.barFull,
-	half: styles.barHalf,
-	late: styles.barLate,
-	absent: styles.barAbsent,
-	weekend: styles.barWeekend,
+const STATUS_LABEL: Record<CalendarDayStatus, ReturnType<typeof msg>> = {
+	full: msg`Full`,
+	half: msg`Half`,
+	late: msg`Late`,
+	absent: msg`Absent`,
+	weekend: msg`Off`,
 };
+
+function formatHoursCompact(hours: number): string {
+	if (hours >= 1) return `${hours.toFixed(1)}h`;
+	return `${Math.round(hours * 60)}m`;
+}
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
 /**
- * Mini status bars rendered inside a calendar day cell.
+ * Scrollable employee status list rendered inside a calendar day cell.
  *
- * Each bar represents one employee's attendance status for that day.
- * Max visible bars = 8 (configurable via `maxBars`). If there are more
- * employees, a "+N" overflow indicator is shown.
+ * Shows status dot, employee name, and hours for every employee —
+ * present, late, half, and absent. The list scrolls vertically when
+ * content exceeds the cell height.
  *
- * Used as the `renderDayContent` prop of {@link CalendarMonth}.
+ * Used as the `renderDayContent` prop of {@link CalendarMonth} in
+ * "All Employees" mode.
  */
 export function MiniStatusBars({
 	statuses,
-	maxBars = 8,
-	compact = false,
 }: MiniStatusBarsProps) {
+	const { _ } = useLingui();
+
 	if (!statuses || statuses.length === 0) return null;
 
-	const effectiveMax = compact ? 4 : maxBars;
-	const visible = statuses.slice(0, effectiveMax);
-	const overflow = statuses.length - effectiveMax;
-
 	return (
-		<div data-slot="mini-status-bars" className={clsx(styles.container, compact && styles.compact)}>
-			{visible.map((emp) => (
-				<span
+		<div data-slot="mini-status-bars" className={styles.container}>
+			{statuses.map((emp) => (
+				<div
 					key={emp.pin}
-					data-slot="mini-status-bar"
+					data-slot="employee-row"
 					data-status={emp.status}
-					className={clsx(styles.bar, BAR_COLOR[emp.status])}
-					title={`${emp.name}: ${emp.status}`}
-				/>
+					className={styles.row}
+					title={`${emp.name}: ${_(STATUS_LABEL[emp.status])}${emp.hours != null ? ` (${formatHoursCompact(emp.hours)})` : ""}`}
+				>
+					<span
+						className={clsx(styles.statusDot, styles[`dot${capitalize(emp.status)}`])}
+					/>
+					<span className={styles.employeeName}>{emp.name}</span>
+					{emp.hours != null && (
+						<span className={styles.hours}>{formatHoursCompact(emp.hours)}</span>
+					)}
+				</div>
 			))}
-			{overflow > 0 && (
-				<span data-slot="mini-status-overflow" className={styles.overflow}>
-					+{overflow}
-				</span>
-			)}
 		</div>
 	);
 }
 
 MiniStatusBars.displayName = "MiniStatusBars";
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function capitalize(s: string): string {
+	return s.charAt(0).toUpperCase() + s.slice(1);
+}

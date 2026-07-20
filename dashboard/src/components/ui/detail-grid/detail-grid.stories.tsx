@@ -7,7 +7,7 @@ import { DetailGrid, DetailItem } from "./detail-grid";
 /**
  * DetailGrid — horizontal label-value grid for entity detail views.
  *
- * Ported from twenty-ui's RecordInlineCell layout: fixed-width label
+ * Ported from RecordInlineCell layout: fixed-width label
  * column on the left, value column filling remaining space on the right.
  * String values automatically get overflow detection + tooltip.
  *

@@ -29,7 +29,7 @@ const RESIZE_DRAG_THRESHOLD_PX = 5;
  * On release, calls `onWidthChange` with the final clamped width, or
  * `onCollapse` if the drag was too short (a click).
  *
- * Ported from Twenty's `useResizablePanel` pattern.
+ * Ported from `useResizablePanel` pattern.
  */
 export function useResizablePanel({
   side,

@@ -21,7 +21,7 @@ export type ScrollWrapperProps = {
 /**
  * Lightweight scroll container with conditional axis enabling.
  *
- * Inspired by Twenty's ScrollWrapper but without Jotai state tracking.
+ * Inspired by ScrollWrapper but without Jotai state tracking.
  * Use `onScroll` for optional scroll position callbacks (e.g., syncing
  * multiple scroll containers).
  *

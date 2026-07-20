@@ -24,8 +24,7 @@ const config: StorybookConfig = {
   //     : scope === 'modules'
   //       ? ['../src/modules/**/*.stories.@(ts|tsx)']
   //       : ['../src/**/*.stories.@(ts|tsx)'],
-  //
-  // Pattern adapted from Twenty's twenty-front/.storybook/main.ts.
+
 
   addons: [
     "@storybook/addon-docs",

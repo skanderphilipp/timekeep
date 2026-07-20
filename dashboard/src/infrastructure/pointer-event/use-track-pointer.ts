@@ -25,7 +25,7 @@ interface UseTrackPointerOptions {
  * and cleans up on unmount. This is a building block for drag, resize, and any
  * mouse-follow interaction.
  *
- * Ported from Twenty's `useTrackPointer`.
+ * Ported from `useTrackPointer`.
  */
 export function useTrackPointer({
   shouldTrackPointer,

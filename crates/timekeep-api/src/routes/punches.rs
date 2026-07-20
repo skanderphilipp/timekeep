@@ -110,7 +110,13 @@ pub(crate) async fn query_punches_mgmt(
     };
 
     let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
-    let has_more = responses.len() >= q.params.limit as usize;
+    // Use the same limit computation as the storage layer so has_more is accurate.
+    let effective_limit = if filter.unlimited {
+        filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
+    } else {
+        filter.params.clamped_limit()
+    };
+    let has_more = responses.len() >= effective_limit as usize;
 
     let meta = if has_more {
         if let Some(last) = punches.last() {
@@ -224,6 +230,7 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         _ => None,
     });
     let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
+    let unlimited = q.unlimited.as_deref() == Some("true");
 
     PunchFilter {
         params: q.params.clone(),
@@ -237,7 +244,7 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         anomalies_only,
         ids: None,
         cursor_after,
-        unlimited: false,
+        unlimited,
     }
 }
 
@@ -424,7 +431,13 @@ pub(crate) async fn query_punches_integration(
 
     let items: Vec<PunchIntegrationResponse> =
         punches.iter().map(PunchIntegrationResponse::from).collect();
-    let has_more = items.len() >= q.params.limit as usize;
+    // Use the same limit computation as the storage layer so has_more is accurate.
+    let effective_limit = if filter.unlimited {
+        filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
+    } else {
+        filter.params.clamped_limit()
+    };
+    let has_more = items.len() >= effective_limit as usize;
 
     let meta = if has_more {
         if let Some(last) = punches.last() {

@@ -4,10 +4,10 @@ import type { EntityType } from "@/types/entities";
 /**
  * Context value available to every component inside a RecordDetailRenderer.
  *
- * Pattern: ported from Twenty's LayoutRenderingContext.
+ * Pattern: ported from LayoutRenderingContext.
  * Simplified to just entityType + entityId — no metadata-driven layouts.
  *
- * Deriving isNewRecord (Twenty pattern):
+ * Deriving isNewRecord:
  *   We derive it from `entityId === ""` — no separate "mode" concept.
  *   When `entityId` is empty, the renderer shows all fields as editable
  *   inputs with a batch-save button.

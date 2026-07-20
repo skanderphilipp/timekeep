@@ -174,8 +174,8 @@ function colorTokens(theme: Theme, c: Palette, a: AlphaPalette): TokenDef {
     "--ao-background-tertiary": c.gray[5],
     "--ao-background-page": c.gray[2],
 
-    // Transparent backgrounds (Twenty UI alignment — §5.1 of SCSS-VISUAL-STANDARDS.md)
-    // Mapped to match Twenty's opacity curve: lighter≈2%  light≈4%  medium≈8%  strong≈16%
+    // Transparent backgrounds (§5.1 of SCSS-VISUAL-STANDARDS.md)
+    // Mapped opacity curve: lighter≈2%  light≈4%  medium≈8%  strong≈16%
     "--ao-background-transparent-lighter": a.gray[1],
     "--ao-background-transparent-light": a.gray[3],
     "--ao-background-transparent-medium": a.gray[5],
@@ -190,7 +190,7 @@ function colorTokens(theme: Theme, c: Palette, a: AlphaPalette): TokenDef {
     "--ao-font-color-light": c.gray[8],
     "--ao-font-color-extralight": c.gray[7],
     "--ao-font-color-disabled": c.gray[8],
-    // Danger text (Twenty UI alignment)
+    // Danger text
     "--ao-font-color-danger": c.red[9],
     // Text placed on solid step-9 backgrounds (buttons, badges).
     "--ao-font-color-inverted": "#ffffff",
@@ -272,7 +272,7 @@ function staticTokens(): TokenDef {
     "--ao-line-height-body": "1.5",
     "--ao-line-height-relaxed": "1.7",
 
-    // Animation durations (Twenty UI alignment — §5.3)
+    // Animation durations (§5.3)
     // Unitless numbers — use the duration() SCSS function to convert to seconds.
     "--ao-animation-duration-instant": "0.075",
     "--ao-animation-duration-fast": "0.15",

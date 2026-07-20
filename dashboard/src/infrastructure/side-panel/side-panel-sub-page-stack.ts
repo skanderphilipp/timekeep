@@ -5,9 +5,6 @@ import { atom } from "jotai";
  *
  * Used by Pattern 2 (Guided Flow) for multi-step wizards inside the side panel.
  * Each step pushes onto a stack; the back button pops it off.
- *
- * Twenty reference:
- *   `twenty-front/src/modules/side-panel/hooks/useSidePanelSubPageHistory.ts`
  */
 export type SubPageEntry = {
   /** UUID — used as React key for proper remount on step change. */

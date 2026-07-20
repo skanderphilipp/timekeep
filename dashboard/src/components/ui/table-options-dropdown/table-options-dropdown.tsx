@@ -26,7 +26,7 @@ type TableOptionsDropdownProps = {
 /**
  * Table Options dropdown — "Options" button → column visibility toggles.
  *
- * Twenty-inspired: a compact toolbar button that opens a dropdown with
+ * a compact toolbar button that opens a dropdown with
  * checkbox-toggled column list. Matches the Filter button visual style.
  */
 export function TableOptionsDropdown({

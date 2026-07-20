@@ -4,7 +4,7 @@
  * Usage:
  *   parameters: { a11y: A11Y_DEFER_COLOR_CONTRAST }
  *
- * Adapted from Twenty's a11yParameters.ts.
+ * Adapted from a11yParameters.ts.
  */
 
 /**

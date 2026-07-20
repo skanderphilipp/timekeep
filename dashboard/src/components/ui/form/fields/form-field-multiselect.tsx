@@ -7,7 +7,7 @@ import type { FormMultiSelectFieldDef } from "@/components/ui/form/form-field-de
  * Multi-select form field — self-contained MultiSelect, no FormField wrapper.
  *
  * MultiSelect handles its own label, error, helper text, chips, search,
- * and empty states. Twenty-aligned.
+   * and empty states.
  */
 export function FormFieldMultiSelect({
   field,

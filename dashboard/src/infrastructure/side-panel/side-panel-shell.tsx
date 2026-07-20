@@ -34,10 +34,7 @@ import { useSidePanelActions } from "./hooks/use-side-panel-actions";
  *   - "Edit" — opens the edit form for the current entity
  *   - Future: Delete, Duplicate, etc.
  *
- * Twenty references:
- *   twenty-front/src/modules/side-panel/components/SidePanelTopBarRightCornerIcon.tsx
- *   twenty-front/src/modules/ui/layout/side-panel/components/SidePanelFooter.tsx
- *
+
  * Cmd+K is handled by {@link AppTopBar} — it registers the global hotkey
  * and pushes the command view into the panel via the legacy content atoms.
  */

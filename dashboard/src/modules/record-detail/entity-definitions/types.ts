@@ -50,7 +50,7 @@ export type RecordAction = {
  * detail view needing its own rendering logic for badges, timestamps,
  * navigation links, or type-specific inputs.
  *
- * Pattern: Twenty's `RecordFieldList` wraps every field in `FieldContext`
+ * Pattern: `RecordFieldList` wraps every field in `FieldContext`
  * and delegates rendering to `FieldDisplay` / `FieldInput`.
  */
 export type DetailFieldConfig = {

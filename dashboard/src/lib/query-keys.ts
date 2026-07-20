@@ -69,6 +69,27 @@ export const QueryKeys = {
     schema: () => ["schema", "punch"] as const,
   },
 
+  /** Attendance calendar & timeline (pre-computed endpoints) */
+  attendance: {
+    /** All attendance queries (invalidate with `QueryKeys.attendance.all`). */
+    all: ["attendance"] as const,
+    /** Calendar month query. */
+    calendar: (params: {
+      year: number;
+      month: number;
+      device_sns?: string;
+      user_pins?: string;
+      status?: string;
+    }) => ["attendance", "calendar", params] as const,
+    /** Timeline day query. */
+    timeline: (params: {
+      date: string;
+      device_sns?: string;
+      user_pins?: string;
+      status?: string;
+    }) => ["attendance", "timeline", params] as const,
+  },
+
   /** Reports */
   reports: {
     /** All report queries (invalidate with `QueryKeys.reports.all`). */

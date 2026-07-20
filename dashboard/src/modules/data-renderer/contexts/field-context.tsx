@@ -38,7 +38,7 @@ export type FieldContextValue = {
    *   - Main panel → full-page navigation
    *   - Side panel → nested side-panel navigation
    *
-   * Pattern: Twenty's `LayoutRenderingContext` — the field display doesn't
+   * Pattern: `LayoutRenderingContext` — the field display doesn't
    * know where it's rendered; the provider tells it how to navigate.
    */
   onNavigateToEntity?: (entityType: string, entityId: string, label?: string) => void;
@@ -49,7 +49,7 @@ export type FieldContextValue = {
    * dropdown. Set by the record-detail renderer when preloaded options
    * (e.g., department list for employee editing) haven't resolved yet.
    *
-   * Pattern: Twenty's `recordFieldInputLayoutDirectionLoadingComponentState`
+   * Pattern: `recordFieldInputLayoutDirectionLoadingComponentState`
    * atom — the edit component is self-aware of option-loading state so it can
    * render a guard instead of an empty Combobox.
    */

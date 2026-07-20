@@ -283,6 +283,10 @@ pub struct PunchListQuery {
     /// When "true", return only punches flagged as anomalous.
     pub anomalies_only: Option<String>,
 
+    /// When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
+    /// Use for calendar/timeline views that need all punches in a date range.
+    pub unlimited: Option<String>,
+
     /// Sparse field selection: comma-separated field names to return.
     /// Omit to return all fields. Example: fields=id,timestamp,status,device_label
     pub fields: Option<String>,
@@ -647,6 +651,18 @@ pub struct SetDeviceGroupRequest {
     pub group_id: Option<String>,
 }
 
+/// Query parameters for department endpoints.
+///
+/// Supports eager-loading related entities via `?include=`.
+/// Example: `?include=work_policy` resolves the full work policy template.
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+pub struct DepartmentQuery {
+    /// Eager-loaded relationships: comma-separated relationship names.
+    /// Supported: work_policy.
+    #[serde(default)]
+    pub include: Option<String>,
+}
+
 /// Update an existing department.
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateDepartmentRequest {
@@ -947,4 +963,46 @@ pub struct EnrollFingerRequest {
 #[derive(Debug, Deserialize, IntoParams)]
 pub struct MissingEnrollmentsQuery {
     pub department_id: Option<String>,
+}
+
+// ─── Attendance Calendar & Timeline ─────────────────────────────────
+
+/// Query params for GET /api/attendance/calendar.
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+pub struct CalendarQuery {
+    /// Calendar year (e.g. 2026).
+    pub year: i16,
+    /// Calendar month (1-12).
+    pub month: i8,
+    /// Comma-separated device serial numbers.
+    #[serde(default)]
+    pub device_sns: Option<String>,
+    /// Comma-separated employee PINs.
+    #[serde(default)]
+    pub user_pins: Option<String>,
+    /// Punch status filter.
+    #[serde(default)]
+    pub status: Option<String>,
+    /// Verification method filter.
+    #[serde(default)]
+    pub verify_mode: Option<String>,
+}
+
+/// Query params for GET /api/attendance/timeline.
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+pub struct TimelineQuery {
+    /// The day to display (YYYY-MM-DD).
+    pub date: String,
+    /// Comma-separated device serial numbers.
+    #[serde(default)]
+    pub device_sns: Option<String>,
+    /// Comma-separated employee PINs.
+    #[serde(default)]
+    pub user_pins: Option<String>,
+    /// Punch status filter.
+    #[serde(default)]
+    pub status: Option<String>,
+    /// Verification method filter.
+    #[serde(default)]
+    pub verify_mode: Option<String>,
 }

@@ -461,6 +461,12 @@ pub(crate) async fn wire(
                         },
                         Err(e) => {
                             tracing::warn!(device = %sn, error = %e, "SDK poll: device unreachable");
+                            let now = jiff::Timestamp::now();
+                            state.set_disconnected(&sn, now.as_second()).await;
+                            bus.publish(DomainEvent::DeviceOffline {
+                                device_sn: sn.clone(),
+                                last_seen: now,
+                            });
                         },
                     }
                 });
@@ -479,6 +485,8 @@ pub(crate) async fn wire(
     let registry = device_registry.clone();
     let emp_repo = employees.clone();
     let handler_event_bus = event_bus.clone();
+    let handler_storage = storage.clone();
+    let handler_device_state = device_state.clone();
     let user_event_handle = tokio::spawn(async move {
         while let Ok(event) = user_event_rx.recv().await {
             match event.as_ref() {
@@ -971,6 +979,7 @@ pub(crate) async fn wire(
                                             device_sn: sn.clone(),
                                             error: e.to_string(),
                                             records_synced: 0,
+                                            duration_ms: 0,
                                         });
                                         return;
                                     },
@@ -1091,6 +1100,7 @@ pub(crate) async fn wire(
                                     device_sn: sn.clone(),
                                     error: "device not found in registry".into(),
                                     records_synced: 0,
+                                    duration_ms: 0,
                                 });
                             },
                         }
@@ -1120,7 +1130,220 @@ pub(crate) async fn wire(
                     )
                     .await;
                 },
+                // ── On-Demand Attendance Pull ──
+                DomainEvent::AttendancePullRequested { device_sn } => {
+                    let sn = device_sn.clone();
+                    let reg = registry.clone();
+                    let bus = handler_event_bus.clone();
+                    let stor = handler_storage.clone();
+                    let dev_state = handler_device_state.clone();
+                    tokio::spawn(async move {
+                        let start = std::time::Instant::now();
+                        let device_arc = {
+                            let guard = reg.lock().await;
+                            guard.get(sn.as_str()).cloned()
+                        };
+                        let device = match device_arc {
+                            Some(a) => a,
+                            None => {
+                                tracing::warn!(
+                                    device = %sn,
+                                    "AttendancePullRequested: device not in registry"
+                                );
+                                bus.publish(DomainEvent::DeviceSyncFailed {
+                                    device_sn: sn,
+                                    error: "device not connected".into(),
+                                    records_synced: 0,
+                                    duration_ms: 0,
+                                });
+                                return;
+                            },
+                        };
+                        let since = match stor.latest_punch_for_device(&sn).await {
+                            Ok(Some(ts)) => Some(ts),
+                            Ok(None) => None,
+                            Err(e) => {
+                                tracing::error!(device = %sn, error = %e, "AttendancePullRequested: storage lookup failed");
+                                None
+                            },
+                        };
+                        let device = device.lock().await;
+                        match device.get_attendance(since).await {
+                            Ok(punches) => {
+                                let now = jiff::Timestamp::now().as_second();
+                                dev_state.set_sdk_polled(&sn, now).await;
+                                let count = punches.len();
+                                if count > 0 {
+                                    tracing::info!(
+                                        device = %sn,
+                                        count,
+                                        "AttendancePullRequested: retrieved records"
+                                    );
+                                    for punch in punches {
+                                        bus.publish(DomainEvent::PunchReceived { punch });
+                                    }
+                                } else {
+                                    tracing::info!(
+                                        device = %sn,
+                                        "AttendancePullRequested: no new records"
+                                    );
+                                }
+                                let duration_ms = start.elapsed().as_millis() as u64;
+                                bus.publish(DomainEvent::DeviceSyncCompleted {
+                                    device_sn: sn.clone(),
+                                    records_synced: count as u32,
+                                    duration_ms,
+                                });
+                            },
+                            Err(e) => {
+                                tracing::error!(device = %sn, error = %e, "AttendancePullRequested: pull failed");
+                                let duration_ms = start.elapsed().as_millis() as u64;
+                                bus.publish(DomainEvent::DeviceSyncFailed {
+                                    device_sn: sn,
+                                    error: e.to_string(),
+                                    records_synced: 0,
+                                    duration_ms,
+                                });
+                            },
+                        }
+                    });
+                },
                 _ => {},
+            }
+        }
+    });
+
+    // ─── Runtime Device Registration Handler ─────────────────────
+    //
+    // When a device is added via POST /api/devices, the API handler
+    // publishes DeviceRegistered. This subscriber picks up that event,
+    // creates a ZkTecoDevice from the stored config, connects to it,
+    // and adds it to the device registry so it gets polled.
+    //
+    // Before this handler was added, devices added via the API were
+    // stored but never connected — they only connected at startup.
+    let mut registered_rx = event_bus.subscribe();
+    let reg_storage = storage.clone();
+    let reg_registry = device_registry.clone();
+    let reg_device_state = device_state.clone();
+    let reg_event_bus = event_bus.clone();
+    let registered_handle = tokio::spawn(async move {
+        while let Ok(event) = registered_rx.recv().await {
+            if let DomainEvent::DeviceRegistered { device_sn } = event.as_ref() {
+                let sn = device_sn.clone();
+                tracing::info!(
+                    device = %sn,
+                    "DeviceRegistered — loading config and connecting"
+                );
+
+                // Read the full config from storage
+                let configs = match reg_storage.list_device_configs().await {
+                    Ok(c) => c,
+                    Err(e) => {
+                        tracing::error!(device = %sn, error = %e, "DeviceRegistered: failed to list configs");
+                        continue;
+                    },
+                };
+                let config = match configs.iter().find(|c| c.serial_number == sn) {
+                    Some(c) => c.clone(),
+                    None => {
+                        tracing::warn!(device = %sn, "DeviceRegistered: config not found in storage");
+                        continue;
+                    },
+                };
+
+                // Check if already connected
+                {
+                    let guard = reg_registry.lock().await;
+                    if guard.contains_key(&sn) {
+                        tracing::info!(device = %sn, "DeviceRegistered: already connected, skipping");
+                        continue;
+                    }
+                }
+
+                let mut device =
+                    timekeep_zkteco::ZkTecoDevice::new(config.clone(), reg_event_bus.clone());
+
+                match device.connect().await {
+                    Ok(()) => {
+                        tracing::info!(
+                            device = %sn,
+                            label = %config.label,
+                            "DeviceRegistered: connected successfully"
+                        );
+
+                        // Sync users from device into local storage
+                        if let Err(e) = sync_users_to_storage(&device, reg_storage.as_ref()).await {
+                            tracing::warn!(device = %sn, error = %e, "DeviceRegistered: user sync failed");
+                        }
+
+                        // Auto-sync device clock
+                        let now = jiff::Timestamp::now();
+                        if let Err(e) = device.set_time(now).await {
+                            tracing::warn!(device = %sn, error = %e, "DeviceRegistered: clock sync failed");
+                        }
+
+                        // Start real-time event subscription
+                        match device.enable_realtime().await {
+                            Ok(mut rx) => {
+                                let bus = reg_event_bus.clone();
+                                let sn2 = sn.clone();
+                                tokio::spawn(async move {
+                                    while let Some(event) = rx.recv().await {
+                                        match event {
+                                            timekeep_zkteco::sdk::event::RealTimeEvent::AttLog {
+                                                user_pin,
+                                                verify_mode,
+                                                timestamp,
+                                            } => {
+                                                let mut punch = timekeep_core::AttendancePunch {
+                                                    id: String::new(),
+                                                    device_sn: sn2.clone(),
+                                                    user_pin,
+                                                    timestamp,
+                                                    local_time: None,
+                                                    time_offset_secs: None,
+                                                    timezone_name: None,
+                                                    status: timekeep_core::PunchStatus::CheckIn,
+                                                    verify_mode,
+                                                    work_code: None,
+                                                    sub_status: None,
+                                                    employee_name: None,
+                                                    device_label: None,
+                                                    is_anomaly: false,
+                                                    anomaly_type: None,
+                                                    raw_data: None,
+                                                };
+                                                punch.id = punch.generate_deduplication_id();
+                                                bus.publish(DomainEvent::PunchReceived { punch });
+                                            },
+                                            _ => {},
+                                        }
+                                    }
+                                });
+                            },
+                            Err(e) => {
+                                tracing::warn!(device = %sn, error = %e, "DeviceRegistered: realtime events unavailable");
+                            },
+                        }
+
+                        reg_registry
+                            .lock()
+                            .await
+                            .insert(sn.clone(), Arc::new(tokio::sync::Mutex::new(device)));
+                        let now = jiff::Timestamp::now().as_second();
+                        reg_device_state.set_adms_connected(&sn, now).await;
+                    },
+                    Err(e) => {
+                        tracing::error!(
+                            device = %sn,
+                            host = %config.host,
+                            port = config.port,
+                            error = %e,
+                            "DeviceRegistered: failed to connect — device will be tried on next restart"
+                        );
+                    },
+                }
             }
         }
     });
@@ -1217,8 +1440,13 @@ pub(crate) async fn wire(
     // Collect background task handles.
     // Index 0 = poll handle (explicitly aborted on shutdown).
     // Remaining handles are dropped naturally when AppDependencies is dropped.
-    let device_handles: Vec<tokio::task::JoinHandle<()>> =
-        vec![poll_handle, user_event_handle, device_online_handle, discovery_handle];
+    let device_handles: Vec<tokio::task::JoinHandle<()>> = vec![
+        poll_handle,
+        user_event_handle,
+        device_online_handle,
+        discovery_handle,
+        registered_handle,
+    ];
 
     Ok(AppDependencies {
         storage,

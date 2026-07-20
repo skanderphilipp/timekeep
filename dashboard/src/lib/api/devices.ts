@@ -55,6 +55,8 @@ export type DeviceConfig = {
    * TODO(ENTERPRISE): Add device group management UI (settings page).
    */
   group_id?: string | null;
+  /** Human-readable group name. Populated when `?include=group` is requested. */
+  group_name?: string | null;
 };
 
 /**
@@ -76,6 +78,14 @@ export type DeviceDetailResponse = DeviceConfig & {
   adms_active: boolean;
   sdk_poll_active: boolean;
   sdk_last_poll?: number | null;
+  /** Device connection mode: "sdk" | "adms" | "both" | "offline" */
+  mode: string;
+  /** Whether SDK-dependent operations are available. */
+  can_pull_attendance: boolean;
+  can_sync_users: boolean;
+  can_restart: boolean;
+  can_sync_clock: boolean;
+  can_enroll_finger: boolean;
   user_count: number;
   user_capacity: number;
   record_count: number;
@@ -297,6 +307,14 @@ export function syncEmployeeToDevices(employeeId: string): Promise<{ status: str
 export function removeEmployeeFromDevices(employeeId: string): Promise<{ status: string }> {
   return apiPost<{ status: string }>(
     `employees/${encodeURIComponent(employeeId)}/remove-from-devices`,
+    {},
+  ).json();
+}
+
+/** Trigger an immediate attendance pull from a device. Requires Admin. */
+export function pullAttendanceFromDevice(deviceSn: string): Promise<{ status: string }> {
+  return apiPost<{ status: string }>(
+    `devices/${encodeURIComponent(deviceSn)}/pull-attendance`,
     {},
   ).json();
 }

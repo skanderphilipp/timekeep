@@ -10,8 +10,8 @@ import type {
  * Text and password form field (unified).
  *
  * Input handles its own label, error, helperText, and password show/hide
- * toggle — no separate FormField wrapper needed. Twenty-aligned pattern:
- * the input control is self-contained.
+ * toggle — no separate FormField wrapper needed. Pattern:
+   * the input control is self-contained.
  */
 export function FormFieldText({
   field,

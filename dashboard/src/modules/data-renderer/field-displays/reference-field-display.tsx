@@ -24,7 +24,7 @@ type ReferenceFieldDisplayProps = {
  * the Tag — clicking empty area around the Tag still enters
  * edit mode via the cell's onClick.
  *
- * **Navigation routing** (Twenty `LayoutRenderingContext` pattern):
+ * **Navigation routing** (`LayoutRenderingContext` pattern):
  * - When `onNavigateToEntity` is provided via `FieldContext`, it delegates
  *   to that callback. This allows the record-detail module to route
  *   correctly: main panel → full page, side panel → nested panel.

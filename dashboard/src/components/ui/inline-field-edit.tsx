@@ -69,8 +69,7 @@ function isEmptyValue(value: unknown): boolean {
  * **Phase 5 — Hover edit button:**
  * On hover, a subtle highlight appears behind the content and a pencil icon
  * fades in to the right. Clicking either the content or the pencil enters
- * edit mode. This matches Twenty's `RecordInlineCellDisplayMode` pattern:
- *   twenty-front/src/modules/object-record/record-inline-cell/components/RecordInlineCellDisplayMode.tsx
+ * This matches `RecordInlineCellDisplayMode` pattern.
  */
 export function InlineFieldEdit<TValue = unknown>({
   fieldId,

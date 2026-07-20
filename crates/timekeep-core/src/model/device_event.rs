@@ -37,7 +37,7 @@ pub enum DeviceEventType {
     /// Sync cycle completed successfully.
     SyncCompleted { records_synced: u32, duration_ms: u64 },
     /// Sync cycle failed.
-    SyncFailed { error: String, records_synced: u32 },
+    SyncFailed { error: String, records_synced: u32, duration_ms: u64 },
     /// Storage usage exceeded warning threshold.
     StorageWarning { records_used: u32, records_capacity: u32, percentage: f64 },
     /// Device configuration was changed via API.
@@ -132,7 +132,9 @@ impl DeviceEventType {
             "went_offline" => Self::WentOffline { reason: String::new() },
             "sync_started" => Self::SyncStarted,
             "sync_completed" => Self::SyncCompleted { records_synced: 0, duration_ms: 0 },
-            "sync_failed" => Self::SyncFailed { error: String::new(), records_synced: 0 },
+            "sync_failed" => {
+                Self::SyncFailed { error: String::new(), records_synced: 0, duration_ms: 0 }
+            },
             "storage_warning" => {
                 Self::StorageWarning { records_used: 0, records_capacity: 0, percentage: 0.0 }
             },

@@ -290,7 +290,7 @@ const deviceDetailConfig: DetailViewConfig = {
               fieldId: "group_id",
               label: "Group",
               type: "reference",
-              metadata: { fieldName: "group_id", referenceEntity: "device_group", referenceIdField: "group_id", displayField: "group_id" },
+              metadata: { fieldName: "group_name", referenceEntity: "device_group", referenceIdField: "group_id", displayField: "group_name" },
               editable: true,
             },
           ],

@@ -15,7 +15,7 @@ import { FormFieldDate } from "@/components/ui/form/fields/form-field-date";
 /**
  * Discriminated form field dispatcher.
  *
- * Two patterns (Twenty-aligned):
+ * Two patterns:
  *
  * ── Self-contained (no FormField wrapper) ──
  *   text, password  → FormFieldText   → Input handles its own label/error

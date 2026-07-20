@@ -20,7 +20,7 @@ type AppShellProps = {
 
 /**
  * Application shell — composes the sidebar, top bar, content area, and
- * side panel into a Twenty-aligned flex layout.
+ * side panel into a flex layout.
  *
  * Structure:
  * ```

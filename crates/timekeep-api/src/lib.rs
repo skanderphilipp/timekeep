@@ -176,6 +176,8 @@ pub fn management_router(config: RouterConfig) -> Router {
         .route("/api/reports/monthly-trend", get(routes::dashboard::monthly_trend))
         .route("/api/reports/by-department", get(routes::dashboard::department_attendance))
         .route("/api/reports/anomalies", get(routes::dashboard::list_anomalies))
+        .route("/api/attendance/calendar", get(routes::attendance::calendar))
+        .route("/api/attendance/timeline", get(routes::attendance::timeline))
         .route("/api/punches/schema", get(routes::punches::punch_schema))
         .route("/api/punches/filters", get(routes::punches::punch_filters))
         .route("/api/punches", get(routes::punches::query_punches_mgmt))
@@ -309,14 +311,12 @@ pub fn management_router(config: RouterConfig) -> Router {
             post(routes::onboarding::enroll_finger),
         )
         // Enrollment SSE progress stream
-        .route(
-            "/api/devices/{sn}/enrollment-events",
-            get(routes::onboarding::enrollment_events),
-        )
+        .route("/api/devices/{sn}/enrollment-events", get(routes::onboarding::enrollment_events))
         // Device user sync operations
         .route("/api/devices/{sn}/sync-clock", post(routes::device_users::sync_device_clock))
         .route("/api/devices/{sn}/restart", post(routes::device_users::restart_device))
         .route("/api/devices/{sn}/resync", post(routes::device_users::resync_device))
+        .route("/api/devices/{sn}/pull-attendance", post(routes::devices::pull_attendance))
         .route(
             "/api/devices/{sn}/sync-from/{source_sn}",
             post(routes::device_users::sync_device_to_device),

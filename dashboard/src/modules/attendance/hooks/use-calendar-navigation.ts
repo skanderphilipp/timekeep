@@ -11,7 +11,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
  * - **Uncontrolled**: internal state with prev/next/today navigation.
  *
  * Extracted from use-attendance-calendar.ts.
- * Twenty pattern: navigation is a separate concern from data fetching.
+ * Pattern: navigation is a separate concern from data fetching.
  */
 export function useCalendarNavigation(
 	options: {

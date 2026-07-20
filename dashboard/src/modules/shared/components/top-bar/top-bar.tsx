@@ -34,7 +34,7 @@ export type TopBarProps = {
  * TopBar — generic list page toolbar with view switching, search, filters, and chips.
  *
  * Three-slot layout (left | center | right) with an optional bottom chips row.
- * Inspired by Twenty's ViewBar / TopBar pattern.
+ * Inspired by the ViewBar / TopBar pattern.
  *
  * ```tsx
  * <TopBar

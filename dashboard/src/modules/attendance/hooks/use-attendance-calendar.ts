@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 
-import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
-import type { PunchFilter } from "@/lib/api";
-import { classifyDayFromPunches, aggregateDayStatus, type CalendarDayStatus } from "../compute";
+import { fetchCalendarMonth, type CalendarEmployeeDay } from "@/lib/api/attendance";
+import { QueryKeys } from "@/lib/query-keys";
 import { useCalendarNavigation } from "./use-calendar-navigation";
 import type { EmployeeStatusEntry } from "../components/mini-status-bars";
+import type { CalendarDayStatus } from "../compute";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -24,27 +25,59 @@ export type UseAttendanceCalendarOptions = {
 	userPin?: string;
 	/** @deprecated Use `userPin` instead. Kept for backward compat. */
 	userPins?: string[];
-	/**
-	 * Explicit date range from parent page filter context (Bug 2 fix).
-	 * When provided, overrides the auto-generated ±7 day range.
-	 */
-	filterSince?: string;
-	/** See `filterSince`. */
-	filterUntil?: string;
-	/**
-	 * Additional filter context from parent page (status, device_sns, search, etc.).
-	 * Spread into the usePunchData call so calendar data matches page-level filters.
-	 */
-	filterContext?: Partial<PunchFilter>;
+	/** Device serial filter (comma-separated from page context). */
+	deviceSns?: string;
+	/** Punch status filter from page context. */
+	status?: string;
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function isoToDateKey(date: Date): string {
-	const y = date.getFullYear();
-	const m = String(date.getMonth() + 1).padStart(2, "0");
-	const d = String(date.getDate()).padStart(2, "0");
-	return `${y}-${m}-${d}`;
+/** Map backend status string to CalendarDayStatus for cell coloring. */
+function toCellStatus(status: string): CalendarDayStatus {
+	switch (status) {
+		case "present": return "full";
+		case "late": return "late";
+		case "half": return "half";
+		case "absent": return "absent";
+		case "weekend": return "weekend";
+		default: return "absent";
+	}
+}
+
+/** Compute the dominant aggregate status for a day cell from per-employee statuses. */
+function aggregateCellStatus(employees: CalendarEmployeeDay[]): {
+	status: CalendarDayStatus;
+	hours: number | null;
+} {
+	if (employees.length === 0) return { status: "absent", hours: null };
+
+	let presentCount = 0;
+	let lateCount = 0;
+	let totalHours = 0;
+	let employeesWithHours = 0;
+
+	for (const emp of employees) {
+		if (emp.status !== "absent" && emp.status !== "weekend") {
+			presentCount++;
+			if (emp.status === "late") lateCount++;
+			if (emp.hours > 0) {
+				totalHours += emp.hours;
+				employeesWithHours++;
+			}
+		}
+	}
+
+	const totalCount = employees.length;
+	const avgHours = employeesWithHours > 0 ? totalHours / employeesWithHours : null;
+
+	let status: CalendarDayStatus;
+	if (presentCount === 0) status = "absent";
+	else if (lateCount > 0) status = "late";
+	else if (presentCount >= totalCount * 0.8) status = "full";
+	else status = "half";
+
+	return { status, hours: avgHours };
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
@@ -52,21 +85,16 @@ function isoToDateKey(date: Date): string {
 /**
  * Attendance calendar orchestration hook.
  *
- * Composes {@link useCalendarNavigation} with punch data fetching,
- * day grouping, and status classification for CalendarMonth.
- *
- * Supports two modes:
- * - **Controlled**: pass `year`/`month` options
- * - **Uncontrolled**: internal navigation via prev/next/today
+ * Uses the backend `/api/attendance/calendar` endpoint which returns
+ * pre-computed per-employee-per-day status and hours. No raw punch
+ * classification happens on the frontend.
  */
 export function useAttendanceCalendar(options: UseAttendanceCalendarOptions = {}) {
 	const { _ } = useLingui();
 
 	// ── Navigation ───────────────────────────────────────────────────────────
-	const { year, month, monthLabel, goPrev, goNext, goToday, goPrevYear, goNextYear } = useCalendarNavigation({
-		year: options.year,
-		month: options.month,
-	});
+	const { year, month, monthLabel, goPrev, goNext, goToday, goPrevYear, goNextYear } =
+		useCalendarNavigation({ year: options.year, month: options.month });
 
 	// Backward compat: userPins (array) → first element
 	const userPin = options.userPin ?? options.userPins?.[0] ?? undefined;
@@ -75,111 +103,88 @@ export function useAttendanceCalendar(options: UseAttendanceCalendarOptions = {}
 	const [selectedEmployee, setSelectedEmployee] = useState<string>("");
 	const effectivePin = userPin || (selectedEmployee || undefined);
 
-	// ── Data fetching ──────────────────────────────────────────────────────────
-	const since = useMemo(() => {
-		if (options.filterSince) return options.filterSince;
-		const d = new Date(year, month - 1, 1);
-		d.setDate(d.getDate() - 7);
-		return isoToDateKey(d);
-	}, [year, month, options.filterSince]);
+	// ── Calendar endpoint query ──────────────────────────────────────────────
+	const calendarQueryParams = useMemo(() => ({
+		year,
+		month,
+		...(options.deviceSns ? { device_sns: options.deviceSns } : {}),
+		...(effectivePin ? { user_pins: effectivePin } : {}),
+		...(options.status ? { status: options.status } : {}),
+	}), [year, month, options.deviceSns, options.status, effectivePin]);
 
-	const until = useMemo(() => {
-		if (options.filterUntil) return options.filterUntil;
-		const d = new Date(year, month, 0);
-		d.setDate(d.getDate() + 7);
-		return isoToDateKey(d);
-	}, [year, month, options.filterUntil]);
-
-	const { data } = usePunchData({
-		since,
-		until,
-		...(effectivePin ? { user_pins: [effectivePin] } : {}),
-		...options.filterContext,
-		limit: 10000,
+	const { data: calendarData, isLoading } = useQuery({
+		queryKey: QueryKeys.attendance.calendar(calendarQueryParams),
+		queryFn: () => fetchCalendarMonth(calendarQueryParams),
 	});
 
-	// ── Day grouping ───────────────────────────────────────────────────────────
-	const punchesByDay = useMemo(() => {
-		const map = new Map<string, Punch[]>();
-		data?.punches.forEach((p) => {
-			const d = new Date(p.timestamp * 1000);
-			const key = isoToDateKey(d);
-			const existing = map.get(key) ?? [];
-			existing.push(p);
-			map.set(key, existing);
-		});
-		return map;
-	}, [data]);
+	// ── Day status map (for CalendarMonth cell colors) ───────────────────────
+	const dayStatusMap: Record<string, { status: CalendarDayStatus; hours: number | null }> =
+		useMemo(() => {
+			const map: Record<string, { status: CalendarDayStatus; hours: number | null }> = {};
+			if (!calendarData?.days) return map;
 
-	/** CalendarMonth data map: ISO date → { status, hours }. */
-	const dayStatusMap = useMemo(() => {
-		const map: Record<string, { status: CalendarDayStatus; hours: number | null }> = {};
-		punchesByDay.forEach((punches, key) => {
-			if (effectivePin) {
-				// Single employee: classify individually
-				const { status, hours } = classifyDayFromPunches(punches);
-				map[key] = { status, hours };
-			} else {
-				// All employees: aggregate
-				const agg = aggregateDayStatus(punches);
-				map[key] = { status: agg.status, hours: agg.avgHours };
+			for (const [date, employees] of Object.entries(calendarData.days)) {
+				if (effectivePin && employees.length === 1) {
+					// Single employee: use their status directly
+					const emp = employees[0];
+					map[date] = { status: toCellStatus(emp.status), hours: emp.hours || null };
+				} else if (employees.length > 0) {
+					// All employees: aggregate
+					map[date] = aggregateCellStatus(employees);
+				}
 			}
-		});
-		return map;
-	}, [punchesByDay, effectivePin]);
+			return map;
+		}, [calendarData, effectivePin]);
 
-	// ── Per-employee statuses (for mini status bars in All Employees mode) ──
+	// ── Per-employee statuses (for scrollable mini status bars) ─────────────
 	const employeeStatusesByDay = useMemo(() => {
 		const map = new Map<string, EmployeeStatusEntry[]>();
-		if (!effectivePin) {
-			punchesByDay.forEach((punches, key) => {
-				// Group punches within this day by employee PIN
-				const byEmployee = new Map<string, Punch[]>();
-				punches.forEach((p) => {
-					const existing = byEmployee.get(p.user_pin) ?? [];
-					existing.push(p);
-					byEmployee.set(p.user_pin, existing);
-				});
-				// Classify each employee
-				const entries: EmployeeStatusEntry[] = [];
-				byEmployee.forEach((empPunches, pin) => {
-					const { status } = classifyDayFromPunches(empPunches);
-					if (status !== "absent" && status !== "weekend") {
-						entries.push({
-							pin,
-							name: empPunches[0]?.employee_name ?? pin,
-							status,
-						});
-					}
-				});
-				if (entries.length > 0) map.set(key, entries);
+		if (effectivePin || !calendarData?.days) return map;
+
+		for (const [date, employees] of Object.entries(calendarData.days)) {
+			const entries: EmployeeStatusEntry[] = employees
+				.filter((e) => e.status !== "weekend")
+				.map((e) => ({
+					pin: e.pin,
+					name: e.name || e.pin,
+					status: toCellStatus(e.status),
+					hours: e.hours || null,
+				}));
+
+			// Sort: present/late/half first, absent last, alphabetically
+			entries.sort((a, b) => {
+				if (a.status === "absent" && b.status !== "absent") return 1;
+				if (a.status !== "absent" && b.status === "absent") return -1;
+				return a.name.localeCompare(b.name);
 			});
+
+			if (entries.length > 0) map.set(date, entries);
 		}
 		return map;
-	}, [punchesByDay, effectivePin]);
+	}, [calendarData, effectivePin]);
 
-	// ── Employee options (for filtering UI) ────────────────────────────────────
+	// ── Employee options (for filtering UI) ──────────────────────────────────
 	const employeeOptions: EmployeeOption[] = useMemo(() => {
 		const seen = new Set<string>();
 		const opts: EmployeeOption[] = [{ value: "", label: _(msg`All Employees`) }];
-		data?.punches.forEach((p) => {
-			const pin = p.user_pin;
-			if (!seen.has(pin)) {
-				seen.add(pin);
-				opts.push({ value: pin, label: p.employee_name ?? pin });
+		if (!calendarData?.days) return opts;
+
+		for (const employees of Object.values(calendarData.days)) {
+			for (const emp of employees) {
+				if (!seen.has(emp.pin)) {
+					seen.add(emp.pin);
+					opts.push({ value: emp.pin, label: emp.name || emp.pin });
+				}
 			}
-		});
+		}
 		return opts;
-	}, [data, _]);
+	}, [calendarData, _]);
 
 	return {
 		year,
 		month,
 		monthLabel,
-		since,
-		until,
-		data,
-		punchesByDay,
+		isLoading,
 		dayStatusMap,
 		employeeStatusesByDay,
 		employeeOptions,

@@ -17,7 +17,7 @@ export { MenuCloseContext };
  * MenuItem — universal menu row supporting button and link modes.
  *
  * Open UI alignment: maps to `<menuitem>` (W3C Menu proposal).
- * Twenty UI alignment: transparent-light hover, concentric radius, outline focus.
+   * Transparent-light hover, concentric radius, outline focus.
  *
  * When `to` is provided, renders a `<Link>` with auto-trailing chevron.
  * When `to` is omitted, renders a `<button>`.

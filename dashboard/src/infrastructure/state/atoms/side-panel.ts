@@ -4,7 +4,7 @@ import { STORAGE_KEYS } from "@/lib/constants";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
-/** Side panel constraints. Ported from Twenty's SIDE_PANEL_CONSTRAINTS. */
+/** Side panel constraints. Ported from SIDE_PANEL_CONSTRAINTS. */
 export const SIDE_PANEL_CONSTRAINTS = {
   min: 320,
   max: 600,

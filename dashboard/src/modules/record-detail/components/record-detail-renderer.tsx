@@ -128,7 +128,7 @@ function RecordDetailRendererInner({
   tabChildren,
   externalKpiData,
 }: RecordDetailRendererInnerProps) {
-  /** Twenty pattern: derive isNewRecord from empty entityId, not a separate mode. */
+  	/** Derive isNewRecord from empty entityId, not a separate mode. */
   const isNewRecord = entityId.length === 0;
 
   // When creating, skip data fetching — render empty form

@@ -134,19 +134,17 @@ export function PunchQueryView() {
 			}
 			if (view === "calendar") {
 				const today = new Date();
-				const calendarFilterCtx: Record<string, unknown> = {};
-				if (page.filters.status) calendarFilterCtx.status = page.filters.status;
-				if (page.filters.device_sns) calendarFilterCtx.device_sns = page.filters.device_sns;
-				if (page.filters.search) calendarFilterCtx.search = page.filters.search;
-				if (page.filters.verify_mode) calendarFilterCtx.verify_mode = page.filters.verify_mode;
-				if (page.filters.anomalies_only) calendarFilterCtx.anomalies_only = page.filters.anomalies_only;
+				const deviceSns = page.filters.device_sns
+					? (Array.isArray(page.filters.device_sns)
+						? page.filters.device_sns.join(",")
+						: String(page.filters.device_sns))
+					: undefined;
 				return (
 					<AttendanceCalendarView
 						year={page.dateFrom?.getFullYear() ?? today.getFullYear()}
 						month={(page.dateFrom?.getMonth() ?? today.getMonth()) + 1}
-						filterSince={page.filters.since || undefined}
-						filterUntil={page.filters.until || undefined}
-						filterContext={Object.keys(calendarFilterCtx).length > 0 ? calendarFilterCtx : undefined}
+						deviceSns={deviceSns}
+						status={page.filters.status || undefined}
 					/>
 				);
 			}

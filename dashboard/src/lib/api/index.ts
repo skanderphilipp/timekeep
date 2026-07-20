@@ -55,6 +55,7 @@ export {
   syncDeviceClock,
   resyncDevice,
   syncDeviceToDevice,
+  pullAttendanceFromDevice,
   enrollEmployee,
   enrollFinger,
   listDeviceEnrollments,
@@ -121,6 +122,22 @@ export type {
   DeviceActivityEvent,
   DeviceActivityPage,
 } from "./dashboard";
+
+// ── Attendance ─────────────────────────────────────────────────────────────────
+
+export {
+  fetchCalendarMonth,
+  fetchTimelineDay,
+} from "./attendance";
+export type {
+  CalendarEmployeeDay,
+  CalendarMonthResponse,
+  TimelineBlock,
+  TimelineEmployeeBlocks,
+  TimelineDayResponse,
+  CalendarQueryParams,
+  TimelineQueryParams,
+} from "./attendance";
 
 // ── Employees ──────────────────────────────────────────────────────────────────
 

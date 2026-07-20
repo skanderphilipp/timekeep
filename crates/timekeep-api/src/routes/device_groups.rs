@@ -46,7 +46,7 @@ pub(crate) async fn list_groups(
 ) -> Result<axum::response::Response, AppError> {
     let groups = state.storage.list_device_groups().await?;
     let responses: Vec<DeviceGroupResponse> =
-        groups.iter().map(|g| DeviceGroupResponse::from_group(g, None)).collect();
+        groups.iter().map(|g| DeviceGroupResponse::from_group(g, None, vec![])).collect();
     crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
 }
 
@@ -79,7 +79,7 @@ pub(crate) async fn get_group(
     let devices = state.storage.list_devices_in_group(&id).await?;
     let device_count = if devices.is_empty() { None } else { Some(devices.len() as u64) };
 
-    Ok(Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, device_count))))
+    Ok(Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, device_count, vec![]))))
 }
 
 /// Create a new device group.
@@ -118,7 +118,7 @@ pub(crate) async fn create_group(
 
     Ok((
         StatusCode::CREATED,
-        Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, None))),
+        Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, None, vec![]))),
     ))
 }
 
@@ -175,7 +175,7 @@ pub(crate) async fn update_group(
 
     state.storage.update_device_group(&group).await?;
 
-    Ok(Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, None))))
+    Ok(Json(ApiEnvelope::success(DeviceGroupResponse::from_group(&group, None, vec![]))))
 }
 
 /// Delete a device group by ID.

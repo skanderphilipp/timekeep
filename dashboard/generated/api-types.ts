@@ -236,7 +236,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List all departments. */
+        /**
+         * Query parameters for GET /api/departments — extends ListParams with
+         *     department-specific options.
+         * @description The `include` field on the parent `ListParams` supports:
+         *       - `include=work_policy` → resolves the full work policy template schedule
+         *         into the `work_policy` field on each `DepartmentResponse`.
+         */
         get: operations["list_departments"];
         put?: never;
         /** Create a new department. */
@@ -1592,6 +1598,16 @@ export interface components {
             /** @description Whether this key has been revoked. */
             revoked: boolean;
         };
+        /**
+         * @description Echo of the filter parameters sent by the client.
+         *     Allows the frontend to render active filter chips.
+         */
+        AppliedFilters: {
+            department_ids?: string[] | null;
+            device_sns?: string[] | null;
+            statuses?: string[] | null;
+            user_pins?: string[] | null;
+        };
         /** @description Attendance status distribution (full day / half day / absent). */
         AttendanceDistribution: {
             /**
@@ -1955,6 +1971,12 @@ export interface components {
         /** @description Full device detail — identity, health, capacity, sync status. */
         DeviceDetailResponse: components["schemas"]["DeviceResponse"] & {
             adms_active: boolean;
+            can_enroll_finger: boolean;
+            /** @description Whether SDK-dependent operations are available. */
+            can_pull_attendance: boolean;
+            can_restart: boolean;
+            can_sync_clock: boolean;
+            can_sync_users: boolean;
             /** Format: int32 */
             face_capacity: number;
             /** Format: int32 */
@@ -1973,6 +1995,8 @@ export interface components {
             /** Format: int64 */
             last_sync_cursor?: number | null;
             mac_address?: string | null;
+            /** @description Device connection mode: "sdk", "adms", "both", or "offline". */
+            mode: string;
             model?: string | null;
             platform?: string | null;
             /** Format: int32 */
@@ -2073,6 +2097,11 @@ export interface components {
             created_at: number;
             /** @description Department IDs assigned to this group. Empty = all departments. */
             department_ids: string[];
+            /**
+             * @description Human-readable department names, resolved from `department_ids`.
+             *     Populated when `?include=departments` is requested.
+             */
+            department_names?: string[];
             description?: string | null;
             /** Format: int64 */
             device_count?: number | null;
@@ -2115,6 +2144,11 @@ export interface components {
             /** Format: int32 */
             comm_key: number;
             group_id?: string | null;
+            /**
+             * @description Human-readable device group name.
+             *     Populated when `?include=group` is requested.
+             */
+            group_name?: string | null;
             host: string;
             label: string;
             location?: string | null;
@@ -2262,6 +2296,10 @@ export interface components {
              * @description Number of days present (full or half day).
              */
             days_present: number;
+            /** @description Department UUID (set when employee→department mapping is available). */
+            department_id?: string | null;
+            /** @description Department display name. */
+            department_name?: string | null;
             employee_name?: string | null;
             /**
              * Format: int64
@@ -2646,6 +2684,11 @@ export interface components {
             /** @description Filter by punch status: check_in, check_out, break_out, break_in, overtime_in, overtime_out. */
             status?: string | null;
             /**
+             * @description When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
+             *     Use for calendar/timeline views that need all punches in a date range.
+             */
+            unlimited?: string | null;
+            /**
              * Format: int64
              * @description Unix timestamp (seconds) — return punches before this time.
              */
@@ -2704,6 +2747,23 @@ export interface components {
              *     Defaults to end of today.
              */
             date_to?: number | null;
+            /**
+             * @description Filter by department UUIDs (comma-separated, OR logic).
+             *     Resolves to employee PINs via the employee repository.
+             */
+            department_ids?: string | null;
+            /** @description Filter by device serial numbers (comma-separated, OR logic). */
+            device_sns?: string | null;
+            /**
+             * @description Filter by punch statuses (comma-separated, OR logic).
+             *     Valid: check_in, check_out, break_out, break_in, overtime_in, overtime_out.
+             */
+            statuses?: string | null;
+            /**
+             * @description Filter by employee PINs (comma-separated, OR logic).
+             *     Example: `user_pins=1001,1002`
+             */
+            user_pins?: string | null;
         };
         /** @description Aggregated punch summary for a date range. */
         ReportSummaryResponse: {
@@ -2712,6 +2772,7 @@ export interface components {
              * @description Absence rate: absent employee-days / total employee-working-days.
              */
             absence_rate: number;
+            applied_filters?: null | components["schemas"]["AppliedFilters"];
             /**
              * Format: int64
              * @description Average regular hours per employee per working day (in seconds).
@@ -2734,6 +2795,11 @@ export interface components {
             date_to: number;
             /** @description Per-employee KPIs for the period. */
             employees: components["schemas"]["EmployeeReportKpi"][];
+            /**
+             * Format: int64
+             * @description Server timestamp when this report was generated (unix seconds).
+             */
+            generated_at: number;
             /** Format: int64 */
             overtime_ins: number;
             /** Format: int64 */
@@ -2864,6 +2930,8 @@ export interface components {
         SortOrder: "asc" | "desc";
         /** @description Used for endpoints that return a status message (create, update, delete confirmations). */
         StatusResponse: {
+            /** @description Human-readable explanation, set for rejected or failed states. */
+            reason?: string | null;
             status: string;
         };
         /**
@@ -3823,7 +3891,13 @@ export interface operations {
     };
     get_department: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Eager-loaded relationships: comma-separated relationship names.
+                 *     Supported: work_policy.
+                 */
+                include?: string | null;
+            };
             header?: never;
             path: {
                 /** @description Department UUID */
@@ -6325,6 +6399,11 @@ export interface operations {
                 /** @description When "true", return only punches flagged as anomalous. */
                 anomalies_only?: string | null;
                 /**
+                 * @description When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
+                 *     Use for calendar/timeline views that need all punches in a date range.
+                 */
+                unlimited?: string | null;
+                /**
                  * @description Sparse field selection: comma-separated field names to return.
                  *     Omit to return all fields. Example: fields=id,timestamp,status,device_label
                  */
@@ -6508,7 +6587,7 @@ export interface operations {
     };
     report_summary: {
         parameters: {
-            query?: {
+            query: {
                 /**
                  * @description Unix timestamp (seconds) — start of date range (inclusive).
                  *     Defaults to start of today.
@@ -6519,6 +6598,23 @@ export interface operations {
                  *     Defaults to end of today.
                  */
                 date_to?: number | null;
+                /**
+                 * @description Filter by employee PINs (comma-separated, OR logic).
+                 *     Example: `user_pins=1001,1002`
+                 */
+                user_pins: string;
+                /**
+                 * @description Filter by department UUIDs (comma-separated, OR logic).
+                 *     Resolves to employee PINs via the employee repository.
+                 */
+                department_ids: string;
+                /** @description Filter by device serial numbers (comma-separated, OR logic). */
+                device_sns: string;
+                /**
+                 * @description Filter by punch statuses (comma-separated, OR logic).
+                 *     Valid: check_in, check_out, break_out, break_in, overtime_in, overtime_out.
+                 */
+                statuses: string;
             };
             header?: never;
             path?: never;
@@ -7051,6 +7147,11 @@ export interface operations {
                 verify_mode?: string | null;
                 /** @description When "true", return only punches flagged as anomalous. */
                 anomalies_only?: string | null;
+                /**
+                 * @description When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
+                 *     Use for calendar/timeline views that need all punches in a date range.
+                 */
+                unlimited?: string | null;
                 /**
                  * @description Sparse field selection: comma-separated field names to return.
                  *     Omit to return all fields. Example: fields=id,timestamp,status,device_label

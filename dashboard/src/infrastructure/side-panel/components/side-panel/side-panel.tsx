@@ -38,17 +38,11 @@ type SidePanelProps = {
   /**
    * Actions rendered in the header, between the title and close button.
    * Used for "Open in Main View" and similar header-level actions.
-   *
-   * Twenty reference:
-   *   twenty-front/src/modules/side-panel/components/SidePanelTopBarRightCornerIcon.tsx
    */
   headerActions?: ReactNode;
   /**
    * Footer actions rendered at the bottom of the panel.
    * Used for entity commands: Edit, Delete, etc.
-   *
-   * Twenty reference:
-   *   twenty-front/src/modules/ui/layout/side-panel/components/SidePanelFooter.tsx
    */
   footerActions?: ReactNode;
 };
@@ -73,7 +67,7 @@ type SidePanelProps = {
  * - CSS transition on open/close (width 0 ↔ var(--tk-side-panel-width))
  * - Scrollable content area with fade-in animation
  *
- * Ported from Twenty's `SidePanelForDesktop`.
+ * Ported from `SidePanelForDesktop`.
  */
 export function SidePanel({
   open: propOpen,

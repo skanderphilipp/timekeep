@@ -6,8 +6,8 @@ import type { DetailTabConfig, DetailViewConfig, DetailFieldConfig } from "./ent
 /**
  * Architecture tests for the record-detail tab system.
  *
- * Cross-referenced with Twenty's page-layout architecture:
- * - Tabs are validated against entity-specific configs (like Twenty's `useCurrentPageLayoutOrThrow`)
+ * Cross-referenced with page-layout architecture:
+ * - Tabs are validated against entity-specific configs (like `useCurrentPageLayoutOrThrow`)
  * - Every tab has a unique key within its entity
  * - Empty sections are allowed (for custom-only tabs via tabChildren)
  * - Flat sections fall back correctly for simple entities

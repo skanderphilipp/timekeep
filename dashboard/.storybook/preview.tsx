@@ -33,7 +33,7 @@ i18n.activate("en");
 // race against the service worker registration.
 //
 // TODO(ENTERPRISE): Migrate to msw-storybook-addon for cleaner
-// per-story handler loading (pattern used by Twenty).
+// per-story handler loading.
 let _workerReady = false;
 
 async function ensureWorker(): Promise<void> {

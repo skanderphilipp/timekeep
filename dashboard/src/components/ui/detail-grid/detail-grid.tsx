@@ -13,7 +13,7 @@ type DetailGridProps = {
 /**
  * Structured horizontal label-value grid for detail views.
  *
- * Ported from twenty-ui's RecordInlineCell / PropertyBox pattern.
+ * Ported from RecordInlineCell / PropertyBox pattern.
  * Uses a fixed-width label column on the left with the value
  * filling remaining space on the right — instead of the weak
  * vertical label-above-value stack.
@@ -49,7 +49,7 @@ type DetailItemProps = {
   label: string;
   /** Value content. Strings render with overflow tooltip; ReactNodes render directly. */
   children: ReactNode;
-  /** Optional icon rendered before the label text (twenty pattern). */
+  /** Optional icon rendered before the label text. */
   icon?: ReactNode;
 };
 

@@ -7,7 +7,7 @@ import { useEffect, useRef, type RefObject } from "react";
  * clicks outside the input element. Callbacks receive the current draft
  * value by closure (re-registered via dependencies array on value change).
  *
- * Simpler than Twenty's version — uses raw DOM events instead of
+ * Simpler than the reference version — uses raw DOM events instead of
  * `react-hotkeys-hook` and a focus stack. Suitable for MVP inline
  * editing where only one cell is editable at a time.
  *

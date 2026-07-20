@@ -7,7 +7,7 @@ import type { FormBooleanFieldDef } from "@/components/ui/form/form-field-def";
  * Boolean form field — self-contained Switch, no FormField wrapper.
  *
  * Switch handles its own fieldLabel, inline toggle label, error,
- * and helper text. Twenty-aligned: the control is self-contained.
+   * and helper text. the control is self-contained.
  */
 export function FormFieldBoolean({
   field,

@@ -1,13 +1,10 @@
 import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  IconTrash,
   IconUsersPlus,
   IconArrowsExchange,
-  IconClock,
-  IconPower,
-  IconCloudUpload,
+  IconCloudDownload,
 } from "@tabler/icons-react";
 
 import { getDeviceStatusUI } from "@/lib/device-status-ui";
@@ -19,8 +16,6 @@ import {
   Badge,
   Text,
   Button,
-  ConfirmDialog,
-  IconButton,
 } from "@/components/ui";
 import { ActivityFeed } from "@/modules/shared/components";
 import { DeviceForm } from "./device-form";
@@ -29,15 +24,27 @@ import { DeviceHealthCards } from "./device-health-cards";
 import { EnrollEmployeeDialog } from "./enroll-employee-dialog";
 import { DeviceToDeviceCopyDialog } from "./device-to-device-copy-dialog";
 import { UserSyncActions } from "./user-sync-actions";
-import { useDeleteDevice } from "../hooks/use-delete-device";
+import { DeviceActionsMenu } from "./device-actions-menu";
 import { useDeviceCommand } from "../hooks/use-device-command";
-import { useSyncActions } from "../hooks/use-sync-actions";
 import { useDeviceEvents, type DeviceEvent } from "../hooks/use-device-events";
 import { mapEventKind } from "../utils/device-detail-utils";
 import { useQueryClient } from "@tanstack/react-query";
 
 import styles from "./device-detail-view.module.scss";
 import type { ReactNode } from "react";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Format a Unix timestamp as a relative time string like "12s ago", "5m ago". */
+function relativeTime(tsSeconds: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - tsSeconds;
+  if (diff < 0) return "just now";
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -56,114 +63,104 @@ type DeviceDetailAutoContentProps = {
 // ── Status Bar (rendered above tabs as children) ───────────────────────────
 
 /**
- * Status bar with connection badge, serial number, quick action buttons,
- * and delete. Rendered as `children` above the tabs so it's always visible.
+ * Status bar with connection badge, health indicators, Pull Attendance button,
+ * and a ⋮ actions menu for device utilities.
+ *
+ * Rendered as `children` above the tabs so it's always visible.
+ * All utility operations (Restart, Sync Clock, Full Re-sync, Delete) are
+ * behind the actions menu to prevent accidental triggers.
  */
 function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
   const { _ } = useLingui();
-  const { restart, syncClock } = useDeviceCommand(device.serial_number);
-  const { resync } = useSyncActions(device.serial_number);
-  const deleteMutation = useDeleteDevice();
-
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [restartOpen, setRestartOpen] = useState(false);
-  const [resyncOpen, setResyncOpen] = useState(false);
+  const { pullAttendance } = useDeviceCommand(device.serial_number);
+  const queryClient = useQueryClient();
 
   const statusValue: DeviceStatusValue = device.status ?? "offline";
   const statusDef = getDeviceStatus(statusValue);
   const statusUI = getDeviceStatusUI(statusValue);
 
+  const healthSummary = useMemo(() => {
+    const parts: string[] = [];
+    // Mode pill
+    const modeLabels: Record<string, string> = {
+      both: "SDK + ADMS",
+      sdk: "SDK only",
+      adms: _(msg`ADMS-only`),
+      offline: _(msg`Offline`),
+    };
+    const modeLabel = modeLabels[device.mode] ?? device.mode;
+    parts.push(modeLabel);
+
+    // Detail
+    if (device.adms_active) parts.push(_(msg`ADMS active`));
+    if (device.sdk_poll_active) {
+      const pollText = device.sdk_last_poll
+        ? `${_(msg`SDK polling`)} · ${relativeTime(device.sdk_last_poll)}`
+        : _(msg`SDK polling`);
+      parts.push(pollText);
+    } else if (device.mode !== "offline") {
+      parts.push(_(msg`SDK inactive`));
+    }
+    if (device.last_seen_at) {
+      parts.push(`${_(msg`Last seen`)}: ${relativeTime(device.last_seen_at)}`);
+    }
+    return parts.join(" · ");
+  }, [
+    _,
+    device.mode,
+    device.adms_active,
+    device.sdk_poll_active,
+    device.sdk_last_poll,
+    device.last_seen_at,
+  ]);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["devices", device.serial_number],
+    });
+  };
+
   return (
-    <>
-      <Section className={styles.statusRow}>
-        <Badge variant={statusUI.variant} dot={statusUI.dotColor} size="md">
-          {statusDef?.label ?? statusValue}
-        </Badge>
+    <Section className={styles.statusRow}>
+      <Badge variant={statusUI.variant} dot={statusUI.dotColor} size="md">
+        {statusDef?.label ?? statusValue}
+      </Badge>
 
-        <Text variant="caption" color="tertiary">
-          {_(msg`SN: ${device.serial_number}`)}
-        </Text>
+      <Text variant="caption" color="tertiary">
+        {_(msg`SN: ${device.serial_number}`)}
+      </Text>
 
-        {/* Spacer — pushes actions to the right */}
-        <div style={{ flex: 1 }} />
+      <Text variant="caption" color="secondary">
+        {healthSummary}
+      </Text>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<IconClock size={14} />}
-          loading={syncClock.isPending}
-          onClick={() => syncClock.mutate()}
-        >
-          {_(msg`Sync Clock`)}
-        </Button>
+      {/* Spacer — pushes actions to the right */}
+      <div style={{ flex: 1 }} />
 
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<IconPower size={14} />}
-          onClick={() => setRestartOpen(true)}
-        >
-          {_(msg`Restart`)}
-        </Button>
+      <Button
+        variant="primary"
+        size="sm"
+        icon={<IconCloudDownload size={14} />}
+        loading={pullAttendance.isPending}
+        disabled={!device.can_pull_attendance}
+        title={
+          !device.can_pull_attendance
+            ? _(msg`Attendance pull requires SDK connection. This device is in ${device.mode} mode.`)
+            : undefined
+        }
+        onClick={() => pullAttendance.mutate()}
+      >
+        {_(msg`Pull Attendance`)}
+      </Button>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<IconCloudUpload size={14} />}
-          loading={resync.isPending}
-          onClick={() => setResyncOpen(true)}
-        >
-          {_(msg`Full Re-sync`)}
-        </Button>
-
-        <IconButton
-          aria-label={_(msg`Delete device`)}
-          onClick={() => setDeleteOpen(true)}
-        >
-          <IconTrash size={16} />
-        </IconButton>
-      </Section>
-
-      {/* ── Confirmation Dialogs ── */}
-
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title={_(msg`Delete Device`)}
-        message={_(
-          msg`Are you sure you want to remove "${device.label || device.serial_number}"? This action cannot be undone.`,
-        )}
-        confirmLabel={_(msg`Delete`)}
-        variant="danger"
-        isPending={deleteMutation.isPending}
-        onConfirm={() => deleteMutation.mutate(device.serial_number)}
+      <DeviceActionsMenu
+        deviceSn={device.serial_number}
+        deviceLabel={device.label || device.serial_number}
+        canSyncClock={device.can_sync_clock}
+        canRestart={device.can_restart}
+        onRefresh={handleRefresh}
       />
-
-      <ConfirmDialog
-        open={restartOpen}
-        onOpenChange={setRestartOpen}
-        title={_(msg`Restart Device`)}
-        message={_(
-          msg`The device will reboot and be offline for about 30–60 seconds. Attendance records already stored on the device are safe.`,
-        )}
-        confirmLabel={_(msg`Restart`)}
-        variant="danger"
-        isPending={restart.isPending}
-        onConfirm={() => restart.mutate()}
-      />
-
-      <ConfirmDialog
-        open={resyncOpen}
-        onOpenChange={setResyncOpen}
-        title={_(msg`Full Re-sync`)}
-        message={_(
-          msg`This will pull all users and attendance records from the device and push any pending changes. The device will remain online during this operation.`,
-        )}
-        confirmLabel={_(msg`Re-sync`)}
-        isPending={resync.isPending}
-        onConfirm={() => resync.mutate(undefined)}
-      />
-    </>
+    </Section>
   );
 }
 
@@ -208,16 +205,27 @@ function DeviceActivityTab({ device }: DeviceDetailAutoContentProps) {
     }),
   );
 
+  const emptyMessage = useMemo(() => {
+    if (device.mode === "adms") {
+      return _(
+        msg`This device is in ADMS-only mode. Attendance records are received when the device pushes data to the server. No SDK polling events will appear here.`,
+      );
+    }
+    if (device.mode === "offline") {
+      return _(
+        msg`Device is offline. Activity will appear once the device connects and starts reporting events.`,
+      );
+    }
+    return _(
+      msg`Device activity will appear here once the engine starts collecting events.`,
+    );
+  }, [_, device.mode]);
+
   return (
     <Section>
       <Card>
         <Card.Content>
-          <ActivityFeed
-            events={activityEvents ?? []}
-            emptyMessage={_(
-              msg`Device activity will appear here once the engine starts collecting events.`,
-            )}
-          />
+          <ActivityFeed events={activityEvents ?? []} emptyMessage={emptyMessage} />
         </Card.Content>
       </Card>
     </Section>
@@ -250,6 +258,8 @@ function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false);
 
+  const sdkMissing = !device.can_sync_users;
+
   return (
     <>
       <UserSyncActions deviceSn={device.serial_number} />
@@ -257,6 +267,12 @@ function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
         variant="secondary"
         size="sm"
         icon={<IconUsersPlus size={16} />}
+        disabled={sdkMissing}
+        title={
+          sdkMissing
+            ? _(msg`Enrollment requires SDK connection. This device is in ${device.mode} mode.`)
+            : undefined
+        }
         onClick={() => setEnrollOpen(true)}
       >
         {_(msg`Enroll Employee`)}
@@ -265,6 +281,12 @@ function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
         variant="secondary"
         size="sm"
         icon={<IconArrowsExchange size={16} />}
+        disabled={sdkMissing}
+        title={
+          sdkMissing
+            ? _(msg`Device-to-device copy requires SDK connection. This device is in ${device.mode} mode.`)
+            : undefined
+        }
         onClick={() => setCopyOpen(true)}
       >
         {_(msg`Copy from Device`)}

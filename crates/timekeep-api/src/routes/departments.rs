@@ -23,8 +23,10 @@ use axum::{
 
 use crate::AppState;
 use crate::dto::DepartmentResponse;
-use crate::request::{CreateDepartmentRequest, GenericFacetParams, UpdateDepartmentRequest};
-use crate::response::{ApiEnvelope, AppError, PageMeta};
+use crate::request::{
+    CreateDepartmentRequest, DepartmentQuery, GenericFacetParams, UpdateDepartmentRequest,
+};
+use crate::response::{ApiEnvelope, AppError, PageMeta, WorkPolicyResponse};
 
 /// Resolve the display title for a department's work policy template.
 async fn resolve_policy_title(state: &AppState, work_policy_id: Option<&str>) -> Option<String> {
@@ -34,6 +36,32 @@ async fn resolve_policy_title(state: &AppState, work_policy_id: Option<&str>) ->
         },
         None => None,
     }
+}
+
+/// Resolve a work policy template FK into a full `WorkPolicyResponse`.
+///
+/// Called when `?include=work_policy` is requested. Returns the template's
+/// schedule data (start/end times, thresholds, working days) as a flat
+/// response struct that the frontend already knows how to display.
+async fn resolve_policy_from_template(
+    state: &AppState,
+    work_policy_id: Option<&str>,
+) -> Option<WorkPolicyResponse> {
+    match work_policy_id {
+        Some(id) => {
+            let tpl = state.storage.get_work_policy_template(id).await.ok().flatten()?;
+            Some(WorkPolicyResponse::from_template(&tpl))
+        },
+        None => None,
+    }
+}
+
+/// Parse the comma-separated `include` query param into a set of relationship names.
+fn parse_includes(include: &Option<String>) -> Vec<&str> {
+    include
+        .as_deref()
+        .map(|s| s.split(',').map(str::trim).filter(|s| !s.is_empty()).collect())
+        .unwrap_or_default()
 }
 fn parse_work_policy(
     input: &crate::request::WorkPolicyInput,
@@ -89,7 +117,12 @@ fn resolve_policy(
 
 // ─── CRUD Endpoints ────────────────────────────────────────────────────
 
-/// List all departments.
+/// Query parameters for GET /api/departments — extends ListParams with
+/// department-specific options.
+///
+/// The `include` field on the parent `ListParams` supports:
+///   - `include=work_policy` → resolves the full work policy template schedule
+///     into the `work_policy` field on each `DepartmentResponse`.
 #[utoipa::path(
     get,
     path = "/api/departments",
@@ -106,6 +139,9 @@ pub(crate) async fn list_departments(
 ) -> Result<axum::response::Response, AppError> {
     let departments = state.storage.list_departments().await?;
 
+    let includes = parse_includes(&params.include);
+    let resolve_full_policy = includes.contains(&"work_policy");
+
     let employee_store = crate::employees::employees(&state).ok();
     let mut responses: Vec<DepartmentResponse> = Vec::with_capacity(departments.len());
     for dept in &departments {
@@ -114,7 +150,17 @@ pub(crate) async fn list_departments(
             None => None,
         };
         let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
-        responses.push(DepartmentResponse::from_department(dept, count, policy_title));
+        let resolved_policy = if resolve_full_policy {
+            resolve_policy_from_template(&state, dept.work_policy_id.as_deref()).await
+        } else {
+            None
+        };
+        responses.push(DepartmentResponse::from_department(
+            dept,
+            count,
+            policy_title,
+            resolved_policy,
+        ));
     }
 
     crate::response::build_sparse_envelope(responses, PageMeta::single(), &params.fields)
@@ -128,6 +174,7 @@ pub(crate) async fn list_departments(
     security(("bearer_auth" = [])),
     params(
         ("id" = String, Path, description = "Department UUID"),
+        DepartmentQuery,
     ),
     responses(
         (status = 200, description = "Department details", body = DepartmentResponse),
@@ -138,6 +185,7 @@ pub(crate) async fn list_departments(
 pub(crate) async fn get_department(
     State(state): State<AppState>,
     Path(id): Path<String>,
+    Query(query): Query<DepartmentQuery>,
 ) -> Result<Json<ApiEnvelope<DepartmentResponse>>, AppError> {
     let dept = state
         .storage
@@ -151,10 +199,19 @@ pub(crate) async fn get_department(
     };
     let policy_title = resolve_policy_title(&state, dept.work_policy_id.as_deref()).await;
 
+    // Eager-load the full work policy when ?include=work_policy is requested
+    let includes = parse_includes(&query.include);
+    let resolved_policy = if includes.contains(&"work_policy") {
+        resolve_policy_from_template(&state, dept.work_policy_id.as_deref()).await
+    } else {
+        None
+    };
+
     Ok(Json(ApiEnvelope::success(DepartmentResponse::from_department(
         &dept,
         employee_count,
         policy_title,
+        resolved_policy,
     ))))
 }
 
@@ -213,6 +270,7 @@ pub(crate) async fn create_department(
             &dept,
             Some(0),
             policy_title,
+            None,
         ))),
     ))
 }
@@ -303,6 +361,7 @@ pub(crate) async fn update_department(
         &dept,
         employee_count,
         policy_title,
+        None,
     ))))
 }
 

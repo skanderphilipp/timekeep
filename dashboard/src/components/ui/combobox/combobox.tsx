@@ -2,8 +2,8 @@
  * Combobox — a searchable selection dropdown built on @base-ui/react/combobox.
  *
  * Self-contained form control: handles its own label, error, helper text,
- * search/filter, loading, and empty states. Twenty-aligned — no FormField
- * wrapper needed.
+ * search/filter, loading, and empty states. — no FormField
+   * wrapper needed.
  *
  * Supports rich option rendering: icons, avatars, status dots, badge counts.
  * Pass `renderOption` for custom markup, or use `prefix`/`suffix` on options

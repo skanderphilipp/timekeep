@@ -11,9 +11,7 @@ import { useNavigate } from "react-router-dom";
  * Automatically chooses between full-page navigation (main panel)
  * and side-panel-based navigation based on context.
  *
- * Pattern: twenty doesn't have a direct equivalent — their navigation
- * is built into the command menu and side panel system. We adapt the
- * same principle: the component shouldn't know where it's rendered.
+ * Pattern: the component shouldn't know where it's rendered.
  */
 export function useRecordNavigation() {
   const { isInSidePanel } = useRecordDetailContext();
@@ -53,7 +51,7 @@ export function useRecordNavigation() {
   /**
    * Open the create form for an entity in the side panel.
    *
-   * Uses the unified {@link useOpenRecordInSidePanel} hook (Twenty pattern).
+   * Uses the unified {@link useOpenRecordInSidePanel} hook.
    * For most entities this opens the RecordDetailRenderer in create mode.
    * Device creation opens the DeviceRegisterWizard.
    */

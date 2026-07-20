@@ -4,7 +4,7 @@
 @use "sass:map";
 
 // ── Animation ────────────────────────────────────────────────────────────────
-// Twenty UI alignment: unitless duration tokens → seconds via calc().
+// Unitless duration tokens → seconds via calc().
 // Usage: transition: background duration(fast) ease;
 
 @function duration($name) {
@@ -53,7 +53,7 @@ $breakpoints: (
 
 // ── Focus ────────────────────────────────────────────────────────────────────
 
-/// Standard focus ring via outline (Twenty UI pattern).
+/// Standard focus ring via outline.
 /// Outline sits outside the element — better for overflow: hidden containers.
 @mixin focus-ring($size: 2px, $color: var(--ao-accent-accent9)) {
   &:focus-visible {

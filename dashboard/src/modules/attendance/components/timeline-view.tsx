@@ -43,7 +43,7 @@ export type TimelineViewProps = {
  * - Toolbar → TimelineToolbar
  * - Rendering → shared Timeline
  *
- * Twenty pattern: 60-line thin composites, all logic in hooks.
+ * Pattern: 60-line thin composites, all logic in hooks.
  */
 export function AttendanceTimelineView({
 	date: initialDate,

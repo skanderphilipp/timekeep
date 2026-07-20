@@ -168,7 +168,7 @@ describe("ReferenceFieldDisplay", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // Context-aware navigation (onNavigateToEntity) — ADR-008 / Twenty pattern
+  // Context-aware navigation (onNavigateToEntity) — ADR-008
   // ═══════════════════════════════════════════════════════════════════════════
 
   describe("context-aware navigation (onNavigateToEntity)", () => {

@@ -61,9 +61,13 @@ export function fetchDepartments(): Promise<Department[]> {
   return apiGet<Department[]>("departments").json();
 }
 
-/** Get a single department by ID. Requires Viewer+. */
+/** Get a single department by ID. Requires Viewer+.
+ *
+ * Always includes `?include=work_policy` so the detail view's
+ * Work Policy tab has the full schedule data populated.
+ */
 export function fetchDepartment(id: string): Promise<Department> {
-  return apiGet<Department>(`departments/${encodeURIComponent(id)}`).json();
+  return apiGet<Department>(`departments/${encodeURIComponent(id)}?include=work_policy`).json();
 }
 
 /** Create a new department. Requires Admin. */

@@ -46,7 +46,7 @@ export type UsePunchBlocksResult = {
  * with colored blocks, ready for the shared Timeline component.
  *
  * Extracted from the monolithic timeline-view.tsx.
- * Twenty pattern: data fetching + transformation delegated to a hook.
+ * Pattern: data fetching + transformation delegated to a hook.
  */
 export function usePunchBlocks({
 	date,
@@ -72,7 +72,7 @@ export function usePunchBlocks({
 	);
 
 	// ── Fetch ──────────────────────────────────────────────────────
-	const { data, isLoading } = usePunchData({ since, until, limit: 5000, ...filterContext });
+	const { data, isLoading } = usePunchData({ since, until, unlimited: "true", ...filterContext });
 
 	// ── Group by employee ───────────────────────────────────────────
 	const punchesByEmployee = useMemo(() => {

@@ -7,7 +7,7 @@ import type { FormPermissionsFieldDef } from "@/components/ui/form/form-field-de
  * Permissions form field — self-contained PermissionMultiSelect.
  *
  * PermissionMultiSelect passes label/error/helper through to MultiSelect.
- * Twenty-aligned: no FormField wrapper needed.
+   * no FormField wrapper needed.
  */
 export function FormFieldPermissions({
   field,

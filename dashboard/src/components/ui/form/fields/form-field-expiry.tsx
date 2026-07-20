@@ -7,7 +7,7 @@ import type { FormExpiryFieldDef } from "@/components/ui/form/form-field-def";
  * Expiry form field — self-contained, no FormField wrapper.
  *
  * ExpiryPicker handles its own label, error, and helper text.
- * Twenty-aligned: the control is self-contained.
+   * the control is self-contained.
  */
 export function FormFieldExpiry({
   field,

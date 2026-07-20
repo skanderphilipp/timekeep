@@ -6,6 +6,7 @@ import { msg } from "@lingui/core/macro";
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { CalendarMonth, type CalendarDayData } from "@/modules/shared/components";
 import type { ViewType } from "@/modules/shared/components";
+import type { CalendarEmployeeDay } from "@/lib/api/attendance";
 import { useAttendanceCalendar } from "../hooks/use-attendance-calendar";
 import { CalendarToolbar } from "./calendar-toolbar";
 import { DayDetailPanel } from "./day-detail-panel";
@@ -19,17 +20,10 @@ export type AttendanceCalendarViewProps = {
 	month: number;
 	/** Optional: filter to a single employee PIN. */
 	userPin?: string;
-	/**
-	 * Explicit date range from parent page filter context (Bug 2 fix).
-	 * When provided, overrides the auto-generated ±7 day range.
-	 */
-	filterSince?: string;
-	/** See `filterSince`. */
-	filterUntil?: string;
-	/**
-	 * Additional filter context from parent page (status, device_sns, search, etc.).
-	 */
-	filterContext?: Record<string, unknown>;
+	/** Device serial filter from page context. */
+	deviceSns?: string;
+	/** Punch status filter from page context. */
+	status?: string;
 	/** Called when a day cell is clicked. If omitted, defaults to side panel. */
 	onDayClick?: (date: string) => void;
 };
@@ -39,29 +33,22 @@ export type AttendanceCalendarViewProps = {
 /**
  * AttendanceCalendarView — monthly attendance calendar.
  *
- * Thin composite that delegates:
- * - Navigation + data → useAttendanceCalendar
- * - Toolbar → CalendarToolbar
- * - Day detail panel → DayDetailPanel
- * - Rendering → shared CalendarMonth
- *
- * Twenty pattern: thin composites (~60 lines), all logic in hooks.
+ * Data comes from the `/api/attendance/calendar` backend endpoint
+ * which returns pre-computed per-employee-per-day status and hours.
  */
 export function AttendanceCalendarView({
 	year,
 	month,
 	userPin,
-	filterSince,
-	filterUntil,
-	filterContext,
+	deviceSns,
+	status,
 	onDayClick,
 }: AttendanceCalendarViewProps) {
 	const { _ } = useLingui();
 	const openSidePanel = useSetAtom(openSidePanelAtom);
 
-	// Delegate all data handling to the hook
 	const {
-		punchesByDay,
+		isLoading,
 		dayStatusMap,
 		employeeStatusesByDay,
 		goPrev,
@@ -71,22 +58,37 @@ export function AttendanceCalendarView({
 		goNextYear,
 		year: currentYear,
 		month: currentMonth,
-	} = useAttendanceCalendar({ year, month, userPin, filterSince, filterUntil, filterContext });
+	} = useAttendanceCalendar({ year, month, userPin, deviceSns, status });
 
-	// ── Day click handler ───────────────────────────────────────────
+	// ── Derive CalendarEmployeeDay[] for each day from employeeStatusesByDay + dayStatusMap ──
+	// Used only when opening the detail panel — we need CalendarEmployeeDay[] with full fields.
+	// We don't store the full data per-day here; instead we pass the status entries.
+	// The DayDetailPanel takes CalendarEmployeeDay[], which we approximate from status entries.
+
 	const handleDayClick = useCallback(
 		(day: CalendarDayData) => {
 			if (onDayClick) {
 				onDayClick(day.date);
 				return;
 			}
-			const punches = punchesByDay.get(day.date) ?? [];
+			const entries = employeeStatusesByDay.get(day.date) ?? [];
+			// Convert EmployeeStatusEntry[] → CalendarEmployeeDay[] for the detail panel
+			const employees: CalendarEmployeeDay[] = entries.map((e) => ({
+				pin: e.pin,
+				name: e.name,
+				status: e.status,
+				hours: e.hours ?? 0,
+				overtime_hours: 0,
+				break_minutes: 0,
+				anomaly_count: 0,
+				is_late: e.status === "late",
+			}));
 			openSidePanel({
 				title: day.date,
-				render: () => <DayDetailPanel day={day} punches={punches} />,
+				render: () => <DayDetailPanel day={day} employees={employees} />,
 			});
 		},
-		[onDayClick, punchesByDay, openSidePanel],
+		[onDayClick, employeeStatusesByDay, openSidePanel],
 	);
 
 	return (
@@ -106,14 +108,15 @@ export function AttendanceCalendarView({
 				dayStatus={dayStatusMap}
 				onDayClick={handleDayClick}
 				weekStartsOn={1}
+				isLoading={isLoading}
 				renderDayContent={
 					!userPin
 						? (day) => {
-							const statuses = employeeStatusesByDay.get(day.date);
-							return statuses && statuses.length > 0 ? (
-								<MiniStatusBars statuses={statuses} compact />
-							) : null;
-						}
+								const statuses = employeeStatusesByDay.get(day.date);
+								return statuses && statuses.length > 0 ? (
+									<MiniStatusBars statuses={statuses} />
+								) : null;
+							}
 						: undefined
 				}
 				footer={

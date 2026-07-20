@@ -4,7 +4,7 @@ import { atom, useAtomValue, useSetAtom } from "jotai";
  * Inline Editing — Focus System (Phase 3)
  *
  * Tracks which table cell is currently being edited. Only one cell
- * can be in edit mode at a time (simpler than Twenty's focus stack).
+ * can be in edit mode at a time (simpler than the focus stack).
  *
  * - `editingCellIdAtom` — the raw Jotai atom (transient, not persisted)
  * - `useIsEditingCell(cellId)` — read-only selector

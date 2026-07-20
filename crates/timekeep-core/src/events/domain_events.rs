@@ -126,6 +126,13 @@ pub enum DomainEvent {
         command: String,
     },
 
+    /// Request an immediate attendance pull for a specific device.
+    /// The handler connects to the device, calls get_attendance(since),
+    /// and feeds each record through the engine pipeline.
+    AttendancePullRequested {
+        device_sn: String,
+    },
+
     // ── NEW: Device lifecycle events ──────────────────────────
     /// A device was probed and identified (step 1 of provisioning).
     DeviceDiscovered {
@@ -150,6 +157,7 @@ pub enum DomainEvent {
         device_sn: String,
         error: String,
         records_synced: u32,
+        duration_ms: u64,
     },
 
     /// Device configuration was changed via the API.
@@ -371,6 +379,7 @@ impl DomainEvent {
             Self::UserSyncFailed { .. } => "user_sync_failed",
             Self::OperationLogReceived { .. } => "operation_log_received",
             Self::DeviceCommandEnqueueRequested { .. } => "device_command_enqueue_requested",
+            Self::AttendancePullRequested { .. } => "attendance_pull_requested",
             Self::DeviceDiscovered { .. } => "device_discovered",
             Self::DeviceProvisioned { .. } => "device_provisioned",
             Self::DeviceSyncCompleted { .. } => "device_sync_completed",
@@ -469,7 +478,8 @@ impl DomainEvent {
             | Self::DeviceConnectionTested { device_sn, .. }
             | Self::DeviceClockSynced { device_sn, .. }
             | Self::DeviceUsersPulled { device_sn, .. }
-            | Self::DeviceEmployeesPushed { device_sn, .. } => Some(device_sn),
+            | Self::DeviceEmployeesPushed { device_sn, .. }
+            | Self::AttendancePullRequested { device_sn } => Some(device_sn),
             Self::DeviceConfigured { config } => Some(&config.serial_number),
         }
     }
@@ -568,6 +578,7 @@ mod tests {
                 device_sn: "SN001".into(),
                 error: "timeout".into(),
                 records_synced: 5,
+                duration_ms: 3100,
             },
             DomainEvent::DeviceConfigChanged {
                 device_sn: "SN001".into(),

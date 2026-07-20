@@ -12,7 +12,7 @@ import styles from "./ComponentDecorator.module.scss";
  *     decorators: [ComponentDecorator],
  *   } satisfies Meta<typeof MyComponent>;
  *
- * Adapted from Twenty's ComponentDecorator pattern.
+ * Adapted from ComponentDecorator pattern.
  */
 export function ComponentDecorator({ children }: { children: ReactNode }) {
   return <div className={styles.container}>{children}</div>;

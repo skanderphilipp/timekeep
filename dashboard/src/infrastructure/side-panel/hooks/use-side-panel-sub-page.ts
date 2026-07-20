@@ -18,9 +18,6 @@ let subPageCounter = 0;
  * Used by multi-step wizards to push/pop steps within the side panel.
  * Each step is a SubPageEntry with an identifier, title, and optional params.
  *
- * Twenty reference:
- *   `twenty-front/src/modules/side-panel/hooks/useSidePanelSubPageHistory.ts`
- *
  * @example
  * ```tsx
  * const { currentStep, pushStep, goBack, canGoBack } = useSidePanelSubPage();

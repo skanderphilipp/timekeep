@@ -6,7 +6,7 @@ import { Input } from "./input";
  *
  * Handles its own label, error, helper text, adornments, password
  * show/hide toggle, size variants, and autoGrow (content-aware
- * width expansion). Aligned with Twenty's TextInput pattern.
+ * width expansion). Aligned with TextInput pattern.
  *
  * Compose with FormField for Select, Toggle, and other non-text
  * controls that need external label/error management.

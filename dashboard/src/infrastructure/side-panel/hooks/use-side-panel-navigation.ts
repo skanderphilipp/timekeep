@@ -58,8 +58,7 @@ export function useSidePanelNavigation() {
  * the previous split of `useOpenDetailPanel` (view) and
  * `useOpenEditPanel` (edit/create).
  *
- * Pattern: Twenty's `useOpenRecordInSidePanel`:
- *   twenty-front/src/modules/side-panel/hooks/useOpenRecordInSidePanel.ts
+ * Pattern: `useOpenRecordInSidePanel`:
  *
  * @example
  * ```tsx
@@ -83,7 +82,7 @@ export function useOpenRecordInSidePanel() {
 			isNewRecord?: boolean;
 		}) => {
 			/**
-			 * Twenty pattern: no separate "mode" — new records use empty entityId.
+			 * Pattern: no separate "mode" — new records use empty entityId.
 			 * The router derives isNewRecord = entityId.length === 0.
 			 */
 			const entityId = opts.isNewRecord ? "" : (opts.entityId ?? "");

@@ -299,6 +299,52 @@ pub(crate) async fn remove_device(
     Ok(Json(ApiEnvelope::success(StatusResponse::deleted())))
 }
 
+/// Trigger an immediate attendance pull from a device.
+///
+/// Connects to the device via SDK, calls `get_attendance(since_last_punch)`,
+/// and feeds every record through the engine pipeline (normalize → dedup → enrich → store).
+/// The pull runs asynchronously — this endpoint returns immediately.
+/// Monitor progress via `GET /api/devices/{sn}/activity`.
+#[utoipa::path(
+    post,
+    path = "/api/devices/{sn}/pull-attendance",
+    tag = "Devices",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    responses(
+        (status = 200, description = "Attendance pull requested", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — Operator+ required"),
+        (status = 404, description = "Device not found"),
+    )
+)]
+pub(crate) async fn pull_attendance(
+    State(state): State<AppState>,
+    Path(sn): Path<String>,
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    // Verify device exists
+    if state.storage.list_device_configs().await?.iter().all(|d| d.serial_number != sn) {
+        return Err(AppError::not_found(format!("device '{sn}'")));
+    }
+
+    // Check SDK capability — attendance pull requires SDK binary protocol
+    let conn = state.device_state.get(&sn).await;
+    let sdk_active = conn.as_ref().map(|c| c.sdk_active).unwrap_or(false);
+    if !sdk_active {
+        let reason = if conn.as_ref().map(|c| c.adms_active).unwrap_or(false) {
+            "Device is in ADMS-only mode — attendance pull requires SDK binary protocol connection on port 4370. Check that push_enabled is disabled on the device, or use the vendor's ADMS software to disable push mode."
+        } else {
+            "Device is not connected — cannot pull attendance. Check the device IP, port, and network connectivity."
+        };
+        return Ok(Json(ApiEnvelope::success(StatusResponse::rejected(reason))));
+    }
+
+    state.event_bus.publish(DomainEvent::AttendancePullRequested { device_sn: sn });
+    Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
+}
+
 // ── Device Events (activity timeline) ────────────────────────────────
 
 /// Get the activity timeline for a device.
@@ -331,9 +377,11 @@ pub(crate) async fn device_events(
                 "sync_completed" => {
                     Some(DeviceEventType::SyncCompleted { records_synced: 0, duration_ms: 0 })
                 },
-                "sync_failed" => {
-                    Some(DeviceEventType::SyncFailed { error: "".into(), records_synced: 0 })
-                },
+                "sync_failed" => Some(DeviceEventType::SyncFailed {
+                    error: "".into(),
+                    records_synced: 0,
+                    duration_ms: 0,
+                }),
                 "storage_warning" => Some(DeviceEventType::StorageWarning {
                     records_used: 0,
                     records_capacity: 0,

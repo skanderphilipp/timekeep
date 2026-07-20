@@ -2,8 +2,8 @@
  * MultiSelect — a multi-value selection dropdown built on @base-ui/react/combobox.
  *
  * Self-contained form control: handles its own label, error, helper text,
- * search/filter, chip display, and removal. Twenty-aligned — no FormField
- * wrapper needed.
+ * search/filter, chip display, and removal. — no FormField
+   * wrapper needed.
  */
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { clsx } from "clsx";

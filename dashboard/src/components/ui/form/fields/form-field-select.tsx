@@ -7,7 +7,7 @@ import type { FormSelectFieldDef } from "@/components/ui/form/form-field-def";
  * Select form field — self-contained Combobox, no FormField wrapper.
  *
  * Combobox handles its own label, error, helper text, search/filter,
- * loading, and empty states. Twenty-aligned.
+   * loading, and empty states.
  */
 export function FormFieldSelect({
   field,

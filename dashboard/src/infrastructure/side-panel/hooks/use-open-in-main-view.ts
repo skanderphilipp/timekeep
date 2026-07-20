@@ -30,7 +30,7 @@ function resolveMainViewRoute(
  * Hook that provides an "open in main view" function for the side panel.
  *
  * Navigates the browser to the full-page URL for the current entity
- * and closes the side panel. Analogous to Twenty's
+ * and closes the side panel. Analogous to
  * `RecordShowSidePanelOpenRecordButton`.
  *
  * @returns `openInMainView` — call to navigate to the full-page view

@@ -320,6 +320,16 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             SetDeviceGroupRequest,
             DeviceGroupResponse,
 
+            // Attendance Calendar & Timeline
+            CalendarEmployeeDay,
+            CalendarMonthResponse,
+            TimelineBlock,
+            AttendanceEvent,
+            TimelineEmployeeBlocks,
+            TimelineDayResponse,
+            CalendarQuery,
+            TimelineQuery,
+
             // Status
             StatusResponse,
 

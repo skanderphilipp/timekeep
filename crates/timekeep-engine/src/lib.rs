@@ -398,9 +398,9 @@ impl Engine {
                 device_sn.clone(),
                 SyncCompleted { records_synced: *records_synced, duration_ms: *duration_ms },
             ),
-            DeviceSyncFailed { device_sn, error, records_synced } => (
+            DeviceSyncFailed { device_sn, error, records_synced, duration_ms } => (
                 device_sn.clone(),
-                SyncFailed { error: error.clone(), records_synced: *records_synced },
+                SyncFailed { error: error.clone(), records_synced: *records_synced, duration_ms: *duration_ms },
             ),
             // New: Operation log from ADMS OPERLOG or SDK OpLog pull
             OperationLogReceived { log } => (

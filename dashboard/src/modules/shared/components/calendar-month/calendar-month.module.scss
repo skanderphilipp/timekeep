@@ -54,31 +54,49 @@
   gap: var(--ao-spacing-0_5);
   min-height: calc(var(--ao-spacing-30) + var(--ao-spacing-0_5));
   min-width: 0;
+  overflow-y: auto;
   padding: var(--ao-spacing-1);
   position: relative;
   width: calc(100% / 7);
 
+  /* Thin scrollbar for in-cell scrolling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--ao-border-color-light) transparent;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ao-border-color-light);
+    border-radius: var(--ao-radius-full);
+  }
+
   &:not(:last-child) {
     border-right: 1px solid var(--ao-border-color-light);
-	  }
+  }
 
-	  /* Clickable days (when onDayClick is provided) */
-	  &.clickable {
-		  cursor: pointer;
+  /* Clickable days (when onDayClick is provided) */
+  &.clickable {
+    cursor: pointer;
 
-		  &:hover {
-			  filter: brightness(0.92);
-		  }
-	  }
+    &:hover {
+      filter: brightness(0.92);
+    }
+  }
 
-	  /* Keyboard focus ring */
-	  &:focus-visible {
-	    box-shadow: inset 0 0 0 2px var(--ao-color-blue9);
-	    outline: none;
-	    z-index: 1;
-	  }
+  /* Keyboard focus ring */
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ao-color-blue9);
+    outline: none;
+    z-index: 1;
+  }
 
-	  /* Selected day ring */
+  /* Selected day ring */
   &.selected {
     box-shadow: inset 0 0 0 2px var(--ao-color-blue9);
     z-index: 1;

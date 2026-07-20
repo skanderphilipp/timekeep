@@ -805,7 +805,7 @@ pub(crate) async fn cancel_session(
 
     state.event_bus.publish(DomainEvent::OnboardingSessionCancelled { session_id: id });
 
-    Ok(Json(ApiEnvelope::success(StatusResponse { status: "cancelled".into() })))
+    Ok(Json(ApiEnvelope::success(StatusResponse { status: "cancelled".into(), reason: None })))
 }
 
 /// Retry a failed onboarding step.
@@ -847,7 +847,7 @@ pub(crate) async fn retry_session(
     session.updated_at = jiff::Timestamp::now();
     store.update_session(&session).await?;
 
-    Ok(Json(ApiEnvelope::success(StatusResponse { status: "in_progress".into() })))
+    Ok(Json(ApiEnvelope::success(StatusResponse { status: "in_progress".into(), reason: None })))
 }
 
 /// List recent onboarding sessions with optional status/type filters.
@@ -1028,9 +1028,11 @@ pub(crate) async fn enroll_finger(
         finger_index: body.finger_index,
     });
 
-    Ok(Json(ApiEnvelope::success(StatusResponse { status: "enrollment_triggered".into() })))
+    Ok(Json(ApiEnvelope::success(StatusResponse {
+        status: "enrollment_triggered".into(),
+        reason: None,
+    })))
 }
-
 
 /// Query params for the enrollment SSE endpoint.
 #[derive(serde::Deserialize)]
@@ -1097,7 +1099,8 @@ pub(crate) async fn enrollment_events(
                                     "score": score,
                                     "status": status,
                                     "template_size": template_size,
-                                }).to_string(),
+                                })
+                                .to_string(),
                             ),
                         ),
                         DomainEvent::FingerprintEnrolled {
@@ -1112,7 +1115,8 @@ pub(crate) async fn enrollment_events(
                                     "user_pin": user_pin,
                                     "finger_index": finger_index,
                                     "template_size": template_size,
-                                }).to_string(),
+                                })
+                                .to_string(),
                             ),
                         ),
                         DomainEvent::FingerprintEnrollFailed {
@@ -1127,7 +1131,8 @@ pub(crate) async fn enrollment_events(
                                     "user_pin": user_pin,
                                     "finger_index": finger_index,
                                     "reason": reason,
-                                }).to_string(),
+                                })
+                                .to_string(),
                             ),
                         ),
                         _ => None,

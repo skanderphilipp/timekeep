@@ -51,9 +51,6 @@ type SidePanelSubPageRouterProps = {
  * When the sub-page stack is empty, renders `children` (the root content).
  * When a sub-page is active, renders the matching component from `stepMap`
  * with a back-button header and step title.
- *
- * Twenty reference:
- *   `twenty-front/src/modules/side-panel/components/SidePanelSubPageRouter.tsx`
  */
 export function SidePanelSubPageRouter({
   children,

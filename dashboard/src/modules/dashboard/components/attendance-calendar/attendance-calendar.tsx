@@ -7,8 +7,8 @@ import { useLingui } from "@lingui/react";
 import { openSidePanelAtom } from "@/infrastructure/state";
 import { Select, IconButton, Button, Text, ActionGroup, StatusDot } from "@/components/ui";
 import { CalendarMonth, type CalendarDayData } from "@/modules/shared/components";
-import { useAttendanceCalendar } from "@/modules/attendance";
-import { DayDetailPanel } from "./day-detail-panel";
+import { useAttendanceCalendar, MiniStatusBars, DayDetailPanel } from "@/modules/attendance";
+import type { CalendarEmployeeDay } from "@/lib/api/attendance";
 
 import styles from "./attendance-calendar.module.scss";
 
@@ -34,24 +34,27 @@ export function AttendanceCalendarPage() {
 
   const handleDayClick = useCallback(
     (day: CalendarDayData) => {
-      const punches = cal.punchesByDay.get(day.date) ?? [];
-      const [y, m, d] = day.date.split("-").map(Number);
-      const date = new Date(y!, m! - 1, d!);
+      const entries = cal.employeeStatusesByDay.get(day.date) ?? [];
+      // Convert EmployeeStatusEntry[] → CalendarEmployeeDay[] for the detail panel
+      const employees: CalendarEmployeeDay[] = entries.map((e) => ({
+        pin: e.pin,
+        name: e.name,
+        status: e.status,
+        hours: e.hours ?? 0,
+        overtime_hours: 0,
+        break_minutes: 0,
+        anomaly_count: 0,
+        is_late: e.status === "late",
+      }));
       openSidePanel({
-        title: date.toLocaleDateString(undefined, {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        }),
-        render: () => <DayDetailPanel day={day} punches={punches} />,
+        title: day.date,
+        render: () => (
+          <DayDetailPanel day={day} employees={employees} />
+        ),
       });
     },
-    [cal.punchesByDay, openSidePanel],
+    [cal.employeeStatusesByDay, openSidePanel],
   );
-
-  // Build the dayStatus map from punchesByDay for CalendarMonth's data-driven API.
-  // CalendarMonth handles background color + hours display natively.
-  const dayStatus = cal.dayStatusMap;
 
   return (
     <section data-slot="attendance-calendar" className={styles.root}>
@@ -89,8 +92,19 @@ export function AttendanceCalendarPage() {
         year={cal.year}
         month={cal.month}
         weekStartsOn={1}
-        dayStatus={dayStatus}
+        dayStatus={cal.dayStatusMap}
+        isLoading={cal.isLoading}
         onDayClick={handleDayClick}
+        renderDayContent={
+          !cal.selectedEmployee
+            ? (day) => {
+              const statuses = cal.employeeStatusesByDay.get(day.date);
+              return statuses && statuses.length > 0 ? (
+                <MiniStatusBars statuses={statuses} />
+              ) : null;
+            }
+            : undefined
+        }
         className={styles.calendar}
       />
     </section>

@@ -42,7 +42,7 @@ type AppSidebarProps = {
 };
 
 /**
- * Application sidebar — Twenty-aligned with proper mobile support,
+ * Application sidebar — with proper mobile support,
  * clean collapsed behavior, TimeKeep clock logo, and organized footer.
  *
  * Structure:

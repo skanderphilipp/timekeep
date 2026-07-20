@@ -14,9 +14,8 @@
 // ── Content area ─────────────────────────────────────────────────────────────
 // The consumer's display content renders inside this container.
 // Hover highlight: subtle background + rounded corners.
-// Twenty reference:
 //   StyledRecordInlineCellNormalModeOuterContainer
-//   twenty-front/src/modules/object-record/record-inline-cell/components/RecordInlineCellDisplayMode.tsx
+
 
 .content {
   border-radius: var(--ao-radius-sm);
@@ -33,7 +32,7 @@
 
 // ── Empty field placeholder ──────────────────────────────────────────────────
 // Shows "Empty" in tertiary color when the field has no value.
-// Twenty reference: StyledEmptyField (same file)
+
 
 .empty {
   color: var(--ao-font-color-light);
@@ -42,9 +41,8 @@
 // ── Edit button ──────────────────────────────────────────────────────────────
 // Appears to the right of the content on hover.
 // Animated: fades in with a slight slide from the right.
-// Twenty reference:
 //   RecordInlineCellButton + AnimatedContainer
-//   twenty-front/src/modules/object-record/record-inline-cell/components/RecordInlineCellEditButton.tsx
+
 
 .editButton {
   align-items: center;

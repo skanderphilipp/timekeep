@@ -236,6 +236,13 @@ pub(crate) async fn sync_device_clock(
     State(state): State<AppState>,
     Path(sn): Path<String>,
 ) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    let conn = state.device_state.get(&sn).await;
+    let sdk_active = conn.as_ref().map(|c| c.sdk_active).unwrap_or(false);
+    if !sdk_active {
+        let reason =
+            "Clock sync requires SDK connection. This device does not have an active SDK link.";
+        return Ok(Json(ApiEnvelope::success(StatusResponse::rejected(reason))));
+    }
     state.event_bus.publish(DomainEvent::DeviceCommandEnqueueRequested {
         device_sn: sn,
         command: "SYNC_CLOCK".into(),
@@ -262,6 +269,13 @@ pub(crate) async fn restart_device(
     State(state): State<AppState>,
     Path(sn): Path<String>,
 ) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    let conn = state.device_state.get(&sn).await;
+    let sdk_active = conn.as_ref().map(|c| c.sdk_active).unwrap_or(false);
+    if !sdk_active {
+        let reason =
+            "Device restart requires SDK connection. This device does not have an active SDK link.";
+        return Ok(Json(ApiEnvelope::success(StatusResponse::rejected(reason))));
+    }
     state.event_bus.publish(DomainEvent::DeviceCommandEnqueueRequested {
         device_sn: sn,
         command: "RESTART".into(),

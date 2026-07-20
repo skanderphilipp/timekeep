@@ -8,8 +8,7 @@ import type { EntityType } from "@/types/entities";
  * The stack enables back-button support: push a new entity detail
  * without losing the previous one.
  *
- * Ported from Twenty's `SidePanelPagesConfig` pattern:
- *   `twenty-front/src/modules/side-panel/constants/SidePanelPagesConfig.tsx`
+ * Ported from `SidePanelPagesConfig` pattern.
  */
 export type SidePanelEntry = {
   /** UUID — scopes Jotai atoms for this panel instance. */
@@ -18,7 +17,7 @@ export type SidePanelEntry = {
   entityType: EntityType;
   /**
    * The entity's unique identifier. An empty string signals a new record
-   * (Twenty pattern: no separate "mode" concept — `isNewRecord` is derived
+   * (Pattern: no separate "mode" concept — `isNewRecord` is derived
    * from `entityId.length === 0`).
    */
   entityId: string;

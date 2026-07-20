@@ -51,6 +51,9 @@ export type PunchFilter = {
   sort_order?: "asc" | "desc";
   /** @deprecated Use sort_order instead. Backend no longer reads this. */
   order_desc?: boolean;
+  /** When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
+   * Use for calendar/timeline views that need all punches in a date range. */
+  unlimited?: string;
   limit?: number;
   offset?: number;
   cursor?: string;
@@ -70,6 +73,7 @@ function buildPunchParams(filter: PunchFilter): string {
   if (filter.status) params.set("status", filter.status);
   if (filter.verify_mode) params.set("verify_mode", filter.verify_mode);
   if (filter.anomalies_only) params.set("anomalies_only", "true");
+  if (filter.unlimited) params.set("unlimited", "true");
   if (filter.since) params.set("since", toUnixSeconds(filter.since));
   if (filter.until) params.set("until", toUnixSeconds(filter.until));
   if (filter.sort_by) params.set("sort_by", filter.sort_by);

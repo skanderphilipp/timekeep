@@ -78,10 +78,14 @@ pub struct DeviceResponse {
     pub poll_interval_secs: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group_id: Option<String>,
+    /// Human-readable device group name.
+    /// Populated when `?include=group` is requested.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_name: Option<String>,
 }
 
-impl From<&DeviceConfig> for DeviceResponse {
-    fn from(c: &DeviceConfig) -> Self {
+impl DeviceResponse {
+    pub fn from_config(c: &DeviceConfig, group_name: Option<String>) -> Self {
         Self {
             serial_number: c.serial_number.clone(),
             label: c.label.clone(),
@@ -94,7 +98,14 @@ impl From<&DeviceConfig> for DeviceResponse {
             location: c.location.clone(),
             poll_interval_secs: c.poll_interval_secs,
             group_id: c.group_id.clone(),
+            group_name,
         }
+    }
+}
+
+impl From<&DeviceConfig> for DeviceResponse {
+    fn from(c: &DeviceConfig) -> Self {
+        Self::from_config(c, None)
     }
 }
 
@@ -225,6 +236,16 @@ pub struct DeviceDetailResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sdk_last_poll: Option<i64>,
 
+    // ── Capabilities (derived from connection mode) ──
+    /// Device connection mode: "sdk", "adms", "both", or "offline".
+    pub mode: String,
+    /// Whether SDK-dependent operations are available.
+    pub can_pull_attendance: bool,
+    pub can_sync_users: bool,
+    pub can_restart: bool,
+    pub can_sync_clock: bool,
+    pub can_enroll_finger: bool,
+
     // ── Capacity ──
     pub user_count: u32,
     pub user_capacity: u32,
@@ -263,8 +284,24 @@ impl DeviceDetailResponse {
         synced_record_count: u32,
     ) -> Self {
         let d = device;
-        let status =
-            d.map(|d| format!("{:?}", d.status).to_lowercase()).unwrap_or_else(|| "offline".into());
+        // Derive status from live connection state, not stored Device struct.
+        // The stored Device.status was set at connect time and never updated.
+        let status = if adms_active || sdk_active {
+            "connected"
+        } else if last_seen.is_some() {
+            "disconnected"
+        } else {
+            "offline"
+        };
+
+        // Device mode and capabilities derived from live connection state.
+        let mode = match (adms_active, sdk_active) {
+            (true, true) => "both",
+            (false, true) => "sdk",
+            (true, false) => "adms",
+            (false, false) => "offline",
+        };
+        let has_sdk = sdk_active;
 
         // Use DB-synced counts as primary source; fall back to live device info
         let user_count = if synced_user_count > 0 {
@@ -290,13 +327,19 @@ impl DeviceDetailResponse {
             mac_address: d.and_then(|d| {
                 if d.mac_address.is_empty() { None } else { Some(d.mac_address.clone()) }
             }),
-            status,
+            status: status.to_string(),
             last_seen_at: d.and_then(|d| d.last_seen).map(|t| t.as_second()).or(last_seen),
             first_seen_at: d.and_then(|d| d.first_seen).map(|t| t.as_second()),
             uptime_seconds: d.and_then(|d| d.uptime_seconds),
             adms_active,
             sdk_poll_active: sdk_active,
             sdk_last_poll,
+            mode: mode.to_string(),
+            can_pull_attendance: has_sdk,
+            can_sync_users: has_sdk,
+            can_restart: has_sdk,
+            can_sync_clock: has_sdk,
+            can_enroll_finger: has_sdk,
             user_count,
             user_capacity: d.map(|d| d.user_capacity).unwrap_or(0),
             record_count,
@@ -321,16 +364,17 @@ impl DeviceDetailResponse {
         Self {
             config: DeviceResponse {
                 serial_number: sn.to_string(),
-                label: String::new(),
+                label: sn.to_string(),
                 host: String::new(),
                 port: 0,
                 comm_key: 0,
                 push_enabled: false,
                 timezone: None,
-                vendor: "zkteco".into(),
+                vendor: String::new(),
                 location: None,
                 poll_interval_secs: None,
                 group_id: None,
+                group_name: None,
             },
             vendor: String::new(),
             model: None,
@@ -344,6 +388,12 @@ impl DeviceDetailResponse {
             adms_active: false,
             sdk_poll_active: false,
             sdk_last_poll: None,
+            mode: "offline".into(),
+            can_pull_attendance: false,
+            can_sync_users: false,
+            can_restart: false,
+            can_sync_clock: false,
+            can_enroll_finger: false,
             user_count: 0,
             user_capacity: 0,
             record_count: 0,
@@ -399,8 +449,9 @@ pub(crate) fn device_event_label(e: &DeviceEvent) -> String {
             let secs = *duration_ms as f64 / 1000.0;
             format!("Sync completed (+{records_synced} records, {secs:.1}s)")
         },
-        DeviceEventType::SyncFailed { error, records_synced } => {
-            format!("Sync failed (+{records_synced} records, error: {error})")
+        DeviceEventType::SyncFailed { error, records_synced, duration_ms } => {
+            let secs = *duration_ms as f64 / 1000.0;
+            format!("Sync failed (+{records_synced} records, error: {error}, {secs:.1}s)")
         },
         DeviceEventType::StorageWarning { percentage, records_used, records_capacity } => {
             format!("Storage warning: {percentage:.0}% used ({records_used}/{records_capacity})")
@@ -803,23 +854,29 @@ pub struct DashboardRecentEvent {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct StatusResponse {
     pub status: String,
+    /// Human-readable explanation, set for rejected or failed states.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
 }
 
 impl StatusResponse {
     pub fn created() -> Self {
-        Self { status: "created".into() }
+        Self { status: "created".into(), reason: None }
     }
     pub fn updated() -> Self {
-        Self { status: "updated".into() }
+        Self { status: "updated".into(), reason: None }
     }
     pub fn deleted() -> Self {
-        Self { status: "deleted".into() }
+        Self { status: "deleted".into(), reason: None }
     }
     pub fn requested() -> Self {
-        Self { status: "requested".into() }
+        Self { status: "requested".into(), reason: None }
     }
     pub fn enqueued() -> Self {
-        Self { status: "enqueued".into() }
+        Self { status: "enqueued".into(), reason: None }
+    }
+    pub fn rejected(reason: impl Into<String>) -> Self {
+        Self { status: "rejected".into(), reason: Some(reason.into()) }
     }
 }
 
@@ -1201,13 +1258,18 @@ impl DepartmentResponse {
         dept: &timekeep_core::Department,
         employee_count: Option<u64>,
         policy_title: Option<String>,
+        resolved_policy: Option<WorkPolicyResponse>,
     ) -> Self {
+        // Prefer resolved policy (from `?include=work_policy` template resolution)
+        // over legacy inline JSON.
+        let work_policy =
+            resolved_policy.or_else(|| dept.work_policy.as_ref().map(WorkPolicyResponse::from));
         Self {
             id: dept.id.to_string(),
             name: dept.name.clone(),
             work_policy_id: dept.work_policy_id.clone(),
             work_policy_title: policy_title,
-            work_policy: dept.work_policy.as_ref().map(WorkPolicyResponse::from),
+            work_policy,
             employee_count,
             created_at: dept.created_at.as_second(),
             updated_at: dept.updated_at.as_second(),
@@ -1259,18 +1321,27 @@ pub struct DeviceGroupResponse {
     pub device_count: Option<u64>,
     /// Department IDs assigned to this group. Empty = all departments.
     pub department_ids: Vec<String>,
+    /// Human-readable department names, resolved from `department_ids`.
+    /// Populated when `?include=departments` is requested.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub department_names: Vec<String>,
     pub created_at: i64,
     pub updated_at: i64,
 }
 
 impl DeviceGroupResponse {
-    pub fn from_group(group: &timekeep_core::DeviceGroup, device_count: Option<u64>) -> Self {
+    pub fn from_group(
+        group: &timekeep_core::DeviceGroup,
+        device_count: Option<u64>,
+        department_names: Vec<String>,
+    ) -> Self {
         Self {
             id: group.id.0.clone(),
             name: group.name.clone(),
             description: group.description.clone(),
             device_count,
             department_ids: group.department_ids.clone(),
+            department_names,
             created_at: group.created_at.as_second(),
             updated_at: group.updated_at.as_second(),
         }
@@ -1592,4 +1663,97 @@ pub struct DepartmentAttendanceResponse {
     pub total_overtime_seconds: i64,
     /// Attendance rate (0.0—100.0).
     pub attendance_pct: f64,
+}
+
+// ─── Attendance Calendar & Timeline Responses ──────────────────────────
+
+/// One employee's status on a single calendar day.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct CalendarEmployeeDay {
+    pub pin: String,
+    pub name: String,
+    /// Day status: "present", "late", "half", "absent", "weekend".
+    pub status: String,
+    /// Total work hours (regular periods).
+    pub hours: f64,
+    /// Overtime hours.
+    pub overtime_hours: f64,
+    /// Break minutes.
+    pub break_minutes: u32,
+    /// Number of anomalous punches.
+    pub anomaly_count: u32,
+    /// Whether the first check-in was late.
+    pub is_late: bool,
+}
+
+impl CalendarEmployeeDay {
+    pub fn from_work_day(wd: &timekeep_core::model::WorkDay) -> Self {
+        let present_seconds = wd.net_work_seconds();
+        Self {
+            pin: wd.user_pin.clone(),
+            name: String::new(),
+            status: wd.status.to_string(),
+            hours: present_seconds as f64 / 3600.0,
+            overtime_hours: wd.total_overtime_seconds as f64 / 3600.0,
+            break_minutes: (wd.total_break_seconds / 60) as u32,
+            anomaly_count: wd.anomalies.len() as u32,
+            is_late: wd.status == timekeep_core::model::DayStatus::Late,
+        }
+    }
+}
+
+/// Calendar month response.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct CalendarMonthResponse {
+    pub year: i16,
+    pub month: i8,
+    /// Map of "YYYY-MM-DD" → employee summaries.
+    pub days: std::collections::HashMap<String, Vec<CalendarEmployeeDay>>,
+}
+
+/// Single timeline block (bar segment) for one employee.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct TimelineBlock {
+    /// Left position as % of 24h.
+    pub left: f64,
+    /// Width as % of 24h.
+    pub width: f64,
+    /// Color key: "present", "warning", "overtime", "default".
+    pub color: String,
+    /// Tooltip title: "Check In: 08:00 - 17:00".
+    pub title: String,
+}
+
+/// Raw attendance event (punch row) for the summary sidebar.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct AttendanceEvent {
+    /// Unix timestamp (seconds).
+    pub timestamp: i64,
+    /// HH:MM formatted time.
+    pub time: String,
+    /// Punch status string.
+    pub status: String,
+    /// Whether the punch is flagged as anomalous.
+    pub is_anomaly: bool,
+}
+
+/// One employee's timeline data for a single day.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct TimelineEmployeeBlocks {
+    pub pin: String,
+    pub name: String,
+    /// Timeline blocks for rendering as bars.
+    pub blocks: Vec<TimelineBlock>,
+    /// Pre-computed summary for the sidebar.
+    #[serde(flatten)]
+    pub summary: CalendarEmployeeDay,
+}
+
+/// Single-day timeline response.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct TimelineDayResponse {
+    /// The date requested (YYYY-MM-DD).
+    pub date: String,
+    /// One entry per employee who punched that day.
+    pub employees: Vec<TimelineEmployeeBlocks>,
 }

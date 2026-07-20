@@ -17,7 +17,7 @@ import { useRecordInlineEdit } from "@/modules/record-detail";
  * Integration endpoints view — schema-driven table via {@link DataListView}.
  *
  * Column definitions are extracted to {@link useEndpointColumns}.
- * Create opens the side panel (Twenty pattern). The delete dialog stays
+ * Create opens the side panel. The delete dialog stays
  * as a modal confirmation (it's a destructive action, not a form).
  *
  * TODO(ENTERPRISE): Wire endpoint detail/editing through RecordDetailRenderer.

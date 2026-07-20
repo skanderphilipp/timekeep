@@ -16,12 +16,8 @@ type PunchTimelineViewProps = {
 	 * Propagated to usePunchData so timeline data matches page-level filters.
 	 */
 	filterContext?: Partial<PunchFilter>;
-	/**
-	 * @deprecated Timeline now fetches independently from the date prop.
-	 * Removed in Issue #6 fix. See bug-audit-attendance.md.
-	 */
+	/** Explicit date range from parent page filter (Bug 3 fix). */
 	filterSince?: string;
-	/** @deprecated See filterSince. */
 	filterUntil?: string;
 };
 
@@ -41,6 +37,8 @@ export function PunchTimelineView({
 	date,
 	punches,
 	filterContext,
+	filterSince,
+	filterUntil,
 }: PunchTimelineViewProps) {
 	// Default to today when no date filter is set
 	const effectiveDate = useMemo(() => date ?? new Date(), [date]);
@@ -75,6 +73,8 @@ export function PunchTimelineView({
 			date={timelineDate}
 			employees={employees.length > 0 ? employees : undefined}
 			filterContext={filterContext}
+			filterSince={filterSince}
+			filterUntil={filterUntil}
 			onDateChange={handleDateChange}
 		/>
 	);

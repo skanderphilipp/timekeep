@@ -1,12 +1,14 @@
 declare const classNames: {
   readonly container: "container";
-  readonly bar: "bar";
+  readonly row: "row";
+  readonly statusDot: "statusDot";
+  readonly dotFull: "dotFull";
+  readonly dotHalf: "dotHalf";
+  readonly dotLate: "dotLate";
+  readonly dotAbsent: "dotAbsent";
+  readonly dotWeekend: "dotWeekend";
+  readonly employeeName: "employeeName";
+  readonly hours: "hours";
   readonly overflow: "overflow";
-  readonly compact: "compact";
-  readonly barFull: "barFull";
-  readonly barHalf: "barHalf";
-  readonly barLate: "barLate";
-  readonly barAbsent: "barAbsent";
-  readonly barWeekend: "barWeekend";
 };
 export = classNames;

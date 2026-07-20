@@ -13,9 +13,6 @@ import { useSidePanelNavigation } from "./use-side-panel-navigation";
  * Entity-specific actions (Sync, Delete, etc.) are now rendered by
  * {@link RecordDetailActions} inside the side panel content — not here.
  * This hook only provides the "Open in main view" header action.
- *
- * Twenty reference:
- *   `SidePanelTopBarRightCornerIcon` — header actions
  */
 export function useSidePanelActions() {
   const { _ } = useLingui();
