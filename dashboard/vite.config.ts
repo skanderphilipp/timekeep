@@ -48,11 +48,13 @@ export default defineConfig(({ command }) => {
     },
     server: {
       port: 5173,
+      strictPort: true,
       proxy: {
         "/api": { target: "http://localhost:3000", changeOrigin: true },
         "/events": { target: "http://localhost:3000", changeOrigin: true },
       },
     },
+    clearScreen: false,
     build: {
       outDir: "dist",
       sourcemap: isDev,

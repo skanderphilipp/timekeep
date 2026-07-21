@@ -68,6 +68,7 @@ export function TimelineTooltip({
   return (
     <>
       <span
+        data-slot="timeline-tooltip-reference"
         ref={refs.setReference}
         {...getReferenceProps()}
         style={{ display: "contents" }}

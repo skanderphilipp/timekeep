@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use crate::Error;
 use crate::facet::{FacetGroup, FacetQuery};
 use crate::model::AttendancePunch;
-use crate::query::filters::PunchFilter;
+use crate::query::filters::{PunchCriteria, PunchFilter};
 
 /// Persists and queries attendance punch records.
 ///
@@ -36,8 +36,41 @@ pub trait PunchStore: Send + Sync {
     /// Returns `None` if no punch with that ID exists.
     async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error>;
 
-    /// Query punches matching the given filter.
+    /// Query punches matching the given filter with pagination.
+    /// Use for paginated list endpoints.
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error>;
+
+    /// Query ALL punches matching criteria within a date range — no pagination.
+    ///
+    /// Used by aggregate endpoints (calendar, reports, dashboard) that need
+    /// full date-range scans for in-memory computation. Unlike `query_punches`,
+    /// this method makes the aggregate intent explicit — no `unlimited` flag,
+    /// no limit clamping, no cursor-based pagination.
+    ///
+    /// Callers are responsible for scoping the date range appropriately.
+    /// Default implementation falls back to `query_punches` with a large limit
+    /// for backends that haven't implemented the dedicated path yet.
+    async fn query_punches_unpaged(
+        &self,
+        criteria: &PunchCriteria,
+        since: Option<jiff::Timestamp>,
+        until: Option<jiff::Timestamp>,
+    ) -> Result<Vec<AttendancePunch>, Error> {
+        // Default: delegate to the legacy path for backends that haven't
+        // implemented the dedicated unpaged query yet.
+        let filter = PunchFilter {
+            device_sns: Some(criteria.device_sns_vec()).filter(|v| !v.is_empty()),
+            user_pins: Some(criteria.user_pins_vec()).filter(|v| !v.is_empty()),
+            statuses: criteria.resolved_statuses(),
+            anomalies_only: Some(criteria.anomalies_only_bool()).filter(|&b| b),
+            since,
+            until,
+
+            params: crate::query::ListParams { limit: 100_000, ..Default::default() },
+            ..Default::default()
+        };
+        self.query_punches(&filter).await
+    }
 
     /// Return faceted filter metadata for punches.
     ///

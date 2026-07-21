@@ -35,6 +35,7 @@ export function DeviceHealthCards({ device, hasStats }: DeviceHealthCardsProps) 
   return (
     <Grid>
       <StatCard
+        dataSlot="stat-card-device-users"
         icon={<IconUsers size={20} />}
         label={_(msg`Users`)}
         value={hasCapacity ? `${device.user_count} / ${device.user_capacity}` : "—"}
@@ -51,6 +52,7 @@ export function DeviceHealthCards({ device, hasStats }: DeviceHealthCardsProps) 
       />
 
       <StatCard
+        dataSlot="stat-card-device-records"
         icon={<IconDatabase size={20} />}
         label={_(msg`Records`)}
         value={hasStats ? device.record_count.toLocaleString() : "—"}
@@ -58,6 +60,7 @@ export function DeviceHealthCards({ device, hasStats }: DeviceHealthCardsProps) 
 
       {hasFingerprint && (
         <StatCard
+          dataSlot="stat-card-device-fingerprints"
           icon={<IconFingerprint size={20} />}
           label={_(msg`Fingerprints`)}
           value={`${device.fingerprint_count} / ${device.fingerprint_capacity}`}
@@ -70,12 +73,14 @@ export function DeviceHealthCards({ device, hasStats }: DeviceHealthCardsProps) 
       )}
 
       <StatCard
+        dataSlot="stat-card-device-firmware"
         icon={<IconCpu size={20} />}
         label={_(msg`Firmware`)}
         value={hasStats ? device.firmware_version || "—" : "—"}
       />
 
       <StatCard
+        dataSlot="stat-card-device-storage"
         icon={<IconServer size={20} />}
         label={_(msg`Storage`)}
         value={hasStorage ? `${storagePct.toFixed(0)}%` : "—"}

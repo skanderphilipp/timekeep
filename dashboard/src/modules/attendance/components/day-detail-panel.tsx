@@ -6,6 +6,8 @@ import { Heading, Text, Tag, Separator } from "@/components/ui";
 import type { CalendarDayData } from "@/modules/shared/components";
 import type { CalendarEmployeeDay } from "@/lib/api/attendance";
 
+import styles from "./day-detail-panel.module.scss";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type DayDetailPanelProps = {
@@ -20,32 +22,19 @@ function EmployeeGroup({ employee }: { employee: CalendarEmployeeDay }) {
 	const { _ } = useLingui();
 
 	return (
-		<div style={{ marginBottom: "var(--ao-spacing-4)" }}>
+		<section data-slot="employee-group" className={styles.employeeGroup}>
 			{/* Employee header */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "baseline",
-					gap: "var(--ao-spacing-2)",
-					marginBottom: "var(--ao-spacing-1)",
-				}}
-			>
+			<section data-slot="employee-header" className={styles.employeeHeader}>
 				<Text variant="body" weight="medium">
 					{employee.name || employee.pin}
 				</Text>
 				<Text variant="caption" color="tertiary">
 					{employee.pin}
 				</Text>
-			</div>
+			</section>
 
 			{/* Attendance stats */}
-			<div
-				style={{
-					display: "flex",
-					flexWrap: "wrap",
-					gap: "var(--ao-spacing-3)",
-				}}
-			>
+			<section data-slot="stat-row" className={styles.statRow}>
 				<StatChip label={_(msg`Status`)} value={employee.status} />
 				{employee.hours > 0 && (
 					<StatChip label={_(msg`Hours`)} value={`${employee.hours.toFixed(1)}h`} />
@@ -64,8 +53,8 @@ function EmployeeGroup({ employee }: { employee: CalendarEmployeeDay }) {
 						weight="medium"
 					/>
 				)}
-			</div>
-		</div>
+			</section>
+		</section>
 	);
 }
 
@@ -73,20 +62,14 @@ function EmployeeGroup({ employee }: { employee: CalendarEmployeeDay }) {
 
 function StatChip({ label, value }: { label: string; value: string }) {
 	return (
-		<div
-			style={{
-				display: "flex",
-				alignItems: "center",
-				gap: "var(--ao-spacing-1)",
-			}}
-		>
+		<section data-slot="stat-chip" className={styles.statChip}>
 			<Text variant="caption" color="secondary">
 				{label}
 			</Text>
 			<Text variant="body" weight="medium">
 				{value}
 			</Text>
-		</div>
+		</section>
 	);
 }
 
@@ -110,6 +93,17 @@ export function DayDetailPanel({ day, employees }: DayDetailPanelProps) {
 		day: "numeric",
 	});
 
+	// Sort: not-absent first, then absent, alphabetically within each
+	// Called unconditionally to satisfy rules-of-hooks
+	const sorted = useMemo(() => {
+		const list = employees ?? [];
+		return [...list].sort((a, b) => {
+			if (a.status === "absent" && b.status !== "absent") return 1;
+			if (a.status !== "absent" && b.status === "absent") return -1;
+			return (a.name || a.pin).localeCompare(b.name || b.pin);
+		});
+	}, [employees]);
+
 	if (!employees || employees.length === 0) {
 		return (
 			<>
@@ -121,29 +115,20 @@ export function DayDetailPanel({ day, employees }: DayDetailPanelProps) {
 		);
 	}
 
-	// Sort: not-absent first, then absent, alphabetically within each
-	const sorted = useMemo(() => {
-		return [...employees].sort((a, b) => {
-			if (a.status === "absent" && b.status !== "absent") return 1;
-			if (a.status !== "absent" && b.status === "absent") return -1;
-			return (a.name || a.pin).localeCompare(b.name || b.pin);
-		});
-	}, [employees]);
-
 	return (
 		<>
-			<Heading level="h3" style={{ marginBottom: "var(--ao-spacing-4)" }}>
+			<Heading level="h3" className={styles.title}>
 				{title}
 			</Heading>
 			{sorted.map((emp, index) => (
-				<div key={emp.pin}>
+				<section key={emp.pin}>
 					{index > 0 && (
-						<div style={{ marginBottom: "var(--ao-spacing-3)" }}>
+						<section className={styles.separatorWrapper}>
 							<Separator />
-						</div>
+						</section>
 					)}
 					<EmployeeGroup employee={emp} />
-				</div>
+				</section>
 			))}
 		</>
 	);

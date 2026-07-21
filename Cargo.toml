@@ -6,8 +6,9 @@ license.workspace = true
 publish = false
 
 [workspace]
-resolver = "3"
-	members = [
+	resolver = "3"
+		exclude = ["dashboard/src-tauri"]
+		members = [
 	    "crates/timekeep-circuit",
 	    "crates/timekeep-core",
 	    "crates/timekeep-engine",

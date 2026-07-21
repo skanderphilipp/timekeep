@@ -44,7 +44,7 @@ export function StreamChart({
   );
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="stream-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveStream
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={data as unknown as StreamDatum[]}

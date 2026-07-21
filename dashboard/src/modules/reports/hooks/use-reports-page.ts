@@ -10,10 +10,23 @@ import { useReportCharts } from "./use-report-charts";
 import { fetchPunches } from "@/lib/api";
 import { clientConfigState } from "@/infrastructure/state";
 import { APP_NAME } from "@/lib/constants";
-import { toUnixStartOfDay, toUnixEndOfDay } from "@/lib/date";
+import { toUnixStartOfDay, toUnixEndOfDay, toDateString } from "@/lib/date";
 import type { ActiveFilter } from "@/components/ui";
 
-const reportFilterDefaults = { date_from: "", date_to: "" };
+/**
+ * Compute the current calendar month as a date range (YYYY-MM-DD).
+ *
+ * Used as the default report filter so the reports page always shows
+ * data on first visit instead of an empty state. The URL only stores
+ * deviations from this default, keeping URLs clean for the common case.
+ */
+function getDefaultMonthRange() {
+  const now = new Date();
+  return {
+    date_from: toDateString(new Date(now.getFullYear(), now.getMonth(), 1)),
+    date_to: toDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
+  };
+}
 
 const PDF_CHART_SELECTORS = [
   '[data-pdf-chart="punch-type-distribution"]',
@@ -25,6 +38,9 @@ const PDF_CHART_SELECTORS = [
 
 export function useReportsPage() {
   const { _ } = useLingui();
+  /** Default to current month so the page always shows data on first visit. */
+  const reportFilterDefaults = useMemo(() => getDefaultMonthRange(), []);
+
   const { filters, setFilter, resetFilters, hasActiveFilters } = useFilterUrl({
     namespace: "reports",
     defaults: reportFilterDefaults,
@@ -41,16 +57,20 @@ export function useReportsPage() {
   const { data: summary, isLoading, error, refetch } = useReportSummary(apiFilter);
   const charts = useReportCharts(summary);
 
+  /**
+   * Active filter chips — only show when the user has deviated from the
+   * default (current month). Removing a chip resets that field to the default.
+   */
   const activeFilters: ActiveFilter[] = useMemo(() => {
     const result: ActiveFilter[] = [];
-    if (filters.date_from) {
+    if (filters.date_from && filters.date_from !== reportFilterDefaults.date_from) {
       result.push({
         key: "date_from",
         label: `${_(msg`From`)} ${filters.date_from}`,
         onRemove: () => setFilter({ date_from: "" }),
       });
     }
-    if (filters.date_to) {
+    if (filters.date_to && filters.date_to !== reportFilterDefaults.date_to) {
       result.push({
         key: "date_to",
         label: `${_(msg`To`)} ${filters.date_to}`,
@@ -58,7 +78,7 @@ export function useReportsPage() {
       });
     }
     return result;
-  }, [filters, setFilter, _]);
+  }, [filters, setFilter, _, reportFilterDefaults]);
 
   const handleFetchPunches = useCallback(async () => {
     const result = await fetchPunches({

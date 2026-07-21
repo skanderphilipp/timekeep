@@ -213,10 +213,10 @@ export function syncDeviceClock(deviceSn: string): Promise<{ status: string }> {
   ).json();
 }
 
-/** Full device re-sync (users + records). Requires Admin. */
-export function resyncDevice(deviceSn: string): Promise<{ status: string }> {
+/** Clear all users from a device (pure destructive, no re-upload). Requires Admin. */
+export function clearDeviceUsers(deviceSn: string): Promise<{ status: string }> {
   return apiPost<{ status: string }>(
-    `devices/${encodeURIComponent(deviceSn)}/resync`,
+    `devices/${encodeURIComponent(deviceSn)}/clear-users`,
     {},
   ).json();
 }
@@ -228,6 +228,22 @@ export function syncDeviceToDevice(
 ): Promise<{ status: string }> {
   return apiPost<{ status: string }>(
     `devices/${encodeURIComponent(targetSn)}/sync-from/${encodeURIComponent(sourceSn)}`,
+    {},
+  ).json();
+}
+
+/** Refresh live device info via SDK (user count, storage, capacity). Requires SDK connection. */
+export function refreshDeviceInfo(deviceSn: string): Promise<{ status: string }> {
+  return apiPost<{ status: string }>(
+    `devices/${encodeURIComponent(deviceSn)}/refresh-info`,
+    {},
+  ).json();
+}
+
+/** Refresh the user list from a device via SDK. Requires SDK connection. */
+export function refreshDeviceUsers(deviceSn: string): Promise<{ status: string }> {
+  return apiPost<{ status: string }>(
+    `devices/${encodeURIComponent(deviceSn)}/refresh-users`,
     {},
   ).json();
 }

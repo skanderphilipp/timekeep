@@ -825,6 +825,92 @@ pub(crate) async fn list_providers(
 
 // ── Batch Actions ────────────────────────────────────────────────────
 
+/// Refresh live device info via SDK and persist to storage.
+///
+/// Calls get_device_info() on the physical device (requires SDK connection)
+/// and publishes the updated data so it's persisted and available in GET /api/devices/{sn}.
+#[utoipa::path(
+    post,
+    path = "/api/devices/{sn}/refresh-info",
+    tag = "Devices",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    responses(
+        (status = 200, description = "Device info refreshed", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Device not found or not connected via SDK"),
+    )
+)]
+pub(crate) async fn refresh_device_info(
+    State(state): State<AppState>,
+    Path(sn): Path<String>,
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    // Verify device exists in config
+    if state.storage.list_device_configs().await?.iter().all(|d| d.serial_number != sn) {
+        return Err(AppError::not_found(format!("device '{sn}'")));
+    }
+
+    // Get the live device connection
+    let conn = state.device_state.get(&sn).await;
+    let sdk_active = conn.as_ref().map(|c| c.sdk_active).unwrap_or(false);
+    if !sdk_active {
+        return Ok(Json(ApiEnvelope::success(StatusResponse::rejected(
+            "Device info refresh requires SDK connection. This device does not have an active SDK link.",
+        ))));
+    }
+
+    // Publish refresh request — the event handler will call get_device_info() and persist it
+    state.event_bus.publish(DomainEvent::DeviceInfoRefreshRequested { device_sn: sn });
+
+    Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
+}
+
+/// Refresh live device users via SDK and persist to storage.
+///
+/// Calls get_users() on the physical device (requires SDK connection)
+/// and upserts them into the local user table via sync_users_to_storage().
+#[utoipa::path(
+    post,
+    path = "/api/devices/{sn}/refresh-users",
+    tag = "Devices",
+    security(("bearer_auth" = [])),
+    params(
+        ("sn" = String, Path, description = "Device serial number"),
+    ),
+    responses(
+        (status = 200, description = "User refresh requested", body = StatusResponse),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Device not found or not connected via SDK"),
+    )
+)]
+pub(crate) async fn refresh_device_users(
+    State(state): State<AppState>,
+    Path(sn): Path<String>,
+) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
+    // Verify device exists in config
+    if state.storage.list_device_configs().await?.iter().all(|d| d.serial_number != sn) {
+        return Err(AppError::not_found(format!("device '{sn}'")));
+    }
+
+    // Get the live device connection
+    let conn = state.device_state.get(&sn).await;
+    let sdk_active = conn.as_ref().map(|c| c.sdk_active).unwrap_or(false);
+    if !sdk_active {
+        return Ok(Json(ApiEnvelope::success(StatusResponse::rejected(
+            "User refresh requires SDK connection. This device does not have an active SDK link.",
+        ))));
+    }
+
+    // Publish refresh request — the event handler will call get_users() and persist them
+    state.event_bus.publish(DomainEvent::DeviceUsersRefreshRequested { device_sn: sn });
+
+    Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
+}
+
+// ── Batch Actions ────────────────────────────────────────────────────
+
 /// Execute a batch action on multiple devices.
 #[utoipa::path(
     post,
@@ -871,6 +957,18 @@ pub(crate) async fn batch_action(
                     device_sn: sn.clone(),
                     command: cmd,
                 });
+                succeeded += 1;
+            },
+            "refresh_info" => {
+                state
+                    .event_bus
+                    .publish(DomainEvent::DeviceInfoRefreshRequested { device_sn: sn.clone() });
+                succeeded += 1;
+            },
+            "refresh_users" => {
+                state
+                    .event_bus
+                    .publish(DomainEvent::DeviceUsersRefreshRequested { device_sn: sn.clone() });
                 succeeded += 1;
             },
             other => {

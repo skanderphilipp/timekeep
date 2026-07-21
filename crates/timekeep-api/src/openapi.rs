@@ -99,7 +99,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Device Operations ──
         crate::routes::device_users::sync_device_clock,
         crate::routes::device_users::restart_device,
-        crate::routes::device_users::resync_device,
+        crate::routes::device_users::clear_device_users,
         crate::routes::device_users::sync_device_to_device,
         crate::routes::device_users::sync_all_devices,
         crate::routes::device_users::transfer_templates,
@@ -162,6 +162,8 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         // ── Employee Device Enrollment ──
         crate::employees::enroll_employee,
         crate::employees::list_device_enrollments,
+        crate::routes::employee_enrollments::list_employee_enrollments,
+        crate::routes::employee_enrollments::enrollment_summary,
 
         // ── Employee Device Sync ──
         crate::employees::sync_employee_to_devices,
@@ -308,6 +310,10 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
             EnrollEmployeeRequest,
             EmployeeListQuery,
 
+            // Employee Device Enrollments
+            crate::routes::employee_enrollments::EnrollmentStatusResponse,
+            crate::routes::employee_enrollments::EnrollmentSummaryEntry,
+
             // Departments
             CreateDepartmentRequest,
             UpdateDepartmentRequest,
@@ -365,7 +371,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
         (name = "Dashboard", description = "Real-time attendance dashboard data"),
         (name = "Punches", description = "Attendance punch records — query and correction"),
         (name = "Users", description = "Dashboard user management (CRUD + passwords) and device user enrollment"),
-        (name = "Commands", description = "Device command queue (reboot, clear, resync)"),
+        (name = "Commands", description = "Device command queue (reboot, clear, clear-users)"),
         (name = "API Keys", description = "API key management for integration partners (Odoo, Zapier, …)"),
         (name = "Integration Endpoints", description = "Manage integration destinations — webhooks, Odoo, SAP, Zapier"),
         (name = "Settings", description = "System-wide settings — polling interval, auto-discover"),
@@ -507,7 +513,7 @@ mod tests {
             ("/api/devices/", "/events"),
             ("/api/devices/", "/sync-clock"),
             ("/api/devices/", "/restart"),
-            ("/api/devices/", "/resync"),
+            ("/api/devices/", "/clear-users"),
             ("/api/devices/", "/group"),
             ("/api/devices/", "/enrollments"),
             ("/api/employees/", "/work-days"),

@@ -6,8 +6,8 @@ import {
   IconRefresh,
   IconClock,
   IconPower,
-  IconCloudUpload,
   IconTrash,
+  IconDeviceMobile,
 } from "@tabler/icons-react";
 
 import {
@@ -17,9 +17,7 @@ import {
   MenuSeparator,
   ConfirmDialog,
 } from "@/components/ui";
-import { useDeviceCommand } from "../hooks/use-device-command";
-import { useSyncActions } from "../hooks/use-sync-actions";
-import { useDeleteDevice } from "../hooks/use-delete-device";
+import { useDeviceActions } from "../hooks/use-device-actions";
 
 type DeviceActionsMenuProps = {
   deviceSn: string;
@@ -29,14 +27,14 @@ type DeviceActionsMenuProps = {
   onRefresh: () => void;
 };
 
-type ConfirmAction = "restart" | "sync_clock" | "resync" | "delete" | null;
+type ConfirmAction = "restart" | "sync_clock" | "delete" | null;
 
 /**
- * Device actions menu — dropdown with all device utility operations.
+ * Device actions menu — ⋮ dropdown with all device utility operations.
  *
- * Dangerous or impactful operations (Restart, Full Re-sync, Delete) show
- * confirmation dialogs before executing. Refresh triggers the parent's
- * refetch callback.
+ * Pull Attendance lives as a primary button in the status bar (not here).
+ * Destructive operations (Restart, Delete) show confirmation dialogs.
+ * All mutations come from the unified {@link useDeviceActions} hook.
  */
 export function DeviceActionsMenu({
   deviceSn,
@@ -46,9 +44,7 @@ export function DeviceActionsMenu({
   onRefresh,
 }: DeviceActionsMenuProps) {
   const { _ } = useLingui();
-  const { restart, syncClock } = useDeviceCommand(deviceSn);
-  const { resync } = useSyncActions(deviceSn);
-  const deleteMutation = useDeleteDevice();
+  const { restart, syncClock, refreshInfo, delete: deleteDevice } = useDeviceActions(deviceSn);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
   return (
@@ -66,6 +62,7 @@ export function DeviceActionsMenu({
           leftIcon={<IconRefresh size={16} />}
           label={_(msg`Refresh Data`)}
           onClick={onRefresh}
+          title={_(msg`Reload device data from the server. No device interaction.`)}
         />
         <MenuItem
           leftIcon={<IconClock size={16} />}
@@ -76,13 +73,20 @@ export function DeviceActionsMenu({
           }
           onClick={() => setConfirmAction("sync_clock")}
           disabled={!canSyncClock}
+          title={canSyncClock ? _(msg`Live SDK operation: set device clock to match server time.`) : undefined}
+        />
+        <MenuItem
+          leftIcon={<IconDeviceMobile size={16} />}
+          label={
+            canSyncClock
+              ? _(msg`Refresh Device Info`)
+              : _(msg`Refresh Device Info (requires SDK)`)
+          }
+          onClick={() => refreshInfo.mutate()}
+          disabled={!canSyncClock || refreshInfo.isPending}
+          title={canSyncClock ? _(msg`Live SDK operation: pull user count, storage, firmware, and capacity from device.`) : undefined}
         />
         <MenuSeparator />
-        <MenuItem
-          leftIcon={<IconCloudUpload size={16} />}
-          label={_(msg`Full Re-sync`)}
-          onClick={() => setConfirmAction("resync")}
-        />
         <MenuItem
           leftIcon={<IconPower size={16} />}
           label={
@@ -93,6 +97,7 @@ export function DeviceActionsMenu({
           onClick={() => setConfirmAction("restart")}
           variant="danger"
           disabled={!canRestart}
+          title={canRestart ? _(msg`Live SDK operation: reboot the physical device. Device will be offline for ~30 seconds.`) : undefined}
         />
         <MenuSeparator />
         <MenuItem
@@ -100,6 +105,7 @@ export function DeviceActionsMenu({
           label={_(msg`Delete Device`)}
           onClick={() => setConfirmAction("delete")}
           variant="danger"
+          title={_(msg`Database-only operation: remove device registration. Does not affect the physical device.`)}
         />
       </Dropdown>
 
@@ -129,18 +135,6 @@ export function DeviceActionsMenu({
       />
 
       <ConfirmDialog
-        open={confirmAction === "resync"}
-        onOpenChange={(open) => setConfirmAction(open ? "resync" : null)}
-        title={_(msg`Full Re-sync`)}
-        message={_(
-          msg`This will pull all users and attendance records from the device and push any pending changes. The device will remain online during this operation.`,
-        )}
-        confirmLabel={_(msg`Re-sync`)}
-        isPending={resync.isPending}
-        onConfirm={() => resync.mutate(undefined)}
-      />
-
-      <ConfirmDialog
         open={confirmAction === "delete"}
         onOpenChange={(open) => setConfirmAction(open ? "delete" : null)}
         title={_(msg`Delete Device`)}
@@ -149,8 +143,12 @@ export function DeviceActionsMenu({
         )}
         confirmLabel={_(msg`Delete`)}
         variant="danger"
-        isPending={deleteMutation.isPending}
-        onConfirm={() => deleteMutation.mutate(deviceSn)}
+        isPending={deleteDevice.isPending}
+        onConfirm={() =>
+          deleteDevice.mutate(undefined, {
+            onSuccess: () => setConfirmAction(null),
+          })
+        }
       />
     </>
   );

@@ -36,7 +36,7 @@ export function BumpChart({
   const { nivo } = useChartTheme();
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="bump-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveBump
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={data as unknown as BumpSerie<BumpDatum, Record<string, any>>[]}

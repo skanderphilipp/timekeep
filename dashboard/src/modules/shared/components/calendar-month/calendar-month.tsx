@@ -63,7 +63,7 @@ const STATUS_STYLE: Record<CalendarDayStatus, string> = {
 
 function HeaderDay({ label }: { label: string }) {
   return (
-    <div className={styles.headerDay} role="columnheader" aria-label={label}>
+    <div data-slot="calendar-header-day" className={styles.headerDay} role="columnheader" aria-label={label}>
       {label}
     </div>
   );

@@ -164,6 +164,10 @@ export const QueryKeys = {
     schema: () => ["schema", "employee"] as const,
     /** Facet filter metadata. */
     filters: <T extends Record<string, unknown>>(filter: T) => ["employee-filters", filter] as const,
+    /** Device enrollment detail for a single employee. */
+    enrollments: (id: string) => ["employee-enrollments", id] as const,
+    /** Batch enrollment summary for all employees. */
+    enrollmentSummary: () => ["employees", "enrollment-summary"] as const,
   },
 
   /** Side panel entity detail */

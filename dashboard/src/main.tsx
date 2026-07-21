@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ThemeProvider } from "@/infrastructure/theme";
 import { DevTools } from "@/devtools/DevTools";
 import { AuthProvider } from "@/modules/auth/components/auth-provider";
+import { ServerConnectionGate } from "@/modules/server-connection/components/server-connection-gate";
 import { ClientConfigHydrator } from "@/modules/auth/components/client-config-hydrator";
 import { App } from "./App";
 import { LS_THEME } from "@/lib/constants";
@@ -79,10 +80,12 @@ async function bootstrap() {
                 <ThemeProvider>
                   <DevTools />
                   <ErrorBoundary>
-                    <AuthProvider>
-                      <ClientConfigHydrator />
-                      <App />
-                    </AuthProvider>
+                    <ServerConnectionGate>
+                      <AuthProvider>
+                        <ClientConfigHydrator />
+                        <App />
+                      </AuthProvider>
+                    </ServerConnectionGate>
                   </ErrorBoundary>
                 </ThemeProvider>
               </ToastProvider>

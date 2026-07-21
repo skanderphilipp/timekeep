@@ -29,6 +29,12 @@
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+/// Default field on Odoo's `hr.employee` model used to map device PINs.
+///
+/// Odoo's native field is `barcode`. Custom addons (e.g. `alsabah_hr_attendance`)
+/// may provide `device_id_num`. The tenant configures this per-endpoint.
+pub const ODOO_DEFAULT_EMPLOYEE_FIELD: &str = "barcode";
+
 /// Supported integration types.
 ///
 /// Each variant corresponds to a distributor crate.
@@ -40,7 +46,7 @@ pub enum IntegrationKind {
     Webhook,
 
     /// Odoo ERP via JSON-2 API — creates/updates hr.attendance records.
-    /// Config: `{ "url": "...", "api_key": "...", "database": "..." }`
+    /// Config: `{ "url": "...", "api_key": "...", "database": "...", "employee_field": "barcode" }`
     Odoo,
 
     /// Future: SAP BAPI / RFC integration.
@@ -91,6 +97,18 @@ impl std::fmt::Display for IntegrationKind {
         };
         f.write_str(s)
     }
+}
+
+/// Extracted Odoo connection parameters from an endpoint's config blob.
+///
+/// Produced by [`IntegrationEndpoint::odoo_connection`] — eliminates
+/// repeated JSON-key fishing across the composition layer.
+#[derive(Debug, Clone)]
+pub struct OdooConnectionConfig {
+    pub url: String,
+    pub api_key: String,
+    pub database: String,
+    pub employee_field: String,
 }
 
 /// A single integration endpoint — where attendance events are delivered.
@@ -144,7 +162,8 @@ impl IntegrationEndpoint {
             IntegrationKind::Odoo => serde_json::json!({
                 "url": "",
                 "api_key": "",
-                "database": ""
+                "database": "",
+                "employee_field": ODOO_DEFAULT_EMPLOYEE_FIELD
             }),
             IntegrationKind::Sap => serde_json::json!({}),
             IntegrationKind::Zapier => serde_json::json!({
@@ -152,6 +171,30 @@ impl IntegrationEndpoint {
                 "secret": ""
             }),
         }
+    }
+
+    /// Extract Odoo connection parameters from this endpoint's config.
+    ///
+    /// Returns `None` when any required field (`url`, `api_key`, `database`)
+    /// is empty, or when this endpoint is not of kind `Odoo`.
+    pub fn odoo_connection(&self) -> Option<OdooConnectionConfig> {
+        if self.kind != IntegrationKind::Odoo {
+            return None;
+        }
+
+        let url = self.config["url"].as_str().unwrap_or_default().to_string();
+        let api_key = self.config["api_key"].as_str().unwrap_or_default().to_string();
+        let database = self.config["database"].as_str().unwrap_or_default().to_string();
+        let employee_field = self.config["employee_field"]
+            .as_str()
+            .unwrap_or(ODOO_DEFAULT_EMPLOYEE_FIELD)
+            .to_string();
+
+        if url.is_empty() || api_key.is_empty() || database.is_empty() {
+            return None;
+        }
+
+        Some(OdooConnectionConfig { url, api_key, database, employee_field })
     }
 }
 

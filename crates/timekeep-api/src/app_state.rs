@@ -3,12 +3,14 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use timekeep_core::traits::sync_provider::SyncProvider;
 use timekeep_core::{ProviderRegistry, events::EventBus, traits::Storage};
 use timekeep_engine::health::EngineHealth;
 use tokio::sync::Mutex as TokioMutex;
 
+// ── Device Connection State ─────────────────────────────────────────
+
 /// Tracks which devices are currently connected and how.
-/// Built by subscribing to DeviceOnline/DeviceOffline events.
 #[derive(Clone, Default)]
 pub struct DeviceConnectionState {
     inner: Arc<TokioMutex<HashMap<String, DeviceConnInfo>>>,
@@ -23,12 +25,10 @@ pub struct DeviceConnInfo {
 }
 
 impl DeviceConnectionState {
-    /// Get all device connection states (for dashboard overview).
     pub async fn get_all(&self) -> HashMap<String, DeviceConnInfo> {
         self.inner.lock().await.clone()
     }
 
-    /// Mark a device as connected via ADMS push.
     pub async fn set_adms_connected(&self, sn: &str, ts: i64) {
         let mut guard = self.inner.lock().await;
         let entry = guard.entry(sn.to_string()).or_insert(DeviceConnInfo {
@@ -41,7 +41,6 @@ impl DeviceConnectionState {
         entry.last_seen = ts;
     }
 
-    /// Mark a device as disconnected.
     pub async fn set_disconnected(&self, sn: &str, ts: i64) {
         let mut guard = self.inner.lock().await;
         if let Some(entry) = guard.get_mut(sn) {
@@ -51,7 +50,6 @@ impl DeviceConnectionState {
         }
     }
 
-    /// Mark SDK poll success.
     pub async fn set_sdk_polled(&self, sn: &str, ts: i64) {
         let mut guard = self.inner.lock().await;
         let entry = guard.entry(sn.to_string()).or_insert(DeviceConnInfo {
@@ -65,11 +63,15 @@ impl DeviceConnectionState {
         entry.last_poll = Some(ts);
     }
 
-    /// Get connection info for a device.
     pub async fn get(&self, sn: &str) -> Option<DeviceConnInfo> {
         self.inner.lock().await.get(sn).cloned()
     }
 }
+
+/// Type alias for the sync provider registry.
+pub type SyncProviderRegistry = Arc<TokioMutex<HashMap<String, Arc<dyn SyncProvider>>>>;
+
+// ── AppState ────────────────────────────────────────────────────────
 
 #[derive(Clone)]
 pub struct AppState {
@@ -85,4 +87,6 @@ pub struct AppState {
     pub device_state: DeviceConnectionState,
     pub provider_registry: Arc<ProviderRegistry>,
     pub engine_health: EngineHealth,
+    /// Registered sync providers (e.g. Odoo, SAP). Keyed by provider key.
+    pub sync_providers: SyncProviderRegistry,
 }

@@ -92,6 +92,13 @@ pub enum DomainEvent {
         device_sn: String,
     },
 
+    /// Request to delete all users from a device without re-uploading.
+    /// Pure destructive operation — separate from `DeviceResyncRequested`
+    /// which also re-uploads employees from the database.
+    ClearAllUsersRequested {
+        device_sn: String,
+    },
+
     /// Bulk user sync completed for a device.
     UsersBulkSynced {
         device_sn: String,
@@ -176,6 +183,16 @@ pub enum DomainEvent {
     /// Enriched device metadata received (platform, firmware, MAC, capacity).
     DeviceInfoUpdated {
         device: Device,
+    },
+
+    /// Request to refresh live device info via SDK (user-initiated).
+    DeviceInfoRefreshRequested {
+        device_sn: String,
+    },
+
+    /// Request to refresh user list from device via SDK (user-initiated).
+    DeviceUsersRefreshRequested {
+        device_sn: String,
     },
 
     // ── Employee lifecycle events ─────────────────────────────
@@ -374,6 +391,7 @@ impl DomainEvent {
             Self::EmployeeRemoveRequested { .. } => "employee_remove_requested",
             Self::DeviceToDeviceSyncRequested { .. } => "device_to_device_sync_requested",
             Self::DeviceResyncRequested { .. } => "device_resync_requested",
+            Self::ClearAllUsersRequested { .. } => "clear_all_users_requested",
             Self::UsersBulkSynced { .. } => "users_bulk_synced",
             Self::DeviceUsersReceived { .. } => "device_users_received",
             Self::UserSyncFailed { .. } => "user_sync_failed",
@@ -387,6 +405,8 @@ impl DomainEvent {
             Self::DeviceConfigChanged { .. } => "device_config_changed",
             Self::DeviceFirmwareUpdated { .. } => "device_firmware_updated",
             Self::DeviceInfoUpdated { .. } => "device_info_updated",
+            Self::DeviceInfoRefreshRequested { .. } => "device_info_refresh_requested",
+            Self::DeviceUsersRefreshRequested { .. } => "device_users_refresh_requested",
             Self::EmployeeCreated { .. } => "employee_created",
             Self::EmployeeUpdated { .. } => "employee_updated",
             Self::EmployeeDeactivated { .. } => "employee_deactivated",
@@ -437,13 +457,16 @@ impl DomainEvent {
             | Self::UserSyncFailed { device_sn, .. }
             | Self::DeviceToDeviceSyncRequested { target_sn: device_sn, .. }
             | Self::DeviceResyncRequested { device_sn, .. }
+            | Self::ClearAllUsersRequested { device_sn }
             | Self::OperationLogReceived { log: OperationLog { device_sn, .. } }
             | Self::DeviceCommandEnqueueRequested { device_sn, .. }
             | Self::DeviceProvisioned { device_sn, .. }
             | Self::DeviceSyncCompleted { device_sn, .. }
             | Self::DeviceSyncFailed { device_sn, .. }
             | Self::DeviceConfigChanged { device_sn, .. }
-            | Self::DeviceFirmwareUpdated { device_sn, .. } => Some(device_sn),
+            | Self::DeviceFirmwareUpdated { device_sn, .. }
+            | Self::DeviceInfoRefreshRequested { device_sn }
+            | Self::DeviceUsersRefreshRequested { device_sn } => Some(device_sn),
             Self::DeviceInfoUpdated { device } => Some(&device.serial_number),
             Self::DeviceDiscovered { probe } => Some(&probe.serial_number),
             Self::EmployeeEnrolled { device_sn, .. } => Some(device_sn),

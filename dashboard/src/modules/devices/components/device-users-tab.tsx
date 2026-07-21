@@ -8,6 +8,7 @@ import { DataBoundary } from "@/modules/shared/components";
 import type { ColumnDefinition, TextFieldMetadata } from "@/modules/data-renderer/types";
 import { useSyncedDeviceUsers } from "../hooks/use-synced-device-users";
 import type { SyncedUser } from "@/lib/api";
+import styles from "./device-detail-view.module.scss";
 
 // ── Column definitions ──────────────────────────────────────────────────
 
@@ -75,20 +76,29 @@ function useColumns() {
 
 type DeviceUsersTabProps = {
   deviceSn: string;
+  /** Unix timestamp (seconds) of the last sync from the device. */
+  lastSyncAt?: number | null;
 };
 
 /**
  * Device users tab — lists all users synced from the device into the local DB.
  *
+ * Users are synced at device connect time (not live). A badge shows the
+ * last sync timestamp so operators know how fresh the data is.
+ *
  * Uses {@link DataTableContainer} (data-renderer) for consistent loading,
  * error, and empty state handling. Client-side search filters the synced
  * user list by PIN or name.
  */
-export function DeviceUsersTab({ deviceSn }: DeviceUsersTabProps) {
+export function DeviceUsersTab({ deviceSn, lastSyncAt }: DeviceUsersTabProps) {
   const { _ } = useLingui();
   const { data, isLoading, error, refetch } = useSyncedDeviceUsers(deviceSn);
   const [search, setSearch] = useState("");
   const columns = useColumns();
+
+  const syncLabel = lastSyncAt != null
+    ? _(msg`Synced ${new Date(lastSyncAt * 1000).toLocaleString()}`)
+    : _(msg`Synced at device connect`);
 
   // Client-side search filter
   const filtered = (data ?? []).filter(
@@ -100,12 +110,17 @@ export function DeviceUsersTab({ deviceSn }: DeviceUsersTabProps) {
 
   return (
     <>
-      <Section>
+      <Section className={styles.usersTabHeader}>
         <SearchInput
           placeholder={_(msg`Search users by name or PIN…`)}
           value={search}
           onChange={setSearch}
         />
+        <span title={_(msg`Users are synced from the device to the local database at connect time. This is not live device data.`)}>
+          <Badge variant="neutral" size="sm">
+            {syncLabel}
+          </Badge>
+        </span>
       </Section>
 
       <Section>
@@ -121,6 +136,7 @@ export function DeviceUsersTab({ deviceSn }: DeviceUsersTabProps) {
               data={filtered}
               getRowKey={(u: SyncedUser) => u.pin}
               entityType="user"
+              rowDataSlot="device-user-row"
               emptyState={
                 <Text variant="body" color="tertiary" style={{ padding: "var(--ao-spacing-6)", textAlign: "center" }}>
                   {_(

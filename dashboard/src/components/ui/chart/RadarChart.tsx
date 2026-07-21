@@ -72,7 +72,7 @@ export function RadarChart({
   };
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="radar-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveRadar
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={data as any}

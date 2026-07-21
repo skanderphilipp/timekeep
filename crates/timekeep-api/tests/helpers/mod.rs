@@ -143,8 +143,7 @@ impl Storage for FakeStorage {
                 timekeep_core::SortOrder::Desc => b.timestamp.cmp(&a.timestamp),
             });
         }
-        let max_limit = if filter.unlimited { timekeep_core::REPORT_MAX_ROWS } else { 10_000 };
-        let limit = filter.params.limit.min(max_limit) as usize;
+        let limit = filter.params.clamped_limit() as usize;
         result.truncate(limit);
         Ok(result)
     }

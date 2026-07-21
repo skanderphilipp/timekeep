@@ -8,7 +8,14 @@
 // API client
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Base URL for the management API. Proxied by Vite in dev, served by Rust in prod. */
+/**
+ * Base URL for the management API.
+ *
+ * In web/Docker deployments, the dashboard is served from the same origin
+ * as the API, so a relative path works. In the Tauri desktop app, the API
+ * client is reconfigured at runtime via setApiClient() when the user
+ * provides a server URL on the connection screen.
+ */
 export const API_BASE = "/api";
 
 /** Default request timeout in milliseconds. */
@@ -108,6 +115,7 @@ export const WORKSPACE_NAME = "Alsabah";
 export const LS_THEME = "ao-theme";
 export const LS_LOCALE = "ao-locale";
 export const LS_AUTH = "ao-auth";
+export const LS_SERVER_URL = "ao-server-url";
 
 // ═══════════════════════════════════════════════════════════════════════
 // Storage key catalog — all localStorage keys used by Jotai atoms
@@ -120,6 +128,7 @@ export const STORAGE_KEYS = {
   theme: LS_THEME,
   locale: LS_LOCALE,
   auth: LS_AUTH,
+  serverUrl: LS_SERVER_URL,
   sidebarCollapsed: "ao:sidebar-collapsed",
   sidePanelWidth: "ao:side-panel-width",
 } as const;

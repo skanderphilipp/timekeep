@@ -41,7 +41,7 @@ export function ScatterPlotChart({
   const { nivo } = useChartTheme();
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="scatter-plot-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveScatterPlot
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={data as unknown as ScatterPlotRawSerie<ScatterPlotDatum>[]}

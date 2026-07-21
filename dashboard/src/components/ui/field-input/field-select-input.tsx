@@ -61,7 +61,7 @@ export function FieldSelectInput({
   });
 
   return (
-    <div ref={wrapperRef} data-no-close className={clsx(className)}>
+    <div data-slot="field-select-input" ref={wrapperRef} data-no-close className={clsx(className)}>
       <Combobox
         options={options}
         value={internalValue}

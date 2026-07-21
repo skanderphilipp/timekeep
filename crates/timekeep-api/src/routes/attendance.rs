@@ -26,56 +26,12 @@ use crate::dto::{
 use crate::request::{CalendarQuery, TimelineQuery};
 use crate::response::{ApiEnvelope, AppError};
 use crate::routes::dashboard::resolve_policies_for_pins;
-use timekeep_core::query::ListParams;
+use timekeep_core::PunchCriteria;
 use timekeep_core::services::attendance_calculator::AttendanceCalculator;
-use timekeep_core::{PunchFilter, PunchStatus, REPORT_MAX_ROWS};
 
-// ── Shared helpers ────────────────────────────────────────────────────
-
-fn parse_csv(opt: &Option<String>) -> Vec<String> {
-    opt.as_deref()
-        .map(|s| s.split(',').map(str::trim).filter(|s| !s.is_empty()).map(String::from).collect())
-        .unwrap_or_default()
-}
-
-/// Build optional punch status filter from comma-separated string.
-fn build_status_filter(raw: &Option<String>) -> Option<Vec<PunchStatus>> {
-    raw.as_deref().map(|s| s.split(',').filter_map(|part| parse_status(part.trim())).collect())
-}
-
-fn parse_status(s: &str) -> Option<PunchStatus> {
-    match s {
-        "check_in" => Some(PunchStatus::CheckIn),
-        "check_out" => Some(PunchStatus::CheckOut),
-        "break_in" => Some(PunchStatus::BreakIn),
-        "break_out" => Some(PunchStatus::BreakOut),
-        "overtime_in" => Some(PunchStatus::OvertimeIn),
-        "overtime_out" => Some(PunchStatus::OvertimeOut),
-        _ => None,
-    }
-}
-
-/// Build a PunchFilter for a date range with optional view filters.
-fn build_filter(
-    since: jiff::Timestamp,
-    until: jiff::Timestamp,
-    device_sns: Option<Vec<String>>,
-    user_pins: Option<Vec<String>>,
-    status: &Option<String>,
-) -> PunchFilter {
-    PunchFilter {
-        since: Some(since),
-        until: Some(until),
-        device_sns,
-        user_pins,
-        statuses: build_status_filter(status),
-        unlimited: true,
-        params: ListParams { limit: REPORT_MAX_ROWS, ..Default::default() },
-        ..Default::default()
-    }
-}
-
-// ── Calendar endpoint ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// Calendar endpoint — month view with per-employee day status
+// ═══════════════════════════════════════════════════════════════════
 
 #[utoipa::path(
     get,
@@ -93,7 +49,8 @@ pub(crate) async fn calendar(
     Query(q): Query<CalendarQuery>,
 ) -> Result<Json<ApiEnvelope<CalendarMonthResponse>>, AppError> {
     let (since, until) = month_bounds(q.year, q.month)?;
-    let punches = fetch_punches(&state, since, until, &q).await?;
+    let punches =
+        state.storage.query_punches_unpaged(&q.criteria, Some(since), Some(until)).await?;
     let work_days = compute_work_days(&state, &punches).await?;
 
     let mut days: HashMap<String, Vec<CalendarEmployeeDay>> = HashMap::new();
@@ -141,18 +98,6 @@ fn month_bounds(year: i16, month: i8) -> Result<(jiff::Timestamp, jiff::Timestam
     Ok((since, until))
 }
 
-async fn fetch_punches(
-    state: &AppState,
-    since: jiff::Timestamp,
-    until: jiff::Timestamp,
-    q: &CalendarQuery,
-) -> Result<Vec<timekeep_core::AttendancePunch>, AppError> {
-    let device_sns = q.device_sns.as_ref().map(|s| parse_csv(&Some(s.clone())));
-    let user_pins = q.user_pins.as_ref().map(|s| parse_csv(&Some(s.clone())));
-    let filter = build_filter(since, until, device_sns, user_pins, &q.status);
-    Ok(state.storage.query_punches(&filter).await?)
-}
-
 async fn compute_work_days(
     state: &AppState,
     punches: &[timekeep_core::AttendancePunch],
@@ -165,7 +110,9 @@ async fn compute_work_days(
     Ok(AttendanceCalculator::compute_work_days_per_pin(punches, &policy_map, &org_policy))
 }
 
-// ── Timeline endpoint ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// Timeline endpoint — single day with timeline blocks per employee
+// ═══════════════════════════════════════════════════════════════════
 
 #[utoipa::path(
     get,
@@ -200,10 +147,8 @@ pub(crate) async fn timeline(
         .map_err(|e| AppError::validation(format!("tz: {e}")))?
         .timestamp();
 
-    let device_sns = q.device_sns.as_ref().map(|s| parse_csv(&Some(s.clone())));
-    let user_pins = q.user_pins.as_ref().map(|s| parse_csv(&Some(s.clone())));
-    let filter = build_filter(since, until, device_sns, user_pins, &q.status);
-    let punches = state.storage.query_punches(&filter).await?;
+    let punches =
+        state.storage.query_punches_unpaged(&q.criteria, Some(since), Some(until)).await?;
 
     let employees = build_timeline_employees(&punches);
 
@@ -246,6 +191,7 @@ fn build_single_employee(
 }
 
 fn compute_summary(pin: &str, punches: &[&timekeep_core::AttendancePunch]) -> CalendarEmployeeDay {
+    // Collect events
     let _events: Vec<crate::dto::AttendanceEvent> = punches
         .iter()
         .map(|p| {

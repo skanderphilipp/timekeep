@@ -34,38 +34,20 @@
 //! 2. Rely on Odoo's database constraint as safety net
 //! 3. Cache employee_id lookups (LRU, 200 entries) to avoid repeated API calls
 
+mod json2;
+pub mod sync;
+
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use serde::Deserialize;
 use timekeep_circuit::{CircuitBreaker, CircuitBreakerError};
 use timekeep_core::{
     Error, events::DomainEvent, model::AttendancePunch, model::PendingDelivery,
     traits::distributor::Distributor, traits::storage::Storage,
 };
 
-/// Odoo JSON-2 API response wrapper.
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct Json2Response<T> {
-    result: Option<T>,
-    error: Option<Json2Error>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct Json2Error {
-    message: String,
-    code: i32,
-}
-
-/// Employee lookup result cached after first API call.
-#[derive(Debug, Clone)]
-struct EmployeeInfo {
-    id: i64,
-    name: String,
-}
+use crate::json2::{EmployeeInfo, Json2Response};
 
 /// Odoo distributor with JSON-2 API integration.
 pub struct OdooDistributor {
@@ -384,9 +366,10 @@ impl OdooDistributor {
         })
     }
 
+    // ── Punch handling ───────────────────────────────────────────────
+
     /// Handle a single attendance punch — resolve employee and create/update Odoo record.
     async fn handle_punch(&self, punch: &AttendancePunch) -> Result<(), Error> {
-        // 1. Resolve employee
         let employee = match self.find_employee(&punch.user_pin).await? {
             Some(info) => info,
             None => {
@@ -400,97 +383,127 @@ impl OdooDistributor {
 
         let ts_str = Self::format_timestamp(&punch.timestamp);
 
-        // 2. Handle based on punch status
         match punch.status {
             timekeep_core::PunchStatus::CheckIn
             | timekeep_core::PunchStatus::BreakIn
             | timekeep_core::PunchStatus::OvertimeIn => {
-                // Check for existing open attendance
-                if let Some(open_id) = self.find_open_attendance(employee.id).await? {
-                    tracing::warn!(
-                        pin = %punch.user_pin,
-                        employee = %employee.name,
-                        open_attendance_id = open_id,
-                        "odoo: employee already checked in — auto-closing previous record"
-                    );
-                    // Auto-close the existing open record with the same timestamp
-                    if let Err(e) = self.set_check_out(open_id, &ts_str).await {
-                        tracing::error!(
-                            pin = %punch.user_pin,
-                            error = %e,
-                            "odoo: failed to auto-close previous check-in"
-                        );
-                    }
-                }
-
-                match self.create_check_in(employee.id, &ts_str).await {
-                    Ok(att_id) => {
-                        tracing::info!(
-                            pin = %punch.user_pin,
-                            employee = %employee.name,
-                            odoo_attendance_id = att_id,
-                            "odoo: check-in created"
-                        );
-                    },
-                    Err(e) => {
-                        tracing::error!(
-                            pin = %punch.user_pin,
-                            employee = %employee.name,
-                            error = %e,
-                            "odoo: failed to create check-in"
-                        );
-                        return Err(e);
-                    },
-                }
+                self.process_checkin(employee.id, &employee.name, &ts_str, &punch.user_pin)
+                    .await
             },
             timekeep_core::PunchStatus::CheckOut
             | timekeep_core::PunchStatus::BreakOut
             | timekeep_core::PunchStatus::OvertimeOut => {
-                match self.find_open_attendance(employee.id).await? {
-                    Some(open_id) => match self.set_check_out(open_id, &ts_str).await {
-                        Ok(()) => {
-                            tracing::info!(
-                                pin = %punch.user_pin,
-                                employee = %employee.name,
-                                odoo_attendance_id = open_id,
-                                "odoo: check-out recorded"
-                            );
-                        },
-                        Err(e) => {
-                            tracing::error!(
-                                pin = %punch.user_pin,
-                                employee = %employee.name,
-                                error = %e,
-                                "odoo: failed to record check-out"
-                            );
-                            return Err(e);
-                        },
-                    },
-                    None => {
-                        tracing::warn!(
-                            pin = %punch.user_pin,
-                            employee = %employee.name,
-                            "odoo: check-out without open attendance — creating check-in + check-out pair"
-                        );
-                        // Edge case: employee was never checked in (or previous record was closed).
-                        // Create a zero-duration attendance record.
-                        match self.create_check_in(employee.id, &ts_str).await {
-                            Ok(att_id) => {
-                                let _ = self.set_check_out(att_id, &ts_str).await;
-                            },
-                            Err(e) => {
-                                tracing::error!(
-                                    pin = %punch.user_pin,
-                                    error = %e,
-                                    "odoo: failed to create check-in for orphan check-out"
-                                );
-                            },
-                        }
-                    },
-                }
+                self.process_checkout(employee.id, &employee.name, &ts_str, &punch.user_pin)
+                    .await
             },
         }
+    }
 
+    /// Process a check-in: auto-close any lingering open attendance, then create the new record.
+    async fn process_checkin(
+        &self,
+        employee_id: i64,
+        name: &str,
+        ts_str: &str,
+        pin: &str,
+    ) -> Result<(), Error> {
+        // Auto-close any pre-existing open attendance (safety net)
+        if let Some(open_id) = self.find_open_attendance(employee_id).await? {
+            tracing::warn!(
+                pin,
+                employee = name,
+                open_attendance_id = open_id,
+                "odoo: employee already checked in — auto-closing previous record"
+            );
+            if let Err(e) = self.set_check_out(open_id, ts_str).await {
+                tracing::error!(
+                    pin,
+                    error = %e,
+                    "odoo: failed to auto-close previous check-in"
+                );
+            }
+        }
+
+        match self.create_check_in(employee_id, ts_str).await {
+            Ok(att_id) => {
+                tracing::info!(
+                    pin,
+                    employee = name,
+                    odoo_attendance_id = att_id,
+                    "odoo: check-in created"
+                );
+                Ok(())
+            },
+            Err(e) => {
+                tracing::error!(
+                    pin,
+                    employee = name,
+                    error = %e,
+                    "odoo: failed to create check-in"
+                );
+                Err(e)
+            },
+        }
+    }
+
+    /// Process a check-out: close the currently open attendance, or recover from an orphan state.
+    async fn process_checkout(
+        &self,
+        employee_id: i64,
+        name: &str,
+        ts_str: &str,
+        pin: &str,
+    ) -> Result<(), Error> {
+        let Some(open_id) = self.find_open_attendance(employee_id).await? else {
+            tracing::warn!(
+                pin,
+                employee = name,
+                "odoo: check-out without open attendance — creating check-in + check-out pair"
+            );
+            return self.recover_orphan_checkout(employee_id, ts_str, pin).await;
+        };
+
+        if let Err(e) = self.set_check_out(open_id, ts_str).await {
+            tracing::error!(
+                pin,
+                employee = name,
+                error = %e,
+                "odoo: failed to record check-out"
+            );
+            return Err(e);
+        }
+
+        tracing::info!(
+            pin,
+            employee = name,
+            odoo_attendance_id = open_id,
+            "odoo: check-out recorded"
+        );
+        Ok(())
+    }
+
+    /// Recover from an orphan check-out: create a zero-duration
+    /// attendance pair so Odoo's constraint (max 1 open) is honoured.
+    ///
+    /// This is non-fatal — we don't want to lose other punches in the batch.
+    async fn recover_orphan_checkout(
+        &self,
+        employee_id: i64,
+        ts_str: &str,
+        pin: &str,
+    ) -> Result<(), Error> {
+        match self.create_check_in(employee_id, ts_str).await {
+            Ok(att_id) => {
+                let _ = self.set_check_out(att_id, ts_str).await;
+            },
+            Err(e) => {
+                tracing::error!(
+                    pin,
+                    error = %e,
+                    "odoo: failed to create check-in for orphan check-out"
+                );
+            },
+        }
         Ok(())
     }
 }
@@ -525,9 +538,19 @@ impl Distributor for OdooDistributor {
                     return Err(e);
                 }
             },
-            _ => {
-                // Odoo distributor only cares about punches
-            },
+            // All other domain event variants are intentionally no-op.
+            // This distributor only cares about PunchReceived.
+            //
+            // Ignored event categories (~63 variants):
+            //   - Device events (Online/Offline/Registered/Removed/…): handled by device layer
+            //   - Engine lifecycle (Started/Stopping): handled by engine
+            //   - Sync operations (Resync/Clear/Bulk/…): handled by sync workers
+            //   - Employee CRUD (Created/Updated/Deactivated/Enrolled): handled by EmployeeStore
+            //   - User management, Settings, Setup, Audit: N/A for attendance forwarding
+            //   - Fingerprint operations (Transfer/Enroll/…): handled by device layer
+            //   - Department/Group operations: N/A for attendance forwarding
+            //   - Onboarding sessions: handled by onboarding flow
+            _ => {},
         }
         Ok(())
     }

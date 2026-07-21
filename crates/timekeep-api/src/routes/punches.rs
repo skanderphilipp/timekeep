@@ -72,7 +72,7 @@ pub(crate) async fn query_punches_mgmt(
     }
 
     // ── Legacy SQL path ─────────────────────────────────────────
-    let anomalies_only = q.anomalies_only.as_deref() == Some("true");
+    let anomalies_only = q.criteria.anomalies_only_bool();
     let filter = build_punch_filter(&q);
     let is_cursor = filter.cursor_after.is_some();
 
@@ -110,12 +110,7 @@ pub(crate) async fn query_punches_mgmt(
     };
 
     let responses: Vec<PunchResponse> = punches.iter().map(PunchResponse::from).collect();
-    // Use the same limit computation as the storage layer so has_more is accurate.
-    let effective_limit = if filter.unlimited {
-        filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
-    } else {
-        filter.params.clamped_limit()
-    };
+    let effective_limit = filter.params.clamped_limit();
     let has_more = responses.len() >= effective_limit as usize;
 
     let meta = if has_more {
@@ -207,20 +202,19 @@ fn split_csv(input: &Option<String>) -> Option<Vec<String>> {
 
 /// Build a PunchFilter from a PunchListQuery.
 pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
-    let cursor_after = q.params.cursor.as_deref().and_then(Cursor::decode);
+    let cursor_after = q.params.cursor.as_deref().and_then(|c| timekeep_core::Cursor::decode(c));
 
+    let device_sns: Option<Vec<String>> = {
+        let sns = q.criteria.device_sns_vec();
+        if sns.is_empty() { None } else { Some(sns) }
+    };
+    let user_pins: Option<Vec<String>> = {
+        let pins = q.criteria.user_pins_vec();
+        if pins.is_empty() { None } else { Some(pins) }
+    };
     let since = q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok());
     let until = q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok());
-
-    let status = q.status.as_deref().and_then(|s| match s {
-        "check_in" => Some(timekeep_core::PunchStatus::CheckIn),
-        "check_out" => Some(timekeep_core::PunchStatus::CheckOut),
-        "break_out" => Some(timekeep_core::PunchStatus::BreakOut),
-        "break_in" => Some(timekeep_core::PunchStatus::BreakIn),
-        "overtime_in" => Some(timekeep_core::PunchStatus::OvertimeIn),
-        "overtime_out" => Some(timekeep_core::PunchStatus::OvertimeOut),
-        _ => None,
-    });
+    let status = q.criteria.resolved_statuses().and_then(|v| v.into_iter().next());
     let verify_mode = q.verify_mode.as_deref().and_then(|s| match s {
         "password" => Some(timekeep_core::VerifyMode::Password),
         "fingerprint" => Some(timekeep_core::VerifyMode::Fingerprint),
@@ -229,13 +223,12 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         "palm" => Some(timekeep_core::VerifyMode::Palm),
         _ => None,
     });
-    let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
-    let unlimited = q.unlimited.as_deref() == Some("true");
+    let anomalies_only = q.criteria.anomalies_only_bool().then_some(true);
 
     PunchFilter {
         params: q.params.clone(),
-        device_sns: split_csv(&q.device_sns),
-        user_pins: split_csv(&q.user_pins),
+        device_sns,
+        user_pins,
         since,
         until,
         status,
@@ -244,10 +237,8 @@ pub(crate) fn build_punch_filter(q: &PunchListQuery) -> PunchFilter {
         anomalies_only,
         ids: None,
         cursor_after,
-        unlimited,
     }
 }
-
 fn build_next_punch_cursor(
     last: &timekeep_core::model::AttendancePunch,
     sort_by: Option<&str>,
@@ -324,8 +315,9 @@ pub(crate) async fn punch_filters(
 
     let anomalies_only = q.anomalies_only.as_deref().map(|s| s == "true");
 
+    let device_sns = split_csv(&q.device_sns);
     let context = FacetContext {
-        device_sns: split_csv(&q.device_sns),
+        device_sns,
         since: q.since.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         until: q.until.and_then(|ts| jiff::Timestamp::from_second(ts).ok()),
         status,
@@ -432,11 +424,7 @@ pub(crate) async fn query_punches_integration(
     let items: Vec<PunchIntegrationResponse> =
         punches.iter().map(PunchIntegrationResponse::from).collect();
     // Use the same limit computation as the storage layer so has_more is accurate.
-    let effective_limit = if filter.unlimited {
-        filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
-    } else {
-        filter.params.clamped_limit()
-    };
+    let effective_limit = filter.params.clamped_limit();
     let has_more = items.len() >= effective_limit as usize;
 
     let meta = if has_more {

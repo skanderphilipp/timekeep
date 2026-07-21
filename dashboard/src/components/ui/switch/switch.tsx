@@ -24,6 +24,12 @@ type SwitchProps = {
   value?: string;
   readOnly?: boolean;
   id?: string;
+  /**
+   * Override the root `data-slot` attribute for E2E test selectors.
+   * Defaults to `"switch"`. Use a unique value when multiple
+   * switches appear on the same page (e.g., `"anomaly-toggle"`).
+   */
+  dataSlot?: string;
 };
 
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
@@ -43,6 +49,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       value,
       readOnly,
       id: externalId,
+      dataSlot,
     },
     ref,
   ) => {
@@ -54,7 +61,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
     const switchElement = (
       <BaseUISwitch.Root
         inputRef={ref}
-        data-slot="switch"
+        data-slot={dataSlot ?? "switch"}
         className={clsx(styles.root, className)}
         checked={checked}
         defaultChecked={defaultChecked}

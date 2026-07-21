@@ -12,7 +12,7 @@ import {
 } from "@/components/ui";
 import type { DeviceSummary } from "@/lib/api";
 import { useDeviceList } from "../hooks/use-device-list";
-import { useSyncActions } from "../hooks/use-sync-actions";
+import { useDeviceActions } from "../hooks/use-device-actions";
 
 type DeviceToDeviceCopyDialogProps = {
   open: boolean;
@@ -33,7 +33,7 @@ export function DeviceToDeviceCopyDialog({
 }: DeviceToDeviceCopyDialogProps) {
   const { _ } = useLingui();
   const { devices } = useDeviceList();
-  const { syncFrom } = useSyncActions(targetSn);
+  const { copyUsersFromDevice } = useDeviceActions(targetSn);
   const [sourceSn, setSourceSn] = useState("");
 
   const sourceOptions = devices
@@ -45,7 +45,7 @@ export function DeviceToDeviceCopyDialog({
 
   const handleSubmit = () => {
     if (!sourceSn) return;
-    syncFrom.mutate(sourceSn, {
+    copyUsersFromDevice.mutate(sourceSn, {
       onSuccess: () => {
         setSourceSn("");
         onOpenChange(false);
@@ -82,20 +82,20 @@ export function DeviceToDeviceCopyDialog({
           </Text>
         )}
 
-        {syncFrom.error && (
+        {copyUsersFromDevice.error && (
           <Text variant="caption" color="danger">
             {_(msg`Copy failed. Check that both devices are online and try again.`)}
           </Text>
         )}
 
         <FormActions>
-          <Button variant="secondary" onClick={() => handleClose(false)} disabled={syncFrom.isPending}>
+          <Button variant="secondary" onClick={() => handleClose(false)} disabled={copyUsersFromDevice.isPending}>
             {_(msg`Cancel`)}
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            loading={syncFrom.isPending}
+            loading={copyUsersFromDevice.isPending}
             disabled={!sourceSn}
           >
             {_(msg`Copy Users`)}

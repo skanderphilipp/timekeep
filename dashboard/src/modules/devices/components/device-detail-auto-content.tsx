@@ -2,9 +2,11 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { useMemo, useState } from "react";
 import {
+  IconCloudDownload,
+  IconUserOff,
   IconUsersPlus,
   IconArrowsExchange,
-  IconCloudDownload,
+  IconRefresh,
 } from "@tabler/icons-react";
 
 import { getDeviceStatusUI } from "@/lib/device-status-ui";
@@ -16,6 +18,7 @@ import {
   Badge,
   Text,
   Button,
+  ConfirmDialog,
 } from "@/components/ui";
 import { ActivityFeed } from "@/modules/shared/components";
 import { DeviceForm } from "./device-form";
@@ -23,10 +26,9 @@ import { DeviceUsersTab } from "./device-users-tab";
 import { DeviceHealthCards } from "./device-health-cards";
 import { EnrollEmployeeDialog } from "./enroll-employee-dialog";
 import { DeviceToDeviceCopyDialog } from "./device-to-device-copy-dialog";
-import { UserSyncActions } from "./user-sync-actions";
 import { DeviceActionsMenu } from "./device-actions-menu";
-import { useDeviceCommand } from "../hooks/use-device-command";
-import { useDeviceEvents, type DeviceEvent } from "../hooks/use-device-events";
+import { useDeviceActions } from "../hooks/use-device-actions";
+import { useDeviceActivity } from "../hooks/use-device-activity";
 import { mapEventKind } from "../utils/device-detail-utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -35,7 +37,6 @@ import type { ReactNode } from "react";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Format a Unix timestamp as a relative time string like "12s ago", "5m ago". */
 function relativeTime(tsSeconds: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = now - tsSeconds;
@@ -46,33 +47,26 @@ function relativeTime(tsSeconds: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
-export type DeviceActivityEvent = {
-  id: string;
-  label: string;
-  timestamp: number;
-  kind: "online" | "offline" | "sync" | "warning" | "config" | "provision";
-  isProblem?: boolean;
-};
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type DeviceDetailAutoContentProps = {
   device: DeviceDetailResponse;
 };
 
-// ── Status Bar (rendered above tabs as children) ───────────────────────────
+// ── Status Bar (rendered above tabs, always visible) ────────────────────────
 
 /**
- * Status bar with connection badge, health indicators, Pull Attendance button,
+ * Status bar with connection badge, health summary, Pull Attendance button,
  * and a ⋮ actions menu for device utilities.
  *
- * Rendered as `children` above the tabs so it's always visible.
- * All utility operations (Restart, Sync Clock, Full Re-sync, Delete) are
- * behind the actions menu to prevent accidental triggers.
+ * Pull Attendance is the primary direct command — it fetches records from the
+ * device in real time and gives immediate feedback (records pulled, duration).
+ * All other utility operations (Sync Clock, Restart, Clear Users, Delete) are
+ * behind the actions dropdown to prevent accidental triggers.
  */
 function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
   const { _ } = useLingui();
-  const { pullAttendance } = useDeviceCommand(device.serial_number);
+  const { pullAttendance } = useDeviceActions(device.serial_number);
   const queryClient = useQueryClient();
 
   const statusValue: DeviceStatusValue = device.status ?? "offline";
@@ -81,7 +75,6 @@ function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
 
   const healthSummary = useMemo(() => {
     const parts: string[] = [];
-    // Mode pill
     const modeLabels: Record<string, string> = {
       both: "SDK + ADMS",
       sdk: "SDK only",
@@ -91,7 +84,6 @@ function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
     const modeLabel = modeLabels[device.mode] ?? device.mode;
     parts.push(modeLabel);
 
-    // Detail
     if (device.adms_active) parts.push(_(msg`ADMS active`));
     if (device.sdk_poll_active) {
       const pollText = device.sdk_last_poll
@@ -134,8 +126,7 @@ function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
         {healthSummary}
       </Text>
 
-      {/* Spacer — pushes actions to the right */}
-      <div style={{ flex: 1 }} />
+      <div data-slot="spacer" style={{ flex: 1 }} />
 
       <Button
         variant="primary"
@@ -146,7 +137,7 @@ function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
         title={
           !device.can_pull_attendance
             ? _(msg`Attendance pull requires SDK connection. This device is in ${device.mode} mode.`)
-            : undefined
+            : _(msg`Pull attendance records from the device now.`)
         }
         onClick={() => pullAttendance.mutate()}
       >
@@ -164,15 +155,8 @@ function DeviceStatusBar({ device }: DeviceDetailAutoContentProps) {
   );
 }
 
-// ── Overview Tab — Health Cards ────────────────────────────────────────────
+// ── Overview Tab — Health Cards ─────────────────────────────────────────────
 
-/**
- * Overview tab content — device health stat cards.
- *
- * Rendered inside the first "Overview" tab via `tabChildren.info`.
- * The declarative field sections (Connection, Hardware, Status, Capacity)
- * are rendered by RecordDetailFields BEFORE this content.
- */
 function DeviceOverviewTab({ device }: DeviceDetailAutoContentProps) {
   const hasCapacityData = device.user_capacity > 0 || device.record_capacity > 0;
 
@@ -183,27 +167,32 @@ function DeviceOverviewTab({ device }: DeviceDetailAutoContentProps) {
   );
 }
 
-// ── Activity Tab ───────────────────────────────────────────────────────────
+// ── Activity Tab — Merged Device Events + Audit Log ────────────────────────
 
 /**
- * Activity tab content — device event timeline.
+ * Activity tab content — merged device events + server audit log.
  *
- * Rendered inside the "Activity" tab via `tabChildren.activity`.
- * Shows online/offline transitions, sync events, config changes, and warnings.
+ * Uses `useDeviceActivity` which returns the unified `DeviceActivityEntry`
+ * stream (device-originated events like online/offline/sync + server-side
+ * audit entries like config changes, deletions). This is richer than the
+ * raw device events endpoint and shows SDK poll failures, ADMS errors,
+ * and all server actions in one timeline.
  */
 function DeviceActivityTab({ device }: DeviceDetailAutoContentProps) {
   const { _ } = useLingui();
-  const { data: rawEvents } = useDeviceEvents(device.serial_number);
+  const activityQuery = useDeviceActivity(device.serial_number);
 
-  const activityEvents: DeviceActivityEvent[] | undefined = rawEvents?.map(
-    (e: DeviceEvent): DeviceActivityEvent => ({
+  // Map API events to TimelineEvent format (adds `kind` for visual categorization).
+  const timelineEvents = useMemo(() => {
+    const raw = activityQuery.data?.events ?? [];
+    return raw.map((e) => ({
       id: e.id,
       label: e.label,
-      timestamp: e.timestamp,
+      timestamp: Math.floor(new Date(e.timestamp).getTime() / 1000),
       kind: mapEventKind(e.event_type),
       isProblem: e.is_problem,
-    }),
-  );
+    }));
+  }, [activityQuery.data?.events]);
 
   const emptyMessage = useMemo(() => {
     if (device.mode === "adms") {
@@ -225,19 +214,18 @@ function DeviceActivityTab({ device }: DeviceDetailAutoContentProps) {
     <Section>
       <Card>
         <Card.Content>
-          <ActivityFeed events={activityEvents ?? []} emptyMessage={emptyMessage} />
+          <ActivityFeed
+            events={timelineEvents}
+            emptyMessage={emptyMessage}
+          />
         </Card.Content>
       </Card>
     </Section>
   );
 }
 
-// ── Config Tab ─────────────────────────────────────────────────────────────
+// ── Config Tab ──────────────────────────────────────────────────────────────
 
-/**
- * Content for the "Config" tab — device settings form.
- * Self-contained: reads entityId from RecordDetailContext for the serial number.
- */
 function DeviceConfigTabContent(_props: DeviceDetailAutoContentProps) {
   const queryClient = useQueryClient();
   return (
@@ -248,21 +236,27 @@ function DeviceConfigTabContent(_props: DeviceDetailAutoContentProps) {
   );
 }
 
-// ── Users Tab ──────────────────────────────────────────────────────────────
+// ── Users Tab ───────────────────────────────────────────────────────────────
 
 /**
- * Content for the "Users on Device" tab — user sync, enroll, and copy.
+ * Users tab toolbar — actions that operate on the device's user list.
+ *
+ * Separated from the table content for clean UX. Destructive operations
+ * (Clear Device Users) require explicit confirmation with a warning about
+ * data loss. Additive operations (Enroll, Copy from Device, Refresh) are
+ * direct actions.
  */
-function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
+function DeviceUsersToolbar({ device }: DeviceDetailAutoContentProps) {
   const { _ } = useLingui();
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const { refreshUsers, clearDeviceUsers } = useDeviceActions(device.serial_number);
 
   const sdkMissing = !device.can_sync_users;
 
   return (
     <>
-      <UserSyncActions deviceSn={device.serial_number} />
       <Button
         variant="secondary"
         size="sm"
@@ -271,27 +265,77 @@ function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
         title={
           sdkMissing
             ? _(msg`Enrollment requires SDK connection. This device is in ${device.mode} mode.`)
-            : undefined
+            : _(msg`Start fingerprint or face enrollment for an employee on this device.`)
         }
         onClick={() => setEnrollOpen(true)}
       >
         {_(msg`Enroll Employee`)}
       </Button>
-      <Button
-        variant="secondary"
-        size="sm"
-        icon={<IconArrowsExchange size={16} />}
-        disabled={sdkMissing}
-        title={
-          sdkMissing
-            ? _(msg`Device-to-device copy requires SDK connection. This device is in ${device.mode} mode.`)
-            : undefined
+
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<IconArrowsExchange size={16} />}
+          disabled={sdkMissing}
+          title={
+            sdkMissing
+              ? _(msg`Device-to-device copy requires SDK connection. This device is in ${device.mode} mode.`)
+              : _(msg`Copy all users from another device to this one.`)
+          }
+          onClick={() => setCopyOpen(true)}
+        >
+          {_(msg`Copy from Device`)}
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<IconRefresh size={16} />}
+          loading={refreshUsers.isPending}
+          disabled={sdkMissing}
+          title={
+            sdkMissing
+              ? _(msg`User refresh requires SDK connection. This device is in ${device.mode} mode.`)
+              : _(msg`Pull the live user list from the device and update the local database.`)
+          }
+          onClick={() => refreshUsers.mutate()}
+        >
+          {_(msg`Refresh Users from Device`)}
+        </Button>
+
+        <div data-slot="spacer" style={{ flex: 1 }} />
+
+        <Button
+          variant="danger"
+          size="sm"
+          icon={<IconUserOff size={16} />}
+          disabled={sdkMissing || clearDeviceUsers.isPending}
+          title={
+            sdkMissing
+              ? _(msg`Clearing users requires SDK connection. This device is in ${device.mode} mode.`)
+              : _(msg`Delete all users from the device. Use this before pushing a fresh employee list. Employees can be restored by syncing them back.`)
+          }
+          onClick={() => setShowClearConfirm(true)}
+        >
+          {_(msg`Clear Device Users`)}
+        </Button>
+
+      <ConfirmDialog
+        open={showClearConfirm}
+        onOpenChange={setShowClearConfirm}
+        title={_(msg`Clear All Users from Device`)}
+        message={_(
+          msg`This will permanently delete ALL users from the device "${device.label || device.serial_number}". Any users on the device that are not in the employee database will be lost. To restore users, push employees back to the device afterwards.`,
+        )}
+        confirmLabel={_(msg`Clear All Users`)}
+        variant="danger"
+        isPending={clearDeviceUsers.isPending}
+        onConfirm={() =>
+          clearDeviceUsers.mutate(undefined, {
+            onSuccess: () => setShowClearConfirm(false),
+          })
         }
-        onClick={() => setCopyOpen(true)}
-      >
-        {_(msg`Copy from Device`)}
-      </Button>
-      <DeviceUsersTab deviceSn={device.serial_number} />
+      />
 
       <EnrollEmployeeDialog
         open={enrollOpen}
@@ -307,37 +351,49 @@ function DeviceUsersTabContent({ device }: DeviceDetailAutoContentProps) {
   );
 }
 
-// ── Public API ──────────────────────────────────────────────────────────────
+/**
+ * Content for the "Users on Device" tab — toolbar + user table.
+ *
+ * The toolbar is rendered via the standardized `tabToolbar` system.
+ * The table is the tab's main content (via `tabChildren`).
+ */
+// DeviceUsersTabContent removed — toolbar now uses tabToolbar pattern.
+// See getDeviceDetailContent() where users tab is split into:
+//   tabToolbars.users = <DeviceUsersToolbar>
+//   tabChildren.users  = <DeviceUsersTab>
+
+// ── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Auto-injected device content for the RecordDetailRenderer.
  *
- * Returns tab children for all 4 tabs + a status bar (children) rendered
- * above the tabs so the device connection state and quick actions are
- * always visible regardless of which tab is active.
+ * Returns tab children for all 4 tabs + a status bar rendered above the tabs
+ * so the device connection state and quick actions are always visible.
  *
  * Tab layout:
  *   1. Overview  — declarative fields (Connection, Hardware, Status, Capacity)
- *                  + health stat cards (via tabChildren)
- *   2. Users     — resync, enroll, copy-from + user table
+ *                  + health stat cards
+ *   2. Users     — toolbar (Enroll, Copy, Refresh, Clear) via tabToolbars
+ *                  + user table via tabChildren
  *   3. Config    — device settings form
- *   4. Activity  — event timeline
- *
- * Used by both the main panel page and the side panel router —
- * no duplication between the two rendering paths.
+ *   4. Activity  — merged event timeline (device + server audit log)
  */
 export function getDeviceDetailContent(
   device: DeviceDetailResponse,
 ): {
   tabChildren: Record<string, ReactNode>;
+  tabToolbars: Record<string, ReactNode>;
   children: ReactNode;
 } {
   return {
     tabChildren: {
       info: <DeviceOverviewTab device={device} />,
       config: <DeviceConfigTabContent device={device} />,
-      users: <DeviceUsersTabContent device={device} />,
+      users: <DeviceUsersTab deviceSn={device.serial_number} lastSyncAt={device.last_sync_at} />,
       activity: <DeviceActivityTab device={device} />,
+    },
+    tabToolbars: {
+      users: <DeviceUsersToolbar device={device} />,
     },
     children: <DeviceStatusBar device={device} />,
   };

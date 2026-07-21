@@ -13,8 +13,6 @@
 mod config;
 mod wiring;
 
-use std::collections::HashMap;
-use std::sync::Arc;
 
 use axum::{
     body::Body,
@@ -24,7 +22,6 @@ use axum::{
 use clap::Parser;
 use rust_embed::RustEmbed;
 use timekeep_core::BiometricDevice;
-use tokio::sync::Mutex;
 
 /// Shared registry of connected devices, keyed by serial number.
 ///
@@ -32,7 +29,7 @@ use tokio::sync::Mutex;
 /// hold independent references without contending on the registry lock.
 /// Used by the API event handler to route user set/delete/command
 /// requests to the correct device instance.
-type DeviceRegistry = Arc<Mutex<HashMap<String, Arc<Mutex<timekeep_zkteco::ZkTecoDevice>>>>>;
+pub(crate) use wiring::DeviceRegistry;
 
 // ─── Dashboard (embedded at compile time) ───────────────────────────
 
@@ -149,6 +146,7 @@ async fn start_server(
         event_bus,
         engine_health,
         device_state,
+        sync_providers,
     } = deps;
 
     // ─── API Servers ────────────────────────────────────────────────
@@ -161,6 +159,7 @@ async fn start_server(
         device_state: device_state.clone(),
         provider_registry: provider_registry.clone(),
         engine_health: engine_health.clone(),
+        sync_providers: sync_providers.clone(),
     })
     .fallback(serve_dashboard);
     let integration_router = timekeep_api::integration_router(timekeep_api::RouterConfig {
@@ -172,6 +171,7 @@ async fn start_server(
         device_state: device_state.clone(),
         provider_registry: provider_registry.clone(),
         engine_health: engine_health.clone(),
+        sync_providers: sync_providers.clone(),
     });
 
     let mgmt_listener =

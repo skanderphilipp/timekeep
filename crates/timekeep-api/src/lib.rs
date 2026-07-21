@@ -43,7 +43,7 @@ use timekeep_engine::health::EngineHealth;
 use tower_http::limit::RequestBodyLimitLayer;
 use utoipa::OpenApi;
 
-use app_state::{AppState, DeviceConnectionState};
+use app_state::{AppState, DeviceConnectionState, SyncProviderRegistry};
 
 /// Serve the Swagger UI HTML page that fetches the OpenAPI spec from `/api/docs/openapi.json`.
 ///
@@ -106,6 +106,8 @@ pub struct RouterConfig {
     pub device_state: DeviceConnectionState,
     pub provider_registry: Arc<ProviderRegistry>,
     pub engine_health: EngineHealth,
+    /// Registered sync providers (Odoo, SAP, etc.).
+    pub sync_providers: SyncProviderRegistry,
 }
 
 pub fn management_router(config: RouterConfig) -> Router {
@@ -118,6 +120,7 @@ pub fn management_router(config: RouterConfig) -> Router {
         device_state,
         provider_registry,
         engine_health,
+        sync_providers,
         // Secrets are read from env inside the router (12-factor app)
     } = config;
 
@@ -146,6 +149,7 @@ pub fn management_router(config: RouterConfig) -> Router {
         device_state,
         provider_registry,
         engine_health,
+        sync_providers,
     };
 
     let mgmt_rate_limiter =
@@ -200,7 +204,16 @@ pub fn management_router(config: RouterConfig) -> Router {
         .route("/api/employees", get(employees::list_employees))
         .route("/api/employees/schema", get(employees::employee_schema))
         .route("/api/employees/filters", get(employees::employee_filters))
+        // Exact paths before parameterised — Axum matches in order
+        .route(
+            "/api/employees/enrollment-summary",
+            get(routes::employee_enrollments::enrollment_summary),
+        )
         .route("/api/employees/{id}", get(employees::get_employee))
+        .route(
+            "/api/employees/{id}/enrollments",
+            get(routes::employee_enrollments::list_employee_enrollments),
+        )
         // Department management (viewer can see)
         .route("/api/departments", get(routes::departments::list_departments))
         .route("/api/departments/schema", get(routes::departments::department_schema))
@@ -315,8 +328,10 @@ pub fn management_router(config: RouterConfig) -> Router {
         // Device user sync operations
         .route("/api/devices/{sn}/sync-clock", post(routes::device_users::sync_device_clock))
         .route("/api/devices/{sn}/restart", post(routes::device_users::restart_device))
-        .route("/api/devices/{sn}/resync", post(routes::device_users::resync_device))
+        .route("/api/devices/{sn}/clear-users", post(routes::device_users::clear_device_users))
         .route("/api/devices/{sn}/pull-attendance", post(routes::devices::pull_attendance))
+        .route("/api/devices/{sn}/refresh-info", post(routes::devices::refresh_device_info))
+        .route("/api/devices/{sn}/refresh-users", post(routes::devices::refresh_device_users))
         .route(
             "/api/devices/{sn}/sync-from/{source_sn}",
             post(routes::device_users::sync_device_to_device),
@@ -324,6 +339,9 @@ pub fn management_router(config: RouterConfig) -> Router {
         // Group sync
         .route("/api/device-groups/{id}/sync", post(routes::device_users::sync_device_group))
         .route("/api/devices/sync-all", post(routes::device_users::sync_all_devices))
+        .route("/api/sync/providers", get(routes::sync::list_providers))
+        .route("/api/sync/{provider}/status", get(routes::sync::provider_status))
+        .route("/api/sync/{provider}/trigger", post(routes::sync::trigger_provider))
         // Fingerprint template transfer
         .route(
             "/api/devices/{sn}/transfer-templates-to/{target_sn}",
@@ -383,6 +401,7 @@ pub fn integration_router(config: RouterConfig) -> Router {
         device_state,
         provider_registry,
         engine_health,
+        sync_providers,
     } = config;
 
     let api_key = std::env::var("TIMEKEEP_API_KEY").unwrap_or_default();
@@ -401,6 +420,7 @@ pub fn integration_router(config: RouterConfig) -> Router {
         device_state,
         provider_registry,
         engine_health,
+        sync_providers,
     };
 
     let int_rate_limiter = middleware::rate_limiter::RateLimiter::new(300, Duration::from_secs(60));
@@ -412,6 +432,10 @@ pub fn integration_router(config: RouterConfig) -> Router {
         .route("/api/v1/punches", get(routes::punches::query_punches_integration))
         .route("/api/v1/employees/{pin}/work-days", get(employees::employee_work_days))
         .route("/api/v1/employees/{pin}/summary", get(employees::employee_summary))
+        .route("/api/v1/integration/odoo/employee-event", post(integration::odoo_employee_event))
+        .route("/api/v1/sync/providers", get(routes::sync::list_providers))
+        .route("/api/v1/sync/{provider}/status", get(routes::sync::provider_status))
+        .route("/api/v1/sync/{provider}/trigger", post(routes::sync::trigger_provider))
         .layer(axum_mw::from_fn_with_state(state.clone(), integration::require_api_key))
         .layer(axum_mw::from_fn_with_state(
             int_rate_limiter,
@@ -1081,7 +1105,10 @@ mod tests {
             // Sync operations
             .route("/api/device-groups/{id}/sync", post(routes::device_users::sync_device_group))
             .route("/api/devices/sync-all", post(routes::device_users::sync_all_devices))
-            .route("/api/devices/{sn}/resync", post(routes::device_users::resync_device))
+        .route("/api/sync/providers", get(routes::sync::list_providers))
+        .route("/api/sync/{provider}/status", get(routes::sync::provider_status))
+        .route("/api/sync/{provider}/trigger", post(routes::sync::trigger_provider))
+            .route("/api/devices/{sn}/clear-users", post(routes::device_users::clear_device_users))
             // Dashboard
             .route("/api/dashboard/today", get(routes::dashboard::today_summary))
             .route("/api/reports/summary", get(routes::dashboard::report_summary))
@@ -1380,7 +1407,10 @@ mod tests {
             )
             .route("/api/device-groups/{id}/sync", post(routes::device_users::sync_device_group))
             .route("/api/devices/sync-all", post(routes::device_users::sync_all_devices))
-            .route("/api/devices/{sn}/resync", post(routes::device_users::resync_device))
+        .route("/api/sync/providers", get(routes::sync::list_providers))
+        .route("/api/sync/{provider}/status", get(routes::sync::provider_status))
+        .route("/api/sync/{provider}/trigger", post(routes::sync::trigger_provider))
+            .route("/api/devices/{sn}/clear-users", post(routes::device_users::clear_device_users))
             .route("/api/devices/{sn}/group", put(routes::device_groups::set_device_group))
             .layer(axum_mw::from_fn_with_state(state.clone(), auth::require_jwt));
         Router::new().merge(protected).layer(pl).with_state(state)
@@ -1958,7 +1988,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_resync_device_with_department_filter() {
+    async fn test_clear_device_users_endpoint() {
         let tok = admin_token();
         let app = test_mgmt_with_groups();
 
@@ -1972,13 +2002,13 @@ mod tests {
         let resp = tower::ServiceExt::oneshot(app.clone(), req).await.unwrap();
         assert_eq!(resp.status(), 201);
 
-        // Resync with department filter
-        let req = axum::http::Request::post("/api/devices/ONBOARD-01/resync?department_id=HR")
+        // Clear users (pure destructive — no re-upload)
+        let req = axum::http::Request::post("/api/devices/ONBOARD-01/clear-users")
             .header("Authorization", format!("Bearer {tok}"))
             .body(axum::body::Body::empty())
             .unwrap();
         let resp = tower::ServiceExt::oneshot(app, req).await.unwrap();
-        assert_eq!(resp.status(), 200, "resync with department filter should be accepted");
+        assert_eq!(resp.status(), 200, "clear-users should be accepted");
     }
 
     #[tokio::test]

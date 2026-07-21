@@ -31,7 +31,7 @@ export function ChartTooltip({ label, value, secondary }: ChartTooltipProps) {
   });
 
   return (
-    <div style={style}>
+    <div data-slot="chart-tooltip" style={style}>
       <strong>{label}</strong>
       {value != null && (
         <>

@@ -92,7 +92,7 @@ export function WorkPolicyForm({
   }
 
   return (
-    <div className={styles.form}>
+    <div data-slot="work-policy-form" className={styles.form}>
       {/* Schedule */}
       <Section>
         <Text variant="label" className={styles.sectionLabel}>

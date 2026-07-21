@@ -138,7 +138,7 @@ pub(crate) async fn create_api_key(
         created_at: now,
         last_used_at: None,
         expires_at,
-        revoked: false,
+        revoked: false
     };
 
     state.storage.create_api_key(&api_key).await?;
@@ -228,13 +228,12 @@ pub(crate) async fn export_punches(
         anomalies_only: None,
         ids: None,
         cursor_after: None,
-        unlimited: false,
         params: timekeep_core::ListParams {
             sort_by: Some("timestamp".into()),
             sort_order: params.sort_order.unwrap_or(timekeep_core::SortOrder::Desc),
             limit: params.limit.unwrap_or(10000).min(50000),
             ..Default::default()
-        },
+        }
     };
 
     let punches = state.storage.query_punches(&filter).await?;
@@ -413,7 +412,7 @@ pub(crate) async fn list_endpoints(
     let meta = PageMeta {
         has_more: result.has_more,
         next_cursor: result.next_cursor,
-        total: result.total,
+        total: result.total
     };
 
     crate::response::build_sparse_envelope(responses, meta, &__fields)
@@ -723,7 +722,7 @@ pub(crate) async fn query_audit(
         sort_by: params.sort_by,
         sort_order: params.sort_order,
         limit: params.limit.clamp(1, 200),
-        cursor: params.cursor,
+        cursor: params.cursor
     };
 
     let result = state.storage.query_audit_logs(&filter).await?;
@@ -733,7 +732,7 @@ pub(crate) async fn query_audit(
     let meta = PageMeta {
         has_more: result.has_more,
         next_cursor: result.next_cursor,
-        total: result.total,
+        total: result.total
     };
 
     crate::response::build_sparse_envelope(items, meta, &__fields)
@@ -818,7 +817,7 @@ pub(crate) async fn audit_filters(
         dimension: q.dimension.clone(),
         search: q.search.clone(),
         limit: q.limit.clamp(1, 100),
-        context: FacetContext { filters, ..FacetContext::default() },
+        context: FacetContext { filters, ..FacetContext::default() }
     };
 
     let groups = state.storage.audit_facets(&query).await?;

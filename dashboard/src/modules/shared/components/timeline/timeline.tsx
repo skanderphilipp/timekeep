@@ -223,7 +223,7 @@ export function Timeline({
                 {item.label}
               </Badge>
             ) : (
-              <span key={item.color} className={styles.legendLabel}>
+              <span key={item.color} data-slot="timeline-legend-label" className={styles.legendLabel}>
                 {item.label}
               </span>
             );

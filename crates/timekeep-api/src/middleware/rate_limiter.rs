@@ -31,6 +31,13 @@ pub(crate) async fn rate_limit_middleware(
     request: axum::extract::Request,
     next: Next,
 ) -> Result<axum::response::Response, StatusCode> {
+    // Skip rate limiting in E2E test mode — tests fire many requests
+    // in rapid succession and the 100 req/60s limit is designed for
+    // human-paced dashboard usage, not automated test suites.
+    if std::env::var("TIMEKEEP_E2E").as_deref() == Ok("1") {
+        return Ok(next.run(request).await);
+    }
+
     let now = Instant::now();
     let mut timestamps = limiter.timestamps.lock().await;
     while timestamps.front().is_some_and(|t| now.duration_since(*t) > limiter.window) {

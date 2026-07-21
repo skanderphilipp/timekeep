@@ -1,15 +1,12 @@
 use super::SqliteStorage;
 use timekeep_core::Error;
 
-/// Minimal row for listing device users (pin, name, privilege, group, card).
+/// Minimal row for listing device users (pin, name, privilege).
 #[derive(sqlx::FromRow)]
-#[allow(dead_code)]
 pub(super) struct UserListRow {
     pin: String,
     name: String,
     privilege: Option<i32>,
-    card_number: Option<String>,
-    group_num: Option<i32>,
 }
 
 impl SqliteStorage {

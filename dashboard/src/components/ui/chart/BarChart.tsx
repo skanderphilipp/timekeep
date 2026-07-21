@@ -73,7 +73,7 @@ export function BarChart({
   );
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="bar-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveBar
         data={data as unknown as readonly BarDatum[]}
         keys={keys}

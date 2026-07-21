@@ -56,7 +56,7 @@ export function FieldMultiSelectInput({
   });
 
   return (
-    <div ref={wrapperRef} data-no-close className={clsx(className)}>
+    <div data-slot="field-multi-select-input" ref={wrapperRef} data-no-close className={clsx(className)}>
       <MultiSelect
         options={options}
         values={internalValues}

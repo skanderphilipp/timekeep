@@ -26,41 +26,22 @@ import type { DetailViewConfig } from "../entity-definitions/types";
 type RecordDetailRendererProps = {
   entity: EntityType;
   entityId: string;
-  /**
-   * Whether rendered inside the side panel. Used by the navigation
-   * hook to choose between side panel stack and full-page routes.
-   * NOT used for visual branching.
-   */
   isInSidePanel: boolean;
-  /**
-   * Custom actions passed from the page (legacy).
-   *
-   * TODO(ENTERPRISE): Remove when all pages use entity definition actions
-   *                    (Phase 3 complete). Entity actions now come from
-   *                    {@link RecordDetailActions} via the entity definition.
-   */
   actions?: ReactNode;
-  /**
-   * Custom children rendered after auto-fetched entity extras.
-   * For complex entities (device) that need tabs, charts, etc.
-   */
   children?: ReactNode;
   /**
    * Custom React content keyed by tab key. Rendered after each tab's
    * declarative sections inside the `<TabPanel>`.
-   *
-   * Use this for complex tab content that can't be expressed as field
-   * configs (forms, lists, charts, action buttons).
-   *
-   * @example
-   * tabChildren={{ config: <DeviceForm embedded onSaved={refresh} /> }}
    */
   tabChildren?: Record<string, ReactNode>;
   /**
-   * Optional KPI data override. If not provided, the renderer fetches
-   * entity-specific KPIs automatically (e.g., employee attendance summary
-   * for both main panel and side panel).
+   * Tab toolbar content keyed by tab key.
+   *
+   * Rendered at the top of each `<TabPanel>` (before sections) in a
+   * standardized toolbar area. Only rendered for tabs that declare
+   * `tabToolbar: true` in their `DetailTabConfig`.
    */
+  tabToolbars?: Record<string, ReactNode>;
   kpiData?: Record<string, unknown> | null;
 };
 
@@ -73,6 +54,7 @@ export function RecordDetailRenderer({
   actions,
   children,
   tabChildren,
+  tabToolbars,
   kpiData: externalKpiData,
 }: RecordDetailRendererProps) {
   const def = ENTITY_DEFINITIONS[entity];
@@ -101,6 +83,7 @@ export function RecordDetailRenderer({
         actions={actions}
         children={children}
         tabChildren={tabChildren}
+        tabToolbars={tabToolbars}
         externalKpiData={externalKpiData}
       />
     </RecordDetailProvider>
@@ -116,6 +99,7 @@ type RecordDetailRendererInnerProps = {
   actions?: ReactNode;
   children?: ReactNode;
   tabChildren?: Record<string, ReactNode>;
+  tabToolbars?: Record<string, ReactNode>;
   externalKpiData?: Record<string, unknown> | null;
 };
 
@@ -126,6 +110,7 @@ function RecordDetailRendererInner({
   actions,
   children,
   tabChildren,
+  tabToolbars,
   externalKpiData,
 }: RecordDetailRendererInnerProps) {
   	/** Derive isNewRecord from empty entityId, not a separate mode. */
@@ -289,6 +274,7 @@ function RecordDetailRendererInner({
   // ── Entity-specific tab children (auto-injected) ────────────────────────
 
   const mergedTabChildren: Record<string, ReactNode> = { ...tabChildren };
+  const mergedTabToolbars: Record<string, ReactNode> = { ...tabToolbars };
 
   if (!isNewRecord && entity === "department" && record) {
     mergedTabChildren.details = (
@@ -308,6 +294,10 @@ function RecordDetailRendererInner({
     for (const [key, content] of Object.entries(deviceContent.tabChildren)) {
       mergedTabChildren[key] = mergedTabChildren[key] ?? content;
     }
+    // Merge device tab toolbars with any externally-provided ones
+    for (const [key, content] of Object.entries(deviceContent.tabToolbars)) {
+      mergedTabToolbars[key] = mergedTabToolbars[key] ?? content;
+    }
     // Also merge the extras if not already set above
     if (!extras) {
       extras = deviceContent.children;
@@ -321,7 +311,7 @@ function RecordDetailRendererInner({
       <CreateProvider>
         <RecordDetailShell>
           <RecordDetailHeader record={{}} config={augmentedConfig} />
-          <RecordDetailFields record={{}} config={augmentedConfig} kpiData={null} tabChildren={mergedTabChildren}>
+          <RecordDetailFields record={{}} config={augmentedConfig} kpiData={null} tabChildren={mergedTabChildren} tabToolbars={mergedTabToolbars}>
             {children}
           </RecordDetailFields>
           <RecordDetailActions>{actions}</RecordDetailActions>
@@ -336,7 +326,7 @@ function RecordDetailRendererInner({
     <RecordDetailStates isLoading={isLoading} error={error} record={record}>
       <RecordDetailShell>
         <RecordDetailHeader record={record!} config={augmentedConfig} />
-        <RecordDetailFields record={record!} config={augmentedConfig} kpiData={kpiData} tabChildren={mergedTabChildren}>
+        <RecordDetailFields record={record!} config={augmentedConfig} kpiData={kpiData} tabChildren={mergedTabChildren} tabToolbars={mergedTabToolbars}>
           {extras}
           {children}
         </RecordDetailFields>

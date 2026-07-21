@@ -1,5 +1,3 @@
-import type { DeviceActivityEvent } from "../components/device-detail-content";
-
 /**
  * Pure functions for device detail logic — extracted for testability.
  *
@@ -7,8 +5,11 @@ import type { DeviceActivityEvent } from "../components/device-detail-content";
  * without component rendering or DOM interaction.
  */
 
-/** Map API event_type string to DeviceActivityEvent kind. */
-export function mapEventKind(eventType: string | undefined | null): DeviceActivityEvent["kind"] {
+/** The kind of activity event for visual categorization in the timeline. */
+export type DeviceActivityEventKind = "online" | "offline" | "sync" | "warning" | "config" | "provision";
+
+/** Map API event_type string to a visual category kind. */
+export function mapEventKind(eventType: string | undefined | null): DeviceActivityEventKind {
   if (eventType == null) return "provision";
   if (eventType.includes("offline")) return "offline";
   if (eventType.includes("online")) return "online";

@@ -3,6 +3,7 @@
 **/*.rs.bk
 *.pdb
 
+
 # IDE
 .idea/
 .vscode/
@@ -44,3 +45,5 @@ Thumbs.db
 
 search/
 dashboard/dist/
+dist/
+docs/

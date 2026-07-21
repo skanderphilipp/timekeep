@@ -86,7 +86,7 @@ pub use facet::{
 pub use query::cursor::{Cursor, CursorValue, decode_cursor, encode_cursor, encode_offset_cursor};
 pub use query::field_selector::{FieldSelector, IncludeDirective};
 pub use query::filters::{
-    DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchFilter, REPORT_MAX_ROWS,
+    DeviceEventFilter, DeviceFilter, EmployeeFilter, EndpointFilter, PunchCriteria, PunchFilter,
 };
 pub use query::schema::{
     AUDIT_SCHEMA, ColumnMeta, CursorValueType, DEPARTMENT_SCHEMA, DEVICE_SCHEMA, EMPLOYEE_SCHEMA,

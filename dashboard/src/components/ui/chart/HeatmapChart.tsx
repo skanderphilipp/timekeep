@@ -51,7 +51,7 @@ export function HeatmapChart({
     colors?.length === 2 ? (colors.map(resolveColor) as [string, string]) : defaultColors;
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="heatmap-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveHeatMap
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={data as unknown as HeatMapSerie<HeatMapDatum, Record<string, any>>[]}

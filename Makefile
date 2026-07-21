@@ -16,13 +16,14 @@
 
 .PHONY: build build-rust build-dashboard build-docker dev dev-rust dev-dashboard \
         test test-rust test-dashboard lint lint-rust lint-dashboard \
-        clean release help seed-db seed-db-reset seed-dev seed-dev-reset
+        clean release help seed-db seed-db-reset seed-dev seed-dev-reset \
+        docs-screenshots docs-pdf docs
 
 # ─── Default target ──────────────────────────────────────────────────
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-24s\033[0m %s\n", $$1, $$2}'
 
 # ─── Build ───────────────────────────────────────────────────────────
 
@@ -67,6 +68,11 @@ test-rust: ## Run all Rust tests
 
 test-dashboard: ## Run dashboard tests
 	cd dashboard && pnpm test
+
+e2e: seed-e2e ## Run E2E tests against real Rust backend + seeded DB
+	@echo "🧪 Running E2E tests (real backend)..."
+	cd dashboard && pnpm test:e2e
+	@echo "✅ E2E tests passed"
 
 # ─── Linting ─────────────────────────────────────────────────────────
 
@@ -123,3 +129,51 @@ seed-dev-reset: ## Reset database to empty, then re-seed with dev data
 	@echo "📥 Applying dev seed ..."
 	sqlite3 timekeep.db < tests/fixtures/seed-dev.sql
 	@echo "✅ Dev database seeded (admin / admin123)."
+
+# ─── Documentation ─────────────────────────────────────────────────────
+
+seed-e2e: ## Generate realistic E2E test database (120 employees, 8 devices, 2yr history)
+	@echo "🌱 Generating realistic E2E database..."
+	rm -f timekeep-e2e.db timekeep-e2e.db-shm timekeep-e2e.db-wal
+	cargo run -p timekeep --bin seed --features seed -- \
+		--employees 120 --devices 8 --days 730 \
+		--today $$(date +%Y-%m-%d) \
+		--admin-password admin123 \
+		--operator-password operator123 \
+		--viewer-password viewer123 \
+		--output timekeep-e2e.db --force --seed 42
+	@echo "✅ E2E database generated (timekeep-e2e.db)"
+	@echo "   Admin login:    admin / admin123"
+	@echo "   Operator login: operator / operator123"
+	@echo "   Viewer login:   viewer / viewer123"
+
+docs-screenshots: ## Capture screenshots with mocked API (fast, no backend needed)
+	@echo "📸 Capturing documentation screenshots (mock mode)..."
+	@echo "   Dashboard dev server must be running: cd dashboard && pnpm dev"
+	cd dashboard && npx tsx docs-scripts/capture-flows.ts
+	@echo "✅ Screenshots saved to docs/screenshots/"
+
+docs-screenshots-real: seed-e2e ## Capture screenshots against real seeded backend (E2E quality)
+	@echo "📸 Capturing screenshots against REAL backend..."
+	@echo "   Database: 120 employees, 8 devices, 730 days of punches"
+	@trap 'kill 0' EXIT; \
+		cargo run -p timekeep -- --db timekeep-e2e.db & \
+		sleep 4; \
+		echo "Starting dashboard dev server (port 5173)..."; \
+		cd dashboard && pnpm dev & \
+		sleep 5; \
+		echo ""; \
+		cd dashboard && npx tsx docs-scripts/capture-flows.ts --real; \
+		echo ""; \
+		echo "✅ Real-backend screenshots saved to docs/screenshots/"
+
+docs-pdf: ## Compile all Typst user guides to PDF
+	@echo "📄 Compiling user guides to PDF..."
+	@which typst > /dev/null || (echo "❌ typst not found. Install: brew install typst" && exit 1)
+	@mkdir -p dist/docs
+	typst compile --root . docs/guides/admin/01-device-setup.typ dist/docs/admin-01-device-setup.pdf
+	typst compile --root . docs/guides/hr/01-daily-attendance.typ dist/docs/hr-01-daily-attendance.pdf
+	typst compile --root . docs/guides/supervisor/01-team-overview.typ dist/docs/supervisor-01-team-overview.pdf
+	@echo "✅ PDFs saved to dist/docs/"
+
+docs: docs-screenshots-real docs-pdf ## Full docs pipeline: real backend screenshots + compile PDFs

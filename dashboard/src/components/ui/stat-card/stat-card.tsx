@@ -43,6 +43,12 @@ export type StatCardProps = {
   /** Makes the card interactive. */
   onClick?: () => void;
   className?: string;
+  /**
+   * Override the root `data-slot` attribute for E2E test selectors.
+   * Defaults to `"stat-card"`. Use a unique value when multiple
+   * StatCards appear on the same page (e.g., `"stat-card-present"`).
+   */
+  dataSlot?: string;
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -87,6 +93,7 @@ export function StatCard({
   capacity,
   onClick,
   className,
+  dataSlot,
 }: StatCardProps) {
   const isHorizontal = layout === "horizontal";
   const pct = capacity ? capacityPct(capacity) : null;
@@ -94,7 +101,7 @@ export function StatCard({
 
   const body = (
     <div
-      data-slot="stat-card"
+      data-slot={dataSlot ?? "stat-card"}
       className={clsx(
         styles.card,
         isHorizontal ? styles.horizontal : styles.vertical,

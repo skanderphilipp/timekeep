@@ -245,7 +245,8 @@ fn default_device_limit() -> u32 {
 /// Request to execute a batch action on multiple devices.
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct BatchActionRequest {
-    /// Action to execute: "sync_now", "sync_clock", "enable", "disable", "restart".
+    /// Action to execute: "sync_now", "sync_clock", "enable", "disable", "restart",
+    /// "refresh_info", "refresh_users".
     pub action: String,
     /// List of device serial numbers to act on.
     pub device_sns: Vec<String>,
@@ -260,32 +261,20 @@ pub struct PunchListQuery {
     #[serde(flatten)]
     pub params: timekeep_core::ListParams,
 
+    /// Shared punch filter criteria (device_sns, user_pins, status, anomalies_only).
+    #[serde(flatten)]
+    pub criteria: timekeep_core::PunchCriteria,
+
     /// Full-text search across user_pin, employee_name, device_sn, device_label, and status.
     /// Uses Tantivy for fuzzy, ranked search. Takes priority over `params.search`.
     pub q: Option<String>,
 
-    /// Filter by device serial numbers, comma-separated (OR logic).
-    /// Single: `?device_sns=DEV-001`
-    /// Multiple: `?device_sns=DEV-001,DEV-002`
-    pub device_sns: Option<String>,
-    /// Filter by user PINs, comma-separated (OR logic).
-    /// Single: `?user_pins=123`
-    /// Multiple: `?user_pins=123,456`
-    pub user_pins: Option<String>,
     /// Unix timestamp (seconds) — return punches after this time.
     pub since: Option<i64>,
     /// Unix timestamp (seconds) — return punches before this time.
     pub until: Option<i64>,
-    /// Filter by punch status: check_in, check_out, break_out, break_in, overtime_in, overtime_out.
-    pub status: Option<String>,
     /// Filter by verification method: fingerprint, face, card, password, palm.
     pub verify_mode: Option<String>,
-    /// When "true", return only punches flagged as anomalous.
-    pub anomalies_only: Option<String>,
-
-    /// When "true", bypass the 200-row limit clamp (capped at REPORT_MAX_ROWS = 100,000).
-    /// Use for calendar/timeline views that need all punches in a date range.
-    pub unlimited: Option<String>,
 
     /// Sparse field selection: comma-separated field names to return.
     /// Omit to return all fields. Example: fields=id,timestamp,status,device_label
@@ -301,32 +290,20 @@ pub struct PunchListQuery {
 /// Query parameters for report summaries.
 #[derive(Debug, Deserialize, ToSchema, IntoParams)]
 pub struct ReportSummaryQuery {
-    /// Unix timestamp (seconds) — start of date range (inclusive).
-    /// Defaults to start of today.
+    /// Unix timestamp (seconds) — start of date range (inclusive). Defaults to start of today.
     pub date_from: Option<i64>,
 
-    /// Unix timestamp (seconds) — end of date range (inclusive).
-    /// Defaults to end of today.
+    /// Unix timestamp (seconds) — end of date range (inclusive). Defaults to end of today.
     pub date_to: Option<i64>,
 
-    /// Filter by employee PINs (comma-separated, OR logic).
-    /// Example: `user_pins=1001,1002`
-    #[param(value_type = String)]
-    pub user_pins: Option<String>,
+    /// Shared punch filter criteria (device_sns, user_pins, statuses).
+    #[serde(flatten)]
+    pub criteria: timekeep_core::PunchCriteria,
 
     /// Filter by department UUIDs (comma-separated, OR logic).
     /// Resolves to employee PINs via the employee repository.
     #[param(value_type = String)]
     pub department_ids: Option<String>,
-
-    /// Filter by device serial numbers (comma-separated, OR logic).
-    #[param(value_type = String)]
-    pub device_sns: Option<String>,
-
-    /// Filter by punch statuses (comma-separated, OR logic).
-    /// Valid: check_in, check_out, break_out, break_in, overtime_in, overtime_out.
-    #[param(value_type = String)]
-    pub statuses: Option<String>,
 }
 
 /// Query parameters for audit log listing.
@@ -974,18 +951,9 @@ pub struct CalendarQuery {
     pub year: i16,
     /// Calendar month (1-12).
     pub month: i8,
-    /// Comma-separated device serial numbers.
-    #[serde(default)]
-    pub device_sns: Option<String>,
-    /// Comma-separated employee PINs.
-    #[serde(default)]
-    pub user_pins: Option<String>,
-    /// Punch status filter.
-    #[serde(default)]
-    pub status: Option<String>,
-    /// Verification method filter.
-    #[serde(default)]
-    pub verify_mode: Option<String>,
+    /// Shared punch filter criteria.
+    #[serde(flatten)]
+    pub criteria: timekeep_core::PunchCriteria,
 }
 
 /// Query params for GET /api/attendance/timeline.
@@ -993,16 +961,7 @@ pub struct CalendarQuery {
 pub struct TimelineQuery {
     /// The day to display (YYYY-MM-DD).
     pub date: String,
-    /// Comma-separated device serial numbers.
-    #[serde(default)]
-    pub device_sns: Option<String>,
-    /// Comma-separated employee PINs.
-    #[serde(default)]
-    pub user_pins: Option<String>,
-    /// Punch status filter.
-    #[serde(default)]
-    pub status: Option<String>,
-    /// Verification method filter.
-    #[serde(default)]
-    pub verify_mode: Option<String>,
+    /// Shared punch filter criteria.
+    #[serde(flatten)]
+    pub criteria: timekeep_core::PunchCriteria,
 }

@@ -35,6 +35,18 @@
   margin-bottom: var(--ao-spacing-2);
 }
 
+// ── Tab Toolbar ───────────────────────────────────────────────────────────
+
+.tabToolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-3);
+  flex-wrap: wrap;
+  padding-block-end: var(--ao-spacing-4);
+  border-bottom: 1px solid var(--ao-border-color);
+  margin-bottom: var(--ao-spacing-4);
+}
+
 // ── Actions ───────────────────────────────────────────────────────────────
 
 .actionsRow {

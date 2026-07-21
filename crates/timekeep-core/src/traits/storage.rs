@@ -21,7 +21,9 @@ use crate::model::device_event::DeviceEvent;
 use crate::model::pending_delivery::PendingDelivery;
 use crate::model::{AttendancePunch, Device, DeviceConfig, ProviderInfo};
 use crate::query::ListResult;
-use crate::query::filters::{DeviceEventFilter, DeviceFilter, EndpointFilter, PunchFilter};
+use crate::query::filters::{
+    DeviceEventFilter, DeviceFilter, EndpointFilter, PunchCriteria, PunchFilter,
+};
 
 /// Persistence layer for attendance data.
 ///
@@ -55,8 +57,33 @@ pub trait Storage: Send + Sync {
     /// Get a single punch by deduplication ID. Returns `None` if not found.
     async fn get_punch(&self, id: &str) -> Result<Option<AttendancePunch>, Error>;
 
-    /// Query punches matching the given filter.
+    /// Query punches matching the given filter with pagination.
     async fn query_punches(&self, filter: &PunchFilter) -> Result<Vec<AttendancePunch>, Error>;
+
+    /// Query ALL punches matching criteria within a date range — no pagination.
+    ///
+    /// Aggregate endpoints (calendar, reports, dashboard) call this instead of
+    /// `query_punches` with `unlimited: true`. The method dispatch itself
+    /// expresses the intent — no flag-based behavior switching.
+    async fn query_punches_unpaged(
+        &self,
+        criteria: &PunchCriteria,
+        since: Option<jiff::Timestamp>,
+        until: Option<jiff::Timestamp>,
+    ) -> Result<Vec<AttendancePunch>, Error> {
+        let filter = PunchFilter {
+            device_sns: Some(criteria.device_sns_vec()).filter(|v| !v.is_empty()),
+            user_pins: Some(criteria.user_pins_vec()).filter(|v| !v.is_empty()),
+            statuses: criteria.resolved_statuses().filter(|s| !s.is_empty()),
+            anomalies_only: if criteria.anomalies_only_bool() { Some(true) } else { None },
+            since,
+            until,
+
+            params: crate::query::ListParams { limit: 100_000, ..Default::default() },
+            ..Default::default()
+        };
+        self.query_punches(&filter).await
+    }
 
     /// Return faceted filter metadata for punches.
     ///

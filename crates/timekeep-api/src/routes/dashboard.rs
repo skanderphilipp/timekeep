@@ -37,19 +37,8 @@ pub(crate) async fn today_summary(
     let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let today_start = crate::helpers::today_midnight_utc(now);
 
-    let punches = state
-        .storage
-        .query_punches(&timekeep_core::PunchFilter {
-            since: Some(today_start),
-            // No upper bound — punches are always in the past (devices only
-            // record actual events). Including all of today's data regardless
-            // of when the request arrives ensures the dashboard shows the
-            // full day and keeps tests time-of-day-independent.
-            until: None,
-            unlimited: true,
-            ..Default::default()
-        })
-        .await?;
+    let punches =
+        state.storage.query_punches_unpaged(&Default::default(), Some(today_start), None).await?;
 
     // ── Resolve per-employee policies for late detection ──
     let unique_pins = crate::helpers::unique_pins(&punches);
@@ -210,22 +199,13 @@ pub(crate) async fn report_summary(
     let to_date = date_to.to_zoned(jiff::tz::TimeZone::UTC).datetime().date();
     let work_days_count = org_default.count_working_days(from_date, to_date);
 
-    // 2. Parse filter parameters
-    let user_pins = crate::helpers::split_csv(&params.user_pins);
-    let device_sns = crate::helpers::split_csv(&params.device_sns);
-    let statuses: Option<Vec<PunchStatus>> = crate::helpers::split_csv(&params.statuses).map(|v| {
-        v.iter()
-            .filter_map(|s| match s.as_str() {
-                "check_in" => Some(PunchStatus::CheckIn),
-                "check_out" => Some(PunchStatus::CheckOut),
-                "break_out" => Some(PunchStatus::BreakOut),
-                "break_in" => Some(PunchStatus::BreakIn),
-                "overtime_in" => Some(PunchStatus::OvertimeIn),
-                "overtime_out" => Some(PunchStatus::OvertimeOut),
-                _ => None,
-            })
-            .collect()
-    });
+    // 2. Parse filter criteria from shared PunchCriteria
+    let criteria = &params.criteria;
+    let user_pins: Option<Vec<String>> = {
+        let pins = criteria.user_pins_vec();
+        if pins.is_empty() { None } else { Some(pins) }
+    };
+    let device_sns: Vec<String> = criteria.device_sns_vec();
 
     // 3. Resolve department_ids → employee PINs
     let department_pins: Option<Vec<String>> = if let Some(ref dept_csv) = params.department_ids {
@@ -272,17 +252,15 @@ pub(crate) async fn report_summary(
         (None, None) => None,
     };
 
-    // 5. Fetch raw data — unlimited mode for full aggregation
-    let filter = timekeep_core::PunchFilter {
-        since: Some(date_from),
-        until: Some(date_to),
-        device_sns,
-        user_pins: effective_user_pins,
-        statuses,
-        unlimited: true,
-        ..Default::default()
-    };
-    let punches = state.storage.query_punches(&filter).await?;
+    // 5. Fetch raw data via the dedicated aggregate query method
+    let mut criteria = params.criteria.clone();
+    if let Some(ref pins) = effective_user_pins {
+        criteria.user_pins = Some(pins.join(","));
+    }
+    let punches = state
+        .storage
+        .query_punches_unpaged(&criteria, Some(date_from), Some(date_to))
+        .await?;
 
     // 6. Basic counts
     let mut check_ins: u64 = 0;
@@ -438,12 +416,14 @@ pub(crate) async fn report_summary(
 
     // Build applied_filters echo
     let applied_filters = crate::response::AppliedFilters {
-        user_pins: crate::helpers::split_csv(&params.user_pins),
+        user_pins: Some(params.criteria.user_pins_vec()).filter(|v| !v.is_empty()),
         department_ids: params.department_ids.as_ref().map(|s| {
             s.split(',').map(|p| p.trim().to_string()).filter(|p| !p.is_empty()).collect()
         }),
-        device_sns: crate::helpers::split_csv(&params.device_sns),
-        statuses: crate::helpers::split_csv(&params.statuses),
+        device_sns: Some(params.criteria.device_sns_vec()).filter(|v| !v.is_empty()),
+        statuses: params.criteria.statuses.clone().map(|s| {
+            s.split(',').map(|p| p.trim().to_string()).filter(|p| !p.is_empty()).collect()
+        }),
     };
 
     let summary = ReportSummaryResponse {
@@ -553,12 +533,7 @@ pub(crate) async fn monthly_trend(
 
     let punches = state
         .storage
-        .query_punches(&timekeep_core::PunchFilter {
-            since,
-            until,
-            unlimited: true,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&Default::default(), since, until)
         .await?;
 
     // ── Resolve per-employee policies for correct late/status detection ──
@@ -617,12 +592,7 @@ pub(crate) async fn department_attendance(
 
     let punches = state
         .storage
-        .query_punches(&timekeep_core::PunchFilter {
-            since,
-            until,
-            unlimited: true,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&Default::default(), since, until)
         .await?;
 
     // ── Resolve per-employee policies for correct late/status detection ──
@@ -772,12 +742,7 @@ pub(crate) async fn list_anomalies(
 
     let punches = state
         .storage
-        .query_punches(&timekeep_core::PunchFilter {
-            since,
-            until,
-            unlimited: true,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&Default::default(), since, until)
         .await?;
 
     // ── Resolve per-employee policies for correct anomaly detection ──

@@ -112,37 +112,27 @@ pub(crate) async fn sync_device_to_device(
     Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
 }
 
-/// Trigger a full device re-sync — delete all users and re-upload
-/// from the employee database, optionally filtered by department.
+/// Trigger a pure destructive clear — delete all users from a device
+/// without re-uploading from the employee database.
 #[utoipa::path(
     post,
-    path = "/api/devices/{sn}/resync",
+    path = "/api/devices/{sn}/clear-users",
     tag = "Devices",
     security(("bearer_auth" = [])),
     params(
         ("sn" = String, Path, description = "Device serial number"),
-        ("department" = Option<String>, Query, description = "Optional department name filter"),
     ),
     responses(
-        (status = 200, description = "Device resync requested", body = StatusResponse),
+        (status = 200, description = "Clear users requested", body = StatusResponse),
         (status = 401, description = "Unauthorized"),
         (status = 403, description = "Forbidden — Operator+ required"),
     )
 )]
-pub(crate) async fn resync_device(
+pub(crate) async fn clear_device_users(
     State(state): State<AppState>,
     Path(sn): Path<String>,
-    Query(q): Query<SyncQuery>,
 ) -> Result<Json<ApiEnvelope<StatusResponse>>, AppError> {
-    state.event_bus.publish(DomainEvent::DeviceResyncRequested { device_sn: sn.clone() });
-    // Log department filter if provided
-    if let Some(ref dept_id) = q.department_id {
-        tracing::info!(
-            device = %sn,
-            department_id = %dept_id,
-            "device resync requested with department filter"
-        );
-    }
+    state.event_bus.publish(DomainEvent::ClearAllUsersRequested { device_sn: sn });
     Ok(Json(ApiEnvelope::success(StatusResponse::requested())))
 }
 

@@ -247,3 +247,40 @@ function buildEmployeeFacetParams(filter: EmployeeFacetParams): string {
 export function fetchEmployeeFilters(filter: EmployeeFacetParams = {}): Promise<FacetGroup[]> {
   return apiGet<FacetGroup[]>(`employees/filters${buildEmployeeFacetParams(filter)}`).json();
 }
+
+// ── Device Enrollments ──────────────────────────────────────────────────────
+
+/** Device enrollment status for a single employee. */
+export type DeviceEnrollmentStatus = {
+  device_sn: string;
+  device_label?: string | null;
+  group_name?: string | null;
+  group_id?: string | null;
+  fingerprint_count: number;
+  face_enrolled: boolean;
+  card_number?: string | null;
+  biometric_types: string[];
+  enrolled_at: number;
+};
+
+/** Fetch device enrollment status for an employee. */
+export function fetchEmployeeEnrollments(id: string): Promise<DeviceEnrollmentStatus[]> {
+  return apiGet<DeviceEnrollmentStatus[]>(
+    `employees/${encodeURIComponent(id)}/enrollments`,
+  ).json();
+}
+
+/** Batch enrollment summary entry. */
+export type EnrollmentSummaryEntry = {
+  employee_id: string;
+  pin: string;
+  device_count: number;
+  has_fingerprint: boolean;
+};
+
+/** Fetch enrollment summary for all employees (for list view). */
+export function fetchEnrollmentSummary(): Promise<EnrollmentSummaryEntry[]> {
+  return apiGet<EnrollmentSummaryEntry[]>(
+    "employees/enrollment-summary",
+  ).json();
+}

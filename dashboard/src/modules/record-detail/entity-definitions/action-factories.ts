@@ -32,7 +32,7 @@ import { QueryKeys } from "@/lib/query-keys";
 // ── API imports ────────────────────────────────────────────────────────
 import {
   syncDeviceClock,
-  resyncDevice,
+  clearDeviceUsers,
   deleteDevice,
   restartDevice,
   syncEmployeeToDevices,
@@ -71,44 +71,54 @@ export const deviceActionFactory: ActionFactory = (ctx) => {
         try {
           await syncDeviceClock(sn);
           ctx.toast.success(ctx._(msg`Clock synced`));
+          ctx.invalidateQueries(QueryKeys.devices.detail(sn));
         } catch {
           ctx.toast.error(ctx._(msg`Sync failed`));
         }
       },
     },
     {
-      id: "device-resync",
-      label: ctx._(msg`Full Re-sync`),
-      icon: IconCloudUpload,
-      placement: "footer",
-      variant: "secondary",
-      action: async () => {
-        try {
-          await resyncDevice(sn);
-          ctx.toast.success(ctx._(msg`Re-sync started`));
-        } catch {
-          ctx.toast.error(ctx._(msg`Re-sync failed`));
-        }
-      },
-    },
-    {
       id: "device-restart",
-      label: ctx._(msg`Restart`),
+      label: ctx._(msg`Restart Device`),
       icon: IconRefresh,
       placement: "footer",
       variant: "secondary",
       confirm: {
         title: ctx._(msg`Restart Device`),
         message: ctx._(
-          msg`Are you sure you want to restart this device? It will be temporarily unavailable.`,
+          msg`The device will reboot and be offline for about 30–60 seconds. Attendance records already stored on the device are safe.`,
         ),
       },
       action: async () => {
         try {
           await restartDevice(sn);
           ctx.toast.success(ctx._(msg`Restart command sent`));
+          ctx.invalidateQueries(QueryKeys.devices.detail(sn));
         } catch {
           ctx.toast.error(ctx._(msg`Restart failed`));
+        }
+      },
+    },
+    {
+      id: "device-clear-users",
+      label: ctx._(msg`Clear Device Users`),
+      icon: IconUserOff,
+      placement: "footer",
+      variant: "danger",
+      confirm: {
+        title: ctx._(msg`Clear All Users from Device`),
+        message: ctx._(
+          msg`This will permanently delete ALL users from the device. Any users on the device that are not in the employee database will be lost. To restore users, push employees back to the device afterwards.`,
+        ),
+      },
+      action: async () => {
+        try {
+          await clearDeviceUsers(sn);
+          ctx.toast.success(ctx._(msg`Device users cleared`));
+          ctx.invalidateQueries(QueryKeys.devices.detail(sn));
+          ctx.invalidateQueries(QueryKeys.devices.syncedUsers(sn));
+        } catch {
+          ctx.toast.error(ctx._(msg`Failed to clear device users`));
         }
       },
     },
@@ -139,7 +149,7 @@ export const deviceActionFactory: ActionFactory = (ctx) => {
       confirm: {
         title: ctx._(msg`Delete Device`),
         message: ctx._(
-          msg`This will permanently remove the device and all its data.`,
+          msg`This will permanently remove the device and all its data. This does not affect the physical device.`,
         ),
       },
       action: async () => {

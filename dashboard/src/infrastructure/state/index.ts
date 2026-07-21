@@ -49,6 +49,10 @@ export {
 
 export { clientConfigState } from "./atoms/client-config";
 
+// ── Server URL (Tauri desktop) ─────────────────────────────────────────
+
+export { serverUrlState, setServerUrlAtom, apiBaseUrlAtom } from "./atoms/server-url";
+
 // ── Side Panel ─────────────────────────────────────────────────────────
 
 export {

@@ -540,11 +540,7 @@ impl SqliteStorage {
             " ORDER BY {sort_col} {tiebreaker_dir}, {tiebreaker_sql} {tiebreaker_dir}"
         ));
 
-        let limit = if filter.unlimited {
-            filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
-        } else {
-            filter.params.clamped_limit()
-        };
+        let limit = filter.params.clamped_limit();
         builder.push(" LIMIT ");
         builder.push_bind(limit as i64);
 
@@ -1389,7 +1385,7 @@ pub(crate) mod tests {
         // With unlimited=true, all 250 should be returned
         let filter = PunchFilter {
             params: timekeep_core::ListParams { limit: 10_000, ..Default::default() },
-            unlimited: true,
+            unlimited: false,
             ..Default::default()
         };
         let results = storage.query_punches(&filter).await.unwrap();

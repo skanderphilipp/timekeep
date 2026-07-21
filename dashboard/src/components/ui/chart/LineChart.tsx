@@ -77,7 +77,7 @@ export function LineChart({
   const hasDots = lines.some((l) => l.dot === true);
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="line-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveLine
         data={series}
         colors={colors}

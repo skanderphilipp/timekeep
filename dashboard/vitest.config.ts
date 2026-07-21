@@ -21,7 +21,28 @@ export default defineConfig({
           environment: "jsdom",
           setupFiles: ["./vitest.setup.ts"],
           css: { modules: { classNameStrategy: "non-scoped" } },
-          exclude: ["e2e/**", "node_modules/**", "dist/**", "**/*.stories.*"],
+          exclude: ["e2e/**", "node_modules/**", "dist/**", "**/*.stories.*", "**/*.browser.test.*", "**/*.browser.spec.*"],
+        },
+      },
+
+      // ── Browser integration tests (Playwright) ───────────────────────
+      {
+        extends: "./vite.config.ts",
+        test: {
+          name: "browser",
+          globals: true,
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
+          setupFiles: ["./vitest.setup.browser.ts"],
+          include: ["src/**/*.browser.test.@(ts|tsx)", "src/**/*.browser.spec.@(ts|tsx)"],
+          exclude: ["e2e/**", "node_modules/**", "dist/**"],
+          css: { modules: { classNameStrategy: "non-scoped" } },
+          testTimeout: FIVE_MINUTES_MS,
+          retry: 2,
         },
       },
 

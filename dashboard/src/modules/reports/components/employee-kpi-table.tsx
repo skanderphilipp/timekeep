@@ -69,7 +69,7 @@ export function EmployeeKpiTable({ data }: { data: EmployeeReportKpi[] }) {
       title={_(msg`Employee Attendance`)}
       description={_(msg`Attendance KPIs per employee for the selected date range.`)}
     >
-      <DataTable columns={columns} data={data} getRowKey={(row) => row.user_pin} stickyHeader />
+      <DataTable columns={columns} data={data} getRowKey={(row) => row.user_pin} stickyHeader rowDataSlot="employee-kpi-row" />
     </Chart>
   );
 }

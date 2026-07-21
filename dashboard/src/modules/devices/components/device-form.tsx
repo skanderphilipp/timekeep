@@ -11,6 +11,7 @@ import {
   Spinner,
   Input,
   Switch,
+  Select,
 } from "@/components/ui";
 import { useToast } from "@/infrastructure/toast/toast";
 import { updateDevice } from "@/lib/api";
@@ -161,26 +162,16 @@ export function DeviceForm({ embedded: _embedded, onSaved }: DeviceFormProps) {
       />
 
       {/* Device Group selector */}
-      <label>
-        {_(msg`Device Group`)}
-        <select
-          value={form.watch("group_id") ?? ""}
-          onChange={(e) => {
-            const val = e.target.value;
-            form.setValue("group_id", val || null);
-          }}
-          style={{ display: "block", marginTop: 4, width: "100%" }}
-        >
-          <option value="">
-            {_(msg`None`)}
-          </option>
-          {groups?.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label={_(msg`Device Group`)}
+        value={form.watch("group_id") ?? ""}
+        onChange={(v) => form.setValue("group_id", v || null)}
+        options={[
+          { value: "", label: _(msg`None`) },
+          ...(groups?.map((g) => ({ value: g.id, label: g.name })) ?? []),
+        ]}
+        fullWidth
+      />
 
       <FormActions>
         <Button type="submit" loading={form.formState.isSubmitting}>

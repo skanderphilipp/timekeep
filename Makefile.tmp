@@ -1,0 +1,32 @@
+
+# ─── Documentation ─────────────────────────────────────────────────────
+
+docs-screenshots: ## Capture screenshots with mocked API (fast, no backend needed)
+	@echo "📸 Capturing documentation screenshots (mock mode)..."
+	@echo "   Dashboard dev server must be running: cd dashboard && pnpm dev"
+	cd dashboard && npx tsx docs-scripts/capture-flows.ts
+	@echo "✅ Screenshots saved to docs/screenshots/"
+
+docs-screenshots-real: seed-db-reset ## Capture screenshots against real seeded backend (E2E quality)
+	@echo "📸 Capturing screenshots against REAL backend..."
+	@trap 'kill 0' EXIT; \
+		cargo run --bin timekeep -- --db timekeep.db & \
+		sleep 3; \
+		echo "Starting dashboard dev server (port 5173)..."; \
+		cd dashboard && pnpm dev & \
+		sleep 5; \
+		echo ""; \
+		cd dashboard && npx tsx docs-scripts/capture-flows.ts --real; \
+		echo ""; \
+		echo "✅ Real-backend screenshots saved to docs/screenshots/"
+
+docs-pdf: ## Compile all Typst user guides to PDF
+	@echo "📄 Compiling user guides to PDF..."
+	@which typst > /dev/null || (echo "❌ typst not found. Install: brew install typst" && exit 1)
+	@mkdir -p dist/docs
+	typst compile docs/guides/admin/01-device-setup.typ dist/docs/admin-01-device-setup.pdf
+	typst compile docs/guides/hr/01-daily-attendance.typ dist/docs/hr-01-daily-attendance.pdf
+	typst compile docs/guides/supervisor/01-team-overview.typ dist/docs/supervisor-01-team-overview.pdf
+	@echo "✅ PDFs saved to dist/docs/"
+
+docs: docs-screenshots-real docs-pdf ## Full docs pipeline: real backend screenshots + compile PDFs

@@ -55,6 +55,7 @@ export function ReferenceFieldDisplay({
 
   return (
     <span
+      data-slot="reference-field-display"
       onClick={(e) => e.stopPropagation()}
       data-no-close
       style={{ display: "inline-block" }}

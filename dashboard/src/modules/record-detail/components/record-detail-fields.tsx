@@ -31,6 +31,28 @@ type RecordDetailFieldsProps = {
    * tabChildren={{ config: <DeviceForm embedded onSaved={refresh} /> }}
    */
   tabChildren?: Record<string, ReactNode>;
+  /**
+   * Tab toolbar content keyed by tab key.
+   *
+   * Rendered at the TOP of each `<TabPanel>` (before sections) in a
+   * standardized `<Section className={styles.tabToolbar}>` wrapper.
+   *
+   * Only rendered for tabs that have `tabToolbar: true` in their
+   * `DetailTabConfig`. This enforces consistent toolbar placement
+   * and styling across all entity detail views.
+   *
+   * Example usage:
+   * ```tsx
+   * <RecordDetailRenderer
+   *   entity="device"
+   *   entityId={sn}
+   *   tabToolbars={{
+   *     users: <DeviceUsersToolbar device={device} />,
+   *   }}
+   * />
+   * ```
+   */
+  tabToolbars?: Record<string, ReactNode>;
 };
 
 const EM_DASH = "\u2014";
@@ -60,6 +82,7 @@ export function RecordDetailFields({
   kpiData,
   children,
   tabChildren,
+  tabToolbars,
 }: RecordDetailFieldsProps) {
   const { _ } = useLingui();
   const { entityType, entityId, isInSidePanel } = useRecordDetailContext();
@@ -287,6 +310,11 @@ export function RecordDetailFields({
           ))}
           panelItems={config.tabs!.map((tabConfig) => (
             <TabPanel key={tabConfig.key} value={tabConfig.key}>
+              {tabConfig.tabToolbar && tabToolbars?.[tabConfig.key] && (
+                <Section className={styles.tabToolbar}>
+                  {tabToolbars[tabConfig.key]}
+                </Section>
+              )}
               {renderSections(tabConfig.sections)}
               {tabChildren?.[tabConfig.key]}
             </TabPanel>

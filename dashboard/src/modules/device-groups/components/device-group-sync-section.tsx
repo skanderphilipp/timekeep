@@ -3,7 +3,7 @@ import { useLingui } from "@lingui/react";
 import { msg } from "@lingui/core/macro";
 import { IconRefresh } from "@tabler/icons-react";
 
-import { Button, Section, Text } from "@/components/ui";
+import { Button, Section, Text, Select } from "@/components/ui";
 import { syncDeviceGroup, type DeviceGroup } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/lib/query-keys";
@@ -70,20 +70,12 @@ export function DeviceGroupSyncSection({ group }: { group: DeviceGroup }) {
 
       {/* Department filter */}
       <div style={{ marginTop: 12 }}>
-        <Text variant="label" weight="medium" as="label">
-          {_(msg`Department filter`)}
-        </Text>
-        <select
+        <Select
+          label={_(msg`Department filter`)}
           value={selectedDepartment}
-          onChange={(e) => setSelectedDepartment(e.target.value)}
-          style={{ marginLeft: 8 }}
-        >
-          {departmentOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedDepartment}
+          options={departmentOptions}
+        />
       </div>
 
       {/* Preview */}

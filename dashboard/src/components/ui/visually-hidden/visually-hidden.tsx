@@ -11,5 +11,5 @@ type VisuallyHiddenProps = {
  * but not visible.
  */
 export function VisuallyHidden({ children }: VisuallyHiddenProps) {
-  return <span className={styles.root}>{children}</span>;
+  return <span data-slot="visually-hidden" className={styles.root}>{children}</span>;
 }

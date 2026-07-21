@@ -103,6 +103,7 @@ function OptionItem({
 		<li>
 			<button
 				type="button"
+				data-slot="option-item"
 				style={{
 					...ITEM_STYLE,
 					...(isSelected || hovered ? ITEM_HOVER_STYLE : {}),
@@ -169,7 +170,7 @@ export function ReferenceFacetSelector({
 	}, [allOption, options, search, isLoading]);
 
 	return (
-		<section style={{ minWidth: 260 }}>
+		<section data-slot="reference-facet-selector" style={{ minWidth: 260 }}>
 			<div style={SEARCH_WRAPPER_STYLE}>
 				<SearchInput
 					placeholder={placeholder ?? _(msg`Search…`)}

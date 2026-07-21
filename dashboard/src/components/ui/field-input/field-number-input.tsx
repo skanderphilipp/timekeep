@@ -84,6 +84,7 @@ export function FieldNumberInput({
     <input
       ref={wrapperRef}
       id={instanceId}
+      data-slot="field-number-input"
       type="text"
       inputMode="numeric"
       autoComplete="off"

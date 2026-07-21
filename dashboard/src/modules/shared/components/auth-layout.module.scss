@@ -1,0 +1,145 @@
+@use "@/styles/mixins" as *;
+
+// ── Full-page layout ───────────────────────────────────────────────────────
+
+.layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--ao-spacing-6);
+  position: relative;
+  overflow: hidden;
+
+  // Page surface: off-white gray. This creates an immediate separation
+  // from the bright card — the page reads as a canvas, not blank paper.
+  background: var(--ao-background-secondary);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Animated background
+// ═══════════════════════════════════════════════════════════════════════════
+
+.background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+// ── Gradient wash ──────────────────────────────────────────────────────────
+
+.gradient {
+  position: absolute;
+  inset: 0;
+
+  // Accent + blue-tinted radial gradients for depth and atmosphere.
+  // Higher color-mix percentages than before so the washes are actually felt.
+  background:
+    // Top-center glow — cool cyan/blue, fades into the page
+    radial-gradient(
+      ellipse 80% 50% at 50% 0%,
+      color-mix(in srgb, var(--ao-accent-accent9) 12%, transparent) 0%,
+      color-mix(in srgb, var(--ao-color-blue6) 5%, transparent) 40%,
+      transparent 70%
+    ),
+    // Bottom-right warmth
+    radial-gradient(
+      ellipse 60% 40% at 85% 85%,
+      color-mix(in srgb, var(--ao-accent-accent9) 8%, transparent) 0%,
+      transparent 60%
+    ),
+    // Mid-left cool accent
+    radial-gradient(
+      ellipse 50% 30% at 15% 55%,
+      color-mix(in srgb, var(--ao-color-blue5) 4%, transparent) 0%,
+      transparent 50%
+    );
+}
+
+// ── Noise texture (fractal grain) ──────────────────────────────────────────
+// Multiply blend darkens the background — visible even at low opacity.
+// On the off-white page, this creates a felt paper texture.
+
+.noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+// ── Micro dot-grid (paper grain) ───────────────────────────────────────────
+// Tiny repeating dots read as tactile paper texture — not a pattern you
+// consciously see, but one that makes the surface feel less flat.
+
+.dots {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23000'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 4px 4px;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Centered content
+// ═══════════════════════════════════════════════════════════════════════════
+
+.main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-spacing-8);
+  width: 100%;
+  max-width: 420px;
+}
+
+// ── Branding header ────────────────────────────────────────────────────────
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ao-spacing-3);
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.workspace {
+  font-size: var(--ao-font-size-xs);
+  font-weight: var(--ao-font-weight-medium);
+  color: var(--ao-font-color-tertiary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--ao-background-transparent-light);
+  padding: var(--ao-spacing-1) var(--ao-spacing-3);
+  border-radius: var(--ao-radius-pill);
+  border: 1px solid var(--ao-border-color-light);
+}
+
+// ── Card slot ──────────────────────────────────────────────────────────────
+// Bright white card on the off-white page creates immediate surface contrast.
+// Subtle shadow lifts the card without heavy elevation.
+
+.card {
+  width: 100%;
+
+  :global([data-slot="card"]) {
+    background: var(--ao-background-primary);
+    border: 1px solid var(--ao-border-color-light);
+    border-radius: var(--ao-radius-lg);
+    box-shadow: var(--ao-shadow-md);
+  }
+}

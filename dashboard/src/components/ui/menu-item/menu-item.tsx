@@ -44,6 +44,8 @@ type MenuItemProps = {
   className?: string;
   /** Hover handler (for keyboard-nav sync). */
   onMouseEnter?: () => void;
+  /** Native HTML title attribute (tooltip on hover). */
+  title?: string;
 };
 
 export function MenuItem({
@@ -57,6 +59,7 @@ export function MenuItem({
   variant = "default",
   className,
   onMouseEnter,
+  title,
 }: MenuItemProps) {
   const closeDropdown = useContext(MenuCloseContext);
 
@@ -73,6 +76,7 @@ export function MenuItem({
     className: clsx(styles.item, className),
     onMouseEnter,
     role: "menuitem" as const,
+    title,
   };
 
   const leadingIcon = leftIcon && (
@@ -119,11 +123,11 @@ export function MenuItem({
 
   if (to && disabled) {
     return (
-      <span {...sharedAttrs} aria-disabled="true">
-        {leadingIcon}
-        {labelEl}
-        {trailingSlot}
-      </span>
+      <span {...sharedAttrs} aria-disabled="true" title={title}>
+          {leadingIcon}
+          {labelEl}
+          {trailingSlot}
+        </span>
     );
   }
 

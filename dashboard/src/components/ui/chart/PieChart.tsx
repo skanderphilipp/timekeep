@@ -67,7 +67,7 @@ export function PieChart({
   const total = nivoData.reduce((sum, d) => sum + d.value, 0);
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="pie-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsivePie
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={nivoData as any}

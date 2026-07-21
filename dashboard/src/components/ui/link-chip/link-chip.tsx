@@ -44,7 +44,7 @@ function renderRightComponent(
   if (rightComponentDivider) {
     return (
       <>
-        <span className={styles.rightComponentDivider} />
+        <span data-slot="link-chip-divider" className={styles.rightComponentDivider} />
         {rightComponent}
       </>
     );
@@ -105,7 +105,7 @@ export const LinkChip = ({
     ) : null;
 
   return (
-    <span className={styles.linkContainer}>
+    <span data-slot="link-chip" className={styles.linkContainer}>
       <Link
         to={to}
         onClick={handleClick}

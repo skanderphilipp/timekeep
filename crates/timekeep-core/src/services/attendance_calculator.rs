@@ -1744,4 +1744,139 @@ mod tests {
         assert_eq!(work_days.len(), 1);
         assert!(!work_days[0].anomalies.is_empty(), "duplicate check-in should produce anomaly");
     }
+
+    /// Regression test: org_default should NEVER be used for an employee who
+    /// has a per-pin policy.
+    ///
+    /// IT department: 12:00-20:00 shift. Employee punches 09:30-17:00.
+    ///
+    /// - Under org default (09:00-17:00): 09:30 > 09:15 grace → **Late**
+    /// - Under IT policy (12:00-20:00): 09:30 is before 12:15, not late.
+    ///   But 17:00 < 20:00 → **EarlyLeave**
+    ///
+    /// If the handler incorrectly uses `org_work_policy()` instead of resolving
+    /// per-employee policies, this employee is flagged Late instead of EarlyLeave.
+    #[test]
+    fn per_pin_policy_must_override_org_default() {
+        let d = date_2026_07_10();
+
+        // IT department: work starts at 12:00, 15 minute grace after that
+        let it_policy = WorkPolicy {
+            work_start: Time::new(12, 0, 0, 0).unwrap(),
+            work_end: Time::new(20, 0, 0, 0).unwrap(),
+            late_threshold_secs: 15 * 60, // 15 min grace (late after 12:15)
+            min_seconds_for_present: 4 * 3600,
+            ..WorkPolicy::standard_9to5()
+        };
+
+        // Org default: standard 9-to-5 (late after 09:15)
+        let org_default = WorkPolicy::standard_9to5();
+
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("it-emp".to_string(), it_policy.clone())].into();
+
+        // IT employee arrives at 09:30 — this is 3h EARLY for the 12:00 policy
+        let punches = vec![
+            punch_at("it-emp", d, time(9, 30, 0), PunchStatus::CheckIn),
+            punch_at("it-emp", d, time(17, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        // ── The CORRECT behaviour (what per-pin resolution produces) ──
+        let work_days_correct =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &org_default);
+
+        assert_eq!(work_days_correct.len(), 1);
+        assert_eq!(
+            work_days_correct[0].status,
+            DayStatus::EarlyLeave,
+            "IT employee (12-20) leaving 17:00 = EarlyLeave, got {:?}",
+            work_days_correct[0].status,
+        );
+
+        // ── The BUGGY behaviour (org default applied to everyone) ──
+        let work_days_buggy = AttendanceCalculator::compute_work_days(&punches, &org_default);
+
+        assert_eq!(work_days_buggy.len(), 1);
+        assert_eq!(
+            work_days_buggy[0].status,
+            DayStatus::Late,
+            "BUG: org default (09:00) incorrectly flags 09:30 arrival as Late",
+        );
+
+        // The mismatch is the bug — correct and buggy MUST differ
+        assert_ne!(
+            work_days_correct[0].status, work_days_buggy[0].status,
+            "per-pin policy (12:00) must produce different status than org default (09:00)",
+        );
+    }
+
+    /// Late detection under per-pin policy: employee with 12:00 start, punching
+    /// at 12:20, should be Late (> 12:15 grace).
+    #[test]
+    fn per_pin_policy_detects_late_correctly() {
+        let d = date_2026_07_10();
+
+        let it_policy = WorkPolicy {
+            work_start: Time::new(12, 0, 0, 0).unwrap(),
+            work_end: Time::new(20, 0, 0, 0).unwrap(),
+            late_threshold_secs: 15 * 60, // late after 12:15
+            min_seconds_for_present: 4 * 3600,
+            ..WorkPolicy::standard_9to5()
+        };
+
+        let org_default = WorkPolicy::standard_9to5();
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("it-emp".to_string(), it_policy.clone())].into();
+
+        // IT employee arrives at 12:20 — past the 12:15 grace → Late
+        let punches = vec![
+            punch_at("it-emp", d, time(12, 20, 0), PunchStatus::CheckIn),
+            punch_at("it-emp", d, time(20, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &org_default);
+
+        assert_eq!(work_days.len(), 1);
+        assert_eq!(
+            work_days[0].status,
+            DayStatus::Late,
+            "IT employee arriving at 12:20 (grace ends 12:15) should be Late"
+        );
+    }
+
+    /// Early Leave under per-pin policy: employee with 12:00-20:00 shift,
+    /// leaving at 19:00, should be Early Leave.
+    #[test]
+    fn per_pin_policy_detects_early_leave_correctly() {
+        let d = date_2026_07_10();
+
+        let it_policy = WorkPolicy {
+            work_start: Time::new(12, 0, 0, 0).unwrap(),
+            work_end: Time::new(20, 0, 0, 0).unwrap(),
+            late_threshold_secs: 15 * 60,
+            min_seconds_for_present: 4 * 3600,
+            ..WorkPolicy::standard_9to5()
+        };
+
+        let org_default = WorkPolicy::standard_9to5();
+        let per_pin: std::collections::HashMap<String, WorkPolicy> =
+            [("it-emp".to_string(), it_policy.clone())].into();
+
+        // IT employee leaves at 19:00 — before 20:00 → Early Leave
+        let punches = vec![
+            punch_at("it-emp", d, time(12, 0, 0), PunchStatus::CheckIn),
+            punch_at("it-emp", d, time(19, 0, 0), PunchStatus::CheckOut),
+        ];
+
+        let work_days =
+            AttendanceCalculator::compute_work_days_per_pin(&punches, &per_pin, &org_default);
+
+        assert_eq!(work_days.len(), 1);
+        assert_eq!(
+            work_days[0].status,
+            DayStatus::EarlyLeave,
+            "IT employee leaving at 19:00 (shift ends 20:00) should be Early Leave"
+        );
+    }
 }

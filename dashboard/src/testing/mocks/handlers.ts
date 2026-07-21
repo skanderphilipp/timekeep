@@ -380,4 +380,107 @@ export const handlers = [
 			{ dimension: "department", facets: [{ value: "dept-engineering", count: 15, label: "Engineering" }, { value: "dept-marketing", count: 8, label: "Marketing" }] },
 		]);
 	}),
+
+	// ═══════════════════════════════════════════════════════════════════
+	// Attendance calendar
+	// ═══════════════════════════════════════════════════════════════════
+
+	http.get("/api/attendance/calendar", ({ request }) => {
+		const url = new URL(request.url);
+		const y = Number(url.searchParams.get("year") ?? new Date().getFullYear());
+		const m = Number(url.searchParams.get("month") ?? (new Date().getMonth() + 1));
+		const deviceSns = url.searchParams.get("device_sns")?.split(",").filter(Boolean);
+		const userPins = url.searchParams.get("user_pins")?.split(",").filter(Boolean);
+		const statusFilter = url.searchParams.get("status");
+
+		const daysInMonth = new Date(y, m, 0).getDate();
+		const days: Record<string, unknown[]> = {};
+		for (let d = 1; d <= daysInMonth; d++) {
+			const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+			days[ds] = [];
+		}
+
+		const byDateAndPin = new Map<string, Map<string, Punch[]>>();
+		for (const p of punches) {
+			const ds = new Date(p.timestamp * 1000).toISOString().split("T")[0]!;
+			if (!days[ds]) continue;
+			if (statusFilter && p.status !== statusFilter) continue;
+			if (deviceSns && !deviceSns.includes(p.device_sn)) continue;
+			if (userPins && !userPins.includes(p.user_pin)) continue;
+
+			if (!byDateAndPin.has(ds)) byDateAndPin.set(ds, new Map());
+			const bp = byDateAndPin.get(ds)!;
+			if (!bp.has(p.user_pin)) bp.set(p.user_pin, []);
+			bp.get(p.user_pin)!.push(p);
+		}
+
+		for (const [ds, bp] of byDateAndPin) {
+			for (const [pin, pp] of bp) {
+				const ci = pp.find((p) => p.status === "check_in");
+				const co = pp.find((p) => p.status === "check_out");
+				const late = ci ? new Date(ci.timestamp * 1000).getHours() >= 9 : false;
+				const hrs = ci && co ? (co.timestamp - ci.timestamp) / 3600 : 0;
+				const ac = pp.filter((p) => p.is_anomaly).length;
+				days[ds]!.push({
+					pin, name: pp[0]?.employee_name ?? pin,
+					status: hrs >= 4 ? (late ? "late" : "present") : hrs > 0 ? "half" : "absent",
+					hours: Math.max(0, hrs), overtime_hours: 0, break_minutes: 0,
+					anomaly_count: ac, is_late: late && hrs >= 4,
+				});
+			}
+		}
+
+		for (const key of Object.keys(days)) {
+			if (days[key]!.length === 0) delete days[key];
+		}
+		return ok({ year: y, month: m, days });
+	}),
+
+	// ═══════════════════════════════════════════════════════════════════
+	// Attendance timeline
+	// ═══════════════════════════════════════════════════════════════════
+
+	http.get("/api/attendance/timeline", ({ request }) => {
+		const url = new URL(request.url);
+		const dp = url.searchParams.get("date") ?? new Date().toISOString().split("T")[0]!;
+		const deviceSns = url.searchParams.get("device_sns")?.split(",").filter(Boolean);
+		const userPins = url.searchParams.get("user_pins")?.split(",").filter(Boolean);
+		const statusFilter = url.searchParams.get("status");
+
+		const ds = new Date(dp + "T00:00:00Z").getTime() / 1000;
+		const de = new Date(dp + "T23:59:59Z").getTime() / 1000;
+		let flt = punches.filter((p) => p.timestamp >= ds && p.timestamp <= de);
+		if (deviceSns) flt = flt.filter((p) => deviceSns.includes(p.device_sn));
+		if (userPins) flt = flt.filter((p) => userPins.includes(p.user_pin));
+		if (statusFilter) flt = flt.filter((p) => p.status === statusFilter);
+
+		const bp = new Map<string, Punch[]>();
+		for (const p of flt) {
+			if (!bp.has(p.user_pin)) bp.set(p.user_pin, []);
+			bp.get(p.user_pin)!.push(p);
+		}
+
+		const employees = [...bp.entries()].map(([pin, pp]) => {
+			pp.sort((a, b) => a.timestamp - b.timestamp);
+			const ci = pp.find((p) => p.status === "check_in");
+			const co = pp.find((p) => p.status === "check_out");
+			const hrs = ci && co ? (co.timestamp - ci.timestamp) / 3600 : 0;
+			const blocks = pp.map((p) => {
+				const d = new Date(p.timestamp * 1000);
+				const min = d.getUTCHours() * 60 + d.getUTCMinutes();
+				const clr = p.status === "check_in" || p.status === "check_out" ? "present"
+					: p.status.startsWith("overtime") ? "overtime" : "warning";
+				return { left: (min / (24 * 60)) * 100, width: 0.5, color: clr, title: `${p.status}: ${d.toLocaleTimeString()}` };
+			});
+			return {
+				pin, name: pp[0]?.employee_name ?? pin, blocks,
+				status: hrs >= 4 ? "present" : hrs > 0 ? "half" : "absent",
+				hours: Math.max(0, hrs), overtime_hours: 0, break_minutes: 0,
+				anomaly_count: pp.filter((p) => p.is_anomaly).length,
+				is_late: ci ? new Date(ci.timestamp * 1000).getHours() >= 9 : false,
+			};
+		});
+		employees.sort((a, b) => a.name.localeCompare(b.name));
+		return ok({ date: dp, employees });
+	}),
 ];

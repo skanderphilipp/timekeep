@@ -5,6 +5,14 @@
   gap: var(--ao-spacing-3);
 }
 
+.usersTabHeader {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: var(--ao-spacing-3);
+  flex-wrap: wrap;
+}
+
 .sectionTitle {
   margin-bottom: var(--ao-spacing-3);
 }

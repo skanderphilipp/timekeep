@@ -21,6 +21,7 @@ export const AppRoute = {
   dashboard: "/",
   login: "/login",
   setup: "/setup",
+  connect: "/connect",
 
   devices: {
     list: "/devices",
@@ -92,6 +93,7 @@ export const ALL_ROUTE_PATHS = [
   AppRoute.dashboard,
   AppRoute.login,
   AppRoute.setup,
+  AppRoute.connect,
   AppRoute.devices.list,
   AppRoute.devices.new,
   AppRoute.devices.groups,

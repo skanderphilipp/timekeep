@@ -6,7 +6,8 @@ export const RULE_NAME = "enforce-scss-modules";
  * Enforces SCSS Modules as the sole styling approach:
  *
  * 1. No raw CSS imports in .tsx files (non-module .css/.scss)
- * 2. No Tailwind/utility className strings
+ * 2. No raw className strings — ANY raw string is forbidden. Only SCSS Module
+ *    references (styles.xxx, clsx(styles.x, ...)) are allowed.
  * 3. No inline style={{ }} objects for structural styling
  *
  * For data-slot enforcement (DevTools convention, not a styling concern),
@@ -15,25 +16,13 @@ export const RULE_NAME = "enforce-scss-modules";
  * Exemptions:
  * - .module.scss and .module.css imports are allowed
  * - className that resolves to a CSS Modules styles import (Identifier/MemberExpression)
- * - style={{ }} using CSS custom properties for dynamic values
+ * - style={{ }} using dynamic values (identifiers, conditionals, template literals with expressions)
  * - className usage in .module.scss files themselves
  */
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
-
-/** Utility class prefixes that signal Tailwind/windicss-style class strings. */
-const UTILITY_PATTERNS = [
-  /^(?:flex|grid|block|inline|hidden|relative|absolute|fixed|sticky)$/,
-  /^(?:inset|top|right|bottom|left|z)-\d+$/,
-  /^(?:m[trblxy]?|p[trblxy]?|gap[xy]?|space[xy]?)-\d/,
-  /^(?:w|h|min-w|min-h|max-w|max-h)-(?:full|screen|dvh|svh|\d)/,
-  /^(?:text|bg|border|ring|outline|shadow|fill|stroke)-\w/,
-  /^(?:rounded|data-|sm:|md:|lg:|xl:|2xl:|focus:|hover:|active:|disabled:)/,
-  /^(?:overflow|truncate|whitespace|break|align|justify|items|content|self)/,
-  /^(?:animate|transition|duration|ease|delay|transform|scale|rotate|translate)/,
-];
 
 const ALLOWED_MODULE_IMPORTS = /\.module\.(css|scss)$/;
 
@@ -47,19 +36,23 @@ const FORBIDDEN_CSS_IMPORTS = /(?<!\.module)\.(css|scss)$/;
 // Helpers
 // ---------------------------------------------------------------------------
 
-const looksLikeTailwind = (classString: string): boolean => {
-  const tokens = classString.trim().split(/\s+/);
-  // A single class or empty string isn't Tailwind
-  if (tokens.length <= 1 && !UTILITY_PATTERNS.some((p) => p.test(tokens[0] ?? ""))) {
-    return false;
-  }
-  // Check if multiple tokens look like utility classes
-  const utilityCount = tokens.filter((t) => UTILITY_PATTERNS.some((p) => p.test(t))).length;
-  return utilityCount >= 2;
-};
-
+/**
+ * Determine if a className expression references SCSS Module imports.
+ *
+ * Allowed patterns:
+ *   className={styles.foo}           → MemberExpression
+ *   className={clsx(styles.x, ...)}  → CallExpression
+ *   className={variable}             → Identifier (we can't know, so allow)
+ *   className={condition ? styles.a : styles.b} → ConditionalExpression
+ *   className={[styles.base, cond && styles.alt]} → ArrayExpression
+ *
+ * Forbidden patterns (raw strings):
+ *   className="foo"                  → Literal string
+ *   className={"foo bar"}            → Literal string in expression
+ *   className={`foo ${bar}`}         → Template literal
+ */
 const _isStylesImport = (node: any): boolean => {
-  // Identifier: `className={myStyle}`
+  // Identifier: `className={someVar}` — allow (could be from props)
   if (node.type === "Identifier") return true;
   // MemberExpression: `className={styles.container}`
   if (node.type === "MemberExpression") return true;
@@ -73,9 +66,13 @@ const _isStylesImport = (node: any): boolean => {
   if (node.type === "ArrayExpression") {
     return node.elements.every((el: any) => !el || _isStylesImport(el));
   }
-  // Template literal: could be `cn()` wrapper
+  // Template literal: `className={`${styles.foo} extra`}` → VIOLATION
   if (node.type === "TemplateLiteral") {
-    return false; // Template strings are suspect
+    return false;
+  }
+  // Literal string → VIOLATION
+  if (node.type === "Literal") {
+    return false;
   }
   return false;
 };
@@ -93,13 +90,13 @@ export const rule = defineRule({
     type: "suggestion",
     docs: {
       description:
-        "Enforce SCSS Modules as the sole styling approach — no raw CSS imports, no Tailwind className strings, no inline style objects, data-slot on styled elements.",
+        "Enforce SCSS Modules as the sole styling approach — no raw CSS imports, no raw className strings, no inline style objects.",
     },
     messages: {
       noCssImport:
         "Do not import raw CSS/SCSS files in .tsx. Use SCSS Modules (.module.scss) files instead.",
-      noTailwindClass:
-        "Tailwind-style className string detected. Use SCSS Modules classes from a co-located .module.scss file.",
+      noRawClassName:
+        "Raw className string detected. Use SCSS Modules classes from a co-located .module.scss file (e.g. className={styles.myClass}).",
       noInlineStyle:
         "Avoid inline style={{ }} objects for structural styling. Use SCSS Modules classes, or CSS custom properties for truly dynamic values.",
     },
@@ -138,7 +135,7 @@ export const rule = defineRule({
         }
       },
 
-      // --- Check 2: className with Tailwind strings ---
+      // --- Check 2: className with ANY raw string (not just Tailwind) ---
       JSXAttribute: (node: any) => {
         if (node.name?.name !== "className") return;
         if (!node.value) return;
@@ -148,58 +145,43 @@ export const rule = defineRule({
         // Expression container: className={...}
         if (value.type === "JSXExpressionContainer") {
           const expr = value.expression;
+          if (!expr) return;
 
-          // String literal inside expression: className={"flex gap-2"}
-          if (
-            expr.type === "Literal" &&
-            typeof expr.value === "string" &&
-            looksLikeTailwind(expr.value)
-          ) {
-            context.report({
-              node,
-              messageId: "noTailwindClass",
-            });
+          // If it resolves to a styles import → ALLOWED
+          if (_isStylesImport(expr)) return;
+
+          // String literal inside expression: className={"foo bar"}
+          if (expr.type === "Literal" && typeof expr.value === "string") {
+            context.report({ node, messageId: "noRawClassName" });
             return;
           }
 
-          // Template literal: className={`...`}
-          if (
-            expr.type === "TemplateLiteral" &&
-            expr.quasis.some((q: any) => looksLikeTailwind(q.value.raw))
-          ) {
-            context.report({
-              node,
-              messageId: "noTailwindClass",
-            });
+          // Template literal: className={`foo ${bar}`}
+          if (expr.type === "TemplateLiteral") {
+            context.report({ node, messageId: "noRawClassName" });
             return;
           }
 
-          // CallExpression like cn(...): check first string argument
+          // CallExpression: className={cn("raw-class", ...)}
+          // Only report if it contains raw string arguments
           if (expr.type === "CallExpression" && expr.arguments?.length > 0) {
-            const firstArg = expr.arguments[0];
-            if (
-              firstArg.type === "Literal" &&
-              typeof firstArg.value === "string" &&
-              looksLikeTailwind(firstArg.value)
-            ) {
-              context.report({
-                node,
-                messageId: "noTailwindClass",
-              });
+            const hasRawString = expr.arguments.some(
+              (arg: any) =>
+                (arg.type === "Literal" && typeof arg.value === "string") ||
+                arg.type === "TemplateLiteral",
+            );
+            if (hasRawString) {
+              context.report({ node, messageId: "noRawClassName" });
             }
           }
         }
 
-        // Direct string literal: className="flex gap-2"
+        // Direct string literal: className="foo bar"
         if (
           value.type === "Literal" &&
-          typeof value.value === "string" &&
-          looksLikeTailwind(value.value)
+          typeof value.value === "string"
         ) {
-          context.report({
-            node,
-            messageId: "noTailwindClass",
-          });
+          context.report({ node, messageId: "noRawClassName" });
         }
       },
 
@@ -212,7 +194,7 @@ export const rule = defineRule({
         if (expr.type === "ObjectExpression") {
           // Exempt if any property value references a prop/state/expression:
           //   style={{ opacity: active ? 1 : 0 }}          ← ternary → exempt
-          //   style={{ transition: \`opacity \${duration}ms\` }} ← template → exempt
+          //   style={{ transition: `opacity ${duration}ms` }} ← template → exempt
           //   style={{ width: someVar }}                   ← identifier → exempt
           //   style={{ width: "1em", height: "1em" }}      ← all literals → FLAG
           const allHardcoded = expr.properties.every((prop: any) => {

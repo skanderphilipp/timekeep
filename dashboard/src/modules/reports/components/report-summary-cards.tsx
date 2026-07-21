@@ -21,6 +21,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
   return (
     <Grid>
       <StatCard
+        dataSlot="stat-card-work-days"
         layout="horizontal"
         icon={<IconCalendar size={20} />}
         label={_(msg`Work Days`)}
@@ -29,6 +30,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
         color="accent"
       />
       <StatCard
+        dataSlot="stat-card-avg-hours"
         layout="horizontal"
         icon={<IconClock size={20} />}
         label={_(msg`Avg Hours`)}
@@ -37,6 +39,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
         color="accent"
       />
       <StatCard
+        dataSlot="stat-card-overtime"
         layout="horizontal"
         icon={<IconClockPlus size={20} />}
         label={_(msg`Overtime`)}
@@ -45,6 +48,7 @@ export function ReportSummaryCards({ summary }: ReportSummaryCardsProps) {
         color="amber"
       />
       <StatCard
+        dataSlot="stat-card-absence-rate"
         layout="horizontal"
         icon={<IconPercentage size={20} />}
         label={_(msg`Absence Rate`)}

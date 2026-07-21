@@ -106,6 +106,13 @@ export type DataListViewProps<T extends Record<string, unknown>> = {
 	// ── Misc ───────────────────────────────────────────────────────────
 
 	resultCount?: number;
+
+	/**
+	 * Override the data-slot value on <tr> elements in table mode.
+	 * Passed through to DataTableContainer → DataTable.
+	 * Use a domain-specific name like `"punch-row"` for E2E test stability.
+	 */
+	rowDataSlot?: string;
 };
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -140,6 +147,7 @@ export function DataListView<T extends Record<string, unknown>>({
 	resultCount,
 	onRowClick,
 	editingConfig,
+	rowDataSlot,
 }: DataListViewProps<T>) {
 	const { _ } = useLingui();
 
@@ -239,6 +247,7 @@ export function DataListView<T extends Record<string, unknown>>({
 								onRowClick={onRowClick}
 								infiniteScroll={infiniteScroll}
 								editingConfig={editingConfig}
+								rowDataSlot={rowDataSlot}
 							/>
 						);
 					}}

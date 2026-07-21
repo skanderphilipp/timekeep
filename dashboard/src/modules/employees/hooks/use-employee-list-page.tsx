@@ -11,12 +11,16 @@ import {
   useFilterFields,
   renderFilterDimensions,
 } from "@/modules/data-renderer";
-import type { FilterRenderContext } from "@/modules/data-renderer";
+import type { FilterRenderContext, ColumnDefinition, FieldMetadata } from "@/modules/data-renderer";
 import type { ViewType } from "@/modules/shared/components";
 import type { Employee } from "@/lib/api/employees";
+import { fetchEnrollmentSummary } from "@/lib/api/employees";
+import type { EnrollmentSummaryEntry } from "@/lib/api/employees";
 import { useRecordInlineEdit } from "@/modules/record-detail";
 import { fetchDepartments } from "@/lib/api/departments";
 import { useQuery } from "@tanstack/react-query";
+import { QueryKeys } from "@/lib/query-keys";
+import { Badge } from "@/components/ui";
 
 /**
  * Fields that support inline editing in the employee list table.
@@ -57,15 +61,33 @@ export function useEmployeeListPage() {
   // ── Department options for FK reference editing ────────────────────
 
   const { data: departments } = useQuery({
-    queryKey: ["departments", "options"] as const,
+    queryKey: QueryKeys.departments.list(),
     queryFn: fetchDepartments,
     staleTime: 5 * 60 * 1000,
   });
 
+  // ── Enrollment summary (for list view badges) ──────────────────────
+
+  const { data: enrollmentSummary } = useQuery({
+    queryKey: QueryKeys.employees.enrollmentSummary(),
+    queryFn: fetchEnrollmentSummary,
+    staleTime: 30_000,
+  });
+
+  const enrollmentByPin = useMemo(() => {
+    const map = new Map<string, EnrollmentSummaryEntry>();
+    if (enrollmentSummary) {
+      for (const entry of enrollmentSummary) {
+        map.set(entry.pin, entry);
+      }
+    }
+    return map;
+  }, [enrollmentSummary]);
+
   // Mark editable fields and inject reference options
   const columns = useMemo(
-    () =>
-      schemaColumns.map((col) => {
+    () => {
+      const base = schemaColumns.map((col) => {
         const editable = EDITABLE_EMPLOYEE_FIELDS.has(col.fieldId);
 
         // Inject department options into the reference column metadata
@@ -82,8 +104,52 @@ export function useEmployeeListPage() {
         }
 
         return { ...col, editable };
-      }),
-    [schemaColumns, departments],
+      });
+
+      // Append enrollment status column
+      const enrollmentCol: ColumnDefinition<FieldMetadata> = {
+        id: "enrollment",
+        header: _(msg`Enrollment`),
+        fieldId: "enrollment",
+        label: _(msg`Enrollment`),
+        type: "text" as const,
+        metadata: {
+          fieldName: "enrollment",
+          isSortable: false,
+        },
+        align: "center",
+        editable: false,
+        render: (row: unknown) => {
+          const emp = row as Employee;
+          const info = enrollmentByPin.get(emp.pin);
+          if (!info || info.device_count === 0) {
+            return (
+              <Badge
+                variant="warning"
+                size="sm"
+              >
+                {_(msg`Not enrolled`)}
+              </Badge>
+            );
+          }
+          const fpLabel = info.has_fingerprint
+            ? ` • ${_(msg`FP`)}`
+            : "";
+          return (
+            <Badge
+              variant="success"
+              size="sm"
+            >
+              {info.device_count} {_(msg`devices`)}{fpLabel}
+            </Badge>
+          );
+        },
+      };
+      base.push(enrollmentCol as typeof base[number]);
+
+      return base;
+    },
+    [schemaColumns, departments, enrollmentByPin, _],
   );
 
   // ── Editing config passed to DataTableContainer ─────────────────────

@@ -118,17 +118,17 @@ export function PunchQueryView() {
 	const renderCustomView = useCallback(
 		(view: ViewType) => {
 			if (view === "timeline") {
-				const timelineFilterCtx: Record<string, unknown> = {};
-				if (page.filters.status) timelineFilterCtx.status = page.filters.status;
-				if (page.filters.device_sns) timelineFilterCtx.device_sns = page.filters.device_sns;
-				if (page.filters.search) timelineFilterCtx.search = page.filters.search;
-				if (page.filters.verify_mode) timelineFilterCtx.verify_mode = page.filters.verify_mode;
-				if (page.filters.anomalies_only) timelineFilterCtx.anomalies_only = page.filters.anomalies_only;
+				const deviceSns = page.filters.device_sns
+					? (Array.isArray(page.filters.device_sns)
+						? page.filters.device_sns.join(",")
+						: String(page.filters.device_sns))
+					: undefined;
 				return (
 					<PunchTimelineView
 						date={page.dateFrom}
 						punches={page.punches}
-						filterContext={Object.keys(timelineFilterCtx).length > 0 ? timelineFilterCtx : undefined}
+						deviceSns={deviceSns}
+						status={page.filters.status || undefined}
 					/>
 				);
 			}
@@ -166,6 +166,7 @@ export function PunchQueryView() {
 				columns={page.columns}
 				data={page.punches}
 				getRowKey={page.getRowKey}
+				rowDataSlot="punch-row"
 				isLoading={page.isLoading}
 				error={page.error}
 				onRetry={page.refetch}

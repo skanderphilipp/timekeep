@@ -245,7 +245,7 @@ function SelectFieldEdit<TValue = unknown>({
 }) {
   if (options.length === 0 && isLoadingOptions) {
     return (
-      <div style={{ padding: "var(--ao-spacing-2)", display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
+      <div data-slot="field-select-loading" style={{ padding: "var(--ao-spacing-2)", display: "flex", alignItems: "center", gap: "var(--ao-spacing-2)" }}>
         <Spinner size="sm" />
         <Text variant="body" color="secondary">Loading options...</Text>
       </div>

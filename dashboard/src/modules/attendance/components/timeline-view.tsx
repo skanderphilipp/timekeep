@@ -11,20 +11,15 @@ import { usePunchBlocks } from "../hooks/use-punch-blocks";
 import { EmployeeAttendanceSummary } from "./employee-attendance-summary";
 import { TimelineToolbar } from "./timeline-toolbar";
 import type { TimelineEmployee } from "../types";
-import type { PunchFilter } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type TimelineViewProps = {
 	date: Date;
-	/** Optional: explicit date range from parent filters. */
-	filterSince?: string;
-	filterUntil?: string;
-	/**
-	 * Additional filter context (status, device_sns, search) from parent page.
-	 * Spread into usePunchData so timeline data matches page-level filters.
-	 */
-	filterContext?: Partial<PunchFilter>;
+	/** Device serial filter from page context. */
+	deviceSns?: string;
+	/** Punch status filter from page context. */
+	status?: string;
 	employees?: TimelineEmployee[];
 	/** Called when the user navigates to a different day. */
 	onDateChange?: (date: Date) => void;
@@ -36,20 +31,13 @@ export type TimelineViewProps = {
 /**
  * AttendanceTimelineView — daily timeline visualization.
  *
- * Thin composite that delegates:
- * - Day navigation → useTimelineDate
- * - Data fetching + block building → usePunchBlocks
- * - Side panel content → EmployeeAttendanceSummary
- * - Toolbar → TimelineToolbar
- * - Rendering → shared Timeline
- *
- * Pattern: 60-line thin composites, all logic in hooks.
+ * Data comes from the `/api/attendance/timeline` backend endpoint
+ * which returns pre-computed blocks and summaries per employee.
  */
 export function AttendanceTimelineView({
 	date: initialDate,
-	filterSince,
-	filterUntil,
-	filterContext,
+	deviceSns,
+	status,
 	employees,
 	onDateChange,
 	className,
@@ -57,16 +45,10 @@ export function AttendanceTimelineView({
 	const { _ } = useLingui();
 	const openSidePanel = useSetAtom(openSidePanelAtom);
 
-	// ── Translation (keeps compute.ts pure, no Lingui dependency) ─────
+	// ── Translation ──────────────────────────────────────────────────
 	const translate = useMemo(
 		() => (key: string) => {
 			const labels: Record<string, string> = {
-				"Check In": _(msg`Check In`),
-				"Check Out": _(msg`Check Out`),
-				"Break In": _(msg`Break In`),
-				"Break Out": _(msg`Break Out`),
-				"Overtime In": _(msg`Overtime In`),
-				"Overtime Out": _(msg`Overtime Out`),
 				"Present": _(msg`Present`),
 				"Break": _(msg`Break`),
 				"Overtime": _(msg`Overtime`),
@@ -83,15 +65,8 @@ export function AttendanceTimelineView({
 	);
 
 	// ── Data fetching + block building ──────────────────────────────
-	const { rows, legendItems, isLoading, punchesByEmployee, employeeList } =
-		usePunchBlocks({
-			date,
-			filterSince,
-			filterUntil,
-			filterContext,
-			employees,
-			translate,
-		});
+	const { rows, legendItems, isLoading, employeeData, employeeList } =
+		usePunchBlocks({ date, deviceSns, status, employees, translate });
 
 	// ── Wire click handlers ─────────────────────────────────────────
 	const clickableRows = useMemo(
@@ -101,16 +76,19 @@ export function AttendanceTimelineView({
 				onClick: () => {
 					const emp = employeeList.find((e) => e.pin === row.id);
 					if (!emp) return;
-					const punches = punchesByEmployee.get(row.id) ?? [];
+					const tlData = employeeData.find((d) => d.pin === row.id);
 					openSidePanel({
 						title: emp.name,
 						render: () => (
-							<EmployeeAttendanceSummary employee={emp} punches={punches} />
+							<EmployeeAttendanceSummary
+								employee={emp}
+								timelineData={tlData}
+							/>
 						),
 					});
 				},
 			})),
-		[rows, employeeList, punchesByEmployee, openSidePanel],
+		[rows, employeeList, employeeData, openSidePanel],
 	);
 
 	// ── Render ─────────────────────────────────────────────────────

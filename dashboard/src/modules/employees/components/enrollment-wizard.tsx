@@ -106,7 +106,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
   switch (status.phase) {
     case "connecting":
       return (
-        <div className={styles.statusBox} data-status="connecting">
+        <div data-slot="enrollment-status" className={styles.statusBox} data-status="connecting">
           <IconLoader size={24} className={styles.spinner} />
           <p>{_(msg`Connecting to device...`)}</p>
         </div>
@@ -114,7 +114,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
 
     case "waiting":
       return (
-        <div className={styles.statusBox} data-status="waiting">
+        <div data-slot="enrollment-status" className={styles.statusBox} data-status="waiting">
           <IconFingerprint size={32} className={styles.pulse} />
           <p className={styles.instruction}>
             {_(msg`Ask the employee to place their finger on the scanner.`)}
@@ -125,6 +125,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
               return (
                 <div
                   key={n}
+                  data-slot="enrollment-sample-dot"
                   className={styles.sampleDot}
                   data-state={
                     !sample
@@ -146,7 +147,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
 
     case "enrolled":
       return (
-        <div className={styles.statusBox} data-status="enrolled">
+        <div data-slot="enrollment-status" className={styles.statusBox} data-status="enrolled">
           <IconCheck size={32} className={styles.successIcon} />
           <p className={styles.successText}>
             {_(msg`Fingerprint enrolled successfully!`)}
@@ -162,7 +163,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
 
     case "failed":
       return (
-        <div className={styles.statusBox} data-status="failed">
+        <div data-slot="enrollment-status" className={styles.statusBox} data-status="failed">
           <IconX size={32} className={styles.failIcon} />
           <p className={styles.failText}>{_(msg`Enrollment failed.`)}</p>
           <p className={styles.failReason}>{status.reason}</p>
@@ -171,7 +172,7 @@ function StatusDisplay({ status }: { status: EnrollmentStatus }) {
 
     case "disconnected":
       return (
-        <div className={styles.statusBox} data-status="disconnected">
+        <div data-slot="enrollment-status" className={styles.statusBox} data-status="disconnected">
           <IconX size={24} />
           <p>{_(msg`Connection lost. The enrollment may still be in progress.`)}</p>
         </div>

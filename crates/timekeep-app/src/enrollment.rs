@@ -7,7 +7,7 @@
 //!
 //! # Enrollment Flow
 //!
-//! ```
+//! ```text
 //! FingerprintEnrollRequested
 //!   -> enable_realtime()              // start receiving device events
 //!   -> enroll_user()                  // CMD_STARTENROLL + 3-sample loop

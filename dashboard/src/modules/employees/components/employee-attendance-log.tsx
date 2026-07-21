@@ -111,6 +111,7 @@ export function EmployeeAttendanceLog({ workDays }: EmployeeAttendanceLogProps) 
       columns={columns}
       data={workDays.work_days}
       getRowKey={(day) => String(day.date)}
+      rowDataSlot="attendance-log-row"
     />
   );
 }

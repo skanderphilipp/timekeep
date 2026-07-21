@@ -49,26 +49,27 @@ export function renderFilterDimensions(
 			}
 
 			case "toggle": {
-				const toggle = context.toggles?.[dim.field];
-				if (!toggle) continue;
-				fields.push({
-					key: dim.field,
-					label: dim.label,
-					renderValueSelector: ({ onApply }: { onApply: () => void; onBack: () => void }) => (
-						<section style={{ padding: "var(--ao-spacing-3)", minWidth: 240 }}>
-							<Switch
-								checked={toggle.checked}
-								onCheckedChange={(checked) => {
-									toggle.onChange(checked);
-									onApply();
-								}}
-								label={toggle.label}
-							/>
-						</section>
-					),
-				});
-				break;
-			}
+					const toggle = context.toggles?.[dim.field];
+					if (!toggle) continue;
+					fields.push({
+						key: dim.field,
+						label: dim.label,
+						renderValueSelector: ({ onApply }: { onApply: () => void; onBack: () => void }) => (
+							<section style={{ padding: "var(--ao-spacing-3)", minWidth: 240 }}>
+								<Switch
+									dataSlot={`filter-toggle-${dim.field}`}
+									checked={toggle.checked}
+									onCheckedChange={(checked) => {
+										toggle.onChange(checked);
+										onApply();
+									}}
+									label={toggle.label}
+								/>
+							</section>
+						),
+					});
+					break;
+				}
 
 			case "enum": {
 				const options = context.enumOptions[dim.field];
@@ -118,7 +119,7 @@ export function renderFilterDimensions(
 						const options = context.enumOptions[dim.field];
 						if (!options || options.length === 0) return null;
 						return (
-							<section style={{ padding: "var(--ao-spacing-2)" }}>
+							<section data-slot="filter-reference-fallback" style={{ padding: "var(--ao-spacing-2)" }}>
 								<Select
 									options={options}
 									value={context.values[dim.field] ?? ""}

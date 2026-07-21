@@ -18,13 +18,13 @@ export function BooleanCell({ value }: BooleanCellProps) {
   const { _ } = useLingui();
 
   if (value === null || value === undefined) {
-    return <div className={styles.container} />;
+    return <div data-slot="boolean-cell-empty" className={styles.container} />;
   }
 
   const isTrue = value === true;
 
   return (
-    <div className={styles.container}>
+    <div data-slot="boolean-cell" className={styles.container}>
       {isTrue ? <IconCheck size={14} /> : <IconX size={14} />}
       <span className={styles.label}>{isTrue ? _(msg`True`) : _(msg`False`)}</span>
     </div>

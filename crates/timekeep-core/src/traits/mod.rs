@@ -18,6 +18,7 @@ pub mod punch_store;
 pub mod search_store;
 pub mod settings_store;
 pub mod storage;
+pub mod sync_provider;
 
 // Re-export for convenience
 pub use api_key_store::ApiKeyStore;
@@ -40,3 +41,4 @@ pub use punch_store::PunchStore;
 pub use search_store::SearchStore;
 pub use settings_store::SettingsStore;
 pub use storage::Storage;
+pub use sync_provider::{ProviderSyncStats, SyncProvider, SyncProviderStatus};

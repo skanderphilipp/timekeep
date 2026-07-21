@@ -15,6 +15,7 @@ export function DashboardMetrics({ data }: DashboardMetricsProps) {
   return (
     <Grid>
       <StatCard
+        dataSlot="stat-card-present"
         layout="horizontal"
         icon={<IconUsers size={20} />}
         label={_(msg`Present`)}
@@ -23,6 +24,7 @@ export function DashboardMetrics({ data }: DashboardMetricsProps) {
         color="green"
       />
       <StatCard
+        dataSlot="stat-card-absent"
         layout="horizontal"
         icon={<IconUserX size={20} />}
         label={_(msg`Absent`)}
@@ -31,6 +33,7 @@ export function DashboardMetrics({ data }: DashboardMetricsProps) {
         color="red"
       />
       <StatCard
+        dataSlot="stat-card-late"
         layout="horizontal"
         icon={<IconClockExclamation size={20} />}
         label={_(msg`Late`)}
@@ -39,6 +42,7 @@ export function DashboardMetrics({ data }: DashboardMetricsProps) {
         color="amber"
       />
       <StatCard
+        dataSlot="stat-card-on-time"
         layout="horizontal"
         icon={<IconClockCheck size={20} />}
         label={_(msg`On Time`)}

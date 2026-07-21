@@ -86,15 +86,16 @@ export type DetailSectionConfig = {
  *
  * When `tabs` is defined on the config, `RecordDetailFields` renders a
  * `<Tabs>` component with one `<TabPanel>` per entry. Each panel shows
- * the tab's `sections` followed by any custom content passed via the
- * renderer's `tabChildren` prop (keyed by `tab.key`).
+ * the tab's optional toolbar (if `tabToolbar` is true and content is
+ * provided via `tabToolbars`), then the tab's `sections`, then any custom
+ * content passed via the renderer's `tabChildren` prop (keyed by `tab.key`).
  *
- * This replaces per-entity tab hacks (e.g., `DeviceDetailContent`) with
- * declarative configuration. Complex tab content (forms, lists, charts)
- * still uses the `tabChildren` slot — field sections use the config.
+ * This replaces per-entity tab hacks with declarative configuration.
+ * Complex tab content (forms, lists, charts) still uses the `tabChildren`
+ * slot — field sections use the config.
  */
 export type DetailTabConfig = {
-  /** Internal key used as the tab's `value` and `tabChildren` lookup key. */
+  /** Internal key used as the tab's `value` and `tabChildren`/`tabToolbars` lookup key. */
   key: string;
   /** Display title for the tab (Lingui `_(msg\`...\`)`). */
   title: string;
@@ -102,6 +103,16 @@ export type DetailTabConfig = {
   icon?: string;
   /** Sections rendered inside this tab panel. Can be empty for custom-only tabs. */
   sections: DetailSectionConfig[];
+  /**
+   * Whether this tab reserves space for a toolbar area at the top.
+   * When true, `RecordDetailFields` renders a standardized toolbar slot
+   * (`<TabToolbar>`) before the tab's sections. The toolbar content is
+   * provided by the page via the `tabToolbars` prop on `RecordDetailRenderer`.
+   *
+   * This enforces consistent toolbar placement and styling across all
+   * entity detail views without per-page ad-hoc `<Section>` wrappers.
+   */
+  tabToolbar?: boolean;
 };
 
 /** KPI keys that appear as stat cards (main panel) or detail items (side panel). */

@@ -11,8 +11,9 @@ use axum::{
     http::StatusCode,
 };
 
+use std::collections::HashSet;
 use std::sync::Arc;
-use timekeep_core::{AttendanceCalculator, DayStatus, PunchFilter};
+use timekeep_core::{AttendanceCalculator, DayStatus, PunchCriteria};
 
 use crate::AppState;
 use crate::dto::{
@@ -21,6 +22,7 @@ use crate::dto::{
 };
 use crate::request::WorkDayQuery;
 use crate::response::{ApiEnvelope, AppError, PageMeta};
+use crate::routes::dashboard::resolve_policies_for_pins;
 
 /// Resolve the employee repository or return an error if not configured.
 pub(crate) fn employees(
@@ -53,20 +55,24 @@ pub(crate) async fn employee_work_days(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeWorkDaysResponse>>, AppError> {
-    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
+    let criteria = timekeep_core::PunchCriteria {
+        user_pins: Some(user_pin.clone()),
+        ..Default::default()
+    };
     let punches = state
         .storage
-        .query_punches(&PunchFilter {
-            user_pins: Some(vec![user_pin.clone()]),
-            since,
-            until,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&criteria, since, until)
         .await?;
 
-    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+    let pins: HashSet<&str> = crate::helpers::unique_pins(&punches);
+    let policy_map =
+        resolve_policies_for_pins(&*state.storage, state.employees.as_deref(), &pins, &org_default)
+            .await;
+    let work_days =
+        AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_default);
     let responses: Vec<WorkDayResponse> = work_days.iter().map(WorkDayResponse::from).collect();
 
     Ok(Json(ApiEnvelope::success(EmployeeWorkDaysResponse { user_pin, work_days: responses })))
@@ -92,20 +98,24 @@ pub(crate) async fn employee_summary(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<EmployeeSummaryResponse>>, AppError> {
-    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
+    let criteria = timekeep_core::PunchCriteria {
+        user_pins: Some(user_pin.clone()),
+        ..Default::default()
+    };
     let punches = state
         .storage
-        .query_punches(&PunchFilter {
-            user_pins: Some(vec![user_pin.clone()]),
-            since,
-            until,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&criteria, since, until)
         .await?;
 
-    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+    let pins: HashSet<&str> = crate::helpers::unique_pins(&punches);
+    let policy_map =
+        resolve_policies_for_pins(&*state.storage, state.employees.as_deref(), &pins, &org_default)
+            .await;
+    let work_days =
+        AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_default);
 
     let total_days = work_days.len();
     let present_days = work_days.iter().filter(|d| d.status == DayStatus::Present).count();
@@ -151,12 +161,20 @@ pub(crate) async fn dashboard_quick_stats(
     State(state): State<AppState>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<QuickStatsResponse>>, AppError> {
-    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
-    let punches =
-        state.storage.query_punches(&PunchFilter { since, until, ..Default::default() }).await?;
-    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+    let punches = state
+        .storage
+        .query_punches_unpaged(&Default::default(), since, until)
+        .await?;
+
+    let pins: HashSet<&str> = crate::helpers::unique_pins(&punches);
+    let policy_map =
+        resolve_policies_for_pins(&*state.storage, state.employees.as_deref(), &pins, &org_default)
+            .await;
+    let work_days =
+        AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_default);
 
     let unique_users: std::collections::HashSet<&str> =
         work_days.iter().map(|d| d.user_pin.as_str()).collect();
@@ -589,26 +607,30 @@ pub(crate) async fn employee_monthly_trend(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<Vec<MonthlyTrendResponse>>>, AppError> {
-    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
+    let criteria = timekeep_core::PunchCriteria {
+        user_pins: Some(user_pin.clone()),
+        ..Default::default()
+    };
     let punches = state
         .storage
-        .query_punches(&PunchFilter {
-            user_pins: Some(vec![user_pin.clone()]),
-            since,
-            until,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&criteria, since, until)
         .await?;
 
-    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+    let pins: HashSet<&str> = crate::helpers::unique_pins(&punches);
+    let policy_map =
+        resolve_policies_for_pins(&*state.storage, state.employees.as_deref(), &pins, &org_default)
+            .await;
+    let work_days =
+        AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_default);
 
     let from_date = since.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
     let to_date = until.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
 
     let trend = if let (Some(from), Some(to)) = (from_date, to_date) {
-        AttendanceCalculator::compute_monthly_trend(&work_days, &policy, from, to)
+        AttendanceCalculator::compute_monthly_trend(&work_days, &org_default, from, to)
     } else {
         Vec::new()
     };
@@ -642,26 +664,30 @@ pub(crate) async fn employee_calendar(
     Path(user_pin): Path<String>,
     Query(q): Query<WorkDayQuery>,
 ) -> Result<Json<ApiEnvelope<Vec<CalendarDayResponse>>>, AppError> {
-    let policy = crate::helpers::org_work_policy(&*state.storage).await;
+    let org_default = crate::helpers::org_work_policy(&*state.storage).await;
     let (since, until) = crate::helpers::resolve_date_range(q.from, q.to);
 
+    let criteria = timekeep_core::PunchCriteria {
+        user_pins: Some(user_pin.clone()),
+        ..Default::default()
+    };
     let punches = state
         .storage
-        .query_punches(&PunchFilter {
-            user_pins: Some(vec![user_pin.clone()]),
-            since,
-            until,
-            ..Default::default()
-        })
+        .query_punches_unpaged(&criteria, since, until)
         .await?;
 
-    let work_days = AttendanceCalculator::compute_work_days(&punches, &policy);
+    let pins: HashSet<&str> = crate::helpers::unique_pins(&punches);
+    let policy_map =
+        resolve_policies_for_pins(&*state.storage, state.employees.as_deref(), &pins, &org_default)
+            .await;
+    let work_days =
+        AttendanceCalculator::compute_work_days_per_pin(&punches, &policy_map, &org_default);
 
     // Determine the month from the query range (use the first month in range)
     let target_date = since.map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).datetime().date());
 
     let calendar = if let Some(date) = target_date {
-        AttendanceCalculator::project_calendar(&work_days, date.year(), date.month(), &policy)
+        AttendanceCalculator::project_calendar(&work_days, date.year(), date.month(), &org_default)
     } else {
         Vec::new()
     };

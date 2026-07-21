@@ -44,7 +44,7 @@ export function DataTableRow<T extends Record<string, unknown>>({
       {columns.map((col) => {
         const renderFn = createCellRenderer(col, onCellClick, () => rowKey);
         return (
-          <td key={col.id} data-column={col.id} className={col.cellClassName}>
+          <td key={col.id} data-slot="data-table-cell" data-column={col.id} className={col.cellClassName}>
             {renderFn(row)}
           </td>
         );

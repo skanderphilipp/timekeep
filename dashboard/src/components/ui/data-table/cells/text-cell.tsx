@@ -20,6 +20,7 @@ export function TextCell({ text, clickable, onClick, className }: TextCellProps)
   if (clickable && onClick) {
     return (
       <button
+        data-slot="text-cell-button"
         type="button"
         className={clsx(styles.clickableText, className)}
         onClick={(e) => {
@@ -32,5 +33,5 @@ export function TextCell({ text, clickable, onClick, className }: TextCellProps)
     );
   }
 
-  return <span className={clsx(styles.text, className)}>{text}</span>;
+  return <span data-slot="text-cell" className={clsx(styles.text, className)}>{text}</span>;
 }

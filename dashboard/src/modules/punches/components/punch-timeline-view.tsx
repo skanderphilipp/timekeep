@@ -2,7 +2,6 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 
 import { AttendanceTimelineView } from "@/modules/attendance";
 import type { Punch } from "@/lib/api";
-import type { PunchFilter } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -11,14 +10,10 @@ type PunchTimelineViewProps = {
 	date: Date | null;
 	/** Punches for the current filter context (used to derive employee list). */
 	punches: Punch[];
-	/**
-	 * Additional filter context from the parent page (status, device_sns, search, etc.).
-	 * Propagated to usePunchData so timeline data matches page-level filters.
-	 */
-	filterContext?: Partial<PunchFilter>;
-	/** Explicit date range from parent page filter (Bug 3 fix). */
-	filterSince?: string;
-	filterUntil?: string;
+	/** Device serial filter from page context. */
+	deviceSns?: string;
+	/** Punch status filter from page context. */
+	status?: string;
 };
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -27,23 +22,19 @@ type PunchTimelineViewProps = {
  * PunchTimelineView — daily timeline visualization for punches.
  *
  * Wraps {@link AttendanceTimelineView} with date state management synced
- * to the parent page's filter context. Supports day-by-day navigation
- * via prev/next/today buttons.
- *
- * Rendered by {@link DataListView} via `renderCustomView` when the user
- * selects "Timeline" from the ViewPicker.
+ * to the parent page's filter context. Data comes from the
+ * `/api/attendance/timeline` backend endpoint.
  */
 export function PunchTimelineView({
 	date,
 	punches,
-	filterContext,
-	filterSince,
-	filterUntil,
+	deviceSns,
+	status,
 }: PunchTimelineViewProps) {
 	// Default to today when no date filter is set
 	const effectiveDate = useMemo(() => date ?? new Date(), [date]);
 
-	// Track the selected date for the timeline (starts from page filter, then user can navigate)
+	// Track the selected date for the timeline
 	const [timelineDate, setTimelineDate] = useState(effectiveDate);
 
 	// Sync when page filter changes
@@ -51,7 +42,7 @@ export function PunchTimelineView({
 		if (date) setTimelineDate(date);
 	}, [date?.toDateString()]);
 
-	// Derive employee list from loaded punches
+	// Derive employee list from loaded punches (for the header labels)
 	const employees = useMemo(() => {
 		const seen = new Set<string>();
 		const list: { pin: string; name: string }[] = [];
@@ -72,9 +63,8 @@ export function PunchTimelineView({
 		<AttendanceTimelineView
 			date={timelineDate}
 			employees={employees.length > 0 ? employees : undefined}
-			filterContext={filterContext}
-			filterSince={filterSince}
-			filterUntil={filterUntil}
+			deviceSns={deviceSns}
+			status={status}
 			onDateChange={handleDateChange}
 		/>
 	);

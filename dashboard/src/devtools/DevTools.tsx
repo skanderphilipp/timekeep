@@ -8,6 +8,10 @@
  * Also available (no React mount needed):
  *  - code-inspector-plugin: Option+Click any element → opens source in Zed
  *    (configured in vite.config.ts, active in `pnpm dev`)
+ *
+ * Suppressed when:
+ *  - Running in production (import.meta.env.PROD)
+ *  - DISABLE_DEVTOOLS env var is set (used by E2E tests and screenshot capture)
  */
 
 import { scan } from "react-scan";
@@ -24,7 +28,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 // Toolbar appears at top-left. Toggle inspection mode to click on any element
 // and see exactly which component renders it.
 
-if (import.meta.env.DEV) {
+const isDev = import.meta.env.DEV && !import.meta.env.VITE_DISABLE_DEVTOOLS;
+
+if (isDev) {
   scan({
     enabled: true,
     showToolbar: true,
@@ -40,7 +46,7 @@ if (import.meta.env.DEV) {
 // Mount inside <QueryClientProvider> to inspect the query cache.
 
 export function DevTools() {
-  if (!import.meta.env.DEV) return null;
+  if (!isDev) return null;
 
   return (
     <ReactQueryDevtools

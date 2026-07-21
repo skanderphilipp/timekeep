@@ -18,7 +18,7 @@ export type StatusCellProps = {
  */
 export function StatusCell({ status, label, className }: StatusCellProps) {
   return (
-    <span className={clsx(styles.status, className)}>
+    <span data-slot="status-cell" className={clsx(styles.status, className)}>
       <StatusDot status={status} />
       <span className={styles.statusLabel}>{label}</span>
     </span>

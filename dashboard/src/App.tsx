@@ -5,6 +5,7 @@ import { RequireAuth } from "@/modules/auth/components/require-auth";
 import { RequireRole } from "@/modules/auth/components/require-role";
 import { LoginPage } from "@/modules/auth/pages/login-page";
 import { SetupPage } from "@/modules/auth/pages/setup-page";
+import { ConnectionPage } from "@/modules/server-connection/pages/connection-page";
 import { DashboardPage } from "@/modules/dashboard/pages/dashboard-page";
 import { DeviceListPage } from "@/modules/devices/pages/device-list-page";
 import { DeviceDetailPage } from "@/modules/devices/pages/device-detail-page";
@@ -28,6 +29,7 @@ import { AppShell } from "./app-shell";
 export function App() {
   return (
     <Routes>
+      <Route path={AppRoute.connect} element={<ConnectionPage />} />
       <Route path={AppRoute.setup} element={<SetupPage />} />
       <Route path={AppRoute.login} element={<LoginPage />} />
       <Route
@@ -62,11 +64,7 @@ export function App() {
                 />
                 <Route
                   path={AppRoute.departments.list}
-                  element={
-                    <RequireRole minimum="admin">
-                      <DepartmentsPage />
-                    </RequireRole>
-                  }
+                  element={<DepartmentsPage />}
                 />
                 <Route
                   path="/departments/:id"

@@ -2,7 +2,8 @@
 //!
 //! Usage:
 //!   cargo run --bin seed --features seed -- \
-//!     --employees 120 --devices 5 --days 730 --output dev.db
+//!     --employees 120 --devices 8 --days 730 --output timekeep-e2e.db \
+//!     --today 2026-07-21 --admin-password admin123 --seed 42 --force
 //!
 //! Generates:
 //!   - Employees with realistic Arabic/English names, departments
@@ -10,7 +11,7 @@
 //!   - Daily punches (check-in, break-out, break-in, check-out) per employee
 //!   - Realistic attendance patterns: late arrivals, early departures, absences
 //!   - Anomalous punches: missing check-outs, odd-hour punches, weekend work
-//!   - Dashboard admin user (admin/admin) for immediate login
+//!   - Dashboard users: admin, operator, viewer (argon2id-hashed passwords)
 
 use std::path::PathBuf;
 
@@ -18,6 +19,7 @@ use clap::Parser;
 use rand::distributions::{Distribution, WeightedIndex};
 use rand::prelude::*;
 use rand_distr::Normal;
+use timekeep_core::DashboardUser;
 use timekeep_storage_sqlite::SqliteStorage;
 
 // ─── CLI ──────────────────────────────────────────────────────────────
@@ -60,6 +62,23 @@ struct Args {
     /// Force overwrite of existing database
     #[arg(long)]
     force: bool,
+
+    /// Fixed "today" date for deterministic screenshots (YYYY-MM-DD).
+    /// Punches are generated up to this date. Default: system clock.
+    #[arg(long)]
+    today: Option<String>,
+
+    /// Admin dashboard user password (argon2id hashed).
+    #[arg(long, default_value = "admin")]
+    admin_password: String,
+
+    /// Operator (HR) dashboard user password.
+    #[arg(long, default_value = "operator123")]
+    operator_password: String,
+
+    /// Viewer (supervisor) dashboard user password.
+    #[arg(long, default_value = "viewer123")]
+    viewer_password: String,
 }
 
 // ─── Data types ───────────────────────────────────────────────────────
@@ -523,9 +542,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // ── Punches ──────────────────────────────────────────────────
     let now = jiff::Timestamp::now();
-    let today = now.to_zoned(jiff::tz::TimeZone::UTC);
-    let today_midnight =
-        midnight_utc(today.year() as i32, today.month() as i32, today.day() as i32);
+    let (today_midnight, today_display) = if let Some(ref date_str) = args.today {
+        // Parse YYYY-MM-DD as UTC midnight
+        let parts: Vec<&str> = date_str.split('-').collect();
+        if parts.len() != 3 {
+            eprintln!("Invalid --today format: {}. Expected YYYY-MM-DD.", date_str);
+            std::process::exit(1);
+        }
+        let y: i32 = parts[0].parse().unwrap_or_else(|_| {
+            eprintln!("Invalid year in --today: {}", date_str);
+            std::process::exit(1);
+        });
+        let m: i32 = parts[1].parse().unwrap_or_else(|_| {
+            eprintln!("Invalid month in --today: {}", date_str);
+            std::process::exit(1);
+        });
+        let d: i32 = parts[2].parse().unwrap_or_else(|_| {
+            eprintln!("Invalid day in --today: {}", date_str);
+            std::process::exit(1);
+        });
+        let mid = midnight_utc(y, m, d);
+        println!("  today     : {} (fixed)", date_str);
+        (mid, date_str.clone())
+    } else {
+        let today = now.to_zoned(jiff::tz::TimeZone::UTC);
+        let mid = midnight_utc(today.year() as i32, today.month() as i32, today.day() as i32);
+        let display = format!("{}-{:02}-{:02}", today.year(), today.month(), today.day());
+        (mid, display)
+    };
+    let _ = today_display; // used in summary
 
     let mut total_punches = 0u64;
 
@@ -569,15 +614,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // ── Dashboard admin user ─────────────────────────────────────
-    let admin_id = uuid::Uuid::new_v4().to_string();
+    // ── Dashboard users (argon2id hashed) ───────────────────────
     let now_sec = now.as_second();
-    // Default password: "admin" hashed with argon2id
+
+    // Admin
+    let admin_hash = DashboardUser::hash_password(&args.admin_password, "");
+    let admin_id = uuid::Uuid::new_v4().to_string();
     sqlx::query(
         "INSERT OR IGNORE INTO dashboard_users (id, username, password_hash, salt, role, display_name, active, created_at, updated_at, permissions_text)
-         VALUES (?, 'admin', '', '', 'admin', 'Administrator', 1, ?, ?, 'read:punches write:punches read:devices write:devices manage:users manage:commands')"
+         VALUES (?, 'admin', ?, '', 'admin', 'Administrator', 1, ?, ?, '')"
     )
         .bind(&admin_id)
+        .bind(&admin_hash)
+        .bind(now_sec)
+        .bind(now_sec)
+        .execute(&storage.pool)
+        .await?;
+    println!("  user: admin (role=admin, password='{}')", args.admin_password);
+
+    // Operator (HR)
+    let operator_hash = DashboardUser::hash_password(&args.operator_password, "");
+    let operator_id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT OR IGNORE INTO dashboard_users (id, username, password_hash, salt, role, display_name, active, created_at, updated_at, permissions_text)
+         VALUES (?, 'operator', ?, '', 'operator', 'HR Manager', 1, ?, ?, '')"
+    )
+        .bind(&operator_id)
+        .bind(&operator_hash)
+        .bind(now_sec)
+        .bind(now_sec)
+        .execute(&storage.pool)
+        .await?;
+    println!("  user: operator (role=operator, password='{}')", args.operator_password);
+
+    // Viewer (Supervisor)
+    let viewer_hash = DashboardUser::hash_password(&args.viewer_password, "");
+    let viewer_id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT OR IGNORE INTO dashboard_users (id, username, password_hash, salt, role, display_name, active, created_at, updated_at, permissions_text)
+         VALUES (?, 'viewer', ?, '', 'viewer', 'Department Supervisor', 1, ?, ?, '')"
+    )
+        .bind(&viewer_id)
+        .bind(&viewer_hash)
         .bind(now_sec)
         .bind(now_sec)
         .execute(&storage.pool)
@@ -604,7 +682,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("  Run with:");
     println!("    RUST_LOG=info cargo run -- --db sqlite://{}", args.output);
-    println!("    # Admin login: admin / admin");
+    println!("    Admin login:    admin / {}", args.admin_password);
+    println!("    Operator login: operator / {}", args.operator_password);
+    println!("    Viewer login:   viewer / {}", args.viewer_password);
 
     Ok(())
 }

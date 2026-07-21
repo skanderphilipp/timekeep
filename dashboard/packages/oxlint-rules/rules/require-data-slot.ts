@@ -10,8 +10,8 @@ export const RULE_NAME = "require-data-slot";
  * - Provides stable selectors for e2e tests
  * - No accessibility, SEO, or runtime impact
  *
- * Only checks the outermost JSX element of each return statement —
- * child elements with CSS Module classes already have scoped identifiers.
+ * Only checks the outermost JSX element of each return statement.
+ * For interactive child elements, see the companion rule `require-data-slot-interactive`.
  */
 
 const STYLED_ELEMENTS = new Set([
@@ -24,36 +24,27 @@ const STYLED_ELEMENTS = new Set([
   "label", "form", "fieldset", "input", "textarea", "select",
 ]);
 
-const hasDataSlot = (attributes: any[]): boolean =>
+const hasAttr = (attributes: any[], name: string): boolean =>
   attributes.some(
     (attr) =>
       attr.type === "JSXAttribute" &&
       attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "data-slot",
+      attr.name.name === name,
   );
 
-const hasClassName = (attributes: any[]): boolean =>
-  attributes.some(
-    (attr) =>
-      attr.type === "JSXAttribute" &&
-      attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "className",
-  );
-
-const hasStyle = (attributes: any[]): boolean =>
-  attributes.some(
-    (attr) =>
-      attr.type === "JSXAttribute" &&
-      attr.name?.type === "JSXIdentifier" &&
-      attr.name.name === "style",
-  );
+const hasDataSlot = (attributes: any[]): boolean => hasAttr(attributes, "data-slot");
+const hasClassName = (attributes: any[]): boolean => hasAttr(attributes, "className");
+const hasStyle = (attributes: any[]): boolean => hasAttr(attributes, "style");
 
 const isTestOrStory = (filename: string): boolean =>
   /\.(test|spec|stories)\.tsx?$/.test(filename);
 
-/**
- * Collect root JSX elements from a return statement's argument.
- */
+const getTagName = (openingEl: any): string | null => {
+  if (!openingEl?.name) return null;
+  if (openingEl.name.type === "JSXIdentifier") return openingEl.name.name;
+  return null;
+};
+
 const collectRootElements = (node: any, out: any[]): void => {
   if (!node) return;
 
@@ -93,7 +84,7 @@ export const rule = defineRule({
     },
     messages: {
       missingDataSlot:
-        'Component root element is missing data-slot attribute. Add data-slot="element-name".',
+        'Component root element is missing data-slot. Add data-slot="element-name" for DevTools visibility and E2E test selectors.',
     },
     schema: [],
   },
@@ -114,8 +105,7 @@ export const rule = defineRule({
           const openingEl = root.openingElement;
           if (!openingEl) continue;
 
-          const tagName =
-            openingEl.name?.type === "JSXIdentifier" ? openingEl.name.name : null;
+          const tagName = getTagName(openingEl);
           if (!tagName || !STYLED_ELEMENTS.has(tagName)) continue;
 
           const attrs = openingEl.attributes || [];

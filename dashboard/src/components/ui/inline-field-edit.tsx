@@ -212,6 +212,7 @@ export function InlineFieldEdit<TValue = unknown>({
 
   return (
     <div
+      data-slot="inline-field-edit"
       ref={wrapperRef}
       className={styles.wrapper}
       data-editable={canEdit || undefined}

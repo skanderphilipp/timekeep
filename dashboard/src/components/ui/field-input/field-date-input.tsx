@@ -73,7 +73,7 @@ export function FieldDateInput({
   });
 
   return (
-    <div ref={wrapperRef} className={clsx(className)} data-no-close>
+    <div data-slot="field-date-input" ref={wrapperRef} className={clsx(className)} data-no-close>
       <DatePicker
         value={internalValue}
         onChange={handleChange}

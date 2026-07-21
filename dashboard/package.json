@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:oxlint-rules && tsc -b && vite build",
+    "build:strict": "pnpm build:oxlint-rules && oxlint && tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "pnpm build:oxlint-rules && oxlint",
@@ -26,6 +27,8 @@
     "check-ui-barrel": "tsx ../scripts/generate-ui-barrel.ts --check",
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
+    "test:browser": "vitest run --project browser",
+    "test:browser:watch": "vitest --project browser",
     "test:storybook": "vitest run --project storybook",
     "build:oxlint-rules": "cd packages/oxlint-rules && node build.mjs",
     "lint:fix": "pnpm build:oxlint-rules && oxlint --fix",
@@ -38,7 +41,12 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm depcruise && pnpm check-size && pnpm lint:style && pnpm lint:tokens && pnpm check:dupes",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "prepare": "husky && npx msw init public/ --save"
+    "prepare": "husky && npx msw init public/ --save",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "desktop:build:mac": "tauri build --target universal-apple-darwin",
+    "desktop:build:win": "tauri build --target x86_64-pc-windows-msvc",
+    "desktop:build:linux": "tauri build --target x86_64-unknown-linux-gnu"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -62,6 +70,7 @@
     "@radix-ui/colors": "^3.0.0",
     "@tabler/icons-react": "^3.44.0",
     "@tanstack/react-query": "^5.101.2",
+    "@tauri-apps/api": "^2.11.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "es-toolkit": "^1.49.0",
@@ -107,6 +116,7 @@
     "@storybook/react-vite": "^10.5.0",
     "@storybook/test": "^8.6.15",
     "@tanstack/react-query-devtools": "^5.101.2",
+    "@tauri-apps/cli": "^2.11.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

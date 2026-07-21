@@ -74,7 +74,7 @@ export function CalendarChart({ data, from, to, height = 300, onClick }: Calenda
   });
 
   return (
-    <div style={{ width: "100%", height: `${height}px` }}>
+    <div data-slot="calendar-chart" style={{ width: "100%", height: `${height}px` }}>
       <ResponsiveCalendar
         data={data}
         from={from}
@@ -119,7 +119,7 @@ export function CalendarChart({ data, from, to, height = 300, onClick }: Calenda
             : (STATUS_LABELS[Number(value) as keyof typeof STATUS_LABELS] ?? "—");
 
           return (
-            <div style={tooltipStyle}>
+            <div data-slot="calendar-chart-tooltip" style={tooltipStyle}>
               <strong>{formatDay(iso)}</strong>
               <br />
               {formatDurationHours(hours)}

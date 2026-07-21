@@ -142,6 +142,7 @@ export function EditableCell<TValue = unknown>({
 
   return (
     <div
+      data-slot="editable-cell"
       className={clsx(styles.cell, isHovered && styles.cellHovered)}
       onClick={handleCellClick}
       onDoubleClick={handleCellClick}

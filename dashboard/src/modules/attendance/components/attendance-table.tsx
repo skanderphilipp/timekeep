@@ -146,6 +146,7 @@ export function AttendanceTable({
       sortState={sortState}
       onSortChange={onSortChange}
       stickyHeader
+      rowDataSlot="punch-row"
     />
   );
 }

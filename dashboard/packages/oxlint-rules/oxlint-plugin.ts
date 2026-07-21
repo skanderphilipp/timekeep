@@ -99,6 +99,10 @@ import {
   rule as requireDataSlot,
   RULE_NAME as requireDataSlotName,
 } from "./rules/require-data-slot";
+import {
+  rule as requireDataSlotInteractive,
+  RULE_NAME as requireDataSlotInteractiveName,
+} from "./rules/require-data-slot-interactive";
 
 export default definePlugin({
   meta: { name: "bentech" },
@@ -130,5 +134,6 @@ export default definePlugin({
     [noDomainTypesInDataRendererName]: noDomainTypesInDataRenderer,
     [noSchemaTypeRedeclarationName]: noSchemaTypeRedeclaration,
     [requireDataSlotName]: requireDataSlot,
+    [requireDataSlotInteractiveName]: requireDataSlotInteractive,
   },
 });

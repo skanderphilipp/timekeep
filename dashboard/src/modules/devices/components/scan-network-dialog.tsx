@@ -221,6 +221,7 @@ export function ScanNetworkDialog({ open, onClose }: ScanNetworkDialogProps) {
               columns={columns}
               data={state.results.devices}
               getRowKey={(d) => d.serial_number ?? d.ip_address ?? ""}
+              rowDataSlot="scan-result-row"
             />
           </>
         ))}

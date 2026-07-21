@@ -79,6 +79,7 @@ export function FieldTextInput({
     <input
       ref={wrapperRef}
       id={instanceId}
+      data-slot="field-text-input"
       type="text"
       autoComplete="off"
       className={clsx(styles.fieldInput, className)}

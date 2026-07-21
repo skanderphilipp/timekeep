@@ -52,6 +52,12 @@ type DataTableProps<T, K extends string = string> = {
   /** Enables sticky header when the table body scrolls. */
   stickyHeader?: boolean;
   className?: string;
+  /**
+   * Override the `data-slot` value on `<tr>` elements.
+   * Defaults to `"data-table-row"`. Use a domain-specific name
+   * like `"punch-row"` or `"employee-row"` for E2E test stability.
+   */
+  rowDataSlot?: string;
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -80,6 +86,7 @@ export function DataTable<T, K extends string = string>({
   onSortChange,
   stickyHeader = false,
   className,
+  rowDataSlot,
 }: DataTableProps<T, K>) {
   const handleSortClick = useCallback(
     (columnId: K) => {
@@ -166,7 +173,7 @@ export function DataTable<T, K extends string = string>({
             data.map((row) => (
               <tr
                 key={getRowKey(row)}
-                data-slot="data-table-row"
+                data-slot={rowDataSlot ?? "data-table-row"}
                 data-clickable={isClickable || undefined}
                 className={clsx(isClickable && styles.clickableRow)}
                 onClick={isClickable ? () => onRowClick!(row) : undefined}

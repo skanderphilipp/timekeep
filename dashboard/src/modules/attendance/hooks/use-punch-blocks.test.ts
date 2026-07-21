@@ -1,30 +1,25 @@
 /**
- * Timeline data fetching — date precedence contract + Bug 3 filter propagation.
+ * usePunchBlocks.test.ts — Timeline data hook tests.
  *
- * Validates Issue #6 fix: when `filterSince`/`filterUntil` are NOT provided,
- * `usePunchBlocks` MUST compute the date range from the local `date` prop.
- * This ensures the timeline can navigate independently of parent page filters.
- *
- * Bug 3: when `filterContext` is provided, its values MUST be propagated
- * to `usePunchData` so timeline data matches page-level filters.
+ * Covers:
+ *  - Timeline endpoint query params (date, device_sns, status)
+ *  - Response mapping: TimelineEmployeeBlocks → rows, employeeList
+ *  - Legend items generation
  */
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { usePunchBlocks } from "./use-punch-blocks";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement, type ReactNode } from "react";
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
-vi.mock("@/modules/punches/hooks/use-punch-data", () => ({
-	usePunchData: vi.fn(),
+vi.mock("@/lib/api/attendance", () => ({
+	fetchTimelineDay: vi.fn(),
 }));
 
-import { usePunchData } from "@/modules/punches/hooks/use-punch-data";
-
-function mockTranslate(key: string): string {
-	return key;
-}
+import { fetchTimelineDay, type TimelineDayResponse } from "@/lib/api/attendance";
+import { usePunchBlocks } from "./use-punch-blocks";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -37,171 +32,260 @@ function makeWrapper() {
 	};
 }
 
+const mockTranslate = (key: string) => key;
+
+function mockTimelineResponse(
+	employees: TimelineDayResponse["employees"] = [],
+): TimelineDayResponse {
+	return { date: "2026-07-19", employees };
+}
+
+function makeEmployee(overrides: Partial<TimelineDayResponse["employees"][number]> = {}) {
+	return {
+		pin: "1",
+		name: "Alice",
+		blocks: [],
+		status: "present",
+		hours: 8,
+		overtime_hours: 0,
+		break_minutes: 30,
+		anomaly_count: 0,
+		is_late: false,
+		...overrides,
+	};
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
-describe("usePunchBlocks — date precedence", () => {
+describe("usePunchBlocks", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(usePunchData).mockReturnValue({
-			data: { punches: [] },
-			isLoading: false,
-		} as any);
+		vi.mocked(fetchTimelineDay).mockResolvedValue(mockTimelineResponse());
 	});
 
-	it("uses local date when filterSince/filterUntil are NOT provided", () => {
-		const date = new Date("2026-07-15T12:00:00Z");
+	// ── Query params ───────────────────────────────────────────────────────
 
-		renderHook(
-			() =>
-				usePunchBlocks({
-					date,
-					translate: mockTranslate,
-				}),
-			{ wrapper: makeWrapper() },
-		);
+	describe("query params", () => {
+		it("calls fetchTimelineDay with date in ISO format", async () => {
+			renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
+				{ wrapper: makeWrapper() },
+			);
 
-		expect(usePunchData).toHaveBeenCalled();
-		const filterArg = vi.mocked(usePunchData).mock.calls[0][0];
-		expect(filterArg.since).toBe("2026-07-15");
-		expect(filterArg.until).toBe("2026-07-16");
+			await waitFor(() => {
+				expect(fetchTimelineDay).toHaveBeenCalledWith(
+					expect.objectContaining({ date: "2026-07-19" }),
+				);
+			});
+		});
+
+		it("passes deviceSns as device_sns query param", async () => {
+			renderHook(
+				() =>
+					usePunchBlocks({
+						date: new Date("2026-07-19"),
+						deviceSns: "DEV-001",
+						translate: mockTranslate,
+					}),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(fetchTimelineDay).toHaveBeenCalledWith(
+					expect.objectContaining({ device_sns: "DEV-001" }),
+				);
+			});
+		});
+
+		it("passes status query param", async () => {
+			renderHook(
+				() =>
+					usePunchBlocks({
+						date: new Date("2026-07-19"),
+						status: "check_in",
+						translate: mockTranslate,
+					}),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(fetchTimelineDay).toHaveBeenCalledWith(
+					expect.objectContaining({ status: "check_in" }),
+				);
+			});
+		});
 	});
 
-	it("uses filterSince when provided (legacy parent sync)", () => {
-		const date = new Date("2026-07-15T12:00:00Z");
+	// ── Response mapping ──────────────────────────────────────────────────
 
-		renderHook(
-			() =>
-				usePunchBlocks({
-					date,
-					filterSince: "2026-06-01",
-					filterUntil: "2026-06-30",
-					translate: mockTranslate,
-				}),
-			{ wrapper: makeWrapper() },
-		);
+	describe("response mapping", () => {
+		it("maps employees to rows with correct structure", async () => {
+			vi.mocked(fetchTimelineDay).mockResolvedValue(
+				mockTimelineResponse([
+					makeEmployee({
+						pin: "123",
+						name: "Alice",
+						blocks: [
+							{ left: 33.3, width: 37.5, color: "present", title: "Check In: 08:00 - 17:00" },
+						],
+					}),
+				]),
+			);
 
-		const filterArg = vi.mocked(usePunchData).mock.calls[0][0];
-		expect(filterArg.since).toBe("2026-06-01");
-		expect(filterArg.until).toBe("2026-06-30");
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(result.current.rows).toHaveLength(1);
+				expect(result.current.rows[0]!.id).toBe("123");
+				expect(result.current.rows[0]!.name).toBe("Alice");
+				expect(result.current.rows[0]!.subLabel).toBe("123");
+				expect(result.current.rows[0]!.blocks).toHaveLength(1);
+				expect(result.current.rows[0]!.blocks[0]!.color).toBe("present");
+			});
+		});
+
+		it("preserves backend sort order", async () => {
+			vi.mocked(fetchTimelineDay).mockResolvedValue(
+				mockTimelineResponse([
+					makeEmployee({ pin: "2", name: "Bob" }),
+					makeEmployee({ pin: "1", name: "Alice" }),
+				]),
+			);
+
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(result.current.rows).toHaveLength(2);
+				// Hook preserves backend order (backend sorts alphabetically)
+				expect(result.current.rows[0]!.name).toBe("Bob");
+				expect(result.current.rows[1]!.name).toBe("Alice");
+			});
+		});
+
+		it("builds employeeList from response when no employees prop", async () => {
+			vi.mocked(fetchTimelineDay).mockResolvedValue(
+				mockTimelineResponse([
+					makeEmployee({ pin: "1", name: "Alice" }),
+					makeEmployee({ pin: "2", name: "Bob" }),
+				]),
+			);
+
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(result.current.employeeList).toHaveLength(2);
+				expect(result.current.employeeList[0]!.pin).toBe("1");
+			});
+		});
+
+		it("uses provided employees prop over response data", async () => {
+			vi.mocked(fetchTimelineDay).mockResolvedValue(
+				mockTimelineResponse([makeEmployee({ pin: "1", name: "Alice" })]),
+			);
+
+			const { result } = renderHook(
+				() =>
+					usePunchBlocks({
+						date: new Date("2026-07-19"),
+						employees: [{ pin: "99", name: "Custom" }],
+						translate: mockTranslate,
+					}),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(result.current.employeeList).toHaveLength(1);
+				expect(result.current.employeeList[0]!.pin).toBe("99");
+			});
+		});
+
+		it("returns empty rows for empty response", async () => {
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
+				{ wrapper: makeWrapper() },
+			);
+
+			await waitFor(() => {
+				expect(result.current.rows).toHaveLength(0);
+				expect(result.current.employeeList).toHaveLength(0);
+			});
+		});
 	});
 
-	it("computes different date range when date changes", () => {
-		const date1 = new Date("2026-07-15T12:00:00Z");
+	// ── Legend ────────────────────────────────────────────────────────────
 
-		const { rerender } = renderHook(
-			({ date }) =>
-				usePunchBlocks({
-					date,
-					translate: mockTranslate,
-				}),
-			{
-				wrapper: makeWrapper(),
-				initialProps: { date: date1 },
-			},
-		);
+	describe("legend", () => {
+		it("returns translated legend items", () => {
+			const customTranslate = (key: string) => `__${key}__`;
 
-		expect(vi.mocked(usePunchData).mock.calls[0][0].since).toBe("2026-07-15");
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: customTranslate }),
+				{ wrapper: makeWrapper() },
+			);
 
-		const date2 = new Date("2026-07-16T12:00:00Z");
-		rerender({ date: date2 });
-
-		expect(vi.mocked(usePunchData).mock.calls[1][0].since).toBe("2026-07-16");
-		expect(vi.mocked(usePunchData).mock.calls[1][0].until).toBe("2026-07-17");
+			expect(result.current.legendItems).toEqual([
+				{ color: "present", label: "__Present__" },
+				{ color: "warning", label: "__Break__" },
+				{ color: "overtime", label: "__Overtime__" },
+			]);
+		});
 	});
 
-	// ── Bug 3: filter context propagation ─────────────────────────────────
+	// ── Loading state ─────────────────────────────────────────────────────
 
-	describe("Bug 3: filterContext propagation to usePunchData", () => {
-		it("passes filterContext status to usePunchData", () => {
-			const date = new Date("2026-07-15T12:00:00Z");
+	describe("loading state", () => {
+		it("isLoading is true while fetching", () => {
+			vi.mocked(fetchTimelineDay).mockReturnValue(new Promise(() => {})); // never resolves
 
-			renderHook(
-				() =>
-					usePunchBlocks({
-						date,
-						translate: mockTranslate,
-						filterContext: { status: "check_in" },
-					}),
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
 				{ wrapper: makeWrapper() },
 			);
 
-			const filterArg = vi.mocked(usePunchData).mock.calls[0]![0]!;
-			expect(filterArg.status).toBe("check_in");
+			expect(result.current.isLoading).toBe(true);
 		});
+	});
 
-		it("passes filterContext device_sns to usePunchData", () => {
-			const date = new Date("2026-07-15T12:00:00Z");
+	// ── Employee data for side panel ──────────────────────────────────────
 
-			renderHook(
-				() =>
-					usePunchBlocks({
-						date,
-						translate: mockTranslate,
-						filterContext: { device_sns: ["DEV-001", "DEV-002"] },
+	describe("employeeData", () => {
+		it("returns raw employee data for side panel use", async () => {
+			vi.mocked(fetchTimelineDay).mockResolvedValue(
+				mockTimelineResponse([
+					makeEmployee({
+						pin: "1",
+						name: "Alice",
+						hours: 8.5,
+						overtime_hours: 1,
+						break_minutes: 30,
+						anomaly_count: 2,
+						is_late: true,
 					}),
+				]),
+			);
+
+			const { result } = renderHook(
+				() => usePunchBlocks({ date: new Date("2026-07-19"), translate: mockTranslate }),
 				{ wrapper: makeWrapper() },
 			);
 
-			const filterArg = vi.mocked(usePunchData).mock.calls[0]![0]!;
-			expect(filterArg.device_sns).toEqual(["DEV-001", "DEV-002"]);
-		});
-
-		it("passes filterContext search to usePunchData", () => {
-			const date = new Date("2026-07-15T12:00:00Z");
-
-			renderHook(
-				() =>
-					usePunchBlocks({
-						date,
-						translate: mockTranslate,
-						filterContext: { search: "Alice" },
-					}),
-				{ wrapper: makeWrapper() },
-			);
-
-			const filterArg = vi.mocked(usePunchData).mock.calls[0]![0]!;
-			expect(filterArg.search).toBe("Alice");
-		});
-
-		it("combines filterContext with filterSince/filterUntil", () => {
-			const date = new Date("2026-07-15T12:00:00Z");
-
-			renderHook(
-				() =>
-					usePunchBlocks({
-						date,
-						filterSince: "2026-07-01",
-						filterUntil: "2026-07-31",
-						filterContext: { status: "check_out", verify_mode: "fingerprint" },
-						translate: mockTranslate,
-					}),
-				{ wrapper: makeWrapper() },
-			);
-
-			const filterArg = vi.mocked(usePunchData).mock.calls[0]![0]!;
-			expect(filterArg.since).toBe("2026-07-01");
-			expect(filterArg.until).toBe("2026-07-31");
-			expect(filterArg.status).toBe("check_out");
-			expect(filterArg.verify_mode).toBe("fingerprint");
-		});
-
-		it("undefined filterContext values are present-but-undefined (JS spread behavior)", () => {
-			const date = new Date("2026-07-15T12:00:00Z");
-
-			renderHook(
-				() =>
-					usePunchBlocks({
-						date,
-						translate: mockTranslate,
-						filterContext: { status: "check_in", device_sns: undefined },
-					}),
-				{ wrapper: makeWrapper() },
-			);
-
-			const filterArg = vi.mocked(usePunchData).mock.calls[0]![0]!;
-			expect(filterArg.status).toBe("check_in");
-			// device_sns key exists but value is undefined — acceptable, API layer strips it
-			expect(filterArg.device_sns).toBeUndefined();
+			await waitFor(() => {
+				expect(result.current.employeeData).toHaveLength(1);
+				const emp = result.current.employeeData[0]!;
+				expect(emp.pin).toBe("1");
+				expect(emp.hours).toBe(8.5);
+				expect(emp.overtime_hours).toBe(1);
+				expect(emp.anomaly_count).toBe(2);
+			});
 		});
 	});
 });

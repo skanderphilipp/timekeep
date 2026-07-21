@@ -28,6 +28,8 @@ type DataTableContainerProps<T extends Record<string, unknown>> = {
   selectedRowCount?: number;
   onRowClick?: (row: T) => void;
   className?: string;
+  /** Override the data-slot value on <tr> elements. Passed through to DataTable. */
+  rowDataSlot?: string;
   infiniteScroll?: {
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
@@ -80,6 +82,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
   className,
   infiniteScroll,
   editingConfig,
+  rowDataSlot,
 }: DataTableContainerProps<T>) {
   const { _ } = useLingui();
   const instanceId = useTableInstanceId();
@@ -161,6 +164,7 @@ export function DataTableContainer<T extends Record<string, unknown>>({
         sortState={sortState}
         onSortChange={externalOnSortChange}
         className={className}
+        rowDataSlot={rowDataSlot}
       />
 
       {pagination && onPageChange && (

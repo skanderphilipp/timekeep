@@ -49,6 +49,7 @@ export function ViewPicker({ options, value, onChange, className }: ViewPickerPr
         <button
           key={opt.value}
           type="button"
+          data-slot="view-picker-option"
           className={styles.option}
           data-active={value === opt.value}
           onClick={() => onChange(opt.value)}

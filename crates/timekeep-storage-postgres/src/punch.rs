@@ -516,11 +516,7 @@ impl PostgresStorage {
             " ORDER BY {sort_col} {tiebreaker_dir}, {tiebreaker_sql} {tiebreaker_dir}"
         ));
 
-        let limit = if filter.unlimited {
-            filter.params.limit.min(timekeep_core::REPORT_MAX_ROWS)
-        } else {
-            filter.params.clamped_limit()
-        };
+        let limit = filter.params.clamped_limit();
         builder.push(" LIMIT ");
         builder.push_bind(limit as i64);
 

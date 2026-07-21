@@ -598,6 +598,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices/{sn}/clear-users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger a pure destructive clear — delete all users from a device
+         *     without re-uploading from the employee database.
+         */
+        post: operations["clear_device_users"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices/{sn}/commands": {
         parameters: {
             query?: never;
@@ -678,26 +698,6 @@ export interface paths {
         put?: never;
         /** Trigger a device restart (via SDK or ADMS command queue). */
         post: operations["restart_device"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/devices/{sn}/resync": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Trigger a full device re-sync — delete all users and re-upload
-         *     from the employee database, optionally filtered by department.
-         */
-        post: operations["resync_device"];
         delete?: never;
         options?: never;
         head?: never;
@@ -854,6 +854,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/employees/enrollment-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get enrollment summary for all employees.
+         * @description Returns one entry per employee with device count and fingerprint status.
+         *     Employees with zero enrollments are included (device_count: 0).
+         */
+        get: operations["enrollment_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/employees/filters": {
         parameters: {
             query?: never;
@@ -905,6 +926,23 @@ export interface paths {
         post?: never;
         /** Deactivate an employee (soft delete). */
         delete: operations["deactivate_employee"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/employees/{id}/enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the devices an employee is enrolled on, with device group info. */
+        get: operations["list_employee_enrollments"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1623,6 +1661,20 @@ export interface components {
             /** @description "full", "half", or "absent" */
             status: string;
         };
+        /** @description Raw attendance event (punch row) for the summary sidebar. */
+        AttendanceEvent: {
+            /** @description Whether the punch is flagged as anomalous. */
+            is_anomaly: boolean;
+            /** @description Punch status string. */
+            status: string;
+            /** @description HH:MM formatted time. */
+            time: string;
+            /**
+             * Format: int64
+             * @description Unix timestamp (seconds).
+             */
+            timestamp: number;
+        };
         /** @description Response DTO for an audit log entry. */
         AuditEventResponse: {
             action: string;
@@ -1638,7 +1690,10 @@ export interface components {
         };
         /** @description Request to execute a batch action on multiple devices. */
         BatchActionRequest: {
-            /** @description Action to execute: "sync_now", "sync_clock", "enable", "disable", "restart". */
+            /**
+             * @description Action to execute: "sync_now", "sync_clock", "enable", "disable", "restart",
+             *     "refresh_info", "refresh_users".
+             */
             action: string;
             /** @description List of device serial numbers to act on. */
             device_sns: string[];
@@ -1658,6 +1713,67 @@ export interface components {
             is_working_day: boolean;
             /** Format: int32 */
             status_code: number;
+        };
+        /** @description One employee's status on a single calendar day. */
+        CalendarEmployeeDay: {
+            /**
+             * Format: int32
+             * @description Number of anomalous punches.
+             */
+            anomaly_count: number;
+            /**
+             * Format: int32
+             * @description Break minutes.
+             */
+            break_minutes: number;
+            /**
+             * Format: double
+             * @description Total work hours (regular periods).
+             */
+            hours: number;
+            /** @description Whether the first check-in was late. */
+            is_late: boolean;
+            name: string;
+            /**
+             * Format: double
+             * @description Overtime hours.
+             */
+            overtime_hours: number;
+            pin: string;
+            /** @description Day status: "present", "late", "half", "absent", "weekend". */
+            status: string;
+        };
+        /** @description Calendar month response. */
+        CalendarMonthResponse: {
+            /** @description Map of "YYYY-MM-DD" → employee summaries. */
+            days: {
+                [key: string]: components["schemas"]["CalendarEmployeeDay"][];
+            };
+            /** Format: int32 */
+            month: number;
+            /** Format: int32 */
+            year: number;
+        };
+        /** @description Query params for GET /api/attendance/calendar. */
+        CalendarQuery: {
+            /** @description Comma-separated device serial numbers. */
+            device_sns?: string | null;
+            /**
+             * Format: int32
+             * @description Calendar month (1-12).
+             */
+            month: number;
+            /** @description Punch status filter. */
+            status?: string | null;
+            /** @description Comma-separated employee PINs. */
+            user_pins?: string | null;
+            /** @description Verification method filter. */
+            verify_mode?: string | null;
+            /**
+             * Format: int32
+             * @description Calendar year (e.g. 2026).
+             */
+            year: number;
         };
         /** @description Change password for a dashboard user. */
         ChangePasswordRequest: {
@@ -2393,6 +2509,28 @@ export interface components {
             /** @description Employee PIN on this device (may differ from primary PIN). */
             pin: string;
         };
+        /** @description Device enrollment status for a single employee. */
+        EnrollmentStatusResponse: {
+            biometric_types: string[];
+            card_number?: string | null;
+            device_label?: string | null;
+            device_sn: string;
+            /** Format: int64 */
+            enrolled_at: number;
+            face_enrolled: boolean;
+            /** Format: int32 */
+            fingerprint_count: number;
+            group_id?: string | null;
+            group_name?: string | null;
+        };
+        /** @description Enrollment summary for a single employee. */
+        EnrollmentSummaryEntry: {
+            /** Format: int32 */
+            device_count: number;
+            employee_id: string;
+            has_fingerprint: boolean;
+            pin: string;
+        };
         /**
          * @description Schema metadata for a listable entity.
          *
@@ -2959,6 +3097,50 @@ export interface components {
             work_policy: components["schemas"]["WorkPolicyResponse"];
             /** @description Workspace/company name shown on the login page. */
             workspace_name: string;
+        };
+        /** @description Single timeline block (bar segment) for one employee. */
+        TimelineBlock: {
+            /** @description Color key: "present", "warning", "overtime", "default". */
+            color: string;
+            /**
+             * Format: double
+             * @description Left position as % of 24h.
+             */
+            left: number;
+            /** @description Tooltip title: "Check In: 08:00 - 17:00". */
+            title: string;
+            /**
+             * Format: double
+             * @description Width as % of 24h.
+             */
+            width: number;
+        };
+        /** @description Single-day timeline response. */
+        TimelineDayResponse: {
+            /** @description The date requested (YYYY-MM-DD). */
+            date: string;
+            /** @description One entry per employee who punched that day. */
+            employees: components["schemas"]["TimelineEmployeeBlocks"][];
+        };
+        /** @description One employee's timeline data for a single day. */
+        TimelineEmployeeBlocks: components["schemas"]["CalendarEmployeeDay"] & {
+            /** @description Timeline blocks for rendering as bars. */
+            blocks: components["schemas"]["TimelineBlock"][];
+            name: string;
+            pin: string;
+        };
+        /** @description Query params for GET /api/attendance/timeline. */
+        TimelineQuery: {
+            /** @description The day to display (YYYY-MM-DD). */
+            date: string;
+            /** @description Comma-separated device serial numbers. */
+            device_sns?: string | null;
+            /** @description Punch status filter. */
+            status?: string | null;
+            /** @description Comma-separated employee PINs. */
+            user_pins?: string | null;
+            /** @description Verification method filter. */
+            verify_mode?: string | null;
         };
         TodaySummaryResponse: {
             absent: number;
@@ -4935,6 +5117,43 @@ export interface operations {
             };
         };
     };
+    clear_device_users: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device serial number */
+                sn: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Clear users requested */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden — Operator+ required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     enqueue_device_command: {
         parameters: {
             query?: never;
@@ -5165,46 +5384,6 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Device restart requested */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden — Operator+ required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    resync_device: {
-        parameters: {
-            query?: {
-                /** @description Optional department name filter */
-                department?: string;
-            };
-            header?: never;
-            path: {
-                /** @description Device serial number */
-                sn: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Device resync requested */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5609,6 +5788,33 @@ export interface operations {
             };
         };
     };
+    enrollment_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enrollment summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentSummaryEntry"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     employee_filters: {
         parameters: {
             query?: {
@@ -5797,6 +6003,43 @@ export interface operations {
             };
             /** @description Forbidden — Admin only */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Employee not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    list_employee_enrollments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Employee ID or PIN */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Employee enrollment status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentStatusResponse"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

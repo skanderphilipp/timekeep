@@ -1,0 +1,30 @@
+.employeeGroup {
+  margin-bottom: var(--ao-spacing-4);
+}
+
+.employeeHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ao-spacing-2);
+  margin-bottom: var(--ao-spacing-1);
+}
+
+.statRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao-spacing-3);
+}
+
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: var(--ao-spacing-1);
+}
+
+.separatorWrapper {
+  margin-bottom: var(--ao-spacing-3);
+}
+
+.title {
+  margin-bottom: var(--ao-spacing-4);
+}

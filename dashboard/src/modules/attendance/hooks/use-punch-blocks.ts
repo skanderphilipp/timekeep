@@ -1,28 +1,39 @@
 import { useMemo } from "react";
-import { addDays } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 
-import { usePunchData, type Punch } from "@/modules/punches/hooks/use-punch-data";
-import type { PunchFilter } from "@/lib/api";
-import { buildBlocks, buildLegendItems } from "../compute";
-import type { TimelineRowData } from "@/modules/shared/components";
+import { fetchTimelineDay, type TimelineBlock as ApiTimelineBlock, type TimelineEmployeeBlocks } from "@/lib/api/attendance";
+import { QueryKeys } from "@/lib/query-keys";
 import type { TimelineEmployee } from "../types";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+/** Mirrors the shared Timeline's TimelineBlockData type. */
+type TimelineBlockData = {
+	left: number;
+	width: number;
+	color: "present" | "warning" | "overtime" | "default";
+	title?: string;
+};
+
+/** Mirrors the shared Timeline's TimelineRowData type. */
+export type TimelineRowData = {
+	id: string;
+	name: string;
+	subLabel?: string;
+	blocks: TimelineBlockData[];
+	onClick?: () => void;
+};
+
 export type UsePunchBlocksOptions = {
-	/** The selected day. */
+	/** The selected day (YYYY-MM-DD string for the backend). */
 	date: Date;
-	/** Optional explicit date range overrides (parent filter sync). */
-	filterSince?: string;
-	filterUntil?: string;
-	/**
-	 * Additional filter context from parent page (status, device_sns, search, etc.).
-	 * Spread into the usePunchData call so timeline data matches page-level filters.
-	 */
-	filterContext?: Partial<PunchFilter>;
+	/** Device serial filter from page context. */
+	deviceSns?: string;
+	/** Punch status filter from page context. */
+	status?: string;
 	/** Optional pre-provided employee list (e.g., from parent page). */
 	employees?: TimelineEmployee[];
-	/** Translation function for buildBlocks / buildLegendItems. */
+	/** Translation function for legend labels. */
 	translate: (key: string) => string;
 };
 
@@ -33,86 +44,101 @@ export type UsePunchBlocksResult = {
 	legendItems: Array<{ color: "present" | "warning" | "overtime"; label: string }>;
 	/** Loading state. */
 	isLoading: boolean;
-	/** Raw punches grouped by employee PIN. */
-	punchesByEmployee: Map<string, Punch[]>;
+	/** Raw employee data (for side panel click handlers). */
+	employeeData: TimelineEmployeeBlocks[];
 	/** Derived employee list (from data if not provided). */
 	employeeList: TimelineEmployee[];
 };
 
-// ── Hook ──────────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function toISODate(date: Date): string {
+	return date.toISOString().split("T")[0]!;
+}
+
+function mapToTimelineRowData(emp: TimelineEmployeeBlocks): TimelineRowData {
+	return {
+		id: emp.pin,
+		name: emp.name || emp.pin,
+		subLabel: emp.pin,
+		blocks: emp.blocks.map(
+			(b: ApiTimelineBlock): TimelineBlockData => ({
+				left: b.left,
+				width: b.width,
+				color: b.color as TimelineBlockData["color"],
+				title: b.title,
+			}),
+		),
+	};
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────────
 
 /**
- * Fetches punch data for a given day and transforms it into timeline rows
- * with colored blocks, ready for the shared Timeline component.
+ * Fetches timeline data from the backend `/api/attendance/timeline` endpoint
+ * and maps it to rows + legend for the shared Timeline component.
  *
- * Extracted from the monolithic timeline-view.tsx.
- * Pattern: data fetching + transformation delegated to a hook.
+ * No raw punches are fetched — the backend pre-computes blocks and summaries.
  */
 export function usePunchBlocks({
 	date,
-	filterSince,
-	filterUntil,
-	filterContext,
+	deviceSns,
+	status,
 	employees,
 	translate,
 }: UsePunchBlocksOptions): UsePunchBlocksResult {
-	// ── Date range ─────────────────────────────────────────────────
-	const since = useMemo(
-		() => filterSince ?? date.toISOString().split("T")[0],
-		[date, filterSince],
-	);
-	const until = useMemo(
-		() =>
-			filterUntil ??
-			(() => {
-				const next = addDays(date, 1);
-				return next.toISOString().split("T")[0];
-			})(),
-		[date, filterUntil],
+	const dateStr = useMemo(() => toISODate(date), [date]);
+
+	const queryParams = useMemo(
+		() => ({
+			date: dateStr,
+			...(deviceSns ? { device_sns: deviceSns } : {}),
+			...(status ? { status } : {}),
+		}),
+		[dateStr, deviceSns, status],
 	);
 
-	// ── Fetch ──────────────────────────────────────────────────────
-	const { data, isLoading } = usePunchData({ since, until, unlimited: "true", ...filterContext });
+	const { data, isLoading } = useQuery({
+		queryKey: QueryKeys.attendance.timeline(queryParams),
+		queryFn: () => fetchTimelineDay(queryParams),
+	});
 
-	// ── Group by employee ───────────────────────────────────────────
-	const punchesByEmployee = useMemo(() => {
-		const map = new Map<string, Punch[]>();
-		data?.punches.forEach((p) => {
-			const existing = map.get(p.user_pin) ?? [];
-			existing.push(p);
-			map.set(p.user_pin, existing);
-		});
-		return map;
-	}, [data]);
-
-	// ── Employee list (from data or props) ─────────────────────────
+	// ── Employee list (from data or props) ─────────────────────────────
 	const employeeList: TimelineEmployee[] = useMemo(() => {
 		if (employees && employees.length > 0) return employees;
+		if (!data?.employees) return [];
 		const seen = new Set<string>();
 		const list: TimelineEmployee[] = [];
-		data?.punches.forEach((p) => {
-			if (!seen.has(p.user_pin)) {
-				seen.add(p.user_pin);
-				list.push({ pin: p.user_pin, name: p.employee_name ?? p.user_pin });
+		for (const emp of data.employees) {
+			if (!seen.has(emp.pin)) {
+				seen.add(emp.pin);
+				list.push({ pin: emp.pin, name: emp.name || emp.pin });
 			}
-		});
+		}
 		return list;
 	}, [data, employees]);
 
-	// ── Build rows ─────────────────────────────────────────────────
+	// ── Build rows ──────────────────────────────────────────────────────
 	const rows: TimelineRowData[] = useMemo(
-		() =>
-			employeeList.map((emp) => ({
-				id: emp.pin,
-				name: emp.name,
-				subLabel: emp.pin,
-				blocks: buildBlocks(punchesByEmployee.get(emp.pin) ?? [], translate),
-			})),
-		[employeeList, punchesByEmployee, translate],
+		() => (data?.employees ?? []).map(mapToTimelineRowData),
+		[data],
 	);
 
-	// ── Legend ─────────────────────────────────────────────────────
-	const legendItems = useMemo(() => buildLegendItems(translate), [translate]);
+	// ── Legend ──────────────────────────────────────────────────────────
+	const legendItems = useMemo(
+		() => [
+			{ color: "present" as const, label: translate("Present") },
+			{ color: "warning" as const, label: translate("Break") },
+			{ color: "overtime" as const, label: translate("Overtime") },
+		],
+		[translate],
+	);
 
-	return { rows, legendItems, isLoading, punchesByEmployee, employeeList };
+	return {
+		rows,
+		legendItems,
+		isLoading,
+		employeeData: data?.employees ?? [],
+		employeeList,
+	};
 }
